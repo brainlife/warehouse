@@ -41,7 +41,7 @@ import pageheader from '@/components/pageheader'
 import statusicon from '@/components/statusicon'
 import contact from '@/components/contact'
 
-import profilecache from '@/mixins/profilecache'
+import authprofilecache from '@/mixins/authprofilecache'
 
 import vis from 'vis/dist/vis.min.js'
 import 'vis/dist/vis.min.css'
@@ -49,7 +49,7 @@ import 'vis/dist/vis.min.css'
 const lib = require('@/lib'); //for avatar_url
 
 export default {
-    mixins: [profilecache],
+    mixins: [authprofilecache],
     components: { 
         sidemenu, 
         pageheader, 
@@ -90,12 +90,14 @@ export default {
         };
         */
 
-        this.$http.get(Vue.config.auth_api+"/profile/recreg/60").then(res=>{
+        let days = 60;
+        if(Vue.config.debug) days = 360;
+        this.$http.get(Vue.config.auth_api+"/profile/recreg/"+days).then(res=>{
             this.recent_users = res.data.users;
         
             //load public profiles for each users
             this.recent_users.forEach(u=>{
-                this.profilecache(u.sub, (err, profile)=>{
+                this.authprofilecache(u.sub, (err, profile)=>{
                     //Vue.set(this.recent_users, '_profile', profile);
                     Vue.set(u, '_profile', profile);
                 });

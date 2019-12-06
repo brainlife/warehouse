@@ -38,26 +38,32 @@ export default {
 
     watch: {
         datatype: function() {
-            this.init(this.datatype);
+            this.init_id_or_object(this.datatype);
         }
     },
     
     mounted() {
-        //console.log(this.datatype);
+        console.log("datatypetag mounted with datatype:");
+        console.log(this.datatype);
         if(!this.datatype) return;
-        if(typeof this.datatype == "string") {
-            this.datatypecache(this.datatype, (err, datatype)=>{
-                if(err) alert(err);
-                this.init(datatype);
-            });
-        } else {
-            //assume the full datatype object is fed..
-            this.init(this.datatype);
-        }
+        this.init_id_or_object(this.datatype);
     },
 
     methods: {
-        init(datatype) {
+        init_id_or_object(datatype) {
+            if(typeof datatype == "string") {
+                console.log("id given... loading ", datatype);
+                this.datatypecache(datatype, (err, datatype_obj)=>{
+                    if(err) alert(err);
+                    this.init_object(datatype_obj);
+                });
+            } else {
+                //assume the full datatype object is fed..
+                this.init_object(datatype);
+            }
+        },
+
+        init_object(datatype) {
             this._datatype = datatype;
 
             if(!this._datatype) return "unknown";

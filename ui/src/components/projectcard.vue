@@ -3,10 +3,9 @@
     <projectavatar class="avatar" :project="project" :width="60" :height="60"/>
     <div class="private" v-if="project.access == 'private'"><icon name="lock"/></div>
     <p class="title">
-        <!--<projectaccess :access="project.access"/>-->
         {{project.name}}
     </p>
-    <p class="datatypes" v-if="project.stats">
+    <p class="datatypes" v-if="project.stats && project.stats.datasets">
         <datatypetag v-for="datatype_id in project.stats.datasets.datatypes" :key="datatype_id" :datatype="datatype_id" 
             style="font-size: 85%; margin-right: 2px"/>
     </p>
@@ -14,18 +13,8 @@
     <p v-if="config.user" class="contacts" style="margin-left: 5px;">
         <contact v-for="c in project.members" :key="c._id" :id="c" size="tiny" style="margin-left: -5px"/>
     </p>
-    <!--
-    <p class="contacts">
-        <b>Members</b> <contact v-for="c in project.members" :key="c._id" :id="c" size="small"/>
-    </p>
-    -->
     <div class="status">
         <b-row v-if="project.stats">
-            <!--
-            <b-col md="3" title="create date">
-                <icon name="calendar" scale="0.8"/>&nbsp;<small>{{new Date(project.create_date).toLocaleDateString()}}</small>
-            </b-col>
-            -->
             <b-col md="3" title="unique subjects" v-if="project.stats.datasets">
                 <icon name="user-friends" scale="0.8"/>&nbsp;{{project.stats.datasets.subject_count}}
             </b-col>
@@ -41,7 +30,7 @@
     </div>
     <div class="instances">
         <stateprogress v-if="project.stats && project.stats.instances && !project.openneuro" 
-            :states="project.stats.instances" height="2px" :show_label="false"/>
+            :states="project.stats.instances" height="3px" :show_label="false"/>
         <div v-else style="height: 2px"></div>
     </div>
 </div>

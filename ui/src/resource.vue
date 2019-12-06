@@ -52,13 +52,13 @@
 
                 <b-row v-if="usage_data">
                     <b-col cols="2">
-                        <span class="form-header">Resource Usage</span>
+                        <span class="form-header">Running Jobs</span>
                     </b-col>
                     <b-col>
                         <vue-plotly :data="usage_data" :layout="usage_layout" :autoResize="true"/>
                         <br>
 
-                        <span class="form-header">Currently Running Tasks</span>
+                        <!--<span class="form-header">Currently Running Tasks</span>-->
                         <div v-for="task in tasks" :key="task._id" style="margin-bottom: 1px">
                             <b-row>
                                 <b-col cols="4">
@@ -74,7 +74,7 @@
                                 </b-col>
                             </b-row>
                         </div>
-                        <p v-if="tasks.length ==0">No tasks running on this resource.</p>
+                        <p style="opacity: 0.7;" v-if="tasks.length ==0">No tasks running on this resource.</p>
                         <br>
                     </b-col>
                 </b-row>
@@ -396,12 +396,12 @@ export default {
                 this.usage_layout = {
                     height: 200,
                     margin: {
-                        t: 10, //top
+                        t: 20, //top
                         b: 35, //bottom
                         r: 10, //right
                     },
                     yaxis: {
-                        title: 'Running Jobs',
+                        //title: 'Running Jobs',
                     },
                     font: Vue.config.plotly.font,
                 };

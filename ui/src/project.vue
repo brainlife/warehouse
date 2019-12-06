@@ -123,9 +123,7 @@
 
                         <div v-if="resource_usage && total_walltime > 3600*1000">      
                             <span class="form-header">Resource Usage</span>     
-                            <p><small>Datasets on this project has been computed using the following apps/resources.</small></p>
-                            <br>
-                            <small>Total Walltime: <b>{{(total_walltime/(3600*1000)).toFixed(2)}} hours</b></small>               
+                            <p><small>Datasets on this project has been computed using the following apps/resources.</small></p>             
                             <vue-plotly :data="resource_usage.data" :layout="resource_usage.layout" :options="resource_usage.options"
                                  ref="resource_usage" :autoResize="true" :watchShallow="true"/>
                         </div>
@@ -162,6 +160,8 @@
                         </div>
                     </div><!-- margin20-->
                 </b-col>
+
+                <!--side panel-->
                 <b-col cols="3" style="background-color: #eee; box-shadow: inset 3px 0px 3px #ddd6;">
                     <div style="margin: 20px 10px" v-if="selected.stats">
 
@@ -205,6 +205,13 @@
                             <b-badge pill class="bigpill" v-if="selected.stats.rules && selected.stats.rules.active > 0" title="Number of pipeline rules configured for this project">
                                 <icon name="robot" style="opacity: 0.4;"/>&nbsp;&nbsp;{{selected.stats.rules.active}}
                                 <small>Active Pipeline Rules</small>
+                            </b-badge>
+                        </p>
+
+                        <p>
+                            <b-badge pill class="bigpill" title="Total CPU hours consumed by this project">
+                                <icon name="server" style="opacity: 0.4;"/>&nbsp;&nbsp;{{(total_walltime/(3600*1000)).toFixed(2)}}
+                                <small>CPU Hours</small>
                             </b-badge>
                         </p>
 
@@ -593,12 +600,13 @@ export default {
                         },
                         barmode: 'relative',
                         margin: {
-                            t: 30,
+                            t: 20,
                             l: 240,
                             pad: 10
                         },
                         height: 17*services.length+120,
                         font: Vue.config.plotly.font,
+                        paper_bgcolor: "#fff0",
                     };
 
                     let options = {

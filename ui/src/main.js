@@ -114,7 +114,7 @@ Vue.config.wf_api = apihost+"/api/amaretti"; //deprecated by amaretti_api
 Vue.config.amaretti_api = apihost+"/api/amaretti";
 Vue.config.auth_api = apihost+"/api/auth";
 Vue.config.event_api = apihost+"/api/event";
-Vue.config.profile_api = apihost+"/api/profile";
+//Vue.config.profile_api = apihost+"/api/profile";
 Vue.config.event_ws = apihost_ws+"/api/event";
 Vue.config.auth_signin = "/auth#!/signin";
 Vue.config.auth_signout = "/auth#!/signout";
@@ -123,7 +123,7 @@ Vue.config.debug_doi = "10.25663/bl.p.3"; //o3d publication
 Vue.config.plotly = {
     font: {
         font: '-apple-system,BlinkMacSystemFont,Segoe UI,Helvetica,Arial,sans-serif,Apple Color Emoji,Segoe UI Emoji',
-        size: 10,
+        size: 11,
     },
 };
 
@@ -155,20 +155,16 @@ if (process.env.NODE_ENV == "development") {
 function jwt_decode_brainlife(jwt) {
     Vue.config.user = jwt_decode(jwt);
     Vue.config.jwt = jwt;
+    //Vue.config.profile = res.data; //depreacted.. use user.profile
     
     //auth service should return sub in string format, but currently it doesn't..
     //let's just covert it to string 
     Vue.config.user.sub = Vue.config.user.sub.toString();
-
-    console.log("setting axios");
-    console.log(Vue.config.jwt);
     axios.defaults.headers.common['Authorization'] = 'Bearer '+Vue.config.jwt;
 
     //deprecated .. use Vue.config.has_role
     Vue.config.is_admin = Vue.config.has_role("admin"); 
     if(Vue.config.has_role("admin")) console.log("user is admin!");
-
-    console.log(Vue.config.user);
 }
 
 Vue.config.jwt = localStorage.getItem("jwt");//jwt token for user
@@ -234,9 +230,11 @@ new Vue({
         //refresh jwt on page refresh (and to get new jwt after creating new project)
         this.refresh_jwt(err=>{
             this.$root.$emit("jwt_refreshed");
+            this.ready = true;
+            /*
             this.load_profile(err=>{
-                this.ready = true;
             });
+            */
         });
 
         //refresh in half an hour
@@ -297,6 +295,7 @@ new Vue({
             });
         },
 
+        /*
         load_profile(cb) {
             if(!Vue.config.jwt) return;
             console.log("loading private profile");
@@ -305,5 +304,6 @@ new Vue({
                 cb();
             }).catch(cb);
         },
+        */
     },
 })

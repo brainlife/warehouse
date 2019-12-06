@@ -1,16 +1,9 @@
 <template>
 <b-form @submit="submit" v-if="ready">
     <div class="margin20">
-        <!--{{rule._id||'new rule'}}-->
         <b-form-group label="Name *" horizontal>
             <b-form-input required v-model="rule.name" type="text" placeholder="Please enter name for this rule (used for output dataset description)"></b-form-input>
         </b-form-group>
-        <!--
-        <b-form-group horizontal>
-            <b-form-checkbox v-model="rule.active">Active</b-form-checkbox>
-            <small class="text-muted">Only the active rules are processed by the rule handler</small>
-        </b-form-group>
-        -->
 
         <b-form-group label="App *" horizontal>
             <p class="text-muted">Select App to run</p>
@@ -24,26 +17,12 @@
                 </template>
             </v-select>
             <div v-if="rule.app">
-                <!--
-                <b-alert :show="!rule.app.github_branch" variant="danger">This App has no default branch specified. We can not gurantee code consistency.</b-alert>
-                -->
                 <app :app="rule.app" :compact="true" :clickable="false" style="margin-top: 5px;"/>
             </div>
         </b-form-group>
 
         <div v-if="rule.app">
             <b-form-group label="Branch" horizontal>
-                <!--<b-form-select :options="github_branches" v-model='rule.branch'></b-form-select>-->
-                <!--
-                <b-form-select v-model="rule.branch">
-                    <optgroup label="Branches" v-if="github_branches">
-                        <option v-for="branch in github_branches" :key="branch" :value="branch">{{branch}}</option>
-                    </optgroup>
-                    <optgroup label="Tags" v-if="github_tags">
-                        <option v-for="tag in github_tags" :key="tag" :value="tag">{{tag}}</option>
-                    </optgroup>
-                </b-form-select>
-                -->
                 <branchselecter v-model="rule.branch" :service="this.rule.app.github"/>
             </b-form-group>
 
@@ -239,17 +218,18 @@ export default {
 
         "rule.app": function(newv, oldv) {
             if(!newv) return;
-            if(oldv && oldv._id && newv._id != oldv._id) {
+            if(oldv && newv._id != oldv._id) {
+                //switching to another app
                 this.reset_rule();
+                console.log("reset app");
+                console.log(this.rule.app.github_branch);
+                this.rule.branch = this.rule.app.github_branch || 'master';
+            } else if(!this.rule.branch) {
+                this.rule.branch = this.rule.app.github_branch || 'master';
             }
             this.ensure_ids_exists();
             this.ensure_config_exists();
             this.load_dataset_tags();
-
-            //this.load_branches();
-            console.log("reset app");
-            console.log(this.rule.app.github_branch);
-            this.rule.branch = this.rule.app.github_branch || 'master';
         },
 
         //can't just watch rule with deep:true because there are so many fields that

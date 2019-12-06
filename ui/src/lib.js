@@ -1,6 +1,5 @@
 import md5 from 'md5'
 
-console.log("loaded lib");
 
 //pick apps that dataset can be used as input - based on its datatype_id and _tags
 export function filter_apps(dataset, apps) {

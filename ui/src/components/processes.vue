@@ -527,7 +527,6 @@ bottom: 0px;
 top: 95px;
 left: 200px;
 right: 0px;
-background-color: #bbb;
 }
 
 .instances-header {

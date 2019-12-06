@@ -40,7 +40,11 @@ export default {
             //somehow @change event gets fired before this.agreements is updated.. 
             this.$nextTick(function() {
                 if(Vue.config.jwt) {
-                    this.$http.put(Vue.config.profile_api+"/private", {agreements: this.user_agreements});
+                    this.$http.patch(Vue.config.auth_api+"/profile", {profile: {
+                        private: {
+                            agreements: this.user_agreements
+                        }
+                    }});
                 } else {
                     console.log("user doesn't have profile object.. maybe not logged in? storing agreements on local stoage");
                     localStorage.setItem("agreements", JSON.stringify(this.user_agreements));

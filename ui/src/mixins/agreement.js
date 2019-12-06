@@ -36,8 +36,10 @@ export default {
 
                 //load from profile service
                 console.log("loading private profile for user agreements");
-                this.$http.get(Vue.config.profile_api+"/private").then(res=>{
-                    resolve(res.data.agreements||{});
+                this.$http.get(Vue.config.auth_api+"/profile").then(res=>{
+                    let user = res.data;
+                    if(user.profile && user.profile.private && user.profile.private.agreements) resolve(user.profile.private.agreements);
+                    else resolve({});
                 }).catch(reject);
             });
         },

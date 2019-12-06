@@ -503,6 +503,9 @@ opacity: 0.7;
 color: black;
 }
 .bigpill svg {
-    min-height: 16px;
+min-height: 16px;
+}
+.badge-pill {
+padding-top: .6em;
 }
 </style>

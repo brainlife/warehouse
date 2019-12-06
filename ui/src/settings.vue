@@ -19,36 +19,129 @@
             <!--profile-->
             <div v-if="tab == 0">
                 <b-form @submit="submit_profile">
-                    <p>
-                        <span class="form-header">Full Name</span>
-                        <b-form-input v-model="fullname" placeholder="Which campus / research center are you member of?" required/>
-                    </p>
-                    <p>
-                        <span class="form-header">Institution</span>
-                        <b-form-input v-model="profile.public.institution" placeholder="Which campus / research center are you member of?" required/>
-                    </p>
-
-                    <p>
-                        <span class="form-header">Position</span>
-                        <b-form-input v-model="profile.public.position" placeholder="What is your role at your institution?" required/>
-                    </p>
-
-                    <p>
-                        <span class="form-header">Biography</span>
-                        <b-form-textarea v-model="profile.public.bio" rows="3" placeholder="Please enter a brief introduction about yourself and your research that you'd like to share with other members of brainlife." required/>
-                    </p>
-
-                    <p>
-                        <b-form-checkbox v-model="profile.private.aup">
-                            Agree to Brainlife <a href="/docs/aup" target="_blank">Acceptable Use Policy</a><br>
+                    <h5 style="opacity: 0.7">Public Profile</h5>
+                    <p><small>The following information will be shared publically among all brainlife users.</small></p>
+                    <b-row>
+                        <b-col cols="2">
+                            <span class="form-header">Full Name *</span>
+                        </b-col>
+                        <b-col>
+                            <b-form-input v-model="fullname" required/>
                             <br>
-                            Brainlife.io is a NSF funded project and supported by Indiana University. 
-                            We are obliged to collect basic user profile information for annual reporting and to implement features that are useful for our users.
-                            Please see our <a href="/docs/privacy" target="_blank">Privacy Policy</a> to understand what other information are collected and how it is used.
+                        </b-col>
+                    </b-row>
+    
+                    <b-row>
+                        <b-col cols="2">
+                            <span class="form-header">Institution<small> / Lab</small> *</span>
+                        </b-col>
+                        <b-col>
+                            <b-form-input v-model="profile.public.institution" placeholder="Which campus / research center are you member of?" required/>
                             <br>
-                         </b-form-checkbox>
-                    </p>
+                        </b-col>
+                    </b-row>
 
+                    <b-row>
+                        <b-col cols="2">
+                            <span class="form-header">Biography</span>
+                        </b-col>
+                        <b-col>
+                            <b-form-textarea v-model="profile.public.bio" rows="3" 
+                                placeholder="Please enter a brief introduction about yourself and your research that you'd like to share with other members of brainlife."/>
+                            <br>
+                        </b-col>
+                    </b-row>
+
+                    <hr>
+                    <h5 style="opacity: 0.7">Private Profile</h5>
+                    <p><small>The following information will be shared with your project members and brainlife administrators.</small></p>
+                    
+                    <b-row>
+                        <b-col cols="2">
+                            <span class="form-header">Position *</span>
+                        </b-col>
+                        <b-col>
+                            <b-form-input v-model="profile.private.position" placeholder="What is your role at your institution?" required/>
+                            <br>
+                        </b-col>
+                    </b-row>
+
+                    <b-row>
+                        <b-col cols="2">
+                            <span class="form-header">Purposes</span>
+                        </b-col>
+                        <b-col>
+                            <b-form-textarea v-model="profile.private.purpose" rows="3" 
+                                placeholder="Please describe your purpose on brainlife.io. What would you like to accomplish, and what is your expectations?"/>
+                            <br>
+                        </b-col>
+                    </b-row>
+
+                    <b-row>
+                        <b-col cols="2">
+                            <span class="form-header">Experiences</span>
+                        </b-col>
+                        <b-col>
+                           <p>Please enter years of experience you have with ...</p>
+                            <p>
+                                <b-form-group label="Neuroimaging Data Analysis (FSL, SPM, MRTRIX, AFNI, BrainVoyager, etc..)">
+                                    <b-form-radio-group v-model="profile.private.neuroimaging_experience" :options="experience_options"/>
+                                </b-form-group>
+                            </p>
+                           <p>
+                                <b-form-group label="Neuroimaging Studies (MRI, M/EEG)">
+                                    <b-form-radio-group v-model="profile.private.study_experience" :options="experience_options"/>
+                                </b-form-group>
+                            </p>
+                           <p>
+                                <b-form-group label="Programming (python, matlab, R, etc..)">
+                                    <b-form-radio-group v-model="profile.private.programming_experience" :options="experience_options"/>
+                                </b-form-group>
+                            </p>
+                           <p>
+                                <b-form-group label="Computing (git, bash, CLI, linux, singularity, etc..)">
+                                    <b-form-radio-group v-model="profile.private.computing_experience" :options="experience_options"/>
+                                </b-form-group>
+                            </p>
+
+                            <p>
+                                <b-form-textarea v-model="profile.private.experience" placeholder="Please enter any other experiences you have that we should know." rows="3"/>
+                                <br>
+                                <small>* We use this information to provide a better support, and to help us build our platform for people with a similar 
+                                background / experiences.
+                                </small>
+                            </p>
+                            
+
+                        </b-col>
+                    </b-row>
+                    
+                    <hr>
+                    <b-row>
+                        <b-col cols="2">
+                        </b-col>
+                        <b-col>
+                            <b-form-checkbox v-model="profile.private.aup">
+                                Agree to Brainlife <a href="/docs/aup" target="_blank">Acceptable Use Policy</a><br>
+                                <br>
+                            </b-form-checkbox>
+                            <p>
+                                <small>
+                                    Brainlife.io is a NSF funded project and supported by Indiana University. 
+                                    We'd like to collect user profile information for annual reporting purposes
+                                    and to make sure that we are meeting our user expectations.
+                                    Please see our <a href="/docs/privacy" target="_blank">Privacy Policy</a> to 
+                                    understand what other information we collect and how it is used.
+                                </small>
+                            </p>
+                          
+                        </b-col>
+                    </b-row>
+
+                    <br>
+                    <br>
+                    <br>
+                    <br>
                     <div class="page-footer">
                         <b-button type="submit" variant="primary">Update</b-button>
                     </div>
@@ -118,8 +211,22 @@ export default {
                 },
                 private: {
                     aup: false,
+                    /*
+                    neuroimaging_experience: null,
+                    study_experience: null,
+                    programming_experience: null, 
+                    computing_experience: null, 
+                    */
                 }
             },
+
+            experience_options: [
+                { text: 'No Experience', value: 0 },
+                { text: 'Less than a year', value: 1 },
+                { text: '2-3 years', value: 2 },
+                { text: '3-10 years', value: 3 },
+                { text: '>10 years', value: 4 },
+            ],
 
             //submitting: false,
 
@@ -145,8 +252,9 @@ export default {
                 fullname: this.fullname,
                 profile: this.profile, 
             }).then(res=>{
-                console.dir(res.data);
-                this.$notify("Updated profile");
+                //console.dir(res.data);
+                this.$notify("Successfully updated profile");
+                this.$router.push("/projects");
             });            
         },
     },

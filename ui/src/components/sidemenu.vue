@@ -53,21 +53,22 @@
 
         <li v-if="config.debug" @click="go('/datalad')" :class="{active: active == '/datalad'}">
             <icon name="cloud-download-alt" scale="1.3"/>
-            <h4>Import</h4>
+            <h4>Import <small><b-badge pill variant="primary" style="opacity 0.5;">BETA</b-badge></small></h4>
         </li>
 
         <li v-if="config.user" @click="go('/resources')" :class="{active: active == '/resources'}">
             <icon name="server" scale="1.3"/>
             <h4>Resources</h4>
         </li>
-         
+        <!--
         <li v-if="config.user" @click="setting_old">
             <icon name="cog" scale="1.3"/>
             <h4>Settings</h4>
         </li>
-        <li v-if="config.user && config.debug" @click="go('/settings')" :class="{active: active == '/settings'}">
+        -->
+        <li v-if="config.user" @click="go('/settings')" :class="{active: active == '/settings'}">
             <icon name="cog" scale="1.3"/>
-            <h4>Settings (new)</h4>
+            <h4>Settings</h4>
         </li>    
     </ul>
 

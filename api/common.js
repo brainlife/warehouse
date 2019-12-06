@@ -548,7 +548,7 @@ exports.doi_put_url = function(doi, url, cb) {
 let cached_contacts = {};
 exports.cache_contact = function(cb) {
     request({
-        url: config.auth.api+"/profile", json: true,
+        url: config.auth.api+"/profile/list", json: true,
         qs: {
             limit: 5000, //TODO -- really!?
         },
