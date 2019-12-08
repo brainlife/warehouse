@@ -392,13 +392,14 @@ export default {
                     width: 1,
                     shape: 'spline',
                 };
-                this.usage_data = [{x, y, type: 'scatter', mode: 'lines', line, fill: 'tozeroy'}];
+                this.usage_data = [{x, y, type: 'scatter', mode: 'lines', line, fill: 'tozeroy', fillcolor: '#07f2'}];
                 this.usage_layout = {
                     height: 200,
                     margin: {
                         t: 20, //top
                         b: 35, //bottom
-                        r: 10, //right
+                        r: 20, //right
+                        l: 20,
                     },
                     yaxis: {
                         //title: 'Running Jobs',

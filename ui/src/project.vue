@@ -27,18 +27,13 @@
             <b-tab v-for="(tabinfo, idx) in tabs" :key="tabinfo.id" :title="tabinfo.label" :active="tab == idx"/>
         </b-tabs>
     </div>
-    <div class="page-content">
+    <div v-if="tabs[tab].id == 'detail'">
+        <div class="page-content">
         <!--detail-->
-        <div v-if="tabs[tab].id == 'detail'">
             <div class="project-header">
-                <b-row>
-                    <b-col cols="2">
-                        <projectavatar :project="selected" :height="120" :width="120"/>
-                    </b-col>
-                    <b-col>
-                        <p style="opacity: 0.8;">{{selected.desc||'no description.'}}</p>
-                    </b-col>
-                </b-row>
+                <projectavatar :project="selected" :height="120" :width="120" style="float: left;"/>
+                <p style="opacity: 0.8; margin-left: 150px; margin-bottom: 0px">{{selected.desc||'no description.'}}</p>
+                <br clear="left">
             </div><!--project header-->
 
             <b-alert :show="selected.removed" style="border-radius: 0px" variant="secondary">This project has been removed.</b-alert>
@@ -55,201 +50,202 @@
             </b-alert>
             -->
 
-            <b-row>
-                <b-col cols="9">
-                    <div style="margin: 20px">
-                        <!--
-                        <div v-if="!selected.openneuro && selected.stats.instances && Object.keys(selected.stats.instances).length > 0">
-                            <span class="form-header">Processes</span>
-                            <p>
-                                <small class="text-muted">Processes are used to run analysis.</small>
+            <div style="margin: 20px;">
+                <!--
+                <div v-if="!selected.openneuro && selected.stats.instances && Object.keys(selected.stats.instances).length > 0">
+                    <span class="form-header">Processes</span>
+                    <p>
+                        <small class="text-muted">Processes are used to run analysis.</small>
+                    </p>
+                    <p>
+                        <stateprogress :states="selected.stats.instances"/>
+                    </p>
+                </div>
+                -->
+                <div v-if="selected.agreements && selected.agreements.length > 0">
+                    <span class="form-header">Agreements</span>
+                    <p> <small class="text-muted">You must consent to the following agreement(s) before accessing datasets on this project.</small> </p>
+                    <agreements :agreements="selected.agreements"/>
+                    <br>
+                </div>
+
+                <b-row>
+                    <b-col>
+                        <span class="form-header">Admins</span>
+                        <p style="height: 50px; margin-bottom: 3px;">
+                            <small class="text-muted">Update project details, share processes, and create rules / publications.</small>
+                        </p>
+                        <p v-for="c in selected.admins" :key="c._id" style="margin-bottom: 8px;">
+                            <contact :id="c"/>
+                        </p>
+                        <br>
+                    </b-col>
+
+                    <b-col>
+                        <span class="form-header">Members</span>
+                        <p style="height: 50px; margin-bottom: 3px;">
+                            <small class="text-muted">Read/Write access to datasets, share processes, and create rules / publications.</small>
+                        </p>
+                        <p v-for="c in selected.members" :key="c._id" style="margin-bottom: 8px;">
+                            <contact :id="c"/>
+                        </p>
+                        <p class="text-muted" v-if="selected.members.length == 0"><small>No Members</small></p>
+                        <br>
+                    </b-col>
+
+                    <b-col v-if="config.user && selected.access == 'private' && selected.guests && selected.guests.length > 0">
+                            <span class="form-header">Guests</span>
+                            <p style="height: 50px; margin-bottom: 3px;">
+                                <small class="text-muted">Read access to dataset.</small>
                             </p>
-                            <p>
-                                <stateprogress :states="selected.stats.instances"/>
+                            <p v-for="c in selected.guests" :key="c._id" style="margin-bottom: 8px;">
+                                <contact :id="c"/>
                             </p>
-                        </div>
-                        -->
-                        <div v-if="selected.agreements && selected.agreements.length > 0">
-                            <span class="form-header">Agreements</span>
-                            <p> <small class="text-muted">You must consent to the following agreement(s) before accessing datasets on this project.</small> </p>
-                            <agreements :agreements="selected.agreements"/>
+                            <!--
+                            <p class="text-muted" v-if="!selected.guests || selected.guests.length == 0"><small>No Guests</small></p>
+                            -->
                             <br>
-                        </div>
+                    </b-col>
+                </b-row>
 
-                        <b-row>
-                            <b-col>
-                                <span class="form-header">Admins</span>
-                                <p style="height: 50px; margin-bottom: 3px;">
-                                    <small class="text-muted">Update project details, share processes, and create rules / publications.</small>
-                                </p>
-                                <p v-for="c in selected.admins" :key="c._id" style="margin-bottom: 8px;">
-                                    <contact :id="c"/>
-                                </p>
-                                <br>
-                            </b-col>
+                <div v-if="selected.readme">
+                    <span class="form-header">Readme</span>
+                    <vue-markdown v-if="selected.readme" :source="selected.readme" class="readme"></vue-markdown>
+                    <br>
+                </div>
 
-                            <b-col>
-                                <span class="form-header">Members</span>
-                                <p style="height: 50px; margin-bottom: 3px;">
-                                    <small class="text-muted">Read/Write access to datasets, share processes, and create rules / publications.</small>
-                                </p>
-                                <p v-for="c in selected.members" :key="c._id" style="margin-bottom: 8px;">
-                                    <contact :id="c"/>
-                                </p>
-                                <p class="text-muted" v-if="selected.members.length == 0"><small>No Members</small></p>
-                                <br>
-                            </b-col>
+                <div v-if="resource_usage && total_walltime > 3600*1000">      
+                    <span class="form-header">Resource Usage</span>     
+                    <p><small>Datasets on this project has been computed using the following apps/resources.</small></p>             
+                    <vue-plotly :data="resource_usage.data" :layout="resource_usage.layout" :options="resource_usage.options"
+                            ref="resource_usage" :autoResize="true" :watchShallow="true"/>
+                </div>
 
-                            <b-col v-if="config.user && selected.access == 'private' && selected.guests && selected.guests.length > 0">
-                                    <span class="form-header">Guests</span>
-                                    <p style="height: 50px; margin-bottom: 3px;">
-                                        <small class="text-muted">Read access to dataset.</small>
-                                    </p>
-                                    <p v-for="c in selected.guests" :key="c._id" style="margin-bottom: 8px;">
-                                        <contact :id="c"/>
-                                    </p>
-                                    <!--
-                                    <p class="text-muted" v-if="!selected.guests || selected.guests.length == 0"><small>No Guests</small></p>
-                                    -->
-                                    <br>
-                            </b-col>
-                        </b-row>
+                <div v-if="resource_citations.length > 0">
+                    <span class="form-header">Resource Citations</span>
+                    <p><small>Please use the following citations to cite the resources used by this project.</small></p>
+                    <p v-for="(resource_citation, idx) in resource_citations" :key="idx">
+                        <icon name="caret-right"/> <b>{{resource_citation.resource.name}}</b><br>
+                        <small>{{resource_citation.resource.config.desc}}</small>
+                        <br>
+                        <i>{{resource_citation.citation}}</i>
+                    </p>
+                </div>
 
-                        <div v-if="selected.readme">
-                            <span class="form-header">Readme</span>
-                            <vue-markdown v-if="selected.readme" :source="selected.readme" class="readme"></vue-markdown>
-                            <br>
-                        </div>
+                <div v-if="selected.meta">
+                    <span class="form-header">Meta (todo)</span>
+                    <pre style="font-size: 80%;">{{selected.meta}}</pre>
+                    <br>
+                </div>
 
-                        <div v-if="resource_usage && total_walltime > 3600*1000">      
-                            <span class="form-header">Resource Usage</span>     
-                            <p><small>Datasets on this project has been computed using the following apps/resources.</small></p>             
-                            <vue-plotly :data="resource_usage.data" :layout="resource_usage.layout" :options="resource_usage.options"
-                                 ref="resource_usage" :autoResize="true" :watchShallow="true"/>
-                        </div>
+                <div v-if="selected.meta_info">
+                    <span class="form-header">Meta Info (todo)</span>
+                    <pre style="font-size: 80%;">{{selected.meta_info}}</pre>
+                    <br>
+                </div>
 
-                        <div v-if="resource_citations.length > 0">
-                            <span class="form-header">Resource Citations</span>
-                            <p><small>Please use the following citations to cite the resources used by this project.</small></p>
-                            <p v-for="resource_citation in resource_citations">
-                                <icon name="caret-right"/> <b>{{resource_citation.resource.name}}</b><br>
-                                <small>{{resource_citation.resource.config.desc}}</small>
-                                <br>
-                                <i>{{resource_citation.citation}}</i>
-                            </p>
-                        </div>
+                <hr>
+                <vue-disqus ref="disqus" shortname="brain-life" :identifier="selected._id"/>
 
-                        <div v-if="selected.meta">
-                            <span class="form-header">Meta (todo)</span>
-                            <pre style="font-size: 80%;">{{selected.meta}}</pre>
-                            <br>
-                        </div>
+                <div v-if="config.debug">
+                    <pre>{{selected}}</pre>
+                </div>
+            </div><!-- main content-->
 
-                        <div v-if="selected.meta_info">
-                            <span class="form-header">Meta Info (todo)</span>
-                            <pre style="font-size: 80%;">{{selected.meta_info}}</pre>
-                            <br>
-                        </div>
+            <div class="page-right-content" style="padding: 20px 10px;" v-if="selected.stats">
+
+                <p v-if="selected.stats && get_total(selected.stats.instances) > 0">
+                    <span class="form-header">Processes</span>
+                    <stateprogress :states="selected.stats.instances" title="Tasks currently running"/>
+                </p>
+                
+                <p>
+                    <b-badge pill class="bigpill" title="Project creation date">
+                        <icon name="calendar" style="opacity: 0.4;"/>&nbsp;&nbsp;
+                        {{new Date(selected.create_date).toLocaleDateString()}}
+                    </b-badge>
+                </p>
+
+                <p>
+                    <b-badge pill class="bigpill" title="Number of subjects stored in archvie"
+                        v-if="selected.stats && selected.stats.datasets && selected.stats.datasets.subject_count">
+                        <icon name="user-friends" style="opacity: 0.4;"/>&nbsp;&nbsp;{{selected.stats.datasets.subject_count}} 
+                        <small>Subjects</small>
+                    </b-badge>                           
+                </p>
+
+                <p>
+                    <b-badge pill class="bigpill" title="Number of datasets stored in archive"
+                        v-if="selected.stats && selected.stats.datasets && selected.stats.datasets.count">
+                        <icon name="cubes" style="opacity: 0.4;"/>&nbsp;&nbsp;{{selected.stats.datasets.count}}
+                        <small>Data-objects</small>
+                    </b-badge>
+                </p>
+
+                <p>
+                    <b-badge pill class="bigpill" title="Total size of data stored in archive"
+                        v-if="selected.stats && selected.stats.datasets && selected.stats.datasets.size">
+                        <icon name="folder" style="opacity: 0.4;"/>&nbsp;&nbsp;{{selected.stats.datasets.size|filesize}}
+                        <small>Total</small> <br>
+                    </b-badge>
+                </p>
+
+                <p>
+                    <b-badge pill class="bigpill" v-if="selected.stats.rules && selected.stats.rules.active > 0" title="Number of pipeline rules configured for this project">
+                        <icon name="robot" style="opacity: 0.4;"/>&nbsp;&nbsp;{{selected.stats.rules.active}}
+                        <small>Active Pipeline Rules</small>
+                    </b-badge>
+                </p>
+
+                <p>
+                    <b-badge pill class="bigpill" title="Total CPU hours consumed by this project">
+                        <icon name="server" style="opacity: 0.4;"/>&nbsp;&nbsp;{{(total_walltime/(3600*1000)).toFixed(2)}}
+                        <small>CPU Hours</small>
+                    </b-badge>
+                </p>
+        
+                <p>
+                    <b-badge pill class="bigpill" title="Group ID used by amaretti">
+                        <icon name="id-badge" style="opacity: 0.4;"/>&nbsp;&nbsp;{{selected.group_id}}
+                        <small>Group ID</small>
+                    </b-badge>
+                </p>
+
+                <p>
+                    <span class="form-header">Datatypes</span>
+                    <span v-for="datatype_id in selected.stats.datasets.datatypes" :key="datatype_id">
+                        <b-badge variant="light">
+                            <datatypetag :datatype="datatype_id"/> 
+                        </b-badge>
+                        &nbsp;
+                    </span>
+                </p>
+
+            </div><!--page-right-content-->
+
+        </div><!-- project detail content-->
+    </div>
 
 
-                        <hr>
-                        <vue-disqus ref="disqus" shortname="brain-life" :identifier="selected._id"/>
+    <div v-if="tabs[tab].id == 'dataset'">
+        <b-alert show v-if="selected.access != 'public' && !(ismember()||isadmin()||isguest())">For non public project, only the admin/members/guests of this project can access processes.</b-alert>
+        <datasets :project="selected" :projects="projects" v-else/>
+    </div>
 
-                        <div v-if="config.debug">
-                            <pre>{{selected}}</pre>
-                        </div>
-                    </div><!-- margin20-->
-                </b-col>
+    <div v-if="tabs[tab].id == 'process'">
+        <noprocess v-if="!(ismember()||isadmin())"/>
+        <processes :project="selected" v-else/>
+    </div>
 
-                <!--side panel-->
-                <b-col cols="3" style="background-color: #eee; box-shadow: inset 3px 0px 3px #ddd6;">
-                    <div style="margin: 20px 10px" v-if="selected.stats">
+    <div v-if="tabs[tab].id == 'pipeline'">
+        <b-alert show variant="secondary" v-if="!(ismember()||isadmin())">Only the admins or members of this project can access pipelines. Please contact the project admin to give you access.</b-alert>
+        <pipelines :project="selected" v-else/>
+    </div>
 
-                        <p v-if="selected.stats && get_total(selected.stats.instances) > 0">
-                            <span class="form-header">Processes</span>
-                            <stateprogress :states="selected.stats.instances" title="Tasks currently running"/>
-                        </p>
-                        
-                        <p>
-                            <b-badge pill class="bigpill" title="Project creation date">
-                                <icon name="calendar" style="opacity: 0.4;"/>&nbsp;&nbsp;
-                                {{new Date(selected.create_date).toLocaleDateString()}}
-                            </b-badge>
-                        </p>
-
-                        <p>
-                            <b-badge pill class="bigpill" title="Number of subjects stored in archvie"
-                                v-if="selected.stats && selected.stats.datasets && selected.stats.datasets.subject_count">
-                                <icon name="user-friends" style="opacity: 0.4;"/>&nbsp;&nbsp;{{selected.stats.datasets.subject_count}} 
-                                <small>Subjects</small>
-                            </b-badge>                           
-                        </p>
-
-                        <p>
-                            <b-badge pill class="bigpill" title="Number of datasets stored in archive"
-                                v-if="selected.stats && selected.stats.datasets && selected.stats.datasets.count">
-                                <icon name="cubes" style="opacity: 0.4;"/>&nbsp;&nbsp;{{selected.stats.datasets.count}}
-                                <small>Data-objects</small>
-                            </b-badge>
-                        </p>
-
-                        <p>
-                            <b-badge pill class="bigpill" title="Total size of data stored in archive"
-                                v-if="selected.stats && selected.stats.datasets && selected.stats.datasets.size">
-                                <icon name="folder" style="opacity: 0.4;"/>&nbsp;&nbsp;{{selected.stats.datasets.size|filesize}}
-                                <small>Total</small> <br>
-                            </b-badge>
-                        </p>
-
-                        <p>
-                            <b-badge pill class="bigpill" v-if="selected.stats.rules && selected.stats.rules.active > 0" title="Number of pipeline rules configured for this project">
-                                <icon name="robot" style="opacity: 0.4;"/>&nbsp;&nbsp;{{selected.stats.rules.active}}
-                                <small>Active Pipeline Rules</small>
-                            </b-badge>
-                        </p>
-
-                        <p>
-                            <b-badge pill class="bigpill" title="Total CPU hours consumed by this project">
-                                <icon name="server" style="opacity: 0.4;"/>&nbsp;&nbsp;{{(total_walltime/(3600*1000)).toFixed(2)}}
-                                <small>CPU Hours</small>
-                            </b-badge>
-                        </p>
-
-                        <p>
-                            <span class="form-header">Datatypes</span>
-                            <span v-for="datatype_id in selected.stats.datasets.datatypes" :key="datatype_id">
-                                <b-badge variant="light">
-                                    <datatypetag :datatype="datatype_id"/> 
-                                </b-badge>
-                                &nbsp;
-                            </span>
-                        </p>
-
-                    </div>
-                </b-col>
-            </b-row>
-        </div>
-
-        <div v-if="tabs[tab].id == 'dataset'">
-            <b-alert show v-if="selected.access != 'public' && !(ismember()||isadmin()||isguest())">For non public project, only the admin/members/guests of this project can access processes.</b-alert>
-            <datasets :project="selected" :projects="projects" v-else/>
-        </div>
-
-        <div v-if="tabs[tab].id == 'process'">
-            <noprocess v-if="!(ismember()||isadmin())"/>
-            <processes :project="selected" v-else/>
-        </div>
-
-        <div v-if="tabs[tab].id == 'pipeline'">
-            <b-alert show variant="secondary" v-if="!(ismember()||isadmin())">Only the admins or members of this project can access pipelines. Please contact the project admin to give you access.</b-alert>
-            <pipelines :project="selected" v-else/>
-        </div>
-
-        <div v-if="tabs[tab].id == 'pub'">
-            <b-alert show variant="secondary" v-if="!(ismember()||isadmin())">Only the admins or members of this project can access publications. Please contact the project admin to give you access.</b-alert>
-            <publications :project="selected" v-else/>
-         </div>
-    </div><!--page-content-->
+    <div v-if="tabs[tab].id == 'pub'">
+        <b-alert show variant="secondary" v-if="!(ismember()||isadmin())">Only the admins or members of this project can access publications. Please contact the project admin to give you access.</b-alert>
+        <publications :project="selected" v-else/>
+    </div>
 
     <newtask-modal/>
     <datatypeselecter-modal/>
@@ -672,6 +668,16 @@ z-index: 1;
 .page-content {
 top: 95px;
 overflow-x: hidden;
+right: 200px;
+}
+.page-right-content {
+background-color: #eee; 
+box-shadow: inset 3px 0px 3px #ddd6;
+position: fixed;
+top: 95px;
+width: 200px;
+right: 0px;
+bottom: 0px;
 }
 
 .project-header {

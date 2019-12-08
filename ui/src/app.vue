@@ -88,7 +88,7 @@
                                     <div style="height: 100%; border: 2px solid #007bff; border-radius: 4px;">
                                         <div style="background-color: #007bffd0; padding: 5px 15px; font-weight: bold; color: white;">Input</div>
                                         <b-alert show variant="primary" v-if="!app.inputs || app.inputs.length == 0">No Input</b-alert>
-                                        <div v-if="app.inputs" style="padding: 5px">
+                                        <div v-if="app.inputs && app.inputs > 0" style="padding: 5px">
                                             <div v-for="input in app.inputs" :key="input.id" class="io-card">
                                                 <small style="opacity: 0.5; float: right;">{{input.id}}</small><!--internal output id-->
                                                 <datatype :datatype="input.datatype" :datatype_tags="input.datatype_tags">
@@ -109,7 +109,7 @@
                                     <div style="height: 100%; border: 2px solid #28a745; border-radius: 4px;">
                                         <div style="background-color: #28a745d0; padding: 5px 15px; font-weight: bold; color: white;">Output</div>
                                         <b-alert show variant="success" v-if="!app.outputs || app.outputs.length == 0">No Output</b-alert>
-                                        <div v-if="app.outputs" style="padding: 5px;">
+                                        <div v-if="app.outputs && app.outputs.length > 0" style="padding: 5px;">
                                             <div v-for="output in app.outputs" :key="output.id" class="io-card">
                                                 <small style="opacity: 0.5; float: right;">{{output.id}}</small><!--internal output id-->
                                                 <datatype :datatype="output.datatype" 

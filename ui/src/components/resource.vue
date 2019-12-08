@@ -22,10 +22,10 @@
     </div>
     <svg viewBox="0 0 200 100" style="position: absolute; bottom: 0px; height: 150px; width: 100%;" preserveAspectRatio="none">
         <linearGradient id="grad1" x1="0%" y1="0%" x2="0%" y2="100%">
-          <stop offset="0%" style="stop-color:#0c9;stop-opacity:0.5" />
-          <stop offset="80%" style="stop-color:#00f;stop-opacity:0.01" />
+          <stop offset="30%" style="stop-color:#07f;stop-opacity:0.2" />
+          <stop offset="70%" style="stop-color:#00f;stop-opacity:0.01" />
         </linearGradient>
-        <path :d="usage_path" fill="url(#grad1)" stroke="#2693ff60" stroke-width="0.5"/>
+        <path :d="usage_path" fill="url(#grad1)" stroke="#2693ff60" stroke-width="1"/>
     </svg>
 </div>
 </template>
@@ -78,7 +78,9 @@ export default {
                 let t = point[0] - min_time;
                 t = t / range_time * 200; 
                 let v = point[1];
-                //if(Vue.config.debug) v += Math.random()*4;
+                
+                if(Vue.config.debug) v += Math.random()*4;
+                
                 v = 100 - v / this.resource_obj.config.maxtask * 100; 
                 points.push([t,v]);
             });

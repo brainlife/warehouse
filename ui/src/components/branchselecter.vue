@@ -1,6 +1,6 @@
 <template>
 <div>
-    <b-alert variant="danger" :show="error">{{error}}</b-alert>
+    <p v-if="error">{{error}}</p>
     <b-input-group prepend="Branch/Tag" v-if="!error">
         <b-form-select v-model="selection" @change="update">
             <optgroup label="Branches" v-if="branches.length > 0">
@@ -56,6 +56,10 @@ export default {
         load() {
             //this.tags = [];
             //this.branches = [];
+            if(!this.service) {
+                this.error = "Please specify service";
+                return;
+            }
             this.$http.get("/app/info/"+this.service).then(res=>{
                 this.error = null;
                 this.tags = res.data.tags.map(b => {
@@ -67,6 +71,10 @@ export default {
                 //console.log("finished loading tag/branches. now setting selection to "+this.value);
                 this.selection = this.value;
             }).catch(err=>{
+                if(err.response.status == "404") {
+                    this.error = "Please enter in orgname/reponame format";
+                    return;
+                }
                 this.error = err.response.data.message;
             });
         },

@@ -54,26 +54,33 @@
 
                     <hr>
                     <h5 style="opacity: 0.7">Private Profile</h5>
-                    <p><small>The following information will be shared with your project members and brainlife administrators.</small></p>
-                    
+                    <p><small>The following information will be shared with your project members and brainlife administrators.
+                            Brainlife.io is a NSF funded project and supported by Indiana University. 
+                            We'd like to collect private user profile information for annual reporting purposes (anonymously) 
+                            and to help us better support our users and to meet their expectations.
+                            Please read our <a href="/docs/privacy" target="_blank">Privacy Policy</a> to know what information we collect and how we use it.
+                        </small>
+                    </p> 
                     <b-row>
                         <b-col cols="2">
                             <span class="form-header">Position *</span>
                         </b-col>
                         <b-col>
-                            <b-form-input v-model="profile.private.position" placeholder="What is your role at your institution?" required/>
+                            <b-form-input v-model="profile.private.position" placeholder="What is your primary role within your institution?" required/>
                             <br>
                         </b-col>
                     </b-row>
 
                     <b-row>
                         <b-col cols="2">
-                            <span class="form-header">Purposes</span>
+                            <span class="form-header">Purpose</span>
                         </b-col>
                         <b-col>
                             <b-form-textarea v-model="profile.private.purpose" rows="3" 
-                                placeholder="Please describe your purpose on brainlife.io. What would you like to accomplish, and what is your expectations?"/>
-                            <br>
+                                placeholder="(Optional) Please describe how you'd like to use brainlife.io, and your expectations of this platform."/>
+                            <p>
+                                <small>We will use this information to measure how we are meeting our user's expectations</small>
+                            </p>
                         </b-col>
                     </b-row>
 
@@ -82,7 +89,7 @@
                             <span class="form-header">Experiences</span>
                         </b-col>
                         <b-col>
-                           <p>Please enter years of experience you have with ...</p>
+                            <p>(Optional) Please enter years of experience you have with ...</p>
                             <p>
                                 <b-form-group label="Neuroimaging Data Analysis (FSL, SPM, MRTRIX, AFNI, BrainVoyager, etc..)">
                                     <b-form-radio-group v-model="profile.private.neuroimaging_experience" :options="experience_options"/>
@@ -105,13 +112,9 @@
                             </p>
 
                             <p>
-                                <b-form-textarea v-model="profile.private.experience" placeholder="Please enter any other experiences you have that we should know." rows="3"/>
-                                <br>
-                                <small>* We use this information to provide a better support, and to help us build our platform for people with a similar 
-                                background / experiences.
-                                </small>
+                                <b-form-textarea v-model="profile.private.experience" placeholder="Please enter any other experiences you have that we should know in order to better assist you." rows="3"/>
+                                <small>We will use this information to provide better support, and understand our user base.</small>
                             </p>
-                            
 
                         </b-col>
                     </b-row>
@@ -121,19 +124,10 @@
                         <b-col cols="2">
                         </b-col>
                         <b-col>
-                            <b-form-checkbox v-model="profile.private.aup">
+                            <b-form-checkbox name="aup" v-model="profile.private.aup" required>
                                 Agree to Brainlife <a href="/docs/aup" target="_blank">Acceptable Use Policy</a><br>
                                 <br>
                             </b-form-checkbox>
-                            <p>
-                                <small>
-                                    Brainlife.io is a NSF funded project and supported by Indiana University. 
-                                    We'd like to collect user profile information for annual reporting purposes
-                                    and to make sure that we are meeting our user expectations.
-                                    Please see our <a href="/docs/privacy" target="_blank">Privacy Policy</a> to 
-                                    understand what other information we collect and how it is used.
-                                </small>
-                            </p>
                           
                         </b-col>
                     </b-row>

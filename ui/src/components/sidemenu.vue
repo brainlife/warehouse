@@ -51,9 +51,9 @@
             <h4>Datatypes</h4>
         </li>
 
-        <li v-if="config.debug" @click="go('/datalad')" :class="{active: active == '/datalad'}">
+        <li @click="go('/datalad')" :class="{active: active == '/datalad'}">
             <icon name="cloud-download-alt" scale="1.3"/>
-            <h4>Import <small><b-badge pill variant="primary" style="opacity 0.5;">BETA</b-badge></small></h4>
+            <h4>Datasets <small><b-badge pill variant="primary" style="opacity 0.5;">BETA</b-badge></small></h4>
         </li>
 
         <li v-if="config.user" @click="go('/resources')" :class="{active: active == '/resources'}">
