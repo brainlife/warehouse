@@ -38,7 +38,7 @@
                 </b-col> 
                 <b-col cols="9">
                     <p>
-                        <b-form-textarea :rows="2" v-model="resource.config.desc"/>
+                        <b-form-textarea :rows="4" v-model="resource.config.desc"/>
                     </p>
                 </b-col>
             </b-row>

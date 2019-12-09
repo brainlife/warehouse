@@ -1,5 +1,5 @@
 <template>
-<b-modal title="Select Datasets" ref="modal" id="datasetSelecter" size="lg" @ok="submit" ok-only>
+<b-modal title="Stage Data" ref="modal" id="datasetSelecter" size="lg" @ok="submit" ok-only>
     <b-row>
         <b-col><span class="form-header">From</span></b-col>
         <b-col cols="9">
@@ -27,7 +27,7 @@
     <br>
 
     <b-row>
-        <b-col><span class="form-header">Datasets</span></b-col>
+        <b-col><span class="form-header">Data-Objects</span></b-col>
         <b-col cols="9">
             <select2 style="width: 100%; max-width: 100%;" v-model="datasets" :dataAdapter="debounce_grab_datasets" :multiple="true"></select2>
             <b-alert :show="is_subject_mixed" variant="info" style="margin-top: 10px;" dismissible> 

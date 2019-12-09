@@ -1185,39 +1185,33 @@ function get_project_agreements(project_id, cb) {
     });
 }
 
-let cache;
-function get_user_agreements(sub, authorization, cb) { 
-
-    if(!cache) {
-        //initialize cache
-        cache = {};
-
-        //listen to update event
-        common.get_amqp_connection((err, conn)=>{
-            if(err) {
-                logger.error("failed to obtain amqp connection");
-            }
-            logger.info("amqp connection ready.. subscribing to profile updates");
-            conn.queue('', q=>{
-                q.bind("profile", "*.private", ()=>{ //no err..
-                    q.subscribe((message, header, deliveryInfo, messageObject)=>{
-                        let sub = deliveryInfo.routingKey.split(".")[0];
-                        console.dir(message);
-                        cache[sub] = message.agreements;
-                    });
-                });
+let cache = {};
+//listen to user profile update event
+common.get_amqp_connection((err, conn)=>{
+    if(err) {
+        logger.error("failed to obtain amqp connection");
+    }
+    logger.info("amqp connection ready.. subscribing to profile updates");
+    conn.queue('', q=>{
+        q.bind("auth", "user.update.*", ()=>{ //no err..
+            q.subscribe((message, header, deliveryInfo, messageObject)=>{
+                let sub = deliveryInfo.routingKey.split(".")[2];
+                console.debug("user.update event", sub);
+                cache[sub] = message.profile.private.agreements;
             });
         });
-    }
+    });
+});
 
+function get_user_agreements(sub, authorization, cb) { 
     //check cache
     if(cache[sub]) return cb(null, cache[sub]);
 
     //need to load from the source..
     request.get({ 
-        url: config.profile.api+"/private/"+sub, json: true, headers: { authorization }
-    }, (err, _res, profile)=>{
-        let obj = profile.agreements;
+        url: config.auth.api+"/profile/"+sub, json: true, headers: { authorization }
+    }, (err, _res, user)=>{
+        let obj = user.profile.private.agreements;
         cb(err, obj);
         cache[sub] = obj;
     });

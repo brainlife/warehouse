@@ -18,7 +18,7 @@ import datatypes from '@/datatypes'
 import datatype from '@/datatype'
 import datatypeedit from '@/datatypeedit'
 
-import datalad from '@/datalad'
+import datasets from '@/datasets'
 
 import resources from '@/resources'
 import resource from '@/resource'
@@ -72,8 +72,8 @@ export default new Router({
         {path: '/datatype/:id', component: datatype, meta: {public: true}},
         {path: '/datatype/:id/edit', component: datatypeedit},
 
-        {path: '/datalad', component: datalad, meta: {public: true}},
-        {path: '/datalad/:dataset_id', component: datalad, meta: {public: true}},
+        {path: '/datasets', component: datasets, meta: {public: true}},
+        {path: '/datasets/:dataset_id', component: datasets, meta: {public: true}},
 
         {path: '/resources', component: resources, meta: {public: true}},
         {path: '/resource/:id', component: resource, meta: {public: true}},

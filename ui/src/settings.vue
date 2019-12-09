@@ -61,6 +61,7 @@
                             Please read our <a href="/docs/privacy" target="_blank">Privacy Policy</a> to know what information we collect and how we use it.
                         </small>
                     </p> 
+
                     <b-row>
                         <b-col cols="2">
                             <span class="form-header">Position *</span>
@@ -77,18 +78,17 @@
                         </b-col>
                         <b-col>
                             <b-form-textarea v-model="profile.private.purpose" rows="3" 
-                                placeholder="(Optional) Please describe how you'd like to use brainlife.io, and your expectations of this platform."/>
-                            <p>
-                                <small>We will use this information to measure how we are meeting our user's expectations</small>
-                            </p>
+                                placeholder="(Optional) Please describe how you'd like to use brainlife.io, and your expectations of this platform. We'd like to use this information to measure how we are meeting our user's expectations."/>
                         </b-col>
                     </b-row>
+                    <br>
 
-                    <b-row>
+                    <b-row v-if="config.debug">
                         <b-col cols="2">
                             <span class="form-header">Experiences</span>
                         </b-col>
                         <b-col>
+     
                             <p>(Optional) Please enter years of experience you have with ...</p>
                             <p>
                                 <b-form-group label="Neuroimaging Data Analysis (FSL, SPM, MRTRIX, AFNI, BrainVoyager, etc..)">
@@ -115,10 +115,20 @@
                                 <b-form-textarea v-model="profile.private.experience" placeholder="Please enter any other experiences you have that we should know in order to better assist you." rows="3"/>
                                 <small>We will use this information to provide better support, and understand our user base.</small>
                             </p>
-
+                            
                         </b-col>
                     </b-row>
-                    
+
+                    <b-row v-if="config.debug">
+                        <b-col cols="2">
+                            <span class="form-header">CV</span>
+                        </b-col>
+                        <b-col>
+                            <b-form-input v-model="profile.public.cv" placeholder="(Optional) If you have a CV, please enter a URL here."/>
+                            <br>
+                        </b-col>
+                    </b-row>
+
                     <hr>
                     <b-row>
                         <b-col cols="2">

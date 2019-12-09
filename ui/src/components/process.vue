@@ -154,7 +154,7 @@
                 <div class="new-action-button new-action-button-newtask" @click="newtask"><icon name="play"/>&nbsp;&nbsp;Submit App</div>
             </b-col>
             <b-col>
-                <div class="new-action-button new-action-button-newdataset" @click="newdataset"><icon name="cube"/>&nbsp;&nbsp;Stage Dataset</div>
+                <div class="new-action-button new-action-button-newdataset" @click="newdataset"><icon name="cube"/>&nbsp;&nbsp;Stage Data</div>
             </b-col>
         </b-row>
     </div>

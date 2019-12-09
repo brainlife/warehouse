@@ -48,7 +48,7 @@
 
         </div>
 
-        <div class="instances-list" ref="instances-list" :style="{width: splitter_pos-200+'px'}">
+        <div class="instances-list scroll-shadow" ref="instances-list" :style="{width: splitter_pos-200+'px'}">
             <!--no instances show help doc-->
             <div v-if="instances.length == 0" style="margin: 20px; opacity: 0.7">
                 <p>Here, you can submit a series of Apps to analyze dataset one subject at a time.</p>
@@ -550,32 +550,6 @@ bottom: 0px;
 top: 175px;
 left: 200px;
 width: 400px;
-
-    /*https://stackoverflow.com/questions/9333379/check-if-an-elements-content-is-overflowing*/
-    background:
-    /* Shadow covers */
-    linear-gradient(white 30%, rgba(255,255,255,0)),
-    linear-gradient(rgba(255,255,255,0), white 70%) 0 100%,
-
-    /* Shadows */
-    radial-gradient(50% 0, farthest-side, rgba(0,0,0,.3), rgba(0,0,0,0)),
-    radial-gradient(50% 100%,farthest-side, rgba(0,0,0,.3), rgba(0,0,0,0)) 0 100%;
-    
-    background:
-    /* Shadow covers */
-    linear-gradient(white 30%, rgba(255,255,255,0)),
-    linear-gradient(rgba(255,255,255,0), white 70%) 0 100%,
-
-    /* Shadows */
-    radial-gradient(farthest-side at 50% 0, rgba(0,0,0,.3), rgba(0,0,0,0)),
-    radial-gradient(farthest-side at 50% 100%, rgba(0,0,0,.3), rgba(0,0,0,0)) 0 100%;
-
-    background-repeat: no-repeat;
-background-color: white;
-    background-size: 100% 40px, 100% 40px, 100% 14px, 100% 14px;
-
-    /* Opera doesn't support this in the shorthand */
-    background-attachment: local, local, scroll, scroll;
 }
 
 .process {
@@ -600,7 +574,7 @@ vertical-align:middle;
 }
 .instance-header:hover {
 cursor: pointer;
-background-color: #eee;
+background-color: #9993;
 }
 .instance-header.instance-active {
 color: white;

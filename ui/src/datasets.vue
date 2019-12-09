@@ -1,6 +1,6 @@
 <template>
 <div>
-    <sidemenu active="/datalad"></sidemenu>
+    <sidemenu active="/datasets"></sidemenu>
     <div class="page-header" :style="{width: splitter_pos-200+'px'}">
         <div class="search-box" :style="{width: splitter_pos-200+'px'}"> 
             <b-form-input v-model="query" type="text" placeholder="Search Datasets" @input="change_query_debounce" class="input"/>
@@ -19,7 +19,7 @@
             </b-form-checkbox-group>
         </b-form-group>
     </div>
-    <div class="page-left" ref="dataset-list" :style="{width: splitter_pos-200+'px'}">
+    <div class="page-left scroll-shadow" ref="dataset-list" :style="{width: splitter_pos-200+'px'}">
         <p v-if="loading_datasets" style="padding: 20px; opacity: 0.8;">Loading...</p>
         <p v-else-if="datasets.length == 0" style="padding: 20px; opacity: 0.8;">No matching dataset</p>
         <div v-for="dataset in datasets" :key="dataset._id" class="dataset" :title="dataset.path" :ref="dataset._id" @click="open_dataset(dataset._id)" 
@@ -315,7 +315,6 @@ export default {
             for(let datatype_id of this.datatypes) {
                 find["stats.datatypes."+datatype_id] = {$exists: true};
             }
-            //console.dir(find);
             this.$http('datalad/datasets', {params: {
                 find: JSON.stringify(find),
                 select: 'path name dataset_description stats',
@@ -348,9 +347,9 @@ export default {
 
         open_dataset(dataset_id) {
             if(this.selected && this.selected._id == dataset_id) {
-                this.$router.push('/datalad');
+                this.$router.push('/datasets');
             } else {
-                this.$router.push('/datalad/'+dataset_id);
+                this.$router.push('/datasets/'+dataset_id);
                 document.getElementsByClassName("page-main")[0].scrollTop = 0;
             }
         },
@@ -554,12 +553,11 @@ opacity: 0.5;
 .dataset {
 padding: 7px 10px;
 font-size: 95%;
-border-top: 1px solid #eee;
-background-color: white;
+border-top: 1px solid #0001;
 }
 .dataset:hover {
 cursor: pointer;
-background-color: #eee;
+background-color: #9993;
 }
 .dataset.dataset_selected {
 background-color: #2693ff;
