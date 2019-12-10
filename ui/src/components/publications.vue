@@ -9,6 +9,7 @@
         </div>
         <div v-else>
             <!--list view-->
+            <br>
             <div v-for="pub in pubs" :key="pub._id" :class="{'pub-removed': pub.removed, 'pub-editable': (ismember()||isadmin())}" class="pub" @click="edit(pub)">
                 <doibadge :doi="pub.doi" style="float: right;"/>
                 <!--
@@ -207,6 +208,12 @@ background-color: #f9f9f9;
 z-index: 1; /*needed to make sort order dropdown box to show up on top of page-content*/
 }
 .list {
+overflow-x: hidden; /*i can't figure out why there would be x scroll bar when a rule is active*/
+position: fixed;
+top: 95px;
+bottom: 0px;
+left: 200px;
+right: 0px;
 }
 
 .pub:first-child {

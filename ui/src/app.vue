@@ -84,7 +84,7 @@
                         <div style="position: relative;">
                             <b-row>
                                 <!--input-->
-                                <b-col>
+                                <b-col style="padding-bottom: 10px;">
                                     <div style="height: 100%; border: 2px solid #007bff; border-radius: 4px;">
                                         <div style="background-color: #007bffd0; padding: 5px 15px; font-weight: bold; color: white;">Input</div>
                                         <b-alert show variant="primary" v-if="!app.inputs || app.inputs.length == 0">No Input</b-alert>
@@ -104,7 +104,7 @@
                                 </b-col>
 
                                 <!--output-->
-                                <b-col>
+                                <b-col style="margin-bottom: 10px;">
                                     <icon name="arrow-right" style="position: absolute; top: 50%; left: -10px; opacity: 0.5" scale="1.5"/>
                                     <div style="height: 100%; border: 2px solid #28a745; border-radius: 4px;">
                                         <div style="background-color: #28a745d0; padding: 5px 15px; font-weight: bold; color: white;">Output</div>

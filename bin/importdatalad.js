@@ -24,7 +24,8 @@ db.init(async err=>{
     let bids_dirs = child_process.execSync("cat bids.list", {encoding: "utf8"}).split("\n");
 
     //debug..
-    //let bids_dirs = ["datasets.datalad.org/openneuro/ds002040/dataset_description.json"];
+    //let bids_dirs = ["datasets.datalad.org/ds002040/dataset_description.json"];
+    //bids_dirs = ["datasets.datalad.org/simon/dataset_description.json"];
 
     let skipped = [];
 

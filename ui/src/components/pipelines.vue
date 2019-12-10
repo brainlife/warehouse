@@ -16,10 +16,10 @@
             </b-dropdown>
         </div>
     </div>
-    <ruleform :value="editing" :new_output_tags="['rule'+rules.length]" v-if="editing" @cancel="cancel_edit" @submit="submit"/>
+    <ruleform class="list" :value="editing" :new_output_tags="['rule'+rules.length]" v-if="editing" @cancel="cancel_edit" @submit="submit"/>
     <div v-else class="list" ref="scrolled">
         <!--list view-->
-        <div class="margin20" v-if="nonremoved_rule_count == 0">
+        <div v-if="nonremoved_rule_count == 0" style="margin: 20px;" >
             <p class="text-muted">Pipeline rules allow you to automate bulk submissions of your processes based on defined criterias.</p>
             <p class="text-muted">This feature could potentially launch a large number of processes. Please read our <a href="https://brainlife.io/docs/user/pipeline/" target="doc">Documentation</a> for more information.</p>
            <iframe width="444" height="250" src="https://www.youtube.com/embed/Ewy3ahCVUzw" frameborder="0" 
@@ -27,7 +27,7 @@
 
         </div>
         <div class="rules" v-else>
-            <b-row :no-gutters="true" style="padding-right: 20px; padding-bottom: 10px">
+            <b-row :no-gutters="true" style="padding-right: 20px; padding: 10px">
                 <b-col :cols="5"><!--placeholder--></b-col>
                 <b-col :cols="1">
                     <small>Submitter</small>
@@ -636,7 +636,7 @@ z-index: 1; /*needed to make sort order dropdown box to show up on top of page-c
 .list {
 overflow-x: hidden; /*i can't figure out why there would be x scroll bar when a rule is active*/
 position: fixed;
-top: 140px;
+top: 95px;
 bottom: 0px;
 left: 200px;
 right: 0px;

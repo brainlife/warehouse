@@ -50,6 +50,7 @@ exports.app = app;
 exports.start = function(cb) {
     var port = process.env.PORT || config.express.port || '8081';
     var host = process.env.HOST || config.express.host || 'localhost';
+    logger.debug("initializing database...");
     db.init((err)=>{
         if(err) return cb(err);
         var server = app.listen(port, host, function() {

@@ -1,6 +1,6 @@
 <template>
 <b-form @submit="submit" v-if="ready">
-    <div class="margin20">
+    <div style="margin: 20px;">
         <b-form-group label="Name *" horizontal>
             <b-form-input required v-model="rule.name" type="text" placeholder="Please enter name for this rule (used for output dataset description)"></b-form-input>
         </b-form-group>

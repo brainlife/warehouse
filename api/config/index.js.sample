@@ -701,6 +701,8 @@ exports.storage_systems["datalad"] = {
                 next_file();
             });
         }, err=>{
+            if(err) return cb(err);
+            
             //create tar ball
             let archive = archiver('tar');
             let gzip = zlib.createGzip();
