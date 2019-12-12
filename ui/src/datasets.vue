@@ -171,15 +171,15 @@
     <div class="page-main" v-else style="padding: 20px 40px; opacity: 0.7; background-color: #eee;" :style="{left: splitter_pos+10+'px'}"> 
         <p v-if="loading_dataset" style="opacity: 0.6; font-size: 150%;">Loading...</p>
         <div v-else>
-            <b-card>
-                <img src="https://www.datalad.org/theme/img/logo/datalad_nav_wide.png" width="150px" align="right">
+            <p style="font-size: 150%; margin-top: 200px;"><icon name="arrow-left"/> Select a dataset</p>
+            <p>You can import datasets from various remote data sources such as OpenNeuro, FCP/INDI through datalad.</p>
+            <div style="position: fixed; bottom: 30px;">
+                <img src="https://www.datalad.org/theme/img/logo/datalad_nav_wide.png" width="150px" align="right" style="margin: 0px 30px;">
                 <p>You can discover and import datasets from data repositories published through Datalad.</p>
                 <p><a href="https://www.datalad.org/">Datalad</a> is a data discovery, and versioning tool that allows 
                 you to easily search and access various public datasets and store metadata and provenance information.
                 </p>
-            </b-card>
-            <p style="font-size: 150%; margin-top: 80px;"><icon name="arrow-left"/> Select a dataset</p>
-            <p>You can import datasets from various remote data sources such as OpenNeuro, FCP/INDI through datalad.</p>
+            </div>
         </div>
     </div>
 </div>

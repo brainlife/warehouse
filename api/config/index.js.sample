@@ -47,9 +47,11 @@ exports.amaretti = {
 }
 exports.wf = exports.amaretti; //deprecated (use amaretti)
 
+/*
 exports.profile = {
     api: "https://dev1.soichi.us/api/profile",
 }
+*/
 
 exports.auth = {
     api: "https://dev1.soichi.us/api/auth",
@@ -691,6 +693,7 @@ exports.storage_systems["datalad"] = {
     },
 
     download: (dataset, cb)=>{
+        /*
         //console.log("datalad getting");
         //run datalad get on each files
         async.each(dataset.storage_config.files, (file, next_file)=>{
@@ -733,7 +736,111 @@ exports.storage_systems["datalad"] = {
                 cb(err, archive, dataset._id+".tar");
             });
         });
-    },
+        */
+
+        /*
+        connect_wrangler((err, conn, sftp)=>{
+            if (err) {
+                conn.end();
+                return cb(err);
+            }
+            let path = get_wrangler_archive_path(dataset);
+            let filename = path.split("/").pop();
+            console.debug(["loading...", path, filename]);
+            conn.exec("cat "+path, (err, stream)=>{
+                stream.on('error', err=>{
+                    console.error("stream failed but train has already left the station", err);
+                });
+                stream.on('close', code=>{
+                    conn.end();
+                });
+                //I believe listening to stream is required for close event to fire..?
+                stream.stderr.on('data', data=>{
+                    console.error(data.toString());
+                });
+                cb(err, stream, filename);
+            });
+        });
+        */
+
+        connect_wrangler((err, conn, sftp)=>{
+            if (err) {
+                conn.end();
+                return cb(err);
+            }
+
+            //do datalad get first
+            async.each(dataset.storage_config.files, (file, next_file)=>{
+                console.debug("datalad get "+file.src);
+                conn.exec("cd "+datalad_root+" && datalad get "+file.src, (err, stream)=>{
+                    if(err) return next_file(err);
+                    stream.on('error', err=>{
+                        console.error(err);
+                    });
+                    stream.on('close', code=>{
+                        console.debug("done with "+file.src);
+                        next_file();
+                    });
+                    stream.on('data', data=>{
+                        console.debug(data.toString());
+                    });
+                    //I believe listening to stream is required for close event to fire..?
+                    stream.stderr.on('data', data=>{
+                        console.error(data.toString());
+                    });
+                });
+            }, err=>{
+                if(err) {
+                    conn.end();
+                    return cb(err);
+                }
+                
+                console.debug("creating tar ball");
+
+                let archive = archiver('tar');
+                let gzip = zlib.createGzip();
+                archive.on('end', ()=>{
+                    console.log("archive ended.. conn.end()");
+                    conn.end();
+                });
+                async.forEach(dataset.storage_config.files, (file, next_file)=>{
+                    let source_path = datalad_root+"/"+file.src;
+                    sftp.stat(source_path, (err, stat)=>{
+                        if(err) {
+                            conn.end();
+                            return cb(err);
+                        }
+                        if(stat.isDirectory()) {
+                            //I need to deference symbolic link as archiver won't deference symlinks
+                            walk(source_path).then(entries=>{
+                                entries.forEach(entry=>{
+                                    let subpath = entry.substring(source_path.length);
+                                    console.log(entry, file.dest+subpath);
+                                    archive.append(sftp.createReadStream(entry), {name: file.dest+subpath});
+                                });
+                                next_file();
+                            });
+                            //archive.directory(source_path, file.dest);
+                        } else {
+                            let stream = sftp.createReadStream(source_path);
+                            if(file.src.endsWith(".nii")) {
+                                //compress .nii with .nii.gz as *all* brainlife datatype uses .nii.gz for nifti
+                                console.log("passing", file.src, "through gzip stream");
+                                stream = stream.pipe(gzip);
+                            }
+                            archive.append(stream, {name: file.dest});
+                            next_file();
+                        }
+                    });
+                }, err=>{
+                    archive.finalize();
+                    cb(err, archive, dataset._id+".tar");
+                });
+
+            });
+
+        });
+   },
 }
 
 //config used to backup data from warehouse 

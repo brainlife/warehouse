@@ -637,20 +637,27 @@ exports.sensu_name = function(name) {
     return name;
 }
 
-let amqp_conn;
-let warehouse_ex;
-exports.get_amqp_connection = function(cb) {
-    if(amqp_conn) return cb(null, amqp_conn); //already connected
-    amqp_conn = amqp.createConnection(config.event.amqp, {reconnectBackoffTime: 1000*10});
+let connect_amqp = new Promise((resolve, reject)=>{
+    console.log("connecting to amqp------------------------");
+    let amqp_conn = amqp.createConnection(config.event.amqp, {reconnectBackoffTime: 1000*10});
     amqp_conn.once("ready", ()=>{
-        amqp_conn.exchange("warehouse", {autoDelete: false, durable: true, type: 'topic', confirm: true}, (ex)=>{
-            warehouse_ex = ex;
-        });
-        cb(null, amqp_conn);
+        console.debug("amqp ready...................!!!");
+        resolve(amqp_conn);
     });
     amqp_conn.on("error", err=>{
-        logger.error(err);
+        console.error(err);
+        reject();
     });
+});
+
+let warehouse_ex;
+exports.get_amqp_connection = function(cb) {
+    connect_amqp.then(conn=>{
+        conn.exchange("warehouse", {autoDelete: false, durable: true, type: 'topic', confirm: true}, ex=>{
+            warehouse_ex = ex;
+            cb(null, conn);
+        })
+    }).catch(cb);
 }
 
 exports.disconnect_amqp = function(cb) {
@@ -831,7 +838,9 @@ exports.dataset_to_filename = function(dataset) {
 
 exports.publish = (key, message, cb)=>{
     message.timestamp = (new Date().getTime())/1000; //it's crazy that amqp doesn't set this?
-    warehouse_ex.publish(key, message, {}, cb);
+    if(!warehouse_ex) { 
+        console.error("warehouse_ex not connected yet.. can't publish");
+    } else warehouse_ex.publish(key, message, {}, cb);
 }
 
 exports.isadmin = (user, rec)=>{

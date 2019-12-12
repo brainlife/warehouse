@@ -1191,7 +1191,7 @@ common.get_amqp_connection((err, conn)=>{
     if(err) {
         logger.error("failed to obtain amqp connection");
     }
-    logger.info("amqp connection ready.. subscribing to profile updates");
+    logger.info("amqp connection ready.. subscribing to auth user.update events");
     conn.queue('', q=>{
         q.bind("auth", "user.update.*", ()=>{ //no err..
             q.subscribe((message, header, deliveryInfo, messageObject)=>{

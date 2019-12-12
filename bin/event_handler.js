@@ -347,6 +347,7 @@ function handle_event(msg, head, dinfo, cb) {
         let fullname = msg.fullname;
         if(config.slack) invite_slack_user(email, fullname);
 
+        /*
         //set public profile
         logger.debug("publishing profile");
         request.put({
@@ -358,6 +359,7 @@ function handle_event(msg, head, dinfo, cb) {
             if(err) console.error(err);
             else logger.debug("successfully published profile");
         });
+        */
     }
     cb();
 }

@@ -54,7 +54,7 @@ export default {
         },
         isanimated(state) {
             //animating progress bar causes high cpu usage on xps15
-            //
+            //https://github.com/twbs/bootstrap/issues/5148
             return false;
 
             switch(state) {

@@ -5,7 +5,7 @@
             <projectavatar class="avatar" :project="project" :width="25" :height="25"/>
             <div class="header-row">
                 <projectaccess :access="project.access"/>
-                <div style="float: right; font-size: 90%; opacity: 0.9;" v-if="project.stats.datasets">
+                <div style="float: right; font-size: 90%; opacity: 0.9;" v-if="project.stats.datasets && project.stats.datasets.subject_count">
                     <icon name="user-friends" style="opacity: 0.7" scale="0.8"/>&nbsp;{{project.stats.datasets.subject_count}}
                     <icon name="cubes" style="opacity: 0.7" scale="0.8"/>&nbsp;{{project.stats.datasets.count}}
                     <span v-if="project.stats.datasets.size" style="opacity: 0.8; font-size: 85%;"> ({{project.stats.datasets.size | filesize}})</span>
@@ -105,6 +105,7 @@ export default {
 background-color: white;
 padding: 3px 6px;
 margin-bottom: 1px;
+color: #555;
 }
 .project:hover {
 background-color: #f9f9f9;
@@ -125,11 +126,12 @@ color: #dc3545;
 margin-right: 3px;
 }
 .title {
+font-size: 95%;
 font-weight: bold;
 }
 .desc {
 font-size: 85%;
-opacity: 0.9;
+opacity: 0.7;
 }
 .contacts {
 }
