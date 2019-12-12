@@ -38,7 +38,7 @@ db.init(async err=>{
         if(dataset_path.includes("/.bidsignore")) return next_dir(); //openneuro/ds001583
 
         //debug
-        //if(dataset_path != "datasets.datalad.org/openneuro/ds000237") return next_dir();
+        //if(dataset_path != "datasets.datalad.org/openneuro/ds001590") return next_dir();
 
         bids_walker(dataset_path, (err, bids)=>{
             if(err) return next_dir(err);
@@ -59,6 +59,7 @@ db.init(async err=>{
             console.log("\nskipped dataset");
             console.dir(skipped);
         }
+        process.exit(0);
     });
 });
 
@@ -104,6 +105,20 @@ function handle_bids(key, bids, cb) {
             datatypes: datatype_counts,
         }
 
+        //console.log(JSON.stringify(bids, null, 4));
+        //process.exit(1);
+
+        //TODO if we update bids_walker, then I need to invalidate commit_id for all dldatasets so that data will be 
+        //re-registered (should I store the branlife npm package version number?)
+        let commit_id = child_process.execSync("git rev-parse HEAD", {cwd: key.path, encoding: "utf8"});
+        /* //let's disable this for now.. we need to update records quite often
+        if(dldataset.commit_id == commit_id) {
+            console.log("same commit_id.. skipping this dataset");
+            return cb();
+        }
+        */
+        dldataset.commit_id = commit_id;
+
         dldataset.save(err=>{
             if(err) throw err;
            
@@ -115,14 +130,24 @@ function handle_bids(key, bids, cb) {
                 for(let dest in item.files) {
                     files.push({src: item.files[dest], dest});
                 }
-                item.dataset.storage_config = {files};
+
+                item.dataset.storage_config = {files, commit_id}; //let's set commit_id for provenance purpose (not used yet)
                 item.dataset.status = "stored"; //should I come up with something?
 
+                //similar code exists in bl-bids-upload
                 key = {
                     dldataset: dldataset._id,
                     "dataset.datatype": item.dataset.datatype,
-                    "dataset.desc": item.dataset.desc,
+                    //"dataset.desc": item.dataset.desc,
+                    "dataset.meta.subject": item.dataset.meta.subject,
                 };
+                if(item.dataset.meta.session) {
+                    key["dataset.meta.session"] = item.dataset.meta.session;
+                }
+                if(item.dataset.meta.run) {
+                    key["dataset.meta.run"] = item.dataset.meta.run;
+                }
+
                 db.DLItems.findOne(key, (err, dlitem)=>{
                     if(err) return cb(err);
                     if(!dlitem) {

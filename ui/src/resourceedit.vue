@@ -34,6 +34,16 @@
 
             <b-row>
                 <b-col cols="3">
+                    <span class="form-header">Avatar *</span>
+                </b-col> 
+                <b-col cols="9">
+                    <b-input type="text" v-model="resource.avatar" placeholder="Avatar URL"/>
+                    <br>
+                </b-col>
+            </b-row>
+
+            <b-row>
+                <b-col cols="3">
                     <span class="form-header">Description</span>
                 </b-col> 
                 <b-col cols="9">
@@ -204,6 +214,7 @@ export default {
                 _id: null, 
                 active: true,
                 name: "",
+                avatar: "",
                 config: {
                     desc: "",
                     services: [],

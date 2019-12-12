@@ -226,7 +226,6 @@
         </div><!-- project detail content-->
     </div>
 
-
     <div v-if="tabs[tab].id == 'dataset'">
         <b-alert show v-if="selected.access != 'public' && !(ismember()||isadmin()||isguest())">For non public project, only the admin/members/guests of this project can access processes.</b-alert>
         <datasets :project="selected" :projects="projects" v-else/>

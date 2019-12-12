@@ -53,6 +53,10 @@ export default {
             }
         },
         isanimated(state) {
+            //animating progress bar causes high cpu usage on xps15
+            //
+            return false;
+
             switch(state) {
             case "running": 
             case "requested":           

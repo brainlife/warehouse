@@ -9,10 +9,7 @@ const config = require("./config");
 const logger = winston.createLogger(config.logger.winston);
 const common = require("./common"); //circular?
 
-//use native promise for mongoose
-//without this, I will get Mongoose: mpromise (mongoose's default promise library) is deprecated
-//mongoose.Promise = global.Promise; 
-if(config.mongoose_debug) mongoose.set("debug", true);
+mongoose.set("debug", config.mongoose_debug);
 
 let amqp_conn = null;
 
@@ -666,9 +663,9 @@ exports.Rules = mongoose.model('Rules', ruleSchema);
 //similar to brainlife "project"
 var dlDatasetSchema = mongoose.Schema({
 
-    //path and name should be unique
     path: String, //datasets.dl.org/openneuro (can be used as dataset "group")
-    //name: String,  //ds000102 (path/name should point to bids "dataset")
+
+    commit_id: String, //dataset datalad git repo commit id (used to skip iterating through already registered dataset?)
 
     README: String, 
     CHANGES: String, 
@@ -691,12 +688,13 @@ var dlDatasetSchema = mongoose.Schema({
     ],
     participants_info: mongoose.Schema.Types.Mixed, //metadata for participants info
 
-
     stats: {
         subjects: Number,
         sessions: Number,
         datatypes: mongoose.Schema.Types.Mixed,
     },
+
+
 });
 dlDatasetSchema.index({path: 1, name: 1}, {unique: true}); 
 dlDatasetSchema.index({'$**': 'text'}) //make all text fields searchable
@@ -735,6 +733,7 @@ var dlItemSchema = mongoose.Schema({
     status: String,
     */
 });
+dlItemSchema.index({'dldataset': 1, 'dataset.datatype': 1, 'dataset.meta.subject': 1, 'dataset.meta.session': 1, 'dataset.meta.run': 1}); //importdatlad uses this as *key* for each item
 exports.DLItems = mongoose.model('DLItems', dlItemSchema);
 
 
