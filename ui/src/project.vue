@@ -231,17 +231,17 @@
         <datasets :project="selected" :projects="projects" v-else/>
     </div>
 
-    <div v-if="tabs[tab].id == 'process'">
+    <div v-if="tabs[tab].id == 'process'" style="margin-left: 200px; margin-top: 95px">
         <noprocess v-if="!(ismember()||isadmin())"/>
         <processes :project="selected" v-else/>
     </div>
 
-    <div v-if="tabs[tab].id == 'pipeline'">
+    <div v-if="tabs[tab].id == 'pipeline'" style="margin-left: 200px; margin-top: 95px">
         <b-alert show variant="secondary" v-if="!(ismember()||isadmin())">Only the admins or members of this project can access pipelines. Please contact the project admin to give you access.</b-alert>
         <pipelines :project="selected" v-else/>
     </div>
 
-    <div v-if="tabs[tab].id == 'pub'">
+    <div v-if="tabs[tab].id == 'pub'" style="margin-left: 200px; margin-top: 95px">
         <b-alert show variant="secondary" v-if="!(ismember()||isadmin())">Only the admins or members of this project can access publications. Please contact the project admin to give you access.</b-alert>
         <publications :project="selected" v-else/>
     </div>
@@ -667,14 +667,14 @@ z-index: 1;
 .page-content {
 top: 95px;
 overflow-x: hidden;
-right: 200px;
+right: 250px;
 }
 .page-right-content {
 background-color: #eee; 
 box-shadow: inset 3px 0px 3px #ddd6;
 position: fixed;
 top: 95px;
-width: 200px;
+width: 250px;
 right: 0px;
 bottom: 0px;
 }
