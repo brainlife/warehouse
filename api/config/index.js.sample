@@ -239,7 +239,8 @@ function connect_dc(cb) {
         console.log("connecting to dataxfer2");
         conn.connect({
             username: "hayashis",
-            host: "dataxfer2.bigred2.uits.iu.edu",
+            //host: "dataxfer2.bigred2.uits.iu.edu",
+            host: "carbonate.uits.iu.edu",
             privateKey: fs.readFileSync(__dirname+'/brlife.id_rsa'),
             //passphrase: "somepass",  //what's the point?
         });

@@ -17,17 +17,32 @@
                     <icon name="angle-left" scale="2"/>
                 </div>
                 <b-row>
-                    <b-col cols="2">
-                        <appavatar :app="app" style="margin-bottom: 20px;"/>
-                    </b-col>
-                    <b-col cols="8"><!--hide avatar when screen is narrow-->
+                    <b-col cols="9"><!--hide avatar when screen is narrow-->
                         <div style="float: right; position: relative; z-index: 3">
-                            <span class="button" @click="download_app()" title="Download App"><icon name="download" scale="1.25"/></span>
                             <a :href="'https://github.com/'+app.github" :target="app.github"><span class="button"" title="github"><icon name="brands/github" scale="1.25"/></span></a>
-                            <span class="button" @click="copy()" v-if="app._canedit" title="Copy"><icon name="copy" scale="1.25"/></span>
-                            <span class="button" @click="go('/app/'+app._id+'/edit')" v-if="app._canedit" title="Edit"><icon name="edit" scale="1.25"/></span>
-                            <span class="button" @click="remove()" v-if="app._canedit" title="Remove"><icon name="trash" scale="1.25"/></span>
+                           
+                            <span class="button" @click="go('/app/'+app._id+'/edit')" v-if="app._canedit" title="Edit"><icon name="edit" scale="1.25"/></span>                
+                            <b-dropdown size="sm" variant="link" toggle-class="text-decoration-none" no-caret>
+                                <template v-slot:button-content style="padding: 0px;">
+                                    <span class="button"><icon name="ellipsis-v" scale="1.25"/></span>
+                                </template>
+                                <b-dropdown-item @click="copy()" v-if="app._canedit" title="Copy" style="opacity: 0.7;">
+                                    <icon name="copy" scale="1.25" style="width: 20px"/>&nbsp;&nbsp;&nbsp;Clone
+                                </b-dropdown-item>
+                                <b-dropdown-item @click="remove()" v-if="app._canedit" title="Remove" style="opacity: 0.7;">
+                                    <icon name="trash" scale="1.25" style="width: 20px"/>&nbsp;&nbsp;&nbsp;Remove
+                                </b-dropdown-item>
+                                <b-dropdown-item @click="download_app()" style="opacity: 0.7;">
+                                    <icon name="download" scale="1.25" style="width: 20px"/>&nbsp;&nbsp;&nbsp;Download
+                                </b-dropdown-item>
+                                <b-dropdown-item @click="show_badge_url('/app/'+app._id+'/badge')" style="opacity: 0.7;" >
+                                    <icon name="certificate" scale="1.25" style="width: 20px"/>&nbsp;&nbsp;&nbsp;Generate Badge
+                                </b-dropdown-item>
+                            </b-dropdown>
+                            <b-btn @click="execute" variant="primary" size="sm" style="margin-top: 3px;"><icon name="play"/>&nbsp;&nbsp;&nbsp;<b>Execute</b></b-btn>    
+ 
                         </div>
+                
                         <h5 style="margin-bottom: 3px;">
                             <b-badge v-if="app.projects && app.projects.length > 0" variant="danger" title="Private App">
                                 <icon name="lock" scale="0.8"/>
@@ -41,15 +56,9 @@
                         <p style="opacity: 0.85">
                             {{app.desc_override||app.desc}}
                         </p>
-                        <p v-if="app.doi || app.stats.serviceinfo">
-                            <doibadge :doi="app.doi" v-if="app.doi"/>
-                            <img :src="config.api+'/app/'+app._id+'/badge'" @click="show_badge_url('/app/'+app._id+'/badge')" class="clickable" v-if="app.stats.serviceinfo"/>
-                        </p>
                     </b-col>
-                    <b-col cols="2">
-                        <div style="position: relative; top: -2px;">
-                            <b-btn @click="execute" variant="primary" size="sm"><icon name="play"/>&nbsp;&nbsp;&nbsp;Execute</b-btn>
-                        </div>
+                    <b-col cols="3">
+                        <appavatar :app="app" style="margin-bottom: 20px;"/>
                     </b-col>
                 </b-row>
             </b-container>
@@ -60,16 +69,8 @@
             <!-- detail -->
             <div v-if="tab_index == 0">
                 <b-row>
-                    <b-col cols="2">
-                        <p style="opacity: 0.7" title="Registration Date"> 
-                            <icon name="calendar"/>&nbsp;&nbsp;{{new Date(app.create_date).toLocaleDateString()}}
-                        </p>
-                        <span class="form-header">Topics</span>
-                        <p style="line-height: 190%;">
-                            <b-badge v-for="tag in app.tags" :key="tag" class="topic">{{tag}}</b-badge>
-                        </p>
-                    </b-col>
-                    <b-col cols="8">
+
+                    <b-col cols="9">
 
                         <!--border-variant="danger" header-bg-variant="danger" header-text-variant="white">-->
                         <b-card v-if="app.deprecated_by" no-body style="margin-bottom: 10px">
@@ -234,29 +235,57 @@
                             <span class="form-header">README</span>
                             <vue-markdown :source="readme" class="readme box"></vue-markdown>
                         </div>
-
                         <vue-disqus shortname="brain-life" :identifier="app._id"/>
-
                     </b-col>
 
-                    <b-col cols="2">
-                        <div v-if="app.stats.serviceinfo">
-                            <p v-if="app.stats.serviceinfo.success_rate" v-b-tooltip.hover.d1000.right title="finished/(failed+finished). Same request could be re-submitted / rerun.">
-                                <span class="form-header">Success Rate</span>
-                                <svg width="70" height="70">
-                                    <circle :r="140/(2*Math.PI)" cx="35" cy="35" fill="transparent" stroke="#666" stroke-width="15"/>
-                                    <circle :r="140/(2*Math.PI)" cx="35" cy="35" fill="transparent" stroke="#28a745" stroke-width="15" 
-                                        :stroke-dasharray="app.stats.serviceinfo.success_rate*(140/100)+' '+(100-app.stats.serviceinfo.success_rate)*(140/100)" stroke-dashoffset="-105"/>
-                                </svg>
-                                <b>{{app.stats.serviceinfo.success_rate.toFixed(1)}}%</b>
-                            </p>
-                            <p>
-                                <b-badge pill v-if="app.stats.serviceinfo.runtime_mean" class="bigpill">
-                                    <icon name="clock" style="opacity: 0.4;"/>&nbsp;&nbsp;{{avg_runtime(app.stats.serviceinfo.runtime_mean, app.stats.serviceinfo.runtime_std)}}
-                                </b-badge>
-                            </p>
-                        </div>
+                    <b-col cols="3">
+                        <p v-if="app.doi || app.stats.serviceinfo">
+                            <doibadge :doi="app.doi" v-if="app.doi"/>
+                            <!--
+                            <img :src="config.api+'/app/'+app._id+'/badge'" @click="show_badge_url('/app/'+app._id+'/badge')" class="clickable" v-if="app.stats.serviceinfo"/>
+                            -->
+                        </p>
+                        <!--<span class="form-header">Topics</span>-->
+                        <p style="line-height: 190%;">
+                            <b-badge v-for="tag in app.tags" :key="tag" class="topic">{{tag}}</b-badge>
+                        </p>
+
+                        <p title="Users who executed this App">
+                            <b-badge pill v-if="app.stats.users" class="bigpill">
+                                <icon name="user-cog" style="opacity: 0.4;"/>&nbsp;&nbsp;&nbsp;{{app.stats.users}}&nbsp;&nbsp;<small>Users</small>
+                            </b-badge>
+                        </p>
+
+                        <p title="Number of time this App was requested">
+                            <b-badge pill v-if="app.stats.requested" class="bigpill">
+                                <icon name="play" style="opacity: 0.4;"/>&nbsp;&nbsp;&nbsp;{{app.stats.requested}}&nbsp;&nbsp;<small>Requests</small>
+                            </b-badge>
+                        </p>
+
+                        <p title="Registration Date">
+                            <b-badge pill v-if="app.stats.serviceinfo && app.stats.serviceinfo.runtime_mean" class="bigpill">
+                                <icon name="calendar" style="opacity: 0.4;"/>&nbsp;&nbsp;&nbsp;<small>Registerd</small>&nbsp;&nbsp;{{new Date(app.create_date).toLocaleDateString()}}
+                            </b-badge>
+                        </p>
+
+                        <p title="Average Runtime">
+                            <b-badge pill v-if="app.stats.serviceinfo && app.stats.serviceinfo.runtime_mean" class="bigpill">
+                                <icon name="clock" style="opacity: 0.4;"/>&nbsp;&nbsp;&nbsp;{{avg_runtime(app.stats.serviceinfo.runtime_mean, app.stats.serviceinfo.runtime_std)}}
+                            </b-badge>
+                        </p>
+
                         <div class='altmetric-embed' data-badge-type='donut' :data-doi="app.doi" data-hide-no-mentions="true"/>
+                 
+                        <p v-if="app.stats.serviceinfo && app.stats.serviceinfo.success_rate" v-b-tooltip.hover.d1000.right title="finished/(failed+finished). Same request could be re-submitted / rerun.">
+                            <!--<span class="form-header">Success Rate</span>-->
+                            <svg width="70" height="70">
+                                <circle :r="140/(2*Math.PI)" cx="35" cy="35" fill="transparent" stroke="#666" stroke-width="15"/>
+                                <circle :r="140/(2*Math.PI)" cx="35" cy="35" fill="transparent" stroke="#28a745" stroke-width="15" 
+                                    :stroke-dasharray="app.stats.serviceinfo.success_rate*(140/100)+' '+(100-app.stats.serviceinfo.success_rate)*(140/100)" stroke-dashoffset="-105"/>
+                            </svg>
+                            <b>{{app.stats.serviceinfo.success_rate.toFixed(1)}}%</b> <span style="opacity: 0.5">Success Rate</span>
+                        </p>
+                       
                     </b-col>
 
                 </b-row>
