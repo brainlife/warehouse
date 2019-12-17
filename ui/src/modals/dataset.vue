@@ -49,6 +49,20 @@
                     <b-alert :show="!dataset.removed && dataset.status == 'storing'" variant="secondary"><icon name="cog" spin/> Archiving Dataset .. Please wait for a minute before you can interact with this dataset.</b-alert>
                     <!-- detail -->
                     <div class="margin20">
+                        <b-row v-if="dataset._canedit">
+                            <b-col cols="3"></b-col>
+                            <b-col>
+                                <b-input-group prepend="Subject" size="sm" title="Only process subjects that matches this regex">
+                                    <b-form-input v-model="dataset.meta.subject" type="text" @input="update_meta()"></b-form-input>
+                                    <b-input-group-prepend is-text>Session</b-input-group-prepend>
+                                    <b-form-input v-model="dataset.meta.session" type="text" @input="update_meta()"></b-form-input>
+                                    <b-input-group-append v-if="dataset._meta_dirty">
+                                        <b-btn variant="primary" @click="save_meta()"><icon name="check"/></b-btn>
+                                    </b-input-group-append>
+                                </b-input-group>
+                                <br>
+                            </b-col>
+                        </b-row>
                         <b-row v-if="dataset.desc || dataset._canedit">
                             <b-col cols="3">
                                 <span class="form-header">Description</span>
@@ -179,15 +193,14 @@
                             </b-col>
                         </b-row>
                         <b-row>
-                            <b-col cols="3"><span class="form-header">Metadata (sidecar)</span></b-col>
+                            <b-col cols="3">
+                                <span class="form-header">Metadata / sidecar <small v-if="dataset._canedit">(editable)</small></span>
+                            </b-col>
                             <b-col style="position: relative;">
+                                <editor v-model="dataset._meta" @init="editorInit" @input="update_meta_json()" lang="json" height="200"></editor>
                                 <div v-if="dataset._canedit">
-                                    <editor v-model="dataset._meta" @init="editorInit" @input="dataset._meta_dirty = true" lang="json" height="200"></editor>
                                     <br>
                                     <b-button v-if="dataset._meta_dirty" variant="primary" @click="save_meta()" style="float: right;">Save Metadata</b-button>
-                                </div>
-                                <div v-else>
-                                    <editor v-model="dataset._meta" @init="editorInit" @input="dataset._meta_dirty = true" lang="json" height="200"></editor>
                                 </div>
                                 <br>
                             </b-col>
@@ -662,7 +675,6 @@ export default {
             });
         },
 
-
         load_resource() {
             if(!Vue.config.user) return;
             if(!this.dataset.prov || !this.dataset.prov.task) return;
@@ -695,12 +707,6 @@ export default {
 
         find_staged_task(cb) {
             //first, query for the staging task to see if it already staged
-            /*
-            let dataset_id = this.dataset._id;
-            if(this.dataset.storage == "copy") {
-                dataset_id = this.dataset.storage_config.dataset_id; //real dataset id
-            }
-            */
             this.$http.get(Vue.config.amaretti_api+'/task', {params: {
                 find: JSON.stringify({ 
                     status: { $ne: "removed" },
@@ -773,14 +779,26 @@ export default {
             this.update_dataset('tags');
             this.dataset._tags_dirty = false;
         },
+        update_meta() {
+            this.dataset._meta_dirty = true;
+            if(this.dataset.meta.session == "") delete this.dataset.meta.session;
+            this.dataset._meta = JSON.stringify(this.dataset.meta, null, 4);
+        },
+        update_meta_json() {
+            this.dataset._meta_dirty = true;
+            try {
+                this.dataset.meta = JSON.parse(this.dataset._meta);
+            } catch(err) {
+                //user should fix
+            }
+        },
         save_meta() {
             try {
                 this.dataset.meta = JSON.parse(this.dataset._meta);
                 this.update_dataset('meta');
                 this.dataset._meta_dirty = false;
             } catch(err) {
-                this.$notify({ text: 'Failed to parse JSON', type: 'error' });
-                return;
+                this.$notify({ text: 'Failed to parse JSON', type: 'error' }); 
             }
         },
         editorInit(editor) {

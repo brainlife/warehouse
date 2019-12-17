@@ -8,7 +8,8 @@
             <pubform :pub="editing" :project="project" @submit="save" @cancel="cancel"/>
         </div>
         <div v-else>
-            <!--list view-->
+            <!--give space for Publications count-->
+            <br>
             <br>
             <div v-for="pub in pubs" :key="pub._id" :class="{'pub-removed': pub.removed, 'pub-editable': (ismember()||isadmin())}" class="pub" @click="edit(pub)">
                 <doibadge :doi="pub.doi" style="float: right;"/>

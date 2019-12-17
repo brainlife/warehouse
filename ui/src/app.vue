@@ -246,7 +246,7 @@
                             -->
                         </p>
                         <!--<span class="form-header">Topics</span>-->
-                        <p style="line-height: 190%;">
+                        <p style="line-height: 250%;">
                             <b-badge v-for="tag in app.tags" :key="tag" class="topic">{{tag}}</b-badge>
                         </p>
 

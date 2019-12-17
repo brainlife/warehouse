@@ -2,7 +2,7 @@
 <div v-if="ready">
     <div v-if="!editing && nonremoved_rule_count > 0" class="info">
         <span><b>{{nonremoved_rule_count}}</b> Pipeline Rules</span>
-        <div style="float: right">
+        <div style="position: fixed; top: 57px; right: 30px; z-index: 1;">
             <small>Order by</small>
             <b-dropdown :text="order" size="sm" :variant="'light'">
                 <b-dropdown-item @click="order = 'create_date'">Create Date (new first)</b-dropdown-item>
@@ -27,13 +27,13 @@
 
         </div>
         <div class="rules" v-else>
-            <b-row :no-gutters="true" style="padding-right: 20px; padding: 10px">
+            <b-row :no-gutters="true" style="padding-right: 30px; padding: 10px">
                 <b-col :cols="5"><!--placeholder--></b-col>
                 <b-col :cols="1">
                     <small>Submitter</small>
                 </b-col>
                 <b-col :cols="2">
-                    <span style="width: 95px; float: right; opacity: 0.5; font-size: 85%;">Tasks</span>
+                    <small style="width: 100px; float: right;">Tasks</small>
                 </b-col>
                 <b-col :cols="2">
                     <small style="float: right;">Create Date</small>
@@ -43,10 +43,8 @@
                 </b-col>
             </b-row>
 
-            <div v-for="rule in sorted_rules" :key="rule._id" :id="rule._id" 
-                :class="{'rule-removed': rule.removed, 'rule-selected': selected == rule, 'rule-inactive': !rule.active}"
-                class="rule" 
-                v-if="rule.removed == false">
+            <div v-for="rule in sorted_rules.filter(r=>r.removed == false)" :key="rule._id" :id="rule._id" 
+                :class="{'rule-removed': rule.removed, 'rule-selected': selected == rule, 'rule-inactive': !rule.active}" class="rule">
                 <div class="rule-header" @click="toggle(rule)">
                     <b-row :no-gutters="true">
                         <b-col :cols="5">
