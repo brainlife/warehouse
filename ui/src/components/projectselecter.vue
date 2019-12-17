@@ -12,7 +12,7 @@
     </b-input-group>
     -->
     <!--- i don't think required works with v-select-->
-    <v-select :options="options" :placeholder="placeholder"  v-model="selected" label="text" :required="required" reduce="opt=>opt.value" @change="change"></v-select>
+    <v-select v-else :options="options" :placeholder="placeholder"  v-model="selected" label="text" :required="required" reduce="opt=>opt.value" @change="change"></v-select>
 </div>
 </template>
 

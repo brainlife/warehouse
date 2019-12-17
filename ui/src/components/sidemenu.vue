@@ -21,7 +21,7 @@
         <li v-if="config.user && config.debug" 
             @click="go('/dashboard')"
             :class="{active: active == '/dashboard'}">
-            <icon name="home" scale="1.3"/> 
+            <icon name="home" scale="1.2"/> 
             <h4>Dashboard</h4>
         </li>
         <!--<li v-if="config.debug" class="divider"></li>-->
@@ -29,12 +29,12 @@
         <!-- for everyone -->
         <li @click="go('/apps')"
             :class="{active: active == '/apps'}">
-            <icon name="th-large" scale="1.3"/>
+            <icon name="th-large" scale="1.2"/>
             <h4>Apps</h4>
         </li>
         <li @click="go('/projects')"
             :class="{active: active == '/projects'}">
-            <icon name="shield-alt" scale="1.3"/>
+            <icon name="shield-alt" scale="1.2"/>
             <h4>Projects</h4>
         </li>
 
@@ -42,33 +42,33 @@
 
         <li @click="go('/pubs');"
             :class="{active: active == '/pubs'}">
-            <icon name="newspaper" scale="1.3"/>
+            <icon name="newspaper" scale="1.2"/>
             <h4>Publications</h4>
         </li>
         
         <li @click="go('/datatypes')" :class="{active: active == '/datatypes'}">
-            <icon name="cubes" scale="1.3"/>
+            <icon name="cubes" scale="1.2"/>
             <h4>Datatypes</h4>
         </li>
 
         <li @click="go('/datasets')" :class="{active: active == '/datasets'}">
-            <icon name="cloud-download-alt" scale="1.3"/>
+            <icon name="cloud-download-alt" scale="1.2"/>
             <b-badge pill variant="primary" style="opacity: 0.8; float: right; margin-right: 10px; margin-top: 2px;">BETA</b-badge>
             <h4>Datasets</h4>
         </li>
 
         <li v-if="config.user" @click="go('/resources')" :class="{active: active == '/resources'}">
-            <icon name="server" scale="1.3"/>
+            <icon name="server" scale="1.2"/>
             <h4>Resources</h4>
         </li>
         <!--
         <li v-if="config.user" @click="setting_old">
-            <icon name="cog" scale="1.3"/>
+            <icon name="cog" scale="1.2"/>
             <h4>Settings</h4>
         </li>
         -->
         <li v-if="config.user" @click="go('/settings')" :class="{active: active == '/settings'}">
-            <icon name="cog" scale="1.3"/>
+            <icon name="cog" scale="1.2"/>
             <h4>Settings</h4>
         </li>    
     </ul>
@@ -78,7 +78,7 @@
         <li class="divider"></li>
         <li @click="go('/admin')"
             :class="{active: active == '/admin'}">
-            <icon name="wrench" scale="1.3"/>
+            <icon name="wrench" scale="1.2"/>
             <h4>Administration</h4>
         </li>
     </ul>
@@ -93,27 +93,27 @@
         <b-popover ref="usersettings" target="user">
             <b-list-group>
                 <b-list-group-item href="#" @click="signout">
-                    <icon name="sign-out-alt" scale="1.3"/>&nbsp;
+                    <icon name="sign-out-alt" scale="1.2"/>&nbsp;
                     Signout                 
                 </b-list-group-item>
             </b-list-group>
         </b-popover>
 
         <li v-if="!config.user" @click="login">
-            <icon name="sign-in-alt" scale="1.3"/>
+            <icon name="sign-in-alt" scale="1.2"/>
             <h4>Login</h4>
         </li>
         <li v-if="!config.user" @click="signup">
-            <icon name="file-signature" scale="1.3"/>
+            <icon name="file-signature" scale="1.2"/>
             <h4>Sign Up</h4>
         </li>
 
         <li @click="slack" class="secondary secondary-first">
-            <icon name="brands/slack" scale="1.3"/>
+            <icon name="brands/slack" scale="1.2"/>
             <h4>Contact us (slack)</h4>
         </li>
         <li @click="doc" class="secondary">
-            <icon name="book" scale="1.3"/>
+            <icon name="book" scale="1.2"/>
             <h4>Documentation</h4>
         </li>
     </ul>
@@ -250,9 +250,8 @@ export default {
 .items li {
     text-align: left;
     margin: 0px;
-    padding: 8px 0px;
     transition: background-color 0.2s, color 0.2s;
-    padding-left: 15px;
+    padding: 8px 0 8px 15px;
 }
 .items li h4 {
     display: inline-block;
@@ -278,7 +277,8 @@ export default {
     margin-bottom: 5px;
 }
 .items svg {
-    width: 22px;
+    margin-top: 3px;
+    width: 19px;
 }
 
 .items-bottom {
