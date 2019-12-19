@@ -19,7 +19,7 @@
                 <b-row>
                     <b-col cols="9"><!--hide avatar when screen is narrow-->
                         <div style="float: right; position: relative; z-index: 3">
-                            <a :href="'https://github.com/'+app.github" :target="app.github"><span class="button"" title="github"><icon name="brands/github" scale="1.25"/></span></a>
+                            <a :href="'https://github.com/'+app.github" :target="app.github"><span class="button" title="github"><icon name="brands/github" scale="1.25"/></span></a>
                            
                             <span class="button" @click="go('/app/'+app._id+'/edit')" v-if="app._canedit" title="Edit"><icon name="edit" scale="1.25"/></span>                
                             <b-dropdown size="sm" variant="link" toggle-class="text-decoration-none" no-caret>
@@ -222,7 +222,7 @@
                                 <div v-if="app.contributors.length > 0">
                                     <span class="form-header">Contributors</span>
                                     <p style="height: 30px;"><small class="text-muted">List of code contributors.({{app.github}}).</small></p>
-                                    <p v-for="dev in app.contributors" :key="dev._id" style="margin-bottom: 8px;">
+                                    <p v-for="dev in app.contributors" :key="dev._id">
                                         <contact :fullname="dev.name" :email="dev.email"/>
                                     </p>
                                     <br>
@@ -274,8 +274,12 @@
                             </b-badge>
                         </p>
 
-                        <div class='altmetric-embed' data-badge-type='donut' :data-doi="app.doi" data-hide-no-mentions="true"/>
-                 
+                        <div class='altmetric-embed' 
+                            data-badge-type='medium-donut' 
+                            data-badge-details="right" 
+                            :data-doi="app.doi" 
+                            data-hide-no-mentions="true"/>
+
                         <p v-if="app.stats.serviceinfo && app.stats.serviceinfo.success_rate" v-b-tooltip.hover.d1000.right title="finished/(failed+finished). Same request could be re-submitted / rerun.">
                             <!--<span class="form-header">Success Rate</span>-->
                             <svg width="70" height="70">

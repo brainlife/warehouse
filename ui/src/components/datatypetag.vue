@@ -43,8 +43,8 @@ export default {
     },
     
     mounted() {
-        console.log("datatypetag mounted with datatype:");
-        console.log(this.datatype);
+        //console.log("datatypetag mounted with datatype:");
+        //console.log(this.datatype);
         if(!this.datatype) return;
         this.init_id_or_object(this.datatype);
     },
@@ -52,7 +52,7 @@ export default {
     methods: {
         init_id_or_object(datatype) {
             if(typeof datatype == "string") {
-                console.log("id given... loading ", datatype);
+                //console.log("id given... loading ", datatype);
                 this.datatypecache(datatype, (err, datatype_obj)=>{
                     if(err) alert(err);
                     this.init_object(datatype_obj);

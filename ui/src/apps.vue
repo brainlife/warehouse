@@ -39,8 +39,8 @@
 
     </div>
     <div class="page-content" @scroll="handle_scroll" ref="scrolled">
-        <div v-if="apps === null" style="margin: 40px; opacity: 0.5"><h3><icon name="cog" spin scale="2"/> Loading ..</h3></div>
-        <div v-else>
+        <div v-if="loading" style="margin: 40px; opacity: 0.5"><h3><icon name="cog" spin scale="2"/> Loading ..</h3></div>
+        <div v-else-if="apps">
             <h3 v-if="apps.length == 0" style="opacity: 0.8; margin: 40px;" variant="secondary">No matching Apps</h3>
 
             <div v-if="app_groups['_new']" class="newapps" id="_new" style="position: relative">
@@ -151,6 +151,7 @@ export default {
             query: "",
             config: Vue.config,
             show_dep: false,
+            loading: false,
 
             visible_category: [],
 
@@ -159,15 +160,27 @@ export default {
     },
 
     created() {
-        this.query = sessionStorage.getItem("apps.query");
-        this.show_dep = !!localStorage.getItem("apps.show_dep");
-        this.load();
+        
+        //load datatypes first.. then load apps
+        this.$http.get('datatype').then(res=>{
+            this.datatypes = {};
+            res.data.datatypes.forEach((d)=>{
+                this.datatypes[d._id] = d;
+            });
+
+            this.query = sessionStorage.getItem("apps.query");
+            this.show_dep = (localStorage.getItem("apps.show_dep") == "true");
+            this.load();
+        }).catch(err=>{
+            console.error(err);
+        });
+
     },
 
     watch: {
         show_dep(nv, ov) {
             if(nv == ov) return;
-            console.log(this.show_dep);
+            //console.log(this.show_dep);
             localStorage.setItem("apps.show_dep", this.show_dep);
             this.load();
         },
@@ -183,6 +196,7 @@ export default {
 
     methods: {
         focus_search() {
+            /*
             if(this.datatypes) return; //already loaded
             return this.$http.get('datatype')
             .then(res=>{
@@ -193,6 +207,7 @@ export default {
             }).catch(err=>{
                 console.error(err);
             });
+            */
         },
 
         get_mongo_query() {
@@ -205,6 +220,8 @@ export default {
         },
 
         load() {    
+            if(this.loading) return;
+            this.loading = true;
             this.app_groups = {};
             this.sorted_tags = [];
             this.apps = null;
@@ -245,13 +262,15 @@ export default {
                 });
             }
 
-            console.log("loading apps", ands);
+            //console.log(JSON.stringify(ands, null, 4));
+            //console.log("loading apps", ands);
             this.$http.get('app', {params: {
                 find: JSON.stringify({$and: ands}),
                 limit: 500, //TODO - this is not sustailable
                 populate: 'contributors', //'inputs.datatype outputs.datatype contributors',
             }})
             .then(res=>{
+                this.loading = false;
                 this.apps = res.data.apps;
                 console.log("got apps.. organizing");
 
@@ -267,6 +286,7 @@ export default {
                 });
                 this.sorted_tags.sort();
 
+                /*
                 if(Vue.config.debug) {
                     console.log("adding dummy apps to test performance");
                     let template = Object.assign({}, res.data.apps[0]);
@@ -280,6 +300,7 @@ export default {
                     this.app_groups['dummy'] = apps;
                     this.sorted_tags.push('dummy');
                 }
+                */
 
                 if(!this.query) {
                     //find most recently created apps as *new apps*
@@ -307,6 +328,7 @@ export default {
                     grouplist.scrollTop = 0;
                 });
             }, res=>{
+                this.loading = false;
                 console.error(res);
             });
         },
