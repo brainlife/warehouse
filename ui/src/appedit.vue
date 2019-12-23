@@ -464,7 +464,15 @@ Normally, the App description is automatically pulled from github repo descripti
 
             <b-form-group label="Deprecated By" horizontal>
                 <small>This App has been deprecated(obsoleted) by the following App.</small>
-                <v-select v-model="app.deprecated_by" label="name" :filterable="false" :options="search_apps" @search="search_app" placeholder="Please enter App name to search">
+
+                <v-select 
+                    v-model="app.deprecated_by" 
+                    label="name" 
+                    :filterable="false" 
+                    :options="search_apps" 
+                    @search="search_app" 
+                    placeholder="Please enter App name to search">
+
                     <!--<template slot="no-options">please enter App name / desc to search (2)</template>-->
                     <template slot="option" slot-scope="app">
                         <app :app="app" :compact="true" :clickable="false"/>

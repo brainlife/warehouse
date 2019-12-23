@@ -39,7 +39,7 @@
                         <div class="">
                             <statustag :status="resource.status"/>
                             <span style="padding-left: 15px; opacity: 0.8;">
-                                Tested <timeago :since="resource.status_update" :auto-update="1"/>
+                                Tested <timeago :datetime="resource.status_update" :auto-update="1"/>
                             </span>
                             <!--
                             <b :class="{'text-danger': resource.status != 'ok', 'text-success': resource.status == 'ok'}">{{resource.status.toUpperCase()}}</b>
@@ -66,7 +66,7 @@
                                     <small><icon name="shield-alt"/> {{task._group_id}}</small><br>
                                 </b-col>
                                 <b-col style="word-break: break-all;">
-                                    <small style="float: right;" v-if="task.start_date"><time>Started <timeago :since="task.start_date" :auto-update="1"/></time></small>
+                                    <small style="float: right;" v-if="task.start_date"><time>Started <timeago :datetime="task.start_date" :auto-update="1"/></time></small>
                                     <statusicon :status="task.status"/> <span style="text-transform: uppercase;">{{task.status}}</span>
                                     {{task.service}} <b-badge>{{task.service_branch}}</b-badge><br>
                                     <small>{{task.status_msg}}</small>

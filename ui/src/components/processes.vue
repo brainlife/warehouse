@@ -64,8 +64,8 @@
                 <div v-for="instance in sorted_and_filtered_instances" :key="instance._id" :id="instance._id" v-if="instance.config && !instance.config.removing">
                     <div class="instance-header" :class="instance_class(instance)" @click="toggle_instance(instance)" :id="instance._id+'-header'">
 
-                        <timeago :since="instance.update_date" :auto-update="10" class="date"/>
-                        <timeago :since="instance.create_date" :auto-update="10" class="date"/>
+                        <timeago :datetime="instance.update_date" :auto-update="10" class="date"/>
+                        <timeago :datetime="instance.create_date" :auto-update="10" class="date"/>
                         <div class="instance-desc">
                             <icon name="robot" v-if="instance.config.rule_subject" style="opacity: 0.5"/>
                             <!--<b>{{instance.name}}</b>-->

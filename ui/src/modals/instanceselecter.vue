@@ -1,6 +1,6 @@
 <template>
-<b-modal :no-close-on-backdrop='true' title="Stage Datasets" ref="modal" size="lg" @ok="submit">
-    <p class="text-muted">Please select project / process where you want to stage selected datasets to</p>
+<b-modal :no-close-on-backdrop='true' title="Stage Data-Objects" ref="modal" size="lg" @ok="submit">
+    <p class="text-muted">Please select project / process where you want to stage selected data-objects to</p>
     <br>
     <b-row>
         <b-col :cols="3">Project</b-col>

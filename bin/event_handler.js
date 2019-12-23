@@ -104,33 +104,26 @@ function subscribe() {
             });
         },
         
-        /* rule.update stores project id, not group id, and currently update_project_stats
-         * is designed to handle group_id.. let's rely on instance event update to update the count
         next=>{
             //TODO - why can't I use warehouse queue for this?
             acon.queue('warehouse.rule', {durable: true, autoDelete: false}, q=>{
                 q.bind('warehouse', 'rule.update.#');
                 q.subscribe({ack: true}, (rule, head, dinfo, ack)=>{
-                    handle_dataset(dataset, err=>{
-                        if(err) {
-                            logger.error(err)
-                            //TODO - maybe I should report the failed event to failed queue?
-                        }
+                    let exchange = dinfo.exchange;
+                    let keys = dinfo.routingKey.split(".");
+                    let project_id = keys[2];
+                    let rule_id = keys[3];
 
-                        let keys = dinfo.routingKey.split(".");
-                        let project_id = keys[2];
-                        let rule_id = keys[3];
-                        debounce("update_project_stats."+instance.group_id, ()=>{
-                            common.update_project_stats(instance.group_id);
-                        }, 1000); 
+                    debounce("update_project_stats.p_"+project_id, async ()=>{
+                        let project = await db.Projects.findOne({_id: project_id});
+                        common.update_project_stats(project);
+                    }, 1000); 
 
-                        q.shift();
-                    });
+                    q.shift();
                 });
                 next();
             });
         },
-        */
 
         next=>{
             acon.queue('auth', {durable: true, autoDelete: false}, q=>{
@@ -148,7 +141,7 @@ function subscribe() {
                 next();
             });
         },
-        
+
     ], err=>{
         if(err) throw err;
         logger.info("done subscribing");
@@ -342,13 +335,11 @@ function handle_instance(instance, cb) {
         inc_count("instance.user."+instance.user_id+"."+instance.status); 
         //number of instance events for each project
         if(instance.group_id) inc_count("instance.group."+instance.group_id+"."+instance.status); 
-
-        debounce("update_project_stats."+instance.group_id, ()=>{
-            common.update_project_stats(instance.group_id);
+        debounce("update_project_stats."+instance.group_id, async ()=>{
+            let project = await db.Projects.findOne({group_id: instance.group_id});
+            common.update_project_stats(project);
         }, 1000); 
     }
-    //console.log(JSON.stringify(instance, null, 4));
-
     cb();
 }
 

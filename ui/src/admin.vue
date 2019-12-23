@@ -15,9 +15,9 @@
             <p>
                 <h3>su</h3>
                 <v-select 
+                    @search="get_sulist" 
+                    @input="su" 
                     :debounce="250" 
-                    :on-change="su" 
-                    :on-search="get_sulist" 
                     :options="su_options" placeholder="search user to become" label="fullname"/>
             </p>
 

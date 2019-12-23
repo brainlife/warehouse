@@ -724,23 +724,22 @@ exports.update_dataset_stats = async function(project_id, cb) {
     }
 }
 
-exports.update_project_stats = async function(group_id, cb) {
+exports.update_project_stats = async function(project, cb) {
     try {
-        logger.debug("getting instance status counts from amaretti for group_id:%s", group_id);
+        logger.debug("getting instance status counts from amaretti for group_id:%s", project.group_id);
         let counts = await rp.get({
             url: config.amaretti.api+"/instance/count", json: true,
             qs: {
-                find: JSON.stringify({status: {$ne: "removed"}, group_id}),
+                find: JSON.stringify({status: {$ne: "removed"}, group_id: project.group_id}),
             },
             headers: { authorization: "Bearer "+config.warehouse.jwt, },
         });
-        let stats = counts[0]; //there should be only 1
-        logger.debug("update-project-stats-----------------------------------------------")
+        let instance_counts = counts[0]; //there should be only 1
         //logger.debug(JSON.stringify(stats, null, 4));
-        let project = await db.Projects.findOneAndUpdate({group_id}, {$set: {"stats.instances": stats}}, {new: true});
+        //let project = await db.Projects.findOneAndUpdate({group_id}, {$set: {"stats.instances": stats}}, {new: true});
 
-        logger.debug("updating rule stats for project_id:%s", project._id.toString());
-        stats = await db.Rules.aggregate()
+        //logger.debug("updating rule stats for project_id:%s", project._id.toString());
+        let stats = await db.Rules.aggregate()
             .match({removed: false, project: project._id})
             .group({_id: { "active": "$active" }, count: {$sum: 1}});
         
@@ -752,13 +751,12 @@ exports.update_project_stats = async function(group_id, cb) {
             if(rec._id.active) rules.active = rec.count;
             else rules.inactive = rec.count;
         });
-        console.dir(rules);
 
         //TODO query task/resource_service_count api
         let resource_usage = await rp.get({
             url: config.amaretti.api+"/task/resource_usage", json: true,
             qs: {
-                find: JSON.stringify({/*status: {$ne: "finished"},*/ _group_id: group_id}),
+                find: JSON.stringify({/*status: {$ne: "finished"},*/ _group_id: project.group_id}),
             },
             headers: { authorization: "Bearer "+config.warehouse.jwt, },
         });
@@ -793,10 +791,15 @@ exports.update_project_stats = async function(group_id, cb) {
         });
 
         let publications = await db.Publications.countDocuments({project});
+        let newproject = await db.Projects.findOneAndUpdate({_id: project._id}, {$set: {
+            "stats.rules": rules, 
+            "stats.resources": resource_stats, 
+            "stats.publications": publications,
+            "stats.instances": instance_counts,
+        }}, {new: true});
 
-        project = await db.Projects.findOneAndUpdate({group_id}, {$set: {"stats.rules": rules, "stats.resources": resource_stats, "stats.publications": publications}}, {new: true});
         logger.debug("all done for updating project stats");
-        if(cb) cb(null, project);
+        if(cb) cb(null, newproject);
 
     } catch (err) {
         if(cb) cb(err);

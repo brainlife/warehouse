@@ -1,5 +1,5 @@
 <template>
-<b-modal title="Stage Data" ref="modal" id="datasetSelecter" size="lg" @ok="submit" ok-only>
+<b-modal title="Stage Data-Object" ref="modal" id="datasetSelecter" size="lg" @ok="submit" ok-only>
     <b-row>
         <b-col><span class="form-header">From</span></b-col>
         <b-col cols="9">
@@ -66,7 +66,7 @@ export default {
             selected: JSON.parse(localStorage.getItem('datasets.selected')) || {},
 
             project: null, //selected project
-            datasets: null, //user selected dataset
+            datasets: [], //user selected dataset
 
             //use selected filter 
             selected_subjects: [],
@@ -107,7 +107,7 @@ export default {
 
     computed: {
         is_subject_mixed() {
-            if(!this.datasets) return false;
+            if(this.datasets.length == 0) return false;
             let subject = null;
             let diff = false;
             this.datasets.forEach(did=>{

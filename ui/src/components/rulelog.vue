@@ -4,7 +4,7 @@
         <div style="float: right;">
             <div class="button" @click="load"><icon name="sync-alt"/></div>
             <span v-if="err">No log</span>
-            <span v-if="stats"><timeago :since="stats.mtime" :auto-update="10"/></span>
+            <span v-if="stats"><timeago :datetime="stats.mtime" :auto-update="10"/></span>
         </div>
         <!--<b>{{taskcount}} Active Tasks</b>-->
     </div>

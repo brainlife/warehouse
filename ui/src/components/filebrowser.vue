@@ -27,7 +27,7 @@
                 </span>
                 {{file.filename}}
                 <span style="float: right; width: 150px; opacity: 0.7;">
-                    <timeago :since="file.attrs.mtime*1000" :title="new Date(file.attrs.mtime*1000).toLocaleString()"/>
+                    <timeago :datetime="file.attrs.mtime*1000" :title="new Date(file.attrs.mtime*1000).toLocaleString()"/>
                 </span>
                 <span style="float: right; margin-right: 20px;" v-if="!file.link">{{file.attrs.size|filesize}}</span>
             </div>

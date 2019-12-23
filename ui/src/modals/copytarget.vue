@@ -1,6 +1,6 @@
 <template>
-<b-modal :no-close-on-backdrop='true' title="Copy Datasets" ref="modal" size="lg" @ok="submit">
-    <p class="text-muted">Please select a project where you want to copy selected datasets to</p>
+<b-modal :no-close-on-backdrop='true' title="Copy Data-objects" ref="modal" size="lg" @ok="submit">
+    <p class="text-muted">Please select a project where you want to copy selected data-objects to</p>
     <br>
     <b-row>
         <b-col :cols="3">Project</b-col>
@@ -10,20 +10,6 @@
         </b-col>
     </b-row>
     <br>
-    <!--
-    <b-row>
-        <b-col :cols="3">Process</b-col>
-        <b-col>
-            <b-form-radio-group v-model="createnew" style="margin-bottom: 5px;">
-                <b-form-radio :value="true">Create New Process</b-form-radio>
-                <b-form-radio :value="false" v-if="instances.length > 0">Use Existing Process</b-form-radio>
-            </b-form-radio-group>
-            <b-form-input v-if="createnew" type="text" v-model="desc" placeholder="Enter Description for New Process"/>
-            <v-select v-if="!createnew" v-model="instance" :options="instances" label="_label" required placeholder="(Choose Process)"/>
-        </b-col>
-    </b-row>
-    <br>
-    -->
     <div slot="modal-footer">
         <b-button variant="primary" v-if="isvalid()" @click="submit">Submit</b-button>
     </div>

@@ -13,7 +13,9 @@ import 'jquery/dist/jquery.js'
 import 'select2/dist/js/select2.js'
 import Vue from 'vue'
 
+import 'vue-select/dist/vue-select.css';
 import vSelect from 'vue-select' 
+
 import VueHighlightJS from 'vue-highlightjs'
 
 import Notifications from 'vue-notification' //override element-ui ugly $notify..
@@ -44,6 +46,8 @@ Vue.component('icon', Icon)
 
 import VueDisqus from 'vue-disqus';
 
+import toNow from 'date-fns/distance_in_words_to_now'
+
 Vue.use(VueDisqus)
 Vue.use(VueHighlightJS)
 Vue.use(VueAxios, axios)
@@ -53,9 +57,19 @@ Vue.use(BootstrapVue);
 Vue.use(SocialSharing);
 Vue.use(VueTimeago, {
     name: 'timeago',
-    locale: 'en-US',
+    locale: 'en',
+    /*
     locales: {
         'en-US': require('vue-timeago/locales/en-US.json')
+    }
+    */
+    converter: (date, locale, converterOptions) => {
+        const { includeSeconds, addSuffix = true } = converterOptions
+        return toNow(date, {
+          locale,
+          includeSeconds,
+          addSuffix
+        }).replace("less than a minute ago", "just now").replace("about ", "~");
     }
 });
 

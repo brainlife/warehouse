@@ -78,10 +78,10 @@
                             <stateprogress v-if="rule.stats" :states="rule.stats.tasks" style="float: right; width: 100px"/>
                         </b-col>
                         <b-col :cols="2" style="text-align: right;">
-                            <timeago :since="rule.create_date" :auto-update="10"/>
+                            <timeago :datetime="rule.create_date" :auto-update="10"/>
                         </b-col>
                         <b-col :cols="2" style="text-align: right;">
-                            <timeago :since="rule.update_date" :auto-update="10"/>
+                            <timeago :datetime="rule.update_date" :auto-update="10"/>
                         </b-col>
                     </b-row>
                 </div>

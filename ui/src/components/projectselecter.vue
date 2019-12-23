@@ -1,18 +1,15 @@
 <template> 
 <div v-if="options">
     <b-alert show variant="secondary" v-if="options.length == 0 && required">You don't have access to any project that contains this datatype.</b-alert>
-    <!--
-    <b-input-group prepend="Project" v-else>
-        <b-form-select v-if="options.length > 0" v-model="selected"
-            max-height="250px"
-            :options="options" 
-            :placeholder="placeholder" 
-            :required="required">
-        </b-form-select>
-    </b-input-group>
-    -->
     <!--- i don't think required works with v-select-->
-    <v-select v-else :options="options" :placeholder="placeholder"  v-model="selected" label="text" :required="required" reduce="opt=>opt.value" @change="change"></v-select>
+    <v-select v-else 
+        :options="options" 
+        :reduce="option=>option.value" 
+        label="text"
+        :placeholder="placeholder"  
+        v-model="selected" 
+        :required="required" 
+        @input="change"></v-select>
 </div>
 </template>
 
@@ -48,9 +45,8 @@ export default {
 
         change() {
             if(this.selected) {
-                localStorage.setItem('last_projectid_used', this.selected.value);
-                this.$emit('input', this.selected.value);
-                //console.log(this.selected);
+                localStorage.setItem('last_projectid_used', this.selected);
+                this.$emit('input', this.selected);
             } else {
                 this.$emit('input', null);
             } 
@@ -123,17 +119,18 @@ export default {
                 //first, select project that client has requested
                 let found = this.options.find(it=>it.value == this.value);
                 if(found) {
-                    this.selected = found;//.value;
+                    this.selected = found.value;
                 } else {
                     //if not, then try selecting the last project used
                     var last_value = localStorage.getItem('last_projectid_used');
                     found = this.options.find(it=>it.value == last_value);
                     if(found) {
-                        this.selected = found;//.value;
+                        this.selected = found.value;
                     } else if(this.required && this.options.length > 0) {
                         //if we can't find it, and required field.. then select first one from the list
-                        this.selected = this.options[0];//.value;
+                        this.selected = this.options[0].value;
                     }
+                    this.$emit('input', this.selected);
                 }
             });
         },

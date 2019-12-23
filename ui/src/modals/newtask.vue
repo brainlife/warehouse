@@ -75,7 +75,8 @@
                         <b-form-group>
                             <b-row v-for="(it, idx) in input.selected" style="margin-bottom: 5px;" :key="idx">
                                 <b-col>
-                                    <v-select :onChange="change_input(input)" 
+                                    <v-select 
+                                        @input="change_input(input)" 
                                         placeholder="Select Input Dataset"
                                         v-model="input.selected[idx]" 
                                         :options="wrap_with_label(filter_datasets(input))">

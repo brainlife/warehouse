@@ -74,12 +74,12 @@
                 <h4>
                     <strong style="text-transform: uppercase;">{{task.status}}</strong>
                     <small>
-                        <time v-if="task.status == 'requested'"><timeago :since="task.request_date" :auto-update="60"/></time>
-                        <time v-if="task.status == 'waiting'">since <timeago :since="task.create_date" :auto-update="60"/></time>
-                        <time v-if="task.status == 'running'">since <timeago :since="task.start_date" :auto-update="30"/></time>
-                        <time v-if="task.status == 'finished'"><timeago :since="task.finish_date" :auto-update="60"/></time>
-                        <time v-if="task.status == 'failed'"><timeago :since="task.fail_date" :auto-update="60"/></time>
-                        <time v-if="task.status == 'removed'"><timeago :since="task.remove_date" :auto-update="60"/></time>
+                        <time v-if="task.status == 'requested'"><timeago :datetime="task.request_date" :auto-update="60"/></time>
+                        <time v-if="task.status == 'waiting'">since <timeago :datetime="task.create_date" :auto-update="60"/></time>
+                        <time v-if="task.status == 'running'">since <timeago :datetime="task.start_date" :auto-update="30"/></time>
+                        <time v-if="task.status == 'finished'"><timeago :datetime="task.finish_date" :auto-update="60"/></time>
+                        <time v-if="task.status == 'failed'"><timeago :datetime="task.fail_date" :auto-update="60"/></time>
+                        <time v-if="task.status == 'removed'"><timeago :datetime="task.remove_date" :auto-update="60"/></time>
                     </small>
                 </h4>
                 <i style="font-size: 95%;">{{task.status_msg.trim()||'empty status message'}}</i>

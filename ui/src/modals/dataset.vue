@@ -4,9 +4,8 @@
     <b-container class="brainlife-modal">
         <div class="brainlife-modal-header">
             <div class="brainlife-modal-header-buttons">
-                <!--<span v-if="!config.user" style="opacity: 0.8">Please register/signin to download/visualize this dataset</span>-->
                 <b-dropdown text="Download" v-if="dataset.storage" variant="outline-secondary" size="sm">
-                    <b-dropdown-item @click="download">This Dataset <small v-if="dataset.size">({{dataset.size|filesize}})</small></b-dropdown-item>
+                    <b-dropdown-item @click="download">This Data-Object <small v-if="dataset.size">({{dataset.size|filesize}})</small></b-dropdown-item>
                     <b-dropdown-divider v-if="dataset.prov"/>
                     <b-dropdown-header v-if="dataset.prov">Provenance</b-dropdown-header>
                     <b-dropdown-item v-if="dataset.prov" @click="download_prov">provenance.json</b-dropdown-item>
@@ -16,20 +15,15 @@
                     </b-dropdown-item>
                     <b-dropdown-item v-if="dataset.prov" @click="download_boutique">Boutique descriptor (experimental)</b-dropdown-item>
                 </b-dropdown>
-                <div class="button" @click="remove" v-if="dataset._canedit && !dataset.removed" title="Remove Dataset">
+                <div class="button" @click="remove" v-if="dataset._canedit && !dataset.removed" title="Remove Data-object">
                     <icon name="trash" scale="1.1"/>
                 </div>
                 <div class="button" @click="copy" v-if="dataset.storage" title="Copy">
                     <icon name="copy" scale="1.1"/> 
                 </div>
-                <div class="button" @click="start_viewer(dataset.datatype)" v-if="dataset.storage" title="View Dataset">
+                <div class="button" @click="start_viewer(dataset.datatype)" v-if="dataset.storage" title="View Data-object">
                     <icon name="eye" scale="1.1"/>
                 </div>
-                <!--
-                <div class="button" @click="download" v-if="dataset.storage" title="Download Dataset">
-                    <icon name="download" scale="1.1"/>
-                </div>
-                -->
                 <div class="button" @click="process" v-if="dataset.storage" title="Process">
                     <icon name="play" scale="1.1"/> 
                 </div>
@@ -45,8 +39,8 @@
         <b-tabs class="brainlife-tab" v-model="tab_index">
             <b-tab title="Details">
                 <div class="dataset-detail">
-                    <b-alert :show="dataset.removed" variant="secondary">This dataset has been removed</b-alert>
-                    <b-alert :show="!dataset.removed && dataset.status == 'storing'" variant="secondary"><icon name="cog" spin/> Archiving Dataset .. Please wait for a minute before you can interact with this dataset.</b-alert>
+                    <b-alert :show="dataset.removed" variant="secondary">This data-object has been removed</b-alert>
+                    <b-alert :show="!dataset.removed && dataset.status == 'storing'" variant="secondary"><icon name="cog" spin/> Archiving Data-Object.. Please wait for a minute before you can interact with this data-object.</b-alert>
                     <!-- detail -->
                     <div class="margin20">
                         <b-row v-if="dataset._canedit">
@@ -81,7 +75,7 @@
                             </b-col>
                         </b-row>
                         <b-row>
-                            <b-col cols="3"><span class="form-header">Dataset Tags</span></b-col>
+                            <b-col cols="3"><span class="form-header">Data-Object Tags</span></b-col>
                             <b-col cols="9">
                                 <div v-if="dataset._canedit && alltags">
                                     <tageditor :value="dataset.tags" v-model="dataset.tags" @input="dataset._tags_dirty = true" :options="alltags"/>
@@ -155,7 +149,7 @@
                                     <span v-if="!dataset.status">
                                         Status is unknown
                                     </span> 
-                                    <span title="Backup of this dataset exists in Scholarly Data Archive (SDA) system." v-if="dataset.backup_date" class="text-success">
+                                    <span title="Backup of this data-object exists in Scholarly Data Archive (SDA) system." v-if="dataset.backup_date" class="text-success">
                                         <b-badge variant="success"><icon name="archive" scale="0.7"/> SDA</b-badge>
                                     </span>
                                 </p>
@@ -180,7 +174,7 @@
                         <b-row v-if="dataset._pubs && dataset._pubs.length > 0">
                             <b-col cols="3"><span class="form-header">Publications</span></b-col>
                             <b-col cols="9">
-                                <p><small class="text-muted">This dataset has been published on the following publications.</small></p>
+                                <p><small class="text-muted">This data-object has been published on the following publications.</small></p>
                                 <div v-for="release in dataset.publications">
                                     <div v-for="pub in dataset._pubs" v-if="!pub.removed">
                                         <p v-for="r in pub.releases" :key="r._id" v-if="r._id == release && !r.removed">
@@ -212,7 +206,7 @@
             <b-tab title="Provenance">
                 <div v-if="prov" class="dataset-provenance">
                     <div v-if="prov.edges.length == 0">
-                        <b-alert show variant="secondary">This dataset was uploaded by the user, and therefore has no provenance information.</b-alert>
+                        <b-alert show variant="secondary">This data-object was uploaded by the user, and therefore has no provenance information.</b-alert>
                     </div>
                     <div v-else style="height: 100%">
                         <div style="position: absolute; right: 10px; top: 10px; z-index: 1;">
@@ -224,8 +218,8 @@
             </b-tab>
             <b-tab title="Apps">
                 <div class="dataset-apps" v-if="apps">
-                    <p v-if="apps.length > 0" class="text-muted">The following apps can be submitted with this dataset.</p>
-                    <b-alert :show="apps.length == 0" variant="secondary" style="margin: -20px;">There are currently no applications that use the datatype from this dataset.</b-alert>
+                    <p v-if="apps.length > 0" class="text-muted">The following apps can be submitted with this data-object.</p>
+                    <b-alert :show="apps.length == 0" variant="secondary" style="margin: -20px;">There are currently no applications that use the datatype from this data-object.</b-alert>
                     <div v-for="app in apps" :key="app._id" style="width: 33%; float: left;">
                         <!-- why am I handling @click on the parent div - instead of letting <app> do it?-->
                         <div style="margin-right: 10px; margin-bottom: 10px;" @click="openapp(app._id)" class="clickable">
@@ -368,7 +362,7 @@ export default {
                         //node.y = 0;
                     }
                     if(node.id == "dataset."+this.dataset._id) {
-                        node.label = "This Dataset";
+                        node.label = "This Data-Object";
                         node.color = "#2693ff";
                         //node.color = "rgba(255,0,0,0.5)";
                         node.y = 2000;
@@ -476,7 +470,7 @@ export default {
         },
 
         download() {
-            if(!Vue.config.user) return alert("Please Signup/Login first to download this dataset");
+            if(!Vue.config.user) return alert("Please Signup/Login first to download this data-object");
             this.check_agreements(this.dataset.project, ()=>{
                 let query = {_id: [this.dataset._id]};
                 this.$root.$emit("downscript.open", {find: query});
@@ -498,7 +492,7 @@ export default {
         },
 
         process() {
-            if(!Vue.config.user) return alert("Please Signup/Login first to run analysis with this dataset");
+            if(!Vue.config.user) return alert("Please Signup/Login first to run analysis with this data-object");
             this.check_agreements(this.dataset.project, ()=>{
                 this.$root.$emit('instanceselecter.open', opt=>{
                     if(opt.instance) {
@@ -525,14 +519,14 @@ export default {
         },
 
         copy() {
-            if(!Vue.config.user) return alert("Please Signup/Login first to copy this dataset");
+            if(!Vue.config.user) return alert("Please Signup/Login first to copy this data-object");
             this.check_agreements(this.dataset.project, ()=>{
                 this.$root.$emit('copytarget.open', opt=>{
                     this.$http.post('dataset/copy', {
                         dataset_ids: [ this.dataset._id ],
                         project: opt.project_id,
                     }).then(res=>{
-                        this.$notify({type: 'success', text: 'Dataset copied'});
+                        this.$notify({type: 'success', text: 'Data-Object copied'});
                         //this.$router.push("/project/"+opt.project_id);
                     });
                 });
@@ -540,7 +534,7 @@ export default {
         },
 
         submit_process(project_id, instance) {
-            if(!Vue.config.user) return alert("Please Signup/Login first to analyze this dataset");
+            if(!Vue.config.user) return alert("Please Signup/Login first to analyze this data-object");
             this.check_agreements(this.dataset.project, ()=>{
                 this.$http.post('dataset/stage', {
                     instance_id: instance._id,
@@ -554,7 +548,7 @@ export default {
         },
 
         remove() {
-            if(confirm("Do you really want to remove this dataset?")) {
+            if(confirm("Do you really want to remove this data-object?")) {
                 this.check_agreements(this.dataset.project, ()=>{
                     this.$http.delete('dataset/'+this.dataset._id)
                     .then(res=>{
@@ -597,7 +591,7 @@ export default {
                 if(this.dataset.status == "storing") {
                     setTimeout(()=>{ this.load_status(id); }, 5000);
                 } else {
-                    this.$notify({type: "success", text: "Dataset successfully stored on "+dataset.storage});
+                    this.$notify({type: "success", text: "Data-Object successfully stored on "+dataset.storage});
                 }
                 this.load_archive_task(); 
             });
@@ -659,7 +653,7 @@ export default {
             }).then(res=>{
                 this.alltags = res.data;
 
-                //load all publications that this datasets is published in
+                //load all publications that this dataobjects is published in
                 let find = {};
                 if(this.dataset.publications) {
                     find["releases._id"] = {$in: this.dataset.publications};
@@ -690,7 +684,7 @@ export default {
         },
 
         start_viewer(datatype) {
-            if(!Vue.config.user) return alert("Please Signup/Login first to visualize this dataset");
+            if(!Vue.config.user) return alert("Please Signup/Login first to visualize this data-object");
             this.check_agreements(this.dataset.project, ()=>{
                 this.find_staged_task((task, subdir, files)=>{
                     if(task) {
@@ -735,7 +729,7 @@ export default {
                 }}).then(res=>{
                     let task = res.data.tasks[0];
                     if(task) {
-                        console.log("task that produced this dataset still exists... using it");
+                        console.log("task that produced this data-object still exists... using it");
                         //look for dataset/files in case app was using deprecated filemapping
                         let output = task.config._outputs.find(output=>output.id == this.dataset.prov.output_id);
                         return cb(task, this.dataset.prov.subdir, output.files);

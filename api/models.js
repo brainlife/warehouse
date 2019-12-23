@@ -81,7 +81,6 @@ exports.dataset_event = function(dataset) {
 }
 
 exports.rule_event = function(rule) {
-    
     if(!rule) {
         logger.error("rule_event called with undefined rule");
         return;
@@ -143,15 +142,6 @@ var projectSchema = mongoose.Schema({
     
     //basic stats for this app (aggregated by bin/projectinfo.js)
     stats: {
-        //count of instances for each status
-        instances: {
-            requested: Number,
-            finished: Number,
-            running: Number, 
-            stopped: Number, 
-            failed: Number, 
-            others: Number,  //probably empty, or null
-        },
 
         //datasets stats updated by projectinfo > common.update_dataset_stats
         datasets: {
@@ -160,6 +150,16 @@ var projectSchema = mongoose.Schema({
             datatypes: [{type: mongoose.Schema.Types.ObjectId, ref: "Datatypes"}],
             count: Number,
             size: Number,
+        },
+        
+        //count of instances for each status (updated by common.update_project_stats)
+        instances: {
+            requested: Number,
+            finished: Number,
+            running: Number, 
+            stopped: Number, 
+            failed: Number, 
+            others: Number,  //probably empty, or null
         },
 
         //resource uage stats updated by projectinfo > common.update_project_stats
@@ -177,13 +177,13 @@ var projectSchema = mongoose.Schema({
             total_walltime: Number, //msec for total walltime 
         }],
 
-        //count of pipeline rules
+        //count of pipeline rules (updated by common.update_project_stats)
         rules: {
             active: Number, 
             inactive: Number, 
         },
         
-        //counts of publications
+        //counts of publications (updated by common.update_project_stats)
         publications: Number,
 
     },
