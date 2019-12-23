@@ -17,14 +17,47 @@
         <h4>
             <!--<icon name="shield-alt" scale="1.5"  style="position: relative; top: -2px; opacity: 0.8;"/>-->
             <!--<projectavatar :project="selected" :width="50" :height="50" style="position: absolute; top: 0; left: 0;"/>-->
-            <projectaccess :access="selected.access"/> 
+            <projectaccess :access="selected.access" style="position: relative; top: -3px;"/> 
             {{selected.name}}
         </h4>
     </div>
     <div class="sub-header">
         <b-tabs class="brainlife-tab" v-model="tab">
             <!--without setting active="true" on active tab, b-tabs emits change event back to tab 0 at mount-->
-            <b-tab v-for="(tabinfo, idx) in tabs" :key="tabinfo.id" :title="tabinfo.label" :active="tab == idx"/>
+            <b-tab v-for="(tabinfo, idx) in tabs" :key="tabinfo.id" :title="tabinfo.label" :active="tab == idx">
+                <template v-slot:title>
+                    {{tabinfo.label}}
+
+                    <!--let's show tab specific info-->
+                    <span v-if="tabinfo.id == 'detail'">
+                    </span>
+                    
+                    <span v-if="tabinfo.id == 'dataset'" style="opacity: 0.6; font-size: 80%;">
+                        <span title="Number of subjects stored in archive" 
+                            v-if="selected.stats && selected.stats.datasets && selected.stats.datasets.subject_count">
+                           &nbsp;<icon name="user-friends"/>&nbsp;&nbsp;{{selected.stats.datasets.subject_count}} 
+                        </span>
+                        <span title="Number of data-objects stored in archive"
+                            v-if="selected.stats && selected.stats.datasets && selected.stats.datasets.count">
+                            &nbsp;<icon name="cubes"/>&nbsp;&nbsp;{{selected.stats.datasets.count}}
+                        </span>
+                    </span>
+                    
+                    <span v-if="tabinfo.id == 'process'" title="Number of tasks" style="opacity: 0.8;"> 
+                        <div v-if="selected.stats && get_total(selected.stats.instances) > 0" style="display: inline-block; width: 75px;">
+                            <stateprogress :states="selected.stats.instances"/>
+                        </div>
+                    </span>
+                    
+                    <span v-if="tabinfo.id == 'pipeline' && selected.stats && selected.stats.rules && selected.stats.rules.active" title="Number of pipeline rules" style="opacity: 0.6; font-size: 80%;">
+                        &nbsp;{{selected.stats.rules.active}}
+                    </span>
+
+                    <span v-if="tabinfo.id == 'pub' && selected.stats && selected.stats.publications > 0" style="opacity: 0.6; font-size: 80%;">
+                        &nbsp;{{selected.stats.publications}}
+                    </span>
+                </template>
+            </b-tab>
         </b-tabs>
     </div>
     <div v-if="tabs[tab].id == 'detail'">
@@ -154,10 +187,12 @@
 
             <div class="page-right-content" style="padding: 20px 10px;" v-if="selected.stats">
 
+                <!--
                 <p v-if="selected.stats && get_total(selected.stats.instances) > 0">
                     <span class="form-header">Processes</span>
                     <stateprogress :states="selected.stats.instances" title="Tasks currently running"/>
                 </p>
+                -->
                 
                 <p>
                     <b-badge pill class="bigpill" title="Project creation date">
@@ -166,6 +201,7 @@
                     </b-badge>
                 </p>
 
+                <!--
                 <p>
                     <b-badge pill class="bigpill" title="Number of subjects stored in archvie"
                         v-if="selected.stats && selected.stats.datasets && selected.stats.datasets.subject_count">
@@ -173,7 +209,9 @@
                         <small>Subjects</small>
                     </b-badge>                           
                 </p>
+                -->
 
+                <!--
                 <p>
                     <b-badge pill class="bigpill" title="Number of datasets stored in archive"
                         v-if="selected.stats && selected.stats.datasets && selected.stats.datasets.count">
@@ -181,6 +219,7 @@
                         <small>Data-objects</small>
                     </b-badge>
                 </p>
+                -->
 
                 <p>
                     <b-badge pill class="bigpill" title="Total size of data stored in archive"
@@ -226,8 +265,8 @@
         </div><!-- project detail content-->
     </div>
 
-    <div v-if="tabs[tab].id == 'dataset'">
-        <b-alert show v-if="selected.access != 'public' && !(ismember()||isadmin()||isguest())">For non public project, only the admin/members/guests of this project can access processes.</b-alert>
+    <div v-if="tabs[tab].id == 'dataset'" style="margin-left: 200px; margin-top: 95px">
+        <b-alert show variant="secondary" v-if="selected.access != 'public' && !(ismember()||isadmin()||isguest())">For non public project, only the admin/members/guests of this project can access processes.</b-alert>
         <datasets :project="selected" :projects="projects" v-else/>
     </div>
 
@@ -279,6 +318,8 @@ import datatypetag from '@/components/datatypetag'
 import newtaskModal from '@/modals/newtask'
 import datatypeselecterModal from '@/modals/datatypeselecter'
 
+import ReconnectingWebSocket from 'reconnectingwebsocket'
+
 export default {
     components: { 
         sidemenu, 
@@ -299,15 +340,7 @@ export default {
             resource_usage: null,
             total_walltime: 0,
 
-            tabs: [
-/*
-                {id: "detail", label: "Detail"},
-                {id: "dataset", label: "Archive"},
-                {id: "process", label: "Processes"},
-                {id: "pipeline", label: "Pipelines"},
-                {id: "pub", label: "Publications"},
-*/
-            ],
+            tabs: [],
 
             tab: 0, //initial tab
             projects: null, //all projects that user can see summary of
@@ -316,6 +349,9 @@ export default {
             datatypes: {}, //datatypes loadded (used by datatype_groups)
 
             resource_citations: [],
+
+            ws: null, //websocket
+
         }
     },
 
@@ -341,7 +377,7 @@ export default {
 
         tab: function() {
             //tab gets changed even if value doesn't change.. so I have to hve if statement like this..
-            console.log(this.tab, this.tabs);
+            //console.log(this.tab, this.tabs);
             var tabid = this.tabs[this.tab].id;
             if(tabid != this.$route.params.tab) {
                 console.log("tab seems to have really changed", tabid);
@@ -388,7 +424,6 @@ export default {
     
             //open tab requested..
             if(this.$route.params.tab) {
-
                 //find the tab requested
                 this.tabs.forEach((tab, idx)=>{  
                     if(tab.id == this.$route.params.tab) {
@@ -405,6 +440,13 @@ export default {
             console.error(err);
             this.$notify({type: 'error', text: err.response.data.message});
         });
+    },
+
+    destroyed() {
+        if(this.ws) {
+            console.log("disconnecting from ws - project");
+            this.ws.close();
+        }
     },
 
     methods: {
@@ -487,6 +529,27 @@ export default {
                 }
             });
 
+            if(this.ws) this.ws.close();
+            var url = Vue.config.event_ws+"/subscribe?jwt="+Vue.config.jwt;
+            this.ws = new ReconnectingWebSocket(url, null, {reconnectInterval: 3000});
+            this.ws.onopen = (e)=>{
+                console.debug("connecting to warehouse ex");
+                this.ws.send(JSON.stringify({
+                    bind: {
+                        ex: "warehouse",
+                        key: "project.update."+project._id,
+                    }
+                }));
+                this.ws.onmessage = (json)=>{
+                    var event = JSON.parse(json.data);
+
+                    //update
+                    for(var key in event.msg) {
+                        this.selected[key] = event.msg[key];
+                    }
+                };
+            };
+
             /*
             //load list of datatypes stored in this project
             let groups = {};
@@ -530,7 +593,11 @@ export default {
                 this.$forceUpdate();
             }).catch(console.error);
             */
+            this.update_resource_usage_graph();
+        },
 
+        update_resource_usage_graph() {
+            
             //create resource usage graph
             if(this.selected.stats && this.selected.stats.resources) {
                 let resources = {};
@@ -631,6 +698,7 @@ export default {
                 });
             }
         },
+
         getvariant(state) {
             switch(state) {
             case "running": return "primary";

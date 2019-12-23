@@ -354,12 +354,16 @@ export default {
             var url = Vue.config.event_ws+"/subscribe?jwt="+Vue.config.jwt;
             this.ws = new ReconnectingWebSocket(url, null, {/*debug: Vue.config.debug,*/ reconnectInterval: 3000});
             this.ws.onopen = (e)=>{
+
+                //wf.task is deprecated by ex:warehouse.. probably use task.# instead
                 this.ws.send(JSON.stringify({
                     bind: {
                         ex: "wf.task",
                         key: this.instance._id+".#",
                     }
                 }));
+
+                //warehouse.dataset is deprecated.. need to update to ex:warehouse, key "dataset.update.<project>.<dataset_id>"
                 this.ws.send(JSON.stringify({
                     bind: {
                         ex: "warehouse.dataset",

@@ -1,8 +1,10 @@
 <template>
 <div v-if="pubs">
+    <!--
     <div class="info" v-if="pubs.length > 0">
         <b>{{pubs.length}}</b> Publications
     </div>
+    -->
     <div class="list">
         <div v-if="editing" style="background-color: white; padding: 20px; padding-top: 10px;">
             <pubform :pub="editing" :project="project" @submit="save" @cancel="cancel"/>

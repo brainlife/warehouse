@@ -78,6 +78,7 @@ function run() {
     //.sort('-create_date')  //I have to go through all rules for each loops anyway..
     .exec((err, rules)=>{
 		if(err) throw err;
+
         async.eachSeries(rules, handle_rule, err=>{
             if(err) logger.error(err);
             logger.debug("done handling "+rules.length+" rules - sleeping for a while (10sec)");
@@ -110,7 +111,7 @@ function handle_rule(rule, cb) {
     if(!rule.input_tags) rule.input_tags = {};
     if(!rule.input_subject) rule.input_subject = {};
     if(!rule.output_tags) rule.output_tags = {};
-    
+   
     //prepare for stage / app / archive
     async.series([
         
@@ -158,8 +159,12 @@ function handle_rule(rule, cb) {
         //update handle_date
         next=>{
             logger.info("handling project:"+rule.project.name+" rule:"+rule.name+" "+rule._id.toString());
+            //I can't use save() as it will unpopulate app I need to make separee mongo call
+            /*
             rule.handle_date = new Date();
             rule.save(next);
+            */
+            db.Rules.findOneAndUpdate({_id: rule._id}, {$set: {handle_date: new Date()}}).exec(next);
         },
 
         //issue user jwt
@@ -409,6 +414,18 @@ function handle_rule(rule, cb) {
         rlogger.debug("");//empty
         rlogger.debug(group_id+" --------------------------------");
 
+        /*
+        if(!rule.app.inputs) {
+            console.error("empty inputs specified");
+            console.dir(rule.app);
+            return cb();
+        }
+        if(!rule.app.outputs) {
+            console.error("empty outputs specified");
+            return cb();
+        }
+        */
+ 
         /* disabling this now because we are only running rule when datasets or rule is updated
         if(running >= config.rule.max_task_per_rule) {
             rlogger.info("reached max running task.. skipping the rest of subjects", subject, running);
@@ -427,6 +444,7 @@ function handle_rule(rule, cb) {
             rlogger.debug("task already submitted for group:"+group_id+" "+rule_tasks[group_id]._id+" "+rule_tasks[group_id].status);
             return next_group();
         }
+
         
         //find all outputs from the app with tags specified in rule.output_tags[output_id]
         var output_missing = false;

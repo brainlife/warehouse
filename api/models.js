@@ -15,7 +15,7 @@ let amqp_conn = null;
 
 //deprecated by warehouse_ex
 let dataset_ex;
-let rule_ex;
+//let rule_ex;
 
 function init_amqp(cb) {
     logger.info("connecting to amqp..");
@@ -30,10 +30,12 @@ function init_amqp(cb) {
             console.debug("dataset_ex ready.....");
             dataset_ex = ex;
         });
+        /*
         amqp_conn.exchange("warehouse.rule", {autoDelete: false, durable: true, type: 'topic', confirm: true}, (ex)=>{
             console.debug("warehouse.rule ready.....");
             rule_ex = ex;
         });
+        */
 
         cb();
     });
@@ -59,6 +61,7 @@ exports.init = (cb)=>{
     });
 }
 
+//deprecated...
 exports.dataset_event = function(dataset) {
     if(!dataset) {
         logger.error("dataset_event called with undefined dataset");
@@ -78,12 +81,9 @@ exports.dataset_event = function(dataset) {
 }
 
 exports.rule_event = function(rule) {
+    
     if(!rule) {
         logger.error("rule_event called with undefined rule");
-        return;
-    }
-    if(!rule_ex) {
-        logger.error("amqp not connected - but event handler called");
         return;
     }
     if(!rule.project) {
@@ -92,8 +92,15 @@ exports.rule_event = function(rule) {
     }
     let project = rule.project._id || rule.project;
     let key = project+"."+rule._id;
-    logger.debug("publishing rule update: %s", key);
+    /*
     rule_ex.publish(key, rule, {});
+    */
+    if(rule.app._id) rule.app = rule.app._id; //unpopulate
+    common.publish("rule.update."+key, rule);
+}
+
+exports.project_event = function(project) {
+    common.publish("project.update."+project._id, project);
 }
 
 exports.disconnect = function(cb) {
@@ -175,6 +182,9 @@ var projectSchema = mongoose.Schema({
             active: Number, 
             inactive: Number, 
         },
+        
+        //counts of publications
+        publications: Number,
 
     },
 
@@ -197,6 +207,8 @@ var projectSchema = mongoose.Schema({
 
     removed: { type: Boolean, default: false },
 });
+projectSchema.post('save', exports.project_event);
+projectSchema.post('findOneAndUpdate', exports.project_event);
 exports.Projects = mongoose.model("Projects", projectSchema);
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////

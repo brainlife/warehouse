@@ -120,7 +120,6 @@ color: #555;
 font-weight: 700;
 white-space: nowrap;
 line-height: 20px;
-box-shadow: 1px 1px 2px rgba(0,0,0,0.15);
 margin-right: 5px;
 cursor: pointer;
 }

@@ -752,6 +752,7 @@ exports.update_project_stats = async function(group_id, cb) {
             if(rec._id.active) rules.active = rec.count;
             else rules.inactive = rec.count;
         });
+        console.dir(rules);
 
         //TODO query task/resource_service_count api
         let resource_usage = await rp.get({
@@ -791,7 +792,9 @@ exports.update_project_stats = async function(group_id, cb) {
             }
         });
 
-        project = await db.Projects.findOneAndUpdate({group_id}, {$set: {"stats.rules": rules, "stats.resources": resource_stats}}, {new: true});
+        let publications = await db.Publications.countDocuments({project});
+
+        project = await db.Projects.findOneAndUpdate({group_id}, {$set: {"stats.rules": rules, "stats.resources": resource_stats, "stats.publications": publications}}, {new: true});
         logger.debug("all done for updating project stats");
         if(cb) cb(null, project);
 

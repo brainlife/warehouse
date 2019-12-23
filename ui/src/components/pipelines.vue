@@ -1,7 +1,7 @@
 <template>
 <div v-if="ready">
     <div v-if="!editing && nonremoved_rule_count > 0" class="info">
-        <span><b>{{nonremoved_rule_count}}</b> Pipeline Rules</span>
+        <!--<span><b>{{nonremoved_rule_count}}</b> Pipeline Rules</span>-->
         <div style="position: fixed; top: 57px; right: 30px; z-index: 1;">
             <small>Order by</small>
             <b-dropdown :text="order" size="sm" :variant="'light'">
@@ -27,21 +27,23 @@
 
         </div>
         <div class="rules" v-else>
-            <b-row :no-gutters="true" style="padding-right: 30px; padding: 10px">
-                <b-col :cols="5"><!--placeholder--></b-col>
-                <b-col :cols="1">
-                    <small>Submitter</small>
-                </b-col>
-                <b-col :cols="2">
-                    <small style="width: 100px; float: right;">Tasks</small>
-                </b-col>
-                <b-col :cols="2">
-                    <small style="float: right;">Create Date</small>
-                </b-col>
-                <b-col :cols="2">
-                    <small style="float: right;">Update Date</small>
-                </b-col>
-            </b-row>
+            <div style="padding: 10px 30px">
+                <b-row :no-gutters="true">
+                    <b-col :cols="5"><!--placeholder--></b-col>
+                    <b-col :cols="1">
+                        <small>Submitter</small>
+                    </b-col>
+                    <b-col :cols="2">
+                        <small style="width: 100px; float: right;">Tasks</small>
+                    </b-col>
+                    <b-col :cols="2">
+                        <small style="float: right;">Create Date</small>
+                    </b-col>
+                    <b-col :cols="2">
+                        <small style="float: right;">Update Date</small>
+                    </b-col>
+                </b-row>
+            </div>
 
             <div v-for="rule in sorted_rules.filter(r=>r.removed == false)" :key="rule._id" :id="rule._id" 
                 :class="{'rule-removed': rule.removed, 'rule-selected': selected == rule, 'rule-inactive': !rule.active}" class="rule">
@@ -157,7 +159,7 @@
                             If the following output datasets are missing (and archive when finish)
                         </div>
                         <div style="margin-left: 30px;">
-                            <p v-for="output in rule.app.outputs" :key="output.id" v-if="rule.archive == undefined || rule.archive[output.id] == undefined || rule.archive[output.id].do">
+                            <p v-for="output in rule.app.outputs.filter(output=>rule.archive == undefined || rule.archive[output.id] == undefined || rule.archive[output.id].do)" :key="output.id">
                                 <small style="float: right; margin-right: 10px">{{output.id}}</small>
                                 <datatypetag :datatype="datatypes[output.datatype]" :tags="output.datatype_tags" v-if="datatypes"/>
                                 <span class="opacity: 0.7" v-if="rule.output_tags && rule.output_tags[output.id] && rule.output_tags[output.id].length > 0">
@@ -195,6 +197,8 @@ import ruleform from '@/components/ruleform'
 import rulelog from '@/components/rulelog'
 import stateprogress from '@/components/stateprogress'
 
+import appcache from '@/mixins/appcache'
+
 import ReconnectingWebSocket from 'reconnectingwebsocket'
 
 const async = require("async");
@@ -202,6 +206,7 @@ const async = require("async");
 var debounce = null;
 
 export default {
+    mixins: [ appcache ],
     props: [ 'project' ], 
     components: { 
         contact, tags, app,
@@ -234,8 +239,8 @@ export default {
         this.ws.onopen = (e)=>{
             this.ws.send(JSON.stringify({
                 bind: {
-                    ex: "warehouse.rule",
-                    key: this.project._id+".#",
+                    ex: "warehouse",
+                    key: "rule.update."+this.project._id+".#",
                 }
             }));
         }
@@ -243,13 +248,29 @@ export default {
         this.ws.onmessage=(json)=>{
             var event = JSON.parse(json.data);
             if(!event.dinfo) return; //??
-            switch(event.dinfo.exchange) {
-            case "warehouse.rule":
+            if(event.dinfo.routingKey.startsWith("rule.update.")) {
                 let newrule = event.msg;
-                let rule = this.rules.find(rule=>rule._id == newrule._id);
-                if(rule) {
-                    rule.stats = newrule.stats;
-                }
+                //console.log("appcahe", newrule.app)
+                if(newrule.app._id) alert("feeding app that's already populated");
+                this.appcache(newrule.app, {populate_datatype: false}, (err, app)=>{
+                    newrule.app = app;
+                    //console.dir(app);
+                    let rule = this.rules.find(rule=>rule._id == newrule._id);
+                    if(rule) {
+                        //update existing rule
+                        for(let key in newrule) { 
+                            rule[key] = newrule[key]; 
+                        }
+                    } else {
+                        //new rule!
+                        this.rules.push(newrule);
+                    }
+
+                    //incase we might loaded a new rule with new app..
+                    this.load_referenced(err=>{
+                        if(err) console.error(err);
+                    });
+                });
             }
         }
     },
@@ -364,8 +385,6 @@ export default {
         },
 
         load_referenced(cb) {
-            this.datatypes = null;
-
             //load referenced datatypes
             let ids = [];
             this.rules.forEach(rule=>{

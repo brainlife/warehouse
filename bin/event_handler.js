@@ -103,14 +103,41 @@ function subscribe() {
                 next();
             });
         },
-
-        //handle other misc events all together..
+        
+        /* rule.update stores project id, not group id, and currently update_project_stats
+         * is designed to handle group_id.. let's rely on instance event update to update the count
         next=>{
-            acon.queue('warehouse', {durable: true, autoDelete: false}, q=>{
+            //TODO - why can't I use warehouse queue for this?
+            acon.queue('warehouse.rule', {durable: true, autoDelete: false}, q=>{
+                q.bind('warehouse', 'rule.update.#');
+                q.subscribe({ack: true}, (rule, head, dinfo, ack)=>{
+                    handle_dataset(dataset, err=>{
+                        if(err) {
+                            logger.error(err)
+                            //TODO - maybe I should report the failed event to failed queue?
+                        }
+
+                        let keys = dinfo.routingKey.split(".");
+                        let project_id = keys[2];
+                        let rule_id = keys[3];
+                        debounce("update_project_stats."+instance.group_id, ()=>{
+                            common.update_project_stats(instance.group_id);
+                        }, 1000); 
+
+                        q.shift();
+                    });
+                });
+                next();
+            });
+        },
+        */
+
+        next=>{
+            acon.queue('auth', {durable: true, autoDelete: false}, q=>{
                 q.bind('auth', 'user.create.*');
                 q.bind('auth', 'user.login.*');
                 q.subscribe({ack: true}, (msg, head, dinfo, ack)=>{
-                    handle_event(msg, head, dinfo, err=>{
+                    handle_auth_event(msg, head, dinfo, err=>{
                         if(err) {
                             logger.error(err)
                             //TODO - maybe I should report the failed event to failed queue?
@@ -337,7 +364,7 @@ function handle_dataset(dataset, cb) {
     cb();
 }
 
-function handle_event(msg, head, dinfo, cb) {
+function handle_auth_event(msg, head, dinfo, cb) {
     logger.debug(JSON.stringify(msg, null, 4));
     let exchange = dinfo.exchange;
     let keys = dinfo.routingKey.split(".");

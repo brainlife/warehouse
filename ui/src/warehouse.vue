@@ -250,7 +250,7 @@ background-color: white;
 
 .brainlife-tab .nav-item a {
 color: inherit;
-opacity: 0.5;
+opacity: 0.6;
 border: none;
 transition: color 0.5s, opacity 0.5s;
 font-weight: bold;
