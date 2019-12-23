@@ -25,7 +25,7 @@ db.init(async err=>{
 
     //debug..
     //let bids_dirs = ["datasets.datalad.org/ds002040/dataset_description.json"];
-    //bids_dirs = ["datasets.datalad.org/simon/dataset_description.json"];
+    //bids_dirs = ["datasets.datalad.org/openneuro/ds001021/dataset_description.json"];
 
     let skipped = [];
 

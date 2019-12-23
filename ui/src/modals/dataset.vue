@@ -721,6 +721,7 @@ export default {
 
                 //ok.. let's see if a task that produced the dataset still exists
                 if(!this.dataset.prov) return cb(null);
+                if(!this.dataset.prov.task._id) return cb(null); //(only happens in dev?)
                 return this.$http.get(Vue.config.amaretti_api+'/task', {params: {
                     find: JSON.stringify({ 
                         _id: this.dataset.prov.task._id,
@@ -730,6 +731,7 @@ export default {
                     let task = res.data.tasks[0];
                     if(task) {
                         console.log("task that produced this data-object still exists... using it");
+                        console.dir(task);
                         //look for dataset/files in case app was using deprecated filemapping
                         let output = task.config._outputs.find(output=>output.id == this.dataset.prov.output_id);
                         return cb(task, this.dataset.prov.subdir, output.files);
