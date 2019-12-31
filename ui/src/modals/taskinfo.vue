@@ -161,7 +161,8 @@
                 </div> <!-- smon-->
                 <div style="padding: 20px;">
                     <h5>Config</h5>
-                    <pre v-highlightjs="JSON.stringify(task.config, null, 4)" style="background-color: white;"><code class="json hljs"></code></pre>
+                    <!--<pre v-highlightjs="JSON.stringify(task.config, null, 4)" style="background-color: white;"><code class="json hljs"></code></pre>-->
+                    <pre>{{JSON.stringify(task.config, null, 4)}}</pre>
                 </div>
             </div>
         </b-container>

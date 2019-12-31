@@ -3,7 +3,7 @@ import 'bootstrap/dist/css/bootstrap.min.css'
 import 'bootstrap-vue/dist/bootstrap-vue.min.css'
 
 import 'select2/dist/css/select2.css'
-import 'highlight.js/styles/default.css'
+//import 'highlight.js/styles/default.css'
 
 import 'katex/dist/katex.min.css'
 import 'vue2-animate/dist/vue2-animate.min.css'
@@ -16,7 +16,7 @@ import Vue from 'vue'
 import 'vue-select/dist/vue-select.css';
 import vSelect from 'vue-select' 
 
-import VueHighlightJS from 'vue-highlightjs'
+//import VueHighlightJS from 'vue-highlightjs'
 
 import Notifications from 'vue-notification' //override element-ui ugly $notify..
 import 'vue-awesome/icons'
@@ -37,10 +37,6 @@ import VueAxios from 'vue-axios'
 
 import {parseBibFile} from "bibtex";
 
-//import 'vue-multiselect/dist/vue-multiselect.min.css'
-//import multiselect from 'vue-multiselect'
-//Vue.component('multiselect', multiselect)
-
 Vue.component('v-select', vSelect)
 Vue.component('icon', Icon)
 
@@ -49,7 +45,7 @@ import VueDisqus from 'vue-disqus';
 import toNow from 'date-fns/distance_in_words_to_now'
 
 Vue.use(VueDisqus)
-Vue.use(VueHighlightJS)
+//Vue.use(VueHighlightJS)
 Vue.use(VueAxios, axios)
 Vue.use(Notifications);
 Vue.use(VueLazyload)
@@ -58,11 +54,6 @@ Vue.use(SocialSharing);
 Vue.use(VueTimeago, {
     name: 'timeago',
     locale: 'en',
-    /*
-    locales: {
-        'en-US': require('vue-timeago/locales/en-US.json')
-    }
-    */
     converter: (date, locale, converterOptions) => {
         const { includeSeconds, addSuffix = true } = converterOptions
         return toNow(date, {

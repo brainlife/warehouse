@@ -107,7 +107,7 @@
                                     <tr v-for="(v,k) in rule.config" :key="k">
                                         <th :cols="3" style="font-size: 90%; opacity: 0.7">&nbsp;&nbsp;{{k}}</th>
                                         <th v-if="typeof v == 'object'">
-                                            <pre v-highlightjs style="margin-bottom: 0px;"><code class="json hljs">{{v}}</code></pre>
+                                            <pre style="margin-bottom: 0px;">{{JSON.stringify(v, null, 4)}}</pre>
                                         </th>
                                         <th v-else>{{v}}</th>
                                     </tr>

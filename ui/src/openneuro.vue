@@ -6,12 +6,12 @@
         <h2>/ {{$route.params.id}}</h2>
         <br>
         <p>
-            This dataset is not yet exposed through brainlife.io. 
+            This dataset is not yet available on brainlife.io. 
         </p>
 
         <p>
             Please contact <a target="mail" :href="'mailto:brlife@iu.edu?subject=Please expose openneuro '+$route.params.id+' on brainlife.io'">brainlife administrators</a> and request
-            to make this dataset available through brainlife so that you and other users of brainlife.io can analyze this dataset using brainlife.io Apps.
+            to make this dataset available on brainlife.io so that you and other users of brainlife.io can analyze this dataset using brainlife.io Apps.
         </p>
 
     </div>
@@ -38,6 +38,7 @@ export default {
     },
 
     mounted: function() {
+        /*
         this.$http.get('project', {params: {
             find: JSON.stringify({ 
                 removed: false,
@@ -54,10 +55,22 @@ export default {
         }, res=>{
             console.error(res);
         });
-    },
+        */
 
-    methods: {
-    }
+        this.$http.get('datalad/datasets', {params: {
+            find: JSON.stringify({
+                path: "datasets.datalad.org/openneuro/"+this.$route.params.id,
+            })
+        }})
+        .then(res=>{
+            console.dir(res.data);
+            if(res.data.length == 0) return;
+            //in case there are multiple.. let's pick the first one
+            let dataset = res.data[0];
+            console.log("redirecting to "+dataset._id);
+            this.$router.push("/datasets/"+dataset._id);
+        }).catch(console.error);
+    },
 }
 </script>
 

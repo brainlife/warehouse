@@ -8,7 +8,8 @@
         <b-alert v-else-if="alert.type == 'success'" variant="success" show>{{alert.msg}}</b-alert>
         <div v-else>
             <b-alert show variant="danger">Unknown brainlife product type</b-alert>
-            <pre v-if="Object.keys(other_product).length != 0" v-highlightjs="JSON.stringify(other_product, null, 4)" style="max-height: 150px;"><code class="json hljs"></code></pre>
+            <!-- <pre v-if="Object.keys(other_product).length != 0" v-highlightjs="JSON.stringify(other_product, null, 4)" style="max-height: 150px;"><code class="json hljs"></code></pre>-->
+            <pre v-if="Object.keys(other_product).length != 0">{{JSON.stringify(other_product, null, 4)}}</pre>
         </div>
     </div>
     <b-tabs class="brainlife-tab" v-model="tab">

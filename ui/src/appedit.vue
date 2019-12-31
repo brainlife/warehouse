@@ -499,18 +499,6 @@ Normally, the App description is automatically pulled from github repo descripti
             <br>
         </b-container>
         </b-form>
-
-        <b-card v-if="config.debug">
-            <div slot="header">Debug</div>
-            <h3>input_datasets</h3>
-            <pre v-highlightjs="JSON.stringify(input_datasets, null, 4)"><code class="json hljs"></code></pre>
-            <h3>output_datasets</h3>
-            <pre v-highlightjs="JSON.stringify(output_datasets, null, 4)"><code class="json hljs"></code></pre>
-            <h3>config_params</h3>
-            <pre v-highlightjs="JSON.stringify(config_params, null, 4)"><code class="json hljs"></code></pre>
-            <h3>app</h3>
-            <pre v-highlightjs="JSON.stringify(app, null, 4)"><code class="json hljs"></code></pre>
-        </b-card>
         
         <div class="page-footer">
             <b-container>
@@ -544,8 +532,7 @@ export default {
     components: { 
         sidemenu, contactlist, multiprojectselecter,
         datatypeselecter, trueorfalse, tageditor, datatype, app, branchselecter,
-
-        editor: require('vue2-ace-editor'),
+        //editor: require('vue2-ace-editor'),
     },
     data() {
         return {

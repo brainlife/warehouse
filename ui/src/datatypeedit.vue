@@ -212,7 +212,7 @@
             <br>
         </b-container>
         <div v-if="config.debug">
-            <pre v-highlightjs="JSON.stringify(datatype, null, 4)"><code class="json hljs"></code></pre>
+            <pre>{{JSON.stringify(datatype, null, 4)}}</pre>
         </div>
         </b-form>
     </div><!--page-content-->

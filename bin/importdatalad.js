@@ -131,35 +131,35 @@ function handle_bids(key, bids, cb) {
                     files.push({src: item.files[dest], dest});
                 }
 
-                item.dataset.storage_config = {files, commit_id}; //let's set commit_id for provenance purpose (not used yet)
+                item.dataset.storage_config = {files, commit_id, path: key.path, dldataset_id: dldataset._id, something: 'whatever' }; //let's set commit_id for provenance purpose (not used yet)
                 item.dataset.status = "stored"; //should I come up with something?
 
                 //similar code exists in bl-bids-upload
-                key = {
+                let itemkey = {
                     dldataset: dldataset._id,
                     "dataset.datatype": item.dataset.datatype,
                     //"dataset.desc": item.dataset.desc,
                     "dataset.meta.subject": item.dataset.meta.subject,
                 };
                 if(item.dataset.meta.session) {
-                    key["dataset.meta.session"] = item.dataset.meta.session;
+                    itemkey["dataset.meta.session"] = item.dataset.meta.session;
                 }
                 if(item.dataset.meta.run) {
-                    key["dataset.meta.run"] = item.dataset.meta.run;
+                    itemkey["dataset.meta.run"] = item.dataset.meta.run;
                 }
 
-                db.DLItems.findOne(key, (err, dlitem)=>{
+                db.DLItems.findOne(itemkey, (err, dlitem)=>{
                     if(err) return cb(err);
                     if(!dlitem) {
                         //new
-                        dlitem = new db.DLItems(Object.assign(key, {dataset: item.dataset}));
+                        dlitem = new db.DLItems(Object.assign(itemkey, {dataset: item.dataset, create_date: new Date()}));
                         dlitem.save(err=>{
                             if(err) return cb(err);
                             next_dataset();
                         });
                     } else {
                         //for(let key in update) dlitem[key] = update[key];
-                        db.DLItems.updateOne(key, {$set: {dataset: item.dataset}}, err=>{
+                        db.DLItems.updateOne(itemkey, {$set: {dataset: item.dataset, update_date: new Date()}}, err=>{
                             if(err) return cb(err);
                             next_dataset();
                         });

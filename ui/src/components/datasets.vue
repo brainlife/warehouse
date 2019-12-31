@@ -148,7 +148,7 @@ import Vue from 'vue'
 import sidemenu from '@/components/sidemenu'
 import pageheader from '@/components/pageheader'
 import tags from '@/components/tags'
-import metadata from '@/components/metadata'
+//import metadata from '@/components/metadata'
 import datatypetag from '@/components/datatypetag'
 
 import agreementMixin from '@/mixins/agreement'
@@ -168,7 +168,7 @@ const source = CancelToken.source();
 export default {
     mixins: [agreementMixin],
     components: { 
-        sidemenu, tags, metadata, pageheader, datatypetag, 
+        sidemenu, tags, pageheader, datatypetag, 
     },
     props: ['project', 'projects'],
     data () {

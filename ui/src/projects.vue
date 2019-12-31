@@ -41,6 +41,7 @@
             <br clear="both">
         </div>
 
+        <!--
         <div v-if="openneuro_projects && openneuro_projects.length > 0" style="position: relative;">
             <h4 class="group-title">OpenNeuro Datasets</h4>
             <p style="opacity: 0.8; margin: 20px;">
@@ -54,6 +55,7 @@
             </div>
             <br clear="both">
         </div>
+        -->
     </div>
 
     <b-button class="button-fixed" @click="newproject" v-b-tooltip.hover title="New Project">
@@ -77,7 +79,7 @@ export default {
         return {   
             my_projects: null,
             other_projects: null,
-            openneuro_projects: null,
+            //openneuro_projects: null,
 
             query: "",
             mode: localStorage.getItem("projects.mode")||"tile",
@@ -150,6 +152,7 @@ export default {
                 this.$notify({type: 'error', text: err.response.data.message()});
             });
 
+            /*
             //load openneuro project separately..
             this.openneuro_projects = null;
             ands[0] = {removed: false, "openneuro": {$exists: true}};
@@ -164,6 +167,7 @@ export default {
                 console.error(err);
                 this.$notify({type: 'error', text: err.response.data.message});               
             })
+            */
         },
 
         change_query_debounce() {

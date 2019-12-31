@@ -64,9 +64,7 @@
                                 </b-col>
                             </b-row>
                         </div>
-                        <!--
-                        <pre v-highlightjs="JSON.stringify(datatype.files, null, 4)"><code class="json hljs"></code></pre>
-                        -->
+                        <!-- <pre v-highlightjs="JSON.stringify(datatype.files, null, 4)"><code class="json hljs"></code></pre> -->
                         <br>
                     </b-col>
                 </b-row>
@@ -160,7 +158,8 @@
                     <b-col>
                         <p><small style="opacity: 0.7">The following file mapping is used to generate BIDS derivative exports.</small></p>
                         <div style="background-color: #f9f9f9; color: #bbb; padding: 5px"><b>{{datatype.bids.derivatives}}</b></div>
-                        <pre v-highlightjs="JSON.stringify(datatype.bids.maps, null, 4)"><code class="json hljs"></code></pre>
+                        <!-- <pre v-highlightjs="JSON.stringify(datatype.bids.maps, null, 4)"><code class="json hljs"></code></pre> -->
+                        <pre>{{JSON.stringify(datatype.bids.maps, null, 4)}}</pre>
                         <br>
                     </b-col>
                 </b-row>

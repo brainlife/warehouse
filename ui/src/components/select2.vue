@@ -179,10 +179,6 @@ export default {
     color:#999;
     float: right;
 }
-.select2-results__option--highlighted .tag,
-.select2-results__option--highlighted time {
-    color: #ddd;
-}
 
 /* Hide the 'Searching...' text */
 .select2-results__option.loading-results {

@@ -123,7 +123,8 @@
                                                 </datatype>
                                                 <small style="position: relative" v-if="output.output_on_root && output.files"> 
                                                     <b>Output Mapping</b>
-                                                    <pre v-highlightjs v-if="output.files"><code class="json hljs">{{output.files}}</code></pre>
+                                                    <!--<pre v-highlightjs v-if="output.files"><code class="json hljs">{{output.files}}</code></pre>-->
+                                                    <editor v-if="output.files" v-bind:value="JSON.stringify(output.files, null, 4)" @init="editorInit" lang="json" theme="chrome"></editor>
                                                 </small>
                                             </div>
                                         </div>
@@ -331,14 +332,17 @@ export default {
         projectavatar,
         doibadge, app,
         resource,
+        editor: require('vue2-ace-editor'),
     },
 
+    /*
     metaInfo: {
         meta: [
             { charset: 'utf-8' },
             { name: 'here is my thing', content: 'appppp' }
         ]
     },
+    */
 
     data () {
         return {
@@ -565,7 +569,27 @@ export default {
                 console.dir(list);
             }
             return item;
-        }
+        },
+
+        editorInit(editor) {
+            console.log("initializing editor");
+
+            //require('brace/ext/language_tools')
+
+            require('brace/mode/json')
+            require('brace/theme/chrome')
+            require('brace/snippets/javascript')
+
+            editor.container.style.lineHeight = 1.25;
+            editor.renderer.updateFontSize();
+            editor.setReadOnly(true);  // false to make it editable
+
+            editor.setAutoScrollEditorIntoView(true);
+            editor.setOption("maxLines", 30);
+            editor.setOption("minLines", 3);
+
+            editor.setShowPrintMargin(true);
+        },
     },
 }
 </script>

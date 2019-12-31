@@ -748,6 +748,8 @@ var dlItemSchema = mongoose.Schema({
     path: String,
     status: String,
     */
+    create_date: { type: Date, default: Date.now },
+    update_date: { type: Date, default: Date.now },
 });
 dlItemSchema.index({'dldataset': 1, 'dataset.datatype': 1, 'dataset.meta.subject': 1, 'dataset.meta.session': 1, 'dataset.meta.run': 1}); //importdatlad uses this as *key* for each item
 exports.DLItems = mongoose.model('DLItems', dlItemSchema);

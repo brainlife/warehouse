@@ -159,12 +159,12 @@ export default {
     },
 
     mounted() {
-        //load all datatypes
+        console.log("loading all datatypes - todo. switch to datatypecache mixin");
         this.$http.get('datatype', {params: {
             sort: 'name', 
             find: JSON.stringify({validator: {$exists: true}}),
         }}).then(res=>{
-            console.dir(res);
+            //console.dir(res);
             this.datatypes = {};
             res.data.datatypes.forEach((type)=>{
                 this.datatypes[type._id] = type;

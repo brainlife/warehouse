@@ -9,7 +9,8 @@
             </td>
             <td v-else-if="v === ''">(empty)</td>
             <td v-else-if="typeof v == 'object'">
-                <pre v-highlightjs style="margin-bottom: 0px;"><code class="json hljs">{{v}}</code></pre>
+                <!-- <pre v-highlightjs style="margin-bottom: 0px;"><code class="json hljs">{{v}}</code></pre> -->
+                <pre style="margin-bottom: 0px;">{{JSON.stringify(v, null, 4)}}</pre>
             </td>
             <td v-else width="30%"><pre style="white-space: pre-wrap;">{{v}}</pre></td>
             

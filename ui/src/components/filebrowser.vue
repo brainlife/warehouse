@@ -110,7 +110,7 @@ export default {
             require('brace/mode/javascript')
             require('brace/mode/r')
             require('brace/mode/markdown')
-            require('brace/mode/html')
+            //require('brace/mode/html') //53kb gzipped!
             require('brace/mode/dockerfile')
 
             require('brace/theme/chrome')

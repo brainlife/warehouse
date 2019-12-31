@@ -8,7 +8,8 @@
         </div>
         <!--<b>{{taskcount}} Active Tasks</b>-->
     </div>
-    <pre v-if="logs" v-highlightjs="logs"><code class="plaintext hljs"></code></pre>
+    <!-- <pre v-if="logs" v-highlightjs="logs"><code class="plaintext hljs"></code></pre> -->
+    <editor v-if="logs" v-bind:value="logs" @init="editorInit" lang="text" theme="chrome"></editor>
 </div>
 </template>
 
@@ -20,7 +21,9 @@ export default {
         id: { type: String },
     },
 
-    components: { },
+    components: { 
+        editor: require('vue2-ace-editor'),
+    },
 
     watch: {
         id: function() {
@@ -74,6 +77,26 @@ export default {
                 this.taskcount = res.data.count;
             });
             */
+        },
+
+        editorInit(editor) {
+            console.log("initializing editor");
+
+            //require('brace/ext/language_tools')
+
+            require('brace/mode/text')
+            require('brace/theme/chrome')
+            require('brace/snippets/javascript')
+
+            editor.container.style.lineHeight = 1.25;
+            editor.renderer.updateFontSize();
+            editor.setReadOnly(true);  // false to make it editable
+
+            editor.setAutoScrollEditorIntoView(true);
+            editor.setOption("maxLines", 30);
+            editor.setOption("minLines", 3);
+
+            editor.setShowPrintMargin(true);
         },
     }
 }

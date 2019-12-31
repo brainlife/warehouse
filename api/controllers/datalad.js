@@ -96,7 +96,7 @@ router.post('/import/:dataset_id', jwt({secret: config.express.pubkey}), (req, r
                     delete d._id;
                     d.user_id = req.user.sub;
                     d.project = project._id;
-                    //console.dir(d);
+                    d.storage_config.dlitem_id = item._id;
                     db.Datasets.create(d, next_item);
                 }, err=>{
                     if(err) return next(err);

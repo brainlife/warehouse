@@ -46,7 +46,7 @@
 
 import Vue from 'vue'
 import tags from '@/components/tags'
-import metadata from '@/components/metadata'
+//import metadata from '@/components/metadata'
 import projectselecter from '@/components/projectselecter'
 import select2 from '@/components/select2'
 import datatypetag from '@/components/datatypetag'
@@ -59,7 +59,7 @@ var debounce = {};
 
 export default {
     mixins: [agreementMixin],
-    components: { metadata, tags, projectselecter, select2, datatypetag },
+    components: { tags, projectselecter, select2, datatypetag },
     data() {
         return {
             //datasets selected via datasets page

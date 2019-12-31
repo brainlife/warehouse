@@ -134,6 +134,7 @@
                                         <b>
                                             {{dataset.storage}} 
                                             <span v-if="dataset.storage == 'copy'">- {{dataset.storage_config.storage}}</span>
+                                            <span v-if="dataset.storage_config && dataset.storage_config.path" style="opacity: 0.8; font-weight: normal; font-size: 90%">{{dataset.storage_config.path}}</span>
                                         </b>
                                         <span class="text-muted" v-if="dataset.size">({{dataset.size | filesize}})</span>
                                         <div v-if="dataset.storage == 'url'">
@@ -175,9 +176,9 @@
                             <b-col cols="3"><span class="form-header">Publications</span></b-col>
                             <b-col cols="9">
                                 <p><small class="text-muted">This data-object has been published on the following publications.</small></p>
-                                <div v-for="release in dataset.publications">
-                                    <div v-for="pub in dataset._pubs" v-if="!pub.removed">
-                                        <p v-for="r in pub.releases" :key="r._id" v-if="r._id == release && !r.removed">
+                                <div v-for="(release, idx) in dataset.publications" :key="idx">
+                                    <div v-for="(pub, idx) in dataset._pubs.filter(p=>!pub.removed)" :key="idx">
+                                        <p v-for="r in pub.releases.filter(r=>r._id == release && !r.removed)" :key="r._id">
                                             <a href="javascript:void(0);" @click="openpub(pub)">
                                                 <icon name="book" scale="0.8"/> {{pub.name||pub}} - Release {{r.name}}
                                             </a>
@@ -241,7 +242,7 @@ import contact from '@/components/contact'
 import tags from '@/components/tags'
 import app from '@/components/app'
 import datatype from '@/components/datatype'
-import metadata from '@/components/metadata'
+//import metadata from '@/components/metadata'
 import pageheader from '@/components/pageheader'
 import appavatar from '@/components/appavatar'
 import datatypetag from '@/components/datatypetag'
@@ -266,7 +267,7 @@ export default {
     components: { 
         sidemenu, contact, 
         app, tags, datatype, 
-        metadata, pageheader, appavatar,
+        pageheader, appavatar,
         datatypetag, task, pubcard, 
         tageditor, taskconfig, product, task,
 
