@@ -1,6 +1,7 @@
 <template>
 
 <div class="sidemenu" v-if="showmenu">
+    <!--
     <div @click="showpanel = !showpanel" class="logo">
         <h3 class="title">b</h3>
         <div class="panel-content" v-if="showpanel">
@@ -13,6 +14,10 @@
             </div>
             <img src="@/assets/images/logo.png" width="80px" style="position: absolute; bottom: 0px; right: 30px;"/>
         </div>
+    </div>
+    -->
+    <div @click="goindex()" class="logo">
+        <h3 class="title">b</h3>
     </div>
 
     <ul class="items">
@@ -183,6 +188,9 @@ export default {
         doc() {
             window.open("https://brainlife.io/docs/", "brainlife doc");
         },
+        goindex() {
+            document.location = "https://brainlife.io";
+        },
         signout() {
             sessionStorage.setItem('auth_redirect', window.location); //TODO - un-tested.. as to if this gets back here
             document.location = Vue.config.auth_signout;
@@ -219,7 +227,7 @@ width: 40px;
 bottom: 0px;
 color:  #fffd;
 font-size: 8pt;
-background-image: linear-gradient(0deg, #2693ff, #159957);
+background-image: linear-gradient(0deg, #159957, #2693ff);
 z-index: 2;
 box-shadow: inset -3px 0 2px #3331;
 }
@@ -253,7 +261,9 @@ transition: background-color 0.5s;
 }
 
 .items li:hover:not(#user-popover) {
-width: 175px;
+width: 180px;
+border-top-right-radius: 3px;
+border-bottom-right-radius: 3px;
 }
 
 .items li h4 {
@@ -275,13 +285,14 @@ line-height: 120%;
 .items li:not(.divider):hover {
 color: #666;
 background-color: #fff;
-box-shadow: 2px 2px 5px #0003;
+box-shadow: 2px 1px 5px #0002;
 z-index: 3;
 }
 
 .items li.active {
 color: #333c;
 background-color: #fff;
+box-shadow: inset 0 0 2px #0002;
 }
 
 .items li.divider {
@@ -308,6 +319,13 @@ box-shadow: inset 0px 2px 2px rgba(0,0,0,0.05);
 
 .logo {
 cursor: pointer;
+background-color: #0001;
+box-shadow: inset 0 -1px 1px #fff1;
+height: 50px;
+margin-bottom: 10px;
+}
+.logo h3 {
+padding: 6px 3px;
 }
 /*
 .logo:hover {

@@ -34,11 +34,11 @@
                     <span v-if="tabinfo.id == 'dataset'" style="opacity: 0.6; font-size: 80%;">
                         <span title="Number of subjects stored in archive" 
                             v-if="selected.stats && selected.stats.datasets && selected.stats.datasets.subject_count">
-                           &nbsp;<icon name="user-friends"/>&nbsp;&nbsp;{{selected.stats.datasets.subject_count}} 
+                           &nbsp;<icon name="user-friends" scale="0.8"/>&nbsp;&nbsp;{{selected.stats.datasets.subject_count}} 
                         </span>
                         <span title="Number of data-objects stored in archive"
                             v-if="selected.stats && selected.stats.datasets && selected.stats.datasets.count">
-                            &nbsp;<icon name="cubes"/>&nbsp;&nbsp;{{selected.stats.datasets.count}}
+                            &nbsp;<icon name="cubes" scale="0.8"/>&nbsp;&nbsp;{{selected.stats.datasets.count}}
                         </span>
                     </span>
                     

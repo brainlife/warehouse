@@ -162,7 +162,10 @@ top: 0px;
 z-index: 1;
 box-shadow: 0 0 1px #ccc;
 }
-
+h4.header-sticky {
+padding: 9px;
+height: 50px;
+}
 .apps-container {
 display: flex;
 flex-wrap: wrap;

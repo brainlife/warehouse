@@ -47,14 +47,6 @@
                 <div v-for="app in app_groups['_new']" :key="app._id" class="app">
                     <app :app="app" height="220px" class="app-card"/>
                 </div>
-                <!--
-                <div v-if="tag == '_new'" style="clear: both; color: white; padding: 20px; padding-bottom: 0px;">
-                    <p style="opacity: 0.7;">
-                        You can register your App on Brainlife so that other users can run it online.
-                    </p>
-                    <b-button variant="primary" @click="go('/app/_/edit')" size="sm">Register New App</b-button> 
-                </div>
-                -->
                 <br clear="both">
             </div>
 
@@ -65,14 +57,6 @@
                 </div>
                 <br clear="both">
             </div>
-
-            <!--
-            <div class="relationships" style="position: relative;">
-                <h3 style="position: absolute; top: 10px; left: 10px; color: #ddd;">Relationships (experimental)</h3>
-                <div ref="vis" style="height: 500px; background-color: #fff;"/>
-            </div>
-            -->
-
             <br>
 
             <p style="padding: 20px 20px; opacity: 0.5;" v-if="apps.length > 0">
@@ -83,21 +67,12 @@
             <br>
 
             <!-- mine -->
-            <div style="position: relative;" id="_mine" class="bg-success" v-if="my_apps && my_apps.length > 0" ref="category-_mine">
+            <div style="position: relative;" id="_mine" class="myapps" v-if="my_apps && my_apps.length > 0" ref="category-_mine">
                 <h4 class="group-title colored">My Apps <!--<small style="float: right">{{my_apps.length}} Apps</small>--> </h4> 
                 <div v-for="app in my_apps" :key="app._id" class="app">
                     <app :app="app" height="220px" class="app-card" v-if="visible_category.includes('_mine')"/>
                 </div>
                 <br clear="both">
-                <!--
-                <div style="color: white; padding: 20px;">
-                    <p style="opacity: 0.7;">
-                        You can register your App on Brainlife so that other users can run it online.
-                    </p>
-                    <b-button variant="primary" @click="go('/app/_/edit')">Register New App</b-button> 
-                </div>
-                -->
-
                 <br clear="both">
 
                 <br>
@@ -442,6 +417,10 @@ color: white;
 background-image: linear-gradient(#1966b3, #2693ff);
 /*background-attachment: fixed; ... this causes flickering*/
 padding-bottom: 30px;
+}
+.myapps {
+background-image: linear-gradient(#1a613d, #159957);
+/*background-attachment: fixed; ... this causes flickering*/
 }
 .group-title.colored {
 background-color: inherit;

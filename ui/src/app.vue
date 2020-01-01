@@ -381,64 +381,11 @@ export default {
         this.open_app();
     },
 
-
     computed: {
         shared_resources() {
             if(!this.resources) return [];
             return this.resources.filter(r=>r.gids.length > 0);
         },
-
-/*
-        hist_data() {
-            let dstart = new Date(new Date().getTime() - 3600*1000*24*this.info.hist.failed.length);
-            let days = [];
-            for(let i = 0;i < this.info.hist.failed.length;++i) {
-                days.push(new Date(dstart.getTime() + 3600*1000*24*i));
-            }
-            return [
-                {
-                    x: days,
-                    y: this.info.hist.finished,
-                    type: 'scatter',
-                    name: 'Finished',
-                    marker: {
-                        color: 'green',
-                    },
-                    fill: 'tozeroy',
-                    line: {
-                        width: 0,
-                    }
-                },
-                {
-                    x: days,
-                    y: this.info.hist.failed,
-                    type: 'scatter',
-                    name: 'Failed',
-                    marker: {
-                        color: '#dc3545',
-                    },
-                    fill: 'tozeroy',
-                    line: {
-                        width: 0,
-                    }
-                },
-            ];
-        },
-
-        hist_layout() {
-            return {
-                //title: 'Execution History',
-                //barmode: 'stack',
-                height: 150,
-                margin: {
-                    l: 30,
-                    r: 10,
-                    b: 30,
-                    t: 10,
-                },
-            }
-        }, 
-*/
     },
 
     methods: {
@@ -604,7 +551,7 @@ padding: 15px 0px 0px 0px;
 border-bottom: 1px solid #eee;
 position: sticky;
 top: 0;
-z-index: 2;
+z-index: 5;/*has to be above vue-ace line number*/
 }
 
 .topic {
@@ -654,7 +601,6 @@ padding: 20px;
 box-shadow: 2px 2px 5px #eee;
 margin-bottom: 10px;
 margin-left: -20px;
-
 }
 .io-card {
 padding: 8px; 
