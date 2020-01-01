@@ -1,6 +1,5 @@
 <template>
 <div>
-    <sidemenu active="/projects"></sidemenu>
     <div class="page-content">
         <img src="@/assets/images/openneuro.png" height="40px" align="left" style="margin-top: 10px;"/>
         <h2>/ {{$route.params.id}}</h2>
@@ -17,7 +16,9 @@
     </div>
     <div class="page-content page-subcontent">
         <p style="margin-top: 30px; float: right;">
+            <!--
             <img src="@/assets/images/logo.svg" height="100px" style="position: relative; float: right; top: -25px;"/>
+            -->
             <a href="https://brainlife.io" style="font-size: 150%; margin-left: 20px;">What is brainlife?</a>
         </p>
     </div>
@@ -26,10 +27,8 @@
 
 <script>
 import Vue from 'vue'
-import sidemenu from '@/components/sidemenu'
 
 export default {
-    components: { sidemenu },
     data () {
         return {
             pubs: [],

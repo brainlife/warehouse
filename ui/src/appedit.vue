@@ -1,6 +1,5 @@
 <template>
 <div class="appedit">
-    <sidemenu active="/apps"></sidemenu>
     <div class="page-header" v-if="ready">
         <b-container>
             <p style="float: right; color: #999;">
@@ -513,7 +512,6 @@ Normally, the App description is automatically pulled from github repo descripti
 <script>
 import Vue from 'vue'
 
-import sidemenu from '@/components/sidemenu'
 import contactlist from '@/components/contactlist'
 import multiprojectselecter from '@/components/multiprojectselecter'
 import datatypeselecter from '@/components/datatypeselecter'
@@ -530,7 +528,7 @@ let debounce;
 export default {
     mixins: [ search_app_mixin ],
     components: { 
-        sidemenu, contactlist, multiprojectselecter,
+        contactlist, multiprojectselecter,
         datatypeselecter, trueorfalse, tageditor, datatype, app, branchselecter,
         //editor: require('vue2-ace-editor'),
     },

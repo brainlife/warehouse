@@ -1,6 +1,5 @@
 <template>
 <div class="projectedit">
-    <sidemenu active="/projects"></sidemenu>
     <div class="page-header">
         <b-container>
             <p style="float: right">
@@ -141,9 +140,11 @@
             -->
 
             <div class="page-footer">
-                <b-button variant="danger" @click="remove" style="float: left">Remove</b-button>
-                <b-button variant="secondary" @click="cancel">Cancel</b-button>
-                <b-button type="submit" variant="primary" :disabled="submitting"><icon v-if="submitting" name="cog" spin/> Submit</b-button>
+                <b-container>
+                    <b-button variant="danger" @click="remove" style="float: left">Remove</b-button>
+                    <b-button variant="secondary" @click="cancel">Cancel</b-button>
+                    <b-button type="submit" variant="primary" :disabled="submitting"><icon v-if="submitting" name="cog" spin/> Submit</b-button>
+                </b-container>
             </div>
                 
             <br>
@@ -161,14 +162,13 @@
 <script>
 import Vue from 'vue'
 
-import sidemenu from '@/components/sidemenu'
 import pageheader from '@/components/pageheader'
 import contactlist from '@/components/contactlist'
 import license from '@/components/license'
 import VueMarkdown from 'vue-markdown'
 
 export default {
-    components: { sidemenu, contactlist, pageheader, license, VueMarkdown },
+    components: { contactlist, pageheader, license, VueMarkdown },
     data () {
         return {
             project: {

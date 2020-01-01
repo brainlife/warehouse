@@ -1,7 +1,6 @@
 <template>
 <div>
     <pageheader/>
-    <sidemenu active="/admin"></sidemenu>
     <div class="ui pusher">
         <div class="page-content">
 		<div class="margin20">
@@ -26,17 +25,16 @@
             </p>
         </div><!--magin20-->
         </div><!--page-content-->
-    </div><!--off-sidemenu-->
+    </div>
 </div>
 </template>
 
 <script>
 import Vue from 'vue'
-import sidemenu from '@/components/sidemenu'
 import pageheader from '@/components/pageheader'
 
 export default {
-    components: { sidemenu, pageheader },
+    components: { pageheader },
     data () {
         return {
             //service_running: [],

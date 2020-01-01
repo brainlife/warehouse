@@ -1,6 +1,5 @@
 <template>
 <div>
-    <sidemenu active="/datatypes"></sidemenu>
     <div class="page-content" ref="scrolled">
         <div class="header">
             <b-container>
@@ -45,7 +44,6 @@ import 'perfect-scrollbar/css/perfect-scrollbar.css'
 import PerfectScrollbar from 'perfect-scrollbar'
 import VueMarkdown from 'vue-markdown'
 
-import sidemenu from '@/components/sidemenu'
 import datatype from '@/components/datatype'
 import pageheader from '@/components/pageheader'
 import contact from '@/components/contact'
@@ -54,7 +52,7 @@ import tags from '@/components/tags'
 
 export default {
     components: { 
-        sidemenu, pageheader, datatype, app, VueMarkdown, contact, tags,
+        pageheader, datatype, app, VueMarkdown, contact, tags,
     },
 
     data () {

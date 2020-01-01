@@ -4,7 +4,7 @@
     <p v-if="!instances" class="loading"><icon name="cog" spin scale="1.5"/> Loading..</p>
     <div class="instances" v-if="instances">
         <!--instances list-->
-        <div class="instances-header" :style="{width: splitter_pos-200+'px'}">
+        <div class="instances-header" :style="{width: splitter_pos-40+'px'}">
             <div style="padding-top: 10px;">
                 <div style="float: right;">
                     <!--<small><icon name="sort"/></small>-->
@@ -48,7 +48,7 @@
 
         </div>
 
-        <div class="instances-list scroll-shadow" ref="instances-list" :style="{width: splitter_pos-200+'px'}">
+        <div class="instances-list scroll-shadow" ref="instances-list" :style="{width: splitter_pos-40+'px'}">
             <!--no instances show help doc-->
             <div v-if="instances.length == 0" style="margin: 20px; opacity: 0.7">
                 <p>Here, you can submit a series of Apps to analyze dataset one subject at a time.</p>
@@ -525,7 +525,7 @@ font-size: 170%;
 position: fixed;
 bottom: 0px;
 top: 95px;
-left: 200px;
+left: 40px;
 right: 0px;
 }
 
@@ -534,7 +534,7 @@ padding: 10px;
 position: fixed;
 height: 90px;
 top: 85px;
-left: 200px;
+left: 40px;
 background-color: #f6f6f6;
 z-index: 1; /*for dropdown menu to go on top*/
 border-bottom: 1px solid #ddd;
@@ -548,7 +548,7 @@ padding: .15rem .3rem;
 position: fixed;
 bottom: 0px;
 top: 175px;
-left: 200px;
+left: 40px;
 width: 400px;
 }
 

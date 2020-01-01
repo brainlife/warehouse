@@ -1,6 +1,5 @@
 <template>
 <div>
-    <sidemenu active="/projects"/>
     <div class="page-header">
         <div class="search-box">
             <b-form-input v-model="query" type="text" placeholder="Search Projects" @input="change_query_debounce" class="input"/>
@@ -67,14 +66,13 @@
 <script>
 import Vue from 'vue'
 import pageheader from '@/components/pageheader'
-import sidemenu from '@/components/sidemenu'
 import projectcard from '@/components/projectcard'
 import project from '@/components/project'
 
 let query_debounce;
 
 export default {
-    components: { sidemenu, projectcard, project },
+    components: { projectcard, project },
     data () {
         return {   
             my_projects: null,

@@ -1,6 +1,5 @@
 <template>
 <div>
-    <sidemenu active="/datatypes"></sidemenu>
     <div class="page-content">
         <div v-if="!datatype" class="loading">Loading ...</div>
         <div v-else>
@@ -11,8 +10,8 @@
                     </div>
                     <b-row>
                         <b-col cols="2">
-                            <div @click="back()" class="button">
-                                <icon name="angle-left" scale="2"/>
+                            <div @click="back()" class="button button-page">
+                                <icon name="angle-left" scale="1.5"/>
                             </div>
                         </b-col>
                         <b-col>
@@ -216,7 +215,6 @@ import Router from 'vue-router'
 
 import VueMarkdown from 'vue-markdown'
 
-import sidemenu from '@/components/sidemenu'
 import datatype from '@/components/datatype'
 import datatypetag from '@/components/datatypetag'
 import pageheader from '@/components/pageheader'
@@ -226,7 +224,7 @@ import tags from '@/components/tags'
 
 export default {
     components: { 
-        sidemenu, pageheader, datatype, datatypetag, app, VueMarkdown, contact, tags,
+        pageheader, datatype, datatypetag, app, VueMarkdown, contact, tags,
     },
 
     data () {
@@ -499,6 +497,10 @@ background-color: #ddd;
 padding: 50px;
 font-size: 20pt;
 opacity: 0.5;
+}
+.button-page {
+margin-top: 10px;
+opacity: 0.6;
 }
 </style>
 

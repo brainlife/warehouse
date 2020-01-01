@@ -1,6 +1,5 @@
 <template>
 <div>
-    <sidemenu active="/resources"></sidemenu>
     <div class="page-header">
         <b-container>
             <h4 style="margin-right: 150px">{{resource.name||'No name'}}</h4>
@@ -194,7 +193,6 @@
 <script>
 import Vue from 'vue'
 
-import sidemenu from '@/components/sidemenu'
 import pageheader from '@/components/pageheader'
 import contactlist from '@/components/contactlist'
 import tageditor from '@/components/tageditor'
@@ -203,7 +201,6 @@ const forge = require('node-forge');
 
 export default {
     components: { 
-        sidemenu, 
         contactlist, 
         pageheader,
         tageditor,

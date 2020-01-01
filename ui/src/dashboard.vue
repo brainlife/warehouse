@@ -3,7 +3,6 @@
     <!--inspiration
         https://dribbble.com/shots/1262299-Spear/attachments/172826
     -->
-    <sidemenu active="/dashboard"></sidemenu>
     <div class="page-content">
         <h5>New Members</h5>
         <small>The following members joined brainlife recently (in the last 60 days). Please say hi!</small>
@@ -36,7 +35,6 @@
 
 <script>
 import Vue from 'vue'
-import sidemenu from '@/components/sidemenu'
 import pageheader from '@/components/pageheader'
 import statusicon from '@/components/statusicon'
 import contact from '@/components/contact'
@@ -51,7 +49,6 @@ const lib = require('@/lib'); //for avatar_url
 export default {
     mixins: [authprofilecache],
     components: { 
-        sidemenu, 
         pageheader, 
         statusicon,
         contact,

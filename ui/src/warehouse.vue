@@ -1,5 +1,6 @@
 <template>
 <div id="warehouse">
+    <sidemenu/>
     <router-view/>
     <notifications position="top right"/>
     <modals/>
@@ -10,19 +11,18 @@
 
 import Vue from 'vue'
 import modals from '@/components/modals'
+import sidemenu from '@/components/sidemenu'
 
 export default {
     components: {
         modals,
+        sidemenu,
     },
 
     data() {
         return {
             config: Vue.config,
         }
-    },
-
-    async mounted() {
     },
 }
 
@@ -115,7 +115,7 @@ text-overflow: ellipsis;
 .page-header,
 .page-content {
 position: fixed;
-left: 200px;
+left: 40px;
 right: 0px;
 top: 0px;
 }
@@ -128,7 +128,7 @@ overflow: auto;
 text-align: right; 
 position: fixed; 
 height: 60px;
-left: 200px;
+left: 40px;
 right: 0px;
 bottom: 0px; 
 padding: 10px 30px;
@@ -322,7 +322,7 @@ opacity: 0.7;
 .col-form-label,
 .form-header {
 text-transform: uppercase;
-opacity: 0.6;
+opacity: 0.8;
 font-weight: bold;
 font-size: 13px;
 margin-bottom: 5px;
@@ -430,7 +430,7 @@ position: fixed;
 top: 6px;
 padding-left: 10px;
 right: 0px;
-left: 200px;
+left: 40px;
 }
 .search-box .input {
 font-size: 120%;

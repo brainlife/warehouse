@@ -1,6 +1,5 @@
 <template>
 <div>
-    <sidemenu active="/resources"></sidemenu>
     <div class="page-content">
         <div v-if="!resource" class="loading">Loading ...</div>
         <div v-else>
@@ -13,8 +12,8 @@
                     </div>
                     <b-row>
                         <b-col cols="2">
-                            <div @click="back()" class="button">
-                                <icon name="angle-left" scale="2"/>
+                            <div @click="back()" class="button button-page">
+                                <icon name="angle-left" scale="1.5"/>
                             </div>
                         </b-col>
                         <b-col>
@@ -298,7 +297,6 @@ import Vue from 'vue'
 import Router from 'vue-router'
 import VuePlotly from '@statnett/vue-plotly'
 
-import sidemenu from '@/components/sidemenu'
 import pageheader from '@/components/pageheader'
 import contact from '@/components/contact'
 import app from '@/components/app'
@@ -309,7 +307,7 @@ import stateprogress from '@/components/stateprogress'
 
 export default {
     components: { 
-        sidemenu, pageheader, app, contact, tags, statustag, statusicon, stateprogress, VuePlotly,
+        pageheader, app, contact, tags, statustag, statusicon, stateprogress, VuePlotly,
     },
 
     data () {
@@ -504,6 +502,10 @@ padding: 10px;
 .resource {
 background-color: white;
 padding: 10px;
+}
+.button-page {
+margin-top: 10px;
+opacity: 0.6;
 }
 </style>
 

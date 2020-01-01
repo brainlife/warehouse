@@ -109,7 +109,6 @@
 <script>
 import Vue from 'vue'
 
-import sidemenu from '@/components/sidemenu'
 import pageheader from '@/components/pageheader'
 import ReconnectingWebSocket from 'reconnectingwebsocket'
 import projectaccess from '@/components/projectaccess'
@@ -121,7 +120,7 @@ import product from '@/components/product'
 //singleton instance to handle upload request
 export default {
     components: { 
-        sidemenu, pageheader, 
+        pageheader, 
         task, tageditor, product,
         //datatypetag,
     },

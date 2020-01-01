@@ -1,6 +1,5 @@
 <template>
 <div>
-    <sidemenu active="/apps"></sidemenu>
     <div class="page-header">
         <b-form-checkbox style="float: right; padding: 11px; z-index: 1" v-model="show_dep">Show Deprecated Apps</b-form-checkbox>
         <div class="search-box">
@@ -131,7 +130,6 @@
 
 <script>
 import Vue from 'vue'
-import sidemenu from '@/components/sidemenu'
 import app from '@/components/app'
 
 import 'perfect-scrollbar/css/perfect-scrollbar.css'
@@ -141,7 +139,7 @@ let query_debounce;
 var ps;
 
 export default {
-    components: { sidemenu, app },
+    components: { app },
     data () {
         return {
             active: null,

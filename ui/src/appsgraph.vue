@@ -1,6 +1,5 @@
 <template>
 <div>
-    <sidemenu active="/apps"></sidemenu>
     <div class="page-content">
         <div ref="vis" class="graph"/>
     </div>
@@ -9,14 +8,13 @@
 
 <script>
 import Vue from 'vue'
-import sidemenu from '@/components/sidemenu'
 import pageheader from '@/components/pageheader'
 
 import vis from 'vis/dist/vis-network.min.js'
 import 'vis/dist/vis-network.min.css'
 
 export default {
-    components: { sidemenu, pageheader },
+    components: { pageheader },
     data () {
         return {
             graph: null,

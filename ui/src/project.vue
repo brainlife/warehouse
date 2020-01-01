@@ -1,6 +1,5 @@
 <template>
 <div v-if="selected">
-    <sidemenu active="/projects"/>
     <div class="page-header">
         <div style="float: right;">
             <div @click="openneuro()" v-if="selected.openneuro" class="button">
@@ -265,22 +264,22 @@
         </div><!-- project detail content-->
     </div>
 
-    <div v-if="tabs[tab].id == 'dataset'" style="margin-left: 200px; margin-top: 95px">
+    <div v-if="tabs[tab].id == 'dataset'" style="margin-left: 40px; margin-top: 95px">
         <b-alert show variant="secondary" v-if="selected.access != 'public' && !(ismember()||isadmin()||isguest())">For non public project, only the admin/members/guests of this project can access processes.</b-alert>
         <datasets :project="selected" :projects="projects" v-else/>
     </div>
 
-    <div v-if="tabs[tab].id == 'process'" style="margin-left: 200px; margin-top: 95px">
+    <div v-if="tabs[tab].id == 'process'" style="margin-left: 40px; margin-top: 95px">
         <noprocess v-if="!(ismember()||isadmin())"/>
         <processes :project="selected" v-else/>
     </div>
 
-    <div v-if="tabs[tab].id == 'pipeline'" style="margin-left: 200px; margin-top: 95px">
+    <div v-if="tabs[tab].id == 'pipeline'" style="margin-left: 40px; margin-top: 95px">
         <b-alert show variant="secondary" v-if="!(ismember()||isadmin())">Only the admins or members of this project can access pipelines. Please contact the project admin to give you access.</b-alert>
         <pipelines :project="selected" v-else/>
     </div>
 
-    <div v-if="tabs[tab].id == 'pub'" style="margin-left: 200px; margin-top: 95px">
+    <div v-if="tabs[tab].id == 'pub'" style="margin-left: 40px; margin-top: 95px">
         <b-alert show variant="secondary" v-if="!(ismember()||isadmin())">Only the admins or members of this project can access publications. Please contact the project admin to give you access.</b-alert>
         <publications :project="selected" v-else/>
     </div>
@@ -297,7 +296,6 @@ import Router from 'vue-router'
 import VueMarkdown from 'vue-markdown'
 import VuePlotly from '@statnett/vue-plotly'
 
-import sidemenu from '@/components/sidemenu'
 import pageheader from '@/components/pageheader'
 import contact from '@/components/contact'
 import projectaccess from '@/components/projectaccess'
@@ -322,7 +320,6 @@ import ReconnectingWebSocket from 'reconnectingwebsocket'
 
 export default {
     components: { 
-        sidemenu, 
         projectaccess, pageheader, contact, 
         VueMarkdown, projectavatar, license,
         pubcard, datasets,
@@ -726,7 +723,7 @@ margin-right: 150px;
 position: fixed;
 top: 50px;
 height: 45px;
-left: 200px;  
+left: 40px;  
 right: 0px; 
 background-color: white; 
 box-shadow: 0px 0px 2px #ccc;
@@ -785,6 +782,7 @@ float: left;
 position: relative;
 left: -10px;
 z-index: 1;
+opacity: 0.6;
 }
 
 p.info {

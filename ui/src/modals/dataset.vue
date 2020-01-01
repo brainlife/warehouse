@@ -237,7 +237,6 @@
 <script>
 import Vue from 'vue'
 
-import sidemenu from '@/components/sidemenu'
 import contact from '@/components/contact'
 import tags from '@/components/tags'
 import app from '@/components/app'
@@ -265,7 +264,7 @@ export default {
     mixins: [agreementMixin],
 
     components: { 
-        sidemenu, contact, 
+        contact, 
         app, tags, datatype, 
         pageheader, appavatar,
         datatypetag, task, pubcard, 

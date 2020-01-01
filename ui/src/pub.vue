@@ -1,11 +1,10 @@
 <template>
 <div v-if="pub">
-    <sidemenu active="/pubs"></sidemenu>
     <div class="page-content">
         <div class="header">
-            <b-container>
-                <div @click="back()" class="button" style="position: absolute; left: 20px; top: 8px; opacity: 0.7; z-index: 1">
-                    <icon name="angle-left" scale="2"/>
+            <b-container style="position: relative;">
+                <div @click="back()" class="button button-page">
+                    <icon name="angle-left" scale="1.5"/>
                 </div>
                 <!--
                         inspiration
@@ -327,7 +326,6 @@
 
 <script>
 import Vue from 'vue'
-import sidemenu from '@/components/sidemenu'
 import projectavatar from '@/components/projectavatar'
 import contact from '@/components/contact'
 import VueMarkdown from 'vue-markdown'
@@ -344,7 +342,7 @@ export default {
     mixins: [agreementMixin],
 
     components: { 
-        sidemenu, projectavatar, 
+        projectavatar, 
         contact, VueMarkdown, license, 
         datatypetag, tags, 
         app, citation,
@@ -691,10 +689,10 @@ border: none;
 box-shadow: 2px 2px 3px #eee;
 }
 .button-page {
-float: left;
-position: relative;
-left: -10px;
+position: absolute;
+left: -30px;
 z-index: 1;
+opacity: 0.6;
 }
 </style>
 

@@ -1,6 +1,5 @@
 <template>
 <div>
-    <sidemenu active="/datatypes"></sidemenu>
     <div class="page-header">
         <b-container>
             <!--
@@ -222,13 +221,12 @@
 <script>
 import Vue from 'vue'
 
-import sidemenu from '@/components/sidemenu'
 import pageheader from '@/components/pageheader'
 import contactlist from '@/components/contactlist'
 import VueMarkdown from 'vue-markdown'
 
 export default {
-    components: { sidemenu, contactlist, pageheader, VueMarkdown },
+    components: { contactlist, pageheader, VueMarkdown },
     data () {
         return {
             datatype: {

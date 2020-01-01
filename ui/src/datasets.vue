@@ -1,14 +1,13 @@
 <template>
 <div>
-    <sidemenu active="/datasets"></sidemenu>
-    <div class="page-header" :style="{width: splitter_pos-200+'px'}">
-        <div class="search-box" :style="{width: splitter_pos-200+'px'}"> 
+    <div class="page-header" :style="{width: splitter_pos-40+'px'}">
+        <div class="search-box" :style="{width: splitter_pos-40+'px'}"> 
             <b-form-input v-model="query" type="text" placeholder="Search Datasets" @input="change_query_debounce" class="input"/>
             <icon name="search" class="search-icon" scale="1.5"/>
             <img src="https://pbs.twimg.com/profile_images/899900469119680512/XybpieA7_400x400.jpg" height="30px" class="datalad-logo">
         </div>
     </div>
-    <div class="page-left-top" style="padding: 10px;" :style="{width: splitter_pos-200+'px'}">
+    <div class="page-left-top" style="padding: 10px;" :style="{width: splitter_pos-40+'px'}">
         <b-form-group label="Datatypes">
             <b-form-checkbox-group v-model="datatypes">
                 <b-form-checkbox v-for="datatype_id in datatype_options" :key="datatype_id" :value="datatype_id">
@@ -19,7 +18,7 @@
             </b-form-checkbox-group>
         </b-form-group>
     </div>
-    <div class="page-left scroll-shadow" ref="dataset-list" :style="{width: splitter_pos-200+'px'}">
+    <div class="page-left scroll-shadow" ref="dataset-list" :style="{width: splitter_pos-40+'px'}">
         <p v-if="loading_datasets" style="padding: 20px; opacity: 0.8;">Loading...</p>
         <p v-else-if="datasets.length == 0" style="padding: 20px; opacity: 0.8;">No matching dataset</p>
         <div v-for="dataset in datasets" :key="dataset._id" class="dataset" :title="dataset.path" :ref="dataset._id" @click="open_dataset(dataset._id)" 
@@ -46,7 +45,7 @@
         
         </div>
     </div>
-    <div class="page-left-bottom" style="text-align: right;" :style="{width: splitter_pos-200+'px'}">
+    <div class="page-left-bottom" style="text-align: right;" :style="{width: splitter_pos-40+'px'}">
         <small><b>{{datasets.length}}</b> datasets</small>
     </div>
 
@@ -190,7 +189,6 @@
 import Vue from 'vue'
 import Router from 'vue-router'
 
-import sidemenu from '@/components/sidemenu'
 import pageheader from '@/components/pageheader'
 import datatypetag from '@/components/datatypetag'
 import tags from '@/components/tags'
@@ -208,7 +206,7 @@ let query_debounce = null;
 export default {
     mixins: [pagesplitter],
     components: { 
-        sidemenu, pageheader, datatypetag, VueMarkdown, tags, license,
+        pageheader, datatypetag, VueMarkdown, tags, license,
         //datatype, app, VueMarkdown, contact, tags, 
     },
     
@@ -494,7 +492,7 @@ box-shadow: 0 0 1px #ccc;
 position: fixed;
 background-color: #fcfcfc;
 width: 400px;
-left: 200px;
+left: 40px;
 top: 175px;
 bottom: 30px;
 border-right: 1px solid #eee;
@@ -524,21 +522,21 @@ overflow-x: hidden;
 position: fixed;
 height: 125px;
 top: 50px;
-left: 200px;
+left: 40px;
 width: 400px;   
 }
 .page-left-bottom {
 position: fixed;
 height: 30px;
 bottom: 0px;
-left: 200px;
+left: 40px;
 width: 400px;
 border-top: 1px solid #ddd;
 padding-top: 5px; 
 padding-right: 15px;
 }
 .page-header {
-left: 200px;
+left: 40px;
 box-shadow: none;
 border-bottom: 1px solid #eee;
 }

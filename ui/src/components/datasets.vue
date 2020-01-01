@@ -145,10 +145,8 @@
 <script>
 import Vue from 'vue'
 
-import sidemenu from '@/components/sidemenu'
 import pageheader from '@/components/pageheader'
 import tags from '@/components/tags'
-//import metadata from '@/components/metadata'
 import datatypetag from '@/components/datatypetag'
 
 import agreementMixin from '@/mixins/agreement'
@@ -168,7 +166,7 @@ const source = CancelToken.source();
 export default {
     mixins: [agreementMixin],
     components: { 
-        sidemenu, tags, pageheader, datatypetag, 
+        tags, pageheader, datatypetag, 
     },
     props: ['project', 'projects'],
     data () {
@@ -762,7 +760,7 @@ export default {
 transition: 0.2s right, 0.2s bottom, 0.2s left;
 position: fixed;
 top: 100px;
-left: 200px;
+left: 40px;
 right: 0px;
 overflow-x: hidden;
 padding-left: 10px;
@@ -779,7 +777,7 @@ transition: 0.2s right, 0.2s bottom, 0.2s left;
 position: fixed;
 top: 165px;
 bottom: 0px;
-left: 200px;
+left: 40px;
 right: 0px;
 overflow-y: scroll;
 padding-left: 10px;

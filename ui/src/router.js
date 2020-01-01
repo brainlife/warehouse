@@ -47,47 +47,139 @@ export default new Router({
     mode: 'history',
     routes: [
         {path: '/', redirect: '/project'},
-        {path: '/dashboard', component: dashboard},
-        
-        {path: '/apps', component: apps, meta: {public: true}},
-        {path: '/appsgraph', component: appsgraph, meta: {public: true}},
-        {path: '/app/:id', component: app, meta: {public: true}},
-        {path: '/app/:id/:mode', component: appedit},
 
-        {path: '/view/:taskid/:type/:datatype64/:subdir?', component: view, props: true}, //deprecated by /view?config=
+        {path: '/dashboard', component: dashboard, meta: {
+            sidemenu: "dashboard"            
+        }},
+        
+        {path: '/apps', component: apps, meta: {
+            public: true, 
+            sidemenu: "app"
+        }},
+
+        {path: '/appsgraph', component: appsgraph, meta: {
+            public: true, 
+            sidemenu: "app"
+        }},
+
+        {path: '/app/:id', component: app, meta: {
+            public: true, 
+            sidemenu: "app",
+        }},
+
+        {path: '/app/:id/:mode', component: appedit, meta: {
+            sidemenu: "app",
+        }},
+
+        //{path: '/view/:taskid/:type/:datatype64/:subdir?', component: view, props: true}, //deprecated by /view?config=
+
         {path: '/view', component: view, props: true},
+
         {path: '/novnc/:taskid/:type/:datatype64/:subdir?', component: novnc, props: true},
+
         {path: '/novnc', component: novnc, props: true}, //deprecated by /novnc?config=
 
-        {path: '/project', component: projects, meta: {public: true}}, //deprecated by /projects (redirect?)
-        {path: '/projects', component: projects, meta: {public: true}}, 
-        {path: '/project/:id', component: project, meta: {public: true}},
-        {path: '/project/:id/edit', component: projectedit},
-        {path: '/project/:id/:tab?/:subid?', component: project, meta: {public: true}},
+         //deprecated by /projects (redirect?)
+        {path: '/project', component: projects, meta: {
+            public: true,
+            sidemenu: "project",
+        }},
 
-        {path: '/openneuro/:id', component: openneuro, meta: {public: true}},
+        {path: '/projects', component: projects, meta: {
+            public: true,
+            sidemenu: "project",
+        }}, 
 
-        {path: '/datatypes', component: datatypes, meta: {public: true}},
-        {path: '/datatypes/:id', component: datatype, meta: {public: true}}, //depecated by /datatype/:id
-        {path: '/datatype/:id', component: datatype, meta: {public: true}},
-        {path: '/datatype/:id/edit', component: datatypeedit},
+        {path: '/project/:id', component: project, meta: {
+            public: true,
+            sidemenu: "project",
+        }},
 
-        {path: '/datasets', component: datasets, meta: {public: true}},
-        {path: '/datasets/:dataset_id', component: datasets, meta: {public: true}},
+        {path: '/project/:id/edit', component: projectedit, meta: {
+            sidemenu: "project",
+        }},
 
-        {path: '/resources', component: resources, meta: {public: true}},
-        {path: '/resource/:id', component: resource, meta: {public: true}},
-        {path: '/resource/:id/edit', component: resourceedit},
+        {path: '/project/:id/:tab?/:subid?', component: project, meta: {
+            public: true,
+            sidemenu: "project",
+        }},
 
-        {path: '/pubs', component: pubs, meta: {public: true}},
-        {path: '/pub/:id', component: pub, meta: {public: true}},
+        //redirector
+        {path: '/openneuro/:id', component: openneuro, meta: {
+            public: true,
+            sidemenu: "project",
+        }},
 
-        {path: '/settings', component: settings},
+        {path: '/datatypes', component: datatypes, meta: {
+            public: true,
+            sidemenu: "datatype",
+        }},
 
-        {path: '/test', component: test},
-        {path: '/404', component: missing, meta: {public: true}},
+        {path: '/datatypes/:id', component: datatype, meta: {
+            public: true,
+            sidemenu: "datatype",
+        }}, //depecated by /datatype/:id
         
-        {path: '/admin', component: admin},
+        {path: '/datatype/:id', component: datatype, meta: {
+            public: true,
+            sidemenu: "datatype",
+        }},
+
+        {path: '/datatype/:id/edit', component: datatypeedit, meta: {
+            sidemenu: "datatype",     
+        }},
+
+        //aka.. datalad search
+        {path: '/datasets', component: datasets, meta: {
+            public: true,
+            sidemenu: "dataset",     
+        }},
+
+        {path: '/datasets/:dataset_id', component: datasets, meta: {
+            public: true,
+            sidemenu: "dataset",  
+        }},
+
+        {path: '/resources', component: resources, meta: {
+            public: true,
+            sidemenu: "resource",
+        }},
+
+        {path: '/resource/:id', component: resource, meta: {
+            public: true,
+            sidemenu: "resource",
+        }},
+
+        {path: '/resource/:id/edit', component: resourceedit, meta: {
+            sidemenu: "resource", 
+        }},
+
+        {path: '/pubs', component: pubs, meta: {
+            public: true,
+            sidemenu: "pub",
+        }},
+
+        {path: '/pub/:id', component: pub, meta: {
+            public: true,
+            sidemenu: "pub",
+        }},
+
+        {path: '/settings', component: settings, meta: {
+            sidemenu: "setting",       
+        }},
+
+        {path: '/test', component: test, meta: {
+            sidemenu: null,
+        }},
+
+        {path: '/404', component: missing, meta: {
+            public: true,
+            sidemenu: null,
+        }},
+        
+        {path: '/admin', component: admin, meta: {
+            sidemenu: "admin",           
+        }},
     ]
 })
 

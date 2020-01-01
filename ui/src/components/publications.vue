@@ -215,7 +215,7 @@ overflow-x: hidden; /*i can't figure out why there would be x scroll bar when a 
 position: fixed;
 top: 95px;
 bottom: 0px;
-left: 200px;
+left: 40px;
 right: 0px;
 }
 

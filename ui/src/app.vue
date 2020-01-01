@@ -1,6 +1,5 @@
 <template>
 <div>
-    <sidemenu active="/apps"></sidemenu>
     <div v-if="noaccess" class="page-content">
         <b-container>
             <h3 style="padding: 50px 0 15px 0;opacity: 0.7"><icon name="lock" class="text-danger" scale="1.5"/> Private App</h3>
@@ -12,9 +11,9 @@
     </div>
     <div v-if="app" class="page-content">
         <div class="header">
-            <b-container>
-                <div @click="back()" class="button" style="position: absolute; left: 20px; top: 8px; opacity: 0.7; z-index: 1">
-                    <icon name="angle-left" scale="2"/>
+            <b-container style="position: relative;">
+                <div @click="back()" class="button button-page">
+                    <icon name="angle-left" scale="1.5"/>
                 </div>
                 <b-row>
                     <b-col cols="9"><!--hide avatar when screen is narrow-->
@@ -310,7 +309,6 @@
 import Vue from 'vue'
 
 import app from '@/components/app'
-import sidemenu from '@/components/sidemenu'
 import contact from '@/components/contact'
 import tags from '@/components/tags'
 import datatype from '@/components/datatype'
@@ -325,7 +323,7 @@ import resource from '@/components/resource'
 
 export default {
     components: { 
-        sidemenu, contact, 
+        contact, 
         tags, datatype, appavatar,
         VueMarkdown, statustag, 
         datatypetag, datatypefile,
@@ -662,6 +660,12 @@ margin-left: -20px;
 padding: 8px; 
 background-color: white; 
 margin-bottom: 5px; 
+}
+.button-page {
+position: absolute;
+left: -30px;
+z-index: 1;
+opacity: 0.6;
 }
 
 </style>

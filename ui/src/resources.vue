@@ -1,6 +1,5 @@
 <template>
 <div>
-    <sidemenu active="/resources"></sidemenu>
     <div class="page-content" ref="scrolled">
         <div class="header">
             <b-container>
@@ -52,7 +51,6 @@ import 'perfect-scrollbar/css/perfect-scrollbar.css'
 import PerfectScrollbar from 'perfect-scrollbar'
 import VueMarkdown from 'vue-markdown'
 
-import sidemenu from '@/components/sidemenu'
 import pageheader from '@/components/pageheader'
 import contact from '@/components/contact'
 import tags from '@/components/tags'
@@ -60,7 +58,7 @@ import resource from '@/components/resource'
 
 export default {
     components: { 
-        sidemenu, pageheader, contact, tags, resource,
+        pageheader, contact, tags, resource,
     },
 
     data () {

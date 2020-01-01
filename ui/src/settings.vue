@@ -1,6 +1,5 @@
 <template>
 <div>
-    <sidemenu active="/settings"></sidemenu>
     <div class="page-content">
         <div class="header">
             <b-container>
@@ -147,7 +146,9 @@
                     <br>
                     <br>
                     <div class="page-footer">
-                        <b-button type="submit" variant="primary">Update</b-button>
+                        <b-container>
+                            <b-button type="submit" variant="primary">Update</b-button>
+                        </b-container>
                     </div>
                 </b-form>
                 <b-card v-if="config.debug"><pre>{{fullname}} {{profile}}</pre></b-card>
@@ -193,13 +194,12 @@
 <script>
 import Vue from 'vue'
 import pageheader from '@/components/pageheader'
-import sidemenu from '@/components/sidemenu'
 
 const lib = require('@/lib'); //for avatar_url
 
 export default {
     components: { 
-        pageheader, sidemenu,
+        pageheader, 
     },
 
     data () {

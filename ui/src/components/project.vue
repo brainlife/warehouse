@@ -16,13 +16,10 @@
                 <div class="desc">{{project.desc||'no description'}}</div>
             </div>
         </b-col>
-        <b-col md="2" style="font-size: 85%; margin-top: 2px;">
-            <stateprogress v-if="project.stats && project.stats.instances && !project.openneuro" 
-                :states="project.stats.instances" height="15px"/>
-            <!--
-            <icon name="robot" scale="0.8"/>&nbsp;{{project.stats.rules.active}}
-            <span v-if="project.stats.rules.inactive > 0">/ {{project.stats.rules.inactive+project.stats.rules.active}}</span>
-            -->
+        <b-col md="1" v-if="config.user">
+            <div class="contacts">
+                <contact v-for="c in contacts" :key="c._id" :id="c" size="tiny" style="margin-left: -6px"/>
+            </div>
         </b-col>
         <b-col md="3">
             <div class="datatypes" v-if="project.stats && project.stats.datasets">
@@ -31,10 +28,13 @@
                 :datatype="datatype_id" style="font-size: 85%; margin-right: 2px"/>
             </div>
         </b-col>
-        <b-col md="1" v-if="config.user">
-            <div class="contacts">
-                <contact v-for="c in contacts" :key="c._id" :id="c" size="tiny" style="margin-left: -5px"/>
-            </div>
+        <b-col md="2" style="font-size: 85%; margin-top: 2px;">
+            <stateprogress v-if="project.stats && project.stats.instances && !project.openneuro" 
+                :states="project.stats.instances" height="15px"/>
+            <!--
+            <icon name="robot" scale="0.8"/>&nbsp;{{project.stats.rules.active}}
+            <span v-if="project.stats.rules.inactive > 0">/ {{project.stats.rules.inactive+project.stats.rules.active}}</span>
+            -->
         </b-col>
     </b-row>
 </div>

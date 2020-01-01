@@ -104,10 +104,8 @@
 <script>
 import Vue from 'vue'
 
-import sidemenu from '@/components/sidemenu'
 import contact from '@/components/contact'
 import tags from '@/components/tags'
-//import metadata from '@/components/metadata'
 import pageheader from '@/components/pageheader'
 import appavatar from '@/components/appavatar'
 import select2 from '@/components/select2'
@@ -125,7 +123,7 @@ const async = require("async");
 export default {
     mixins: [agreementMixin],
     components: { 
-        sidemenu, contact, 
+        contact, 
         tags, pageheader, 
         appavatar, select2, projectselecter, 
         app, datatypetag, configform, advanced
