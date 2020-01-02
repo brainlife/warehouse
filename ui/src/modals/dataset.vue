@@ -177,7 +177,7 @@
                             <b-col cols="9">
                                 <p><small class="text-muted">This data-object has been published on the following publications.</small></p>
                                 <div v-for="(release, idx) in dataset.publications" :key="idx">
-                                    <div v-for="(pub, idx) in dataset._pubs.filter(p=>!pub.removed)" :key="idx">
+                                    <div v-for="(pub, idx) in dataset._pubs.filter(p=>!p.removed)" :key="idx">
                                         <p v-for="r in pub.releases.filter(r=>r._id == release && !r.removed)" :key="r._id">
                                             <a href="javascript:void(0);" @click="openpub(pub)">
                                                 <icon name="book" scale="0.8"/> {{pub.name||pub}} - Release {{r.name}}

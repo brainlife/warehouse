@@ -20,7 +20,7 @@
                             <!--<p style="opacity: 0.6">{{resource._detail.desc}}</p>-->
                             <h2>
                                 <b-badge v-if="!resource.active">Inactive</b-badge>
-                                <b-badge v-if="!resource.gids || resource.gids.length == 0" variant="danger" title="Private resource"><icon name="lock"/></b-badge>
+                                <b-badge v-if="!resource.gids || resource.gids.length == 0" variant="secondary" title="Private resource"><icon name="lock" scale="0.9"/></b-badge>
                                 {{resource.name}}
                             </h2>
                             <p style="opacity: 0.6">{{resource.config.desc}}</p>
@@ -40,9 +40,6 @@
                             <span style="padding-left: 15px; opacity: 0.8;">
                                 Tested <timeago :datetime="resource.status_update" :auto-update="1"/>
                             </span>
-                            <!--
-                            <b :class="{'text-danger': resource.status != 'ok', 'text-success': resource.status == 'ok'}">{{resource.status.toUpperCase()}}</b>
-                            -->
                             <pre v-if="resource.status != 'ok'" style="max-height: 300px; margin-top: 15px; overflow: auto; color: #dc3545">{{resource.status_msg}}</pre>
                         </div>
                         <br>

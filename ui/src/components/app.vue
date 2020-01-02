@@ -4,8 +4,8 @@
         <appavatar :app="app_" style="float: left; margin-right: 10px;" :width="80" :height="80"/>
         <div style="max-height: 75px; overflow: hidden;">
             <h4 class="name">
-                <icon v-if="app_.projects && app_.projects.length > 0" scale="0.9" name="lock" title="not working.." class="text-danger"/>
-                <icon v-if="app_.deprecated_by" scale="0.9" name="ban" title="deprecated" class="text-danger"/>
+                <icon v-if="app_.projects && app_.projects.length > 0" scale="0.9" name="lock" title="not working.." class="text-secondary"/>
+                <icon v-if="app_.deprecated_by" scale="0.9" name="ban" title="deprecated" class="text-secondary"/>
                 {{app_.name}} <span class="github" style="font-weight: normal;">{{app_.github}}</span> 
                 <b-badge>{{branch||app_.github_branch}}</b-badge>
             </h4>
@@ -17,7 +17,7 @@
         <appavatar :app="app_" style="float: right; margin-left: 10px;" :width="80" :height="80"/>
         <div class="header">
             <h4 class="name">
-                <span v-if="app_.projects && app_.projects.length > 0" title="Private App" class="text-danger">
+                <span v-if="app_.projects && app_.projects.length > 0" title="Private App" class="text-secondary">
                     <icon name="lock"/>
                 </span>
                 <span v-if="app_.deprecated_by" :id="'dep_'+app_.deprecated_by" title="Deprecated">

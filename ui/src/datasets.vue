@@ -153,7 +153,7 @@
                                 </b-col>
                                 <b-col><tags :tags="dataset.tags"/></b-col>
                             </b-row>
-                            <pre style="font-size: 85%">{{dataset._meta}}</pre>
+                            <pre v-if="dataset.showmeta" style="font-size: 80%; background-color: #f6f6f6;">{{dataset._meta}}</pre>
                         </div>
                     </b-col>
                 </b-row>
@@ -440,14 +440,23 @@ export default {
         },
 
         click_dataset(item) {
-            console.log(item);
-            this.$http('datalad/items', {params: {
-                find: JSON.stringify({_id: item._id}), 
-                select: 'dataset.meta',
-            }}).then(res=>{
-                item._meta = res.data[0].dataset.meta;     
+            if(item.showmeta) {
+                item.showmeta = false;
                 this.$forceUpdate();
-            });     
+            } else {
+                item.showmeta = true;
+                if(item._meta) {
+                    this.$forceUpdate();
+                    return; //already loaded?
+                }
+                this.$http('datalad/items', {params: {
+                    find: JSON.stringify({_id: item._id}), 
+                    select: 'dataset.meta',
+                }}).then(res=>{
+                    item._meta = res.data[0].dataset.meta;     
+                    this.$forceUpdate();
+                });     
+            } 
         },
     }, //methods
 }

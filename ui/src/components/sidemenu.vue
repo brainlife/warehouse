@@ -268,7 +268,7 @@ border-bottom-right-radius: 3px;
 
 .items li h4 {
 position: relative;
-top: 2px;
+top: 1px;
 line-height: 100%;
 font-size: 10pt;
 display: inline-block;
@@ -276,10 +276,6 @@ margin-left: 15px;
 transition: color 0.5s;
 color: #666;
 text-transform: uppercase;
-}
-
-.items li:hover h4 {
-line-height: 120%;
 }
 
 .items li:not(.divider):hover {
@@ -290,7 +286,7 @@ z-index: 3;
 }
 
 .items li.active {
-color: #333c;
+color: #666;
 background-color: #fff;
 box-shadow: inset 0 0 2px #0002;
 }
@@ -319,22 +315,16 @@ box-shadow: inset 0px 2px 2px rgba(0,0,0,0.05);
 
 .logo {
 cursor: pointer;
-background-color: #0001;
-box-shadow: inset 0 -1px 1px #fff1;
+background-color: #fff3;
+box-shadow: 0 0 5px #0002;
 height: 50px;
 margin-bottom: 10px;
 }
 .logo h3 {
-padding: 6px 3px;
+padding: 12px 4px;
+color: #fff;
+font-size: 18pt;
 }
-/*
-.logo:hover {
-background-color: white;
-}
-.logo:hover h3 {
-color: #999;
-}
-*/
 .panel-content {
 position: fixed;
 top: 0px;

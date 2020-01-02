@@ -60,7 +60,9 @@ Vue.use(VueTimeago, {
           locale,
           includeSeconds,
           addSuffix
-        }).replace("less than a minute ago", "just now").replace("about ", "~");
+        }).replace("less than a minute ago", "just now")
+          .replace("in less than a minute", "just now")
+          .replace("about ", "~");
     }
 });
 

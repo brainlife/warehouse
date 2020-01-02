@@ -155,11 +155,13 @@ padding: 10px;
 background-color: white;
 border-bottom: 1px solid #eee;
 }
-.header-sticky {
+h4.header-sticky {
 position: sticky;
 top: 0px;
 z-index: 2;
 box-shadow: 0 0 1px #ccc;
+padding-top: 12px;
+height: 50px;
 }
 
 .resource-card {

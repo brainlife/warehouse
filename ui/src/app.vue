@@ -2,7 +2,7 @@
 <div>
     <div v-if="noaccess" class="page-content">
         <b-container>
-            <h3 style="padding: 50px 0 15px 0;opacity: 0.7"><icon name="lock" class="text-danger" scale="1.5"/> Private App</h3>
+            <h3 style="padding: 50px 0 15px 0;opacity: 0.7"><icon name="lock" class="text-secondary" scale="1.5"/> Private App</h3>
             <b-alert show variant="secondary">
                 The App you are trying access is a private App (belongs to a specific brainlife project). You must be logged in and also must be a member 
                 of the project to which this App belongs. Please contact the current maintainer of this App.
@@ -43,7 +43,7 @@
                         </div>
                 
                         <h5 style="margin-bottom: 3px;">
-                            <b-badge v-if="app.projects && app.projects.length > 0" variant="danger" title="Private App">
+                            <b-badge v-if="app.projects && app.projects.length > 0" variant="secondary" title="Private App">
                                 <icon name="lock" scale="0.8"/>
                             </b-badge>
                             {{app.name}}
@@ -71,7 +71,6 @@
 
                     <b-col cols="9">
 
-                        <!--border-variant="danger" header-bg-variant="danger" header-text-variant="white">-->
                         <b-card v-if="app.deprecated_by" no-body style="margin-bottom: 10px">
                             <span slot="header">
                                 <icon name="regular/calendar-times"/> This App has been deprecated by the following App
@@ -177,7 +176,7 @@
                                         <!--
                                         <p style="padding: 10px; margin-bottom: 0px;">
                                             <icon v-if="resource.gids.length > 0" name="users" style="opacity: 0.4; float: right"/>
-                                            <icon v-else name="lock" class="text-danger" style="float: right" title="Private resource"/>
+                                            <icon v-else name="lock" class="text-secondary" style="float: right" title="Private resource"/>
 
                                             <b>{{resource.name}}</b><br>
                                             <small>{{resource.config.desc}}</small>
@@ -185,7 +184,7 @@
                                         -->
                                         <resource :resource="resource" style="0px 0px 3px #0002;"/>
 
-                                        <div v-if="resource.status != 'ok'" class="resource-status bg-danger">
+                                        <div v-if="resource.status != 'ok'" class="resource-status bg-secondary">
                                             <icon name="exclamation" style="position: relative; top: -3px;"/>
                                             {{resource.status}}
                                             <span class="score">Score {{resource.score}}</span>

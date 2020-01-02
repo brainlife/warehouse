@@ -3,11 +3,11 @@
     <div style="height: 150px; position: absolute; width: 100%; z-index: 1;">
         <div class="resource-tags">
             <b-badge v-if="resource_obj.status == 'ok'" variant="success">OK</b-badge>
-            <b-badge v-if="resource_obj.status != 'ok'" variant="danger">{{resource_obj.status}}</b-badge>
+            <b-badge v-if="resource_obj.status != 'ok'" variant="secondary">{{resource_obj.status}}</b-badge>
         </div>
         <div style="height: 90px; padding: 5px; overflow: hidden;">
             <b-badge v-if="!resource_obj.active" title="This resource is manually disabled by the resource owner, or status has been non-OK for long time.">Inactive</b-badge>
-            <b-badge v-if="!resource.gids || resource.gids.length == 0" variant="danger" title="Private resource that's not shared with anyone."><icon name="lock" scale="0.8"/></b-badge>
+            <b-badge v-if="!resource.gids || resource.gids.length == 0" variant="secondary" title="Private resource that's not shared with anyone."><icon name="lock" scale="0.8"/></b-badge>
             <span>{{resource_obj.name}}</span><br>
             <span style="font-size: 80%; opacity: 0.8;">{{resource_obj.config.desc}}</span>
         </div>
