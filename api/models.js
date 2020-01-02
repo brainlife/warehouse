@@ -18,16 +18,13 @@ let dataset_ex;
 //let rule_ex;
 
 function init_amqp(cb) {
-    logger.info("connecting to amqp..");
     common.get_amqp_connection((err, conn)=>{
         if(err) throw err;
 
         amqp_conn = conn;
-        console.debug("amqp connection ready.. creating exchanges");
 
         //deprecated by warehouse_ex
         amqp_conn.exchange("warehouse.dataset", {autoDelete: false, durable: true, type: 'topic', confirm: true}, (ex)=>{
-            console.debug("dataset_ex ready.....");
             dataset_ex = ex;
         });
         /*

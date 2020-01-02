@@ -637,11 +637,10 @@ exports.sensu_name = function(name) {
     return name;
 }
 
+let amqp_conn;
 let connect_amqp = new Promise((resolve, reject)=>{
-    console.log("connecting to amqp------------------------");
-    let amqp_conn = amqp.createConnection(config.event.amqp, {reconnectBackoffTime: 1000*10});
+    amqp_conn = amqp.createConnection(config.event.amqp, {reconnectBackoffTime: 1000*10});
     amqp_conn.once("ready", ()=>{
-        console.debug("amqp ready...................!!!");
         resolve(amqp_conn);
     });
     amqp_conn.on("error", err=>{

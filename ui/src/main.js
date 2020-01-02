@@ -181,6 +181,8 @@ if (Vue.config.jwt) {
 
 router.beforeEach(function (to, from, next) {
     if (to.matched.length == 0) {
+        console.log("no match for router");
+        console.dir(to);
         document.location = "/404";
         return;
     }

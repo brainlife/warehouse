@@ -20,6 +20,9 @@ config.mongoose_debug = false;
 //suppress non error out
 config.logger.winston.transports[0].level = 'error';
 
+let output_filename = process.argv[2];
+if(!output_filename) throw "please specify output filename";
+
 let info_apps = {};
 let info_pubs = {};
 let info_projs = {};
@@ -80,7 +83,7 @@ db.init(err=>{
         //console.log(JSON.stringify(info_apps, null, 4));
         //console.log(JSON.stringify(info_pubs, null, 4));
 
-        console.log(JSON.stringify({apps: info_apps, pubs: info_pubs, projs: info_projs}, null, 4));
+        fs.writeFileSync(output_filename, JSON.stringify({apps: info_apps, pubs: info_pubs, projs: info_projs}, null, 4));
 
         logger.info("all done");
         db.disconnect();

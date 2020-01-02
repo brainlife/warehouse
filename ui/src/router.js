@@ -71,7 +71,8 @@ export default new Router({
             sidemenu: "app",
         }},
 
-        //{path: '/view/:taskid/:type/:datatype64/:subdir?', component: view, props: true}, //deprecated by /view?config=
+        //to-be-deprecated by /view?config= (still used by viewer selecter?)
+        {path: '/view/:taskid/:type/:datatype64/:subdir?', component: view, props: true}, 
 
         {path: '/view', component: view, props: true},
 
