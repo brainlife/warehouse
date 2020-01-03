@@ -727,7 +727,7 @@ function generate_prov(origin_dataset_id, cb) {
         if(~tasks_analyzed.indexOf(task._id)) return cb();
         tasks_analyzed.push(task._id);
 
-        if(!task.deps) return cb(); //just in case?
+        //if(!task.deps_config) return cb(); //just in case?
         if(!task.config) return cb(); 
         async.each(task.config._inputs, (input, next_dep)=>{
             if(!input.task_id) return next_dep(); //old task didn't have this set?

@@ -518,6 +518,7 @@ export default {
 <style scoped>
 .loading {
 margin: 40px;
+margin-top: 120px;
 opacity: 0.5;
 font-size: 170%;
 }

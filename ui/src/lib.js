@@ -1,6 +1,5 @@
 import md5 from 'md5'
 
-
 //pick apps that dataset can be used as input - based on its datatype_id and _tags
 export function filter_apps(dataset, apps) {
     //TODO - maybe I should move this filtering logic to server
@@ -71,7 +70,7 @@ export function uniq(a) {
 
 export function avatar_url(user, size) {
     if(user.email) {
-        return "//www.gravatar.com/avatar/"+md5(user.email)+"?s="+size;  
+        return "//www.gravatar.com/avatar/"+md5(user.email)+"?s="+size+"&d=mp";  
     } else {
         //generate avatar for user who doesn't have email set..
         //return "//eightbitavatar.herokuapp.com/?id="+this.id+"&s=male&size=20";

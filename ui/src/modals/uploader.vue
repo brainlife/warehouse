@@ -383,7 +383,7 @@ export default {
                 name: "validation",
                 service: this.get_validator(),
                 config,
-                deps: [ this.tasks.upload._id ], 
+                deps_config: [ {task: this.tasks.upload._id} ], 
             }).then(res=>{
                 console.log("submitted validation task");
                 this.tasks.validation = res.data.task;

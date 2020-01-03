@@ -207,7 +207,7 @@ export default {
         },
         slack() {
             //document.location = "https://brainlife-inviter.herokuapp.com/";
-            document.location = "https://brainlife.slack.com";
+            window.open("https://brainlife.slack.com", "slack");
         },
         md5, 
         open_usersettings() {
@@ -286,9 +286,9 @@ z-index: 3;
 }
 
 .items li.active {
-color: #666;
-background-color: #fff;
-box-shadow: inset 0 0 2px #0002;
+color: white;
+background-color: #0004;
+box-shadow: inset 1px 1px 3px #0002;
 }
 
 .items li.divider {

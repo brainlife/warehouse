@@ -221,6 +221,7 @@ exports.archive_task_outputs = async function(user_id, task, outputs, cb) {
     exports.validate_projects(user_id, project_ids, err=>{
         if(err) return cb(err);
         let datasets = []; 
+        let subdirs;
         async.eachSeries(outputs, (output, next_output)=>{
             if(!output.archive) return next_output();
             register_dataset(task, output, products[output.id], async (err, dataset)=>{
@@ -239,6 +240,8 @@ exports.archive_task_outputs = async function(user_id, task, outputs, cb) {
                 if(output.subdir) {
                     //new subdir outputs
                     dataset_config.dir+="/"+output.subdir;
+                    if(!subdirs) subdirs = [];
+                    subdirs.push(output.subdir);
                 } else {
                     //old method - need to lookup datatype first
                     let datatype = await db.Datatypes.findById(output.datatype);
@@ -263,9 +266,9 @@ exports.archive_task_outputs = async function(user_id, task, outputs, cb) {
                     url: config.amaretti.api+"/task",
                     json: true,
                     body: {
-                        deps : [ task._id ],
-                        service : "brainlife/app-archive",
-                        instance_id : task.instance_id,
+                        deps_config: [ {task: task._id, subdirs } ],
+                        service: "brainlife/app-archive",
+                        instance_id: task.instance_id,
                         config: {
                             datasets,
                         },
@@ -296,16 +299,16 @@ exports.update_appinfo = function(app, cb) {
         app.desc = repo.description;
         app.tags = repo.topics;
         if(!app.stats) app.stats = {};
-        console.log("before....");
-        console.dir(app.toString());
+        //console.log("before....");
+        //console.dir(app.toString());
         app.stats.stars = repo.stargazers_count;
         app.markModified('stats');
         app.contributors = con_details.map(con=>{
             //see https://api.github.com/users/francopestilli for other fields
             return {name: con.name, email: con.email};
         });
-        console.log("after....");
-        console.dir(app.toString());
+        //console.log("after....");
+        //console.dir(app.toString());
         cb();
     });
 }

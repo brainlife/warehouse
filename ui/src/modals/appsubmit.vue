@@ -417,6 +417,7 @@ export default {
                     project_ids.push(ps.project);
                 });
             }
+
             this.$http.get('project', {params: {
                 find: JSON.stringify({
                    _id: {$in : project_ids}
@@ -473,8 +474,8 @@ export default {
                     //for each input, find dataset that's staged and use dataset information from it
                     this.form.inputs[input_id].forEach(ps=>{
                         let dataset = download_task.config._outputs.find(output=>output.dataset_id == ps.dataset.id);
-                        console.log("using download_task _outputs dataset info");
-                        console.dir(dataset);
+                        //console.log("using download_task _outputs dataset info");
+                        //console.dir(dataset);
                         config._inputs.push(
                             Object.assign({}, dataset, {
                                 id: input_id,
@@ -522,14 +523,14 @@ export default {
                     config._outputs.push(output_req);
                 });
 
-               //now submit the main task
+                //now submit the main task
                 let submissionParams = {
                     instance_id: instance._id,
                     name: this.app.name,
                     service: this.app.github,
                     service_branch: this.app.github_branch,
                     config,
-                    deps: [ download_task._id ],
+                    deps_config: [ {task: download_task._id} ],
                     retry: this.app.retry,
                 };
                 if (this.form.advanced.resource) submissionParams.preferred_resource_id = this.form.advanced.resource;

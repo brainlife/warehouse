@@ -215,7 +215,8 @@ export default {
             datasets: null,
             project: null, 
 
-            deps: null,
+            deps_config: null,
+
             advanced: {},
 
             desc: "",
@@ -415,11 +416,12 @@ export default {
                     if(input.multi) config[k] = [];
                     input.selected.forEach(selected=>{
                         if(!selected) return; //not set?
-                        var dataset = selected.dataset;
 
-                        var base = "../"+dataset.task._id;
-                        if(dataset.subdir) base+="/"+dataset.subdir;
-                        if(!~this.deps.indexOf(dataset.task._id)) this.deps.push(dataset.task._id);
+                        var dataset = selected.dataset;
+                        if(!~this.deps_config.indexOf(dataset.task._id)) {
+                            //this.deps.push(dataset.task._id); //deprecated by deps_config
+                            this.deps_config.push({task: dataset.task._id});
+                        }
 
                         //use file path specified in datatype..
                         var file = input.datatype.files.find(file=>file.id == node.file_id);
@@ -430,6 +432,15 @@ export default {
                         }
                         
                         //use file.filename/dirname path, unless filemapping from the input dataset is provided
+                        var base = "../"+dataset.task._id;
+                        if(dataset.subdir) {
+                            base+="/"+dataset.subdir;
+
+                            //add to subdirs list
+                            let dep_config = this.deps_config.find(dep=>dep.task == dataset.task._id);
+                            if(!dep_config.subdirs) dep_config.subdirs = [];
+                            dep_config.subdirs.push(dataset.subdir);
+                        }
                         var path = base+"/"+(file.filename||file.dirname);
                         if(dataset.files && dataset.files[node.file_id]) {
                             path = base+"/"+dataset.files[node.file_id];
@@ -466,6 +477,7 @@ export default {
 
             //now construct the task objeect
             this.deps = [];
+            this.deps_config = [];
             this.process_input_config(this.config);
             var meta = {};
             var _inputs = [];
@@ -490,7 +502,6 @@ export default {
                         keys,
 
                         //only set if input is staged in
-                        //dataset_id: dataset._id,
                         project: dataset.project,
                         dataset_id: dataset.dataset_id,
                     });
@@ -549,7 +560,8 @@ export default {
                 service: this.app.github, 
                 service_branch: this.app.github_branch, 
                 config: this.config,
-                deps: this.deps,
+                //deps: this.deps,
+                deps_config: this.deps_config,
                 retry: this.app.retry,
             };
             if (this.advanced.resource) task.preferred_resource_id = this.advanced.resource;

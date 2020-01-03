@@ -85,6 +85,9 @@ export default {
                         let remove_date = new Date();
                         remove_date.setHours(remove_date.getHours()+3); 
 
+                        let dep_config = { task: this.taskid};
+                        if(this.subdir) dep_config.subdirs = [ this.subdir ];
+
                         //submit novnc service for the first time!
                         this.$http.post(Vue.config.wf_api+'/task', {
                             instance_id: instance._id,
@@ -97,11 +100,11 @@ export default {
                                 input_instance_id: this.task.instance_id,
                                 input_task_id: this.taskid,
                                 type: this.type,
-                                subdir: this.subdir,
+                                subdir: this.subdir, //might be null for legacy output mode
                                 files: this.files,
                                 title,
                             },
-                            deps: [ this.taskid ], 
+                            deps_config: [ dep_config ],
                         })
                         .then(res => {
                             this.novnc_task = res.data.task;

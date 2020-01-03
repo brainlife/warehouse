@@ -27,13 +27,6 @@ function init_amqp(cb) {
         amqp_conn.exchange("warehouse.dataset", {autoDelete: false, durable: true, type: 'topic', confirm: true}, (ex)=>{
             dataset_ex = ex;
         });
-        /*
-        amqp_conn.exchange("warehouse.rule", {autoDelete: false, durable: true, type: 'topic', confirm: true}, (ex)=>{
-            console.debug("warehouse.rule ready.....");
-            rule_ex = ex;
-        });
-        */
-
         cb();
     });
 }

@@ -194,9 +194,6 @@ export default {
 </script>
 
 <style scoped>
-.page-content {
-background-color: #eee;
-}
 .mode-toggler {
 position: fixed;
 top: 60px;

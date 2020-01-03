@@ -510,7 +510,7 @@ function handle_rule(rule, cb) {
         var stage_jwt = null;
 
         var _app_inputs = []; 
-        var deps = [];
+        var deps_config = [];
         var tasks = {};
 
         running++;
@@ -627,7 +627,10 @@ function handle_rule(rule, cb) {
 
                             //find output from task
                             let output_detail = task.config._outputs.find(it=>it.id == input.prov.output_id);
-                            deps.push(task._id); 
+
+                            let dep_config = {task: task._id};
+                            if(input.prov.subdir) dep_config.subdirs = [ input.prov.subdir ];
+                            deps_config.push(dep_config);
 
                             //TODO I should only put stuff that I need output input..
                             _app_inputs.push(Object.assign({}, input, {
@@ -635,7 +638,6 @@ function handle_rule(rule, cb) {
                                 task_id: task._id,
                                 subdir: input.prov.subdir,
                                 dataset_id: input._id,
-                                //prov: null, //remove dataset prov
                                 keys,
 
                                 files: output_detail.files, //needed by process_input_config to map to correct output
@@ -660,7 +662,11 @@ function handle_rule(rule, cb) {
                         }
                         if(output) {
                             rlogger.debug("found the input dataset already staged previously");
-                            deps.push(task._id); 
+
+                            let dep_config = {task: task._id};
+                            if(output.subdir) dep_config.subdirs = [ output.subdir ];
+                            deps_config.push(dep_config);
+
                             //TODO I should only put stuff that I need output input..
                             _app_inputs.push(Object.assign({}, input, {
                                 datatype: input.datatype._id, //unpopulate datatype to keep it clean
@@ -712,7 +718,7 @@ function handle_rule(rule, cb) {
                     _app_inputs.forEach(input=>{
                         if(!input.task_id) input.task_id = task_stage._id;
                     });
-                    deps.push(task_stage._id);
+                    deps_config.push({task: task_stage._id});
 
                     rlogger.debug("submitted staging task");
                     next();
@@ -820,7 +826,7 @@ function handle_rule(rule, cb) {
                         nice: config.rule.nice,
 
                         config: _config,
-                        deps,
+                        deps_config,
                     }
                 }, (err, res, _body)=>{
                     task_app = _body.task;

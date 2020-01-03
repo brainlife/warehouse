@@ -64,6 +64,7 @@ export default {
             default: "full",
         },
     },
+
     data () {
         return {
             user: {
