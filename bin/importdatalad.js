@@ -20,11 +20,11 @@ db.init(async err=>{
     //find dataset_description.json
     console.log("looking for dataset_description.json");
 
-    //let bids_dirs = child_process.execSync("find datasets.datalad.org -name dataset_description.json", {encoding: "utf8"}).split("\n");
-    let bids_dirs = child_process.execSync("cat bids.list", {encoding: "utf8"}).split("\n");
+    let bids_dirs = child_process.execSync("find datasets.datalad.org -name dataset_description.json", {encoding: "utf8"}).split("\n");
+    //let bids_dirs = child_process.execSync("cat bids.list", {encoding: "utf8"}).split("\n");
 
     //debug..
-    //let bids_dirs = ["datasets.datalad.org/ds002040/dataset_description.json"];
+    //bids_dirs = ["datasets.datalad.org/openneuro/ds002311/dataset_description.json"];
     //bids_dirs = ["datasets.datalad.org/openneuro/ds001021/dataset_description.json"];
 
     let skipped = [];

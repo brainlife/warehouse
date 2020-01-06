@@ -135,9 +135,20 @@ var projectSchema = mongoose.Schema({
 
         //datasets stats updated by projectinfo > common.update_dataset_stats
         datasets: {
-            //subjects: [String],
-            subject_count: Number,
+
+            //deprecated - by datatypes_detail
             datatypes: [{type: mongoose.Schema.Types.ObjectId, ref: "Datatypes"}],
+           
+            //datatypes and number of objects
+            datatypes_detail: [{
+                type: {type: mongoose.Schema.Types.ObjectId, ref: "Datatypes"},
+                subject_count: Number,
+                count: Number,
+                size: Number,
+            }],
+
+            //total
+            subject_count: Number,
             count: Number,
             size: Number,
         },

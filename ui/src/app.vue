@@ -173,18 +173,9 @@
                             <b-row>
                                 <b-col cols="6" v-for="resource in resources" :key="resource._id">
                                     <div class="resource" v-b-popover.hover.d1000="resource.config.desc+'\n\n'+resource.detail.msg+'\nstatus:'+resource.status" :title="null">
-                                        <!--
-                                        <p style="padding: 10px; margin-bottom: 0px;">
-                                            <icon v-if="resource.gids.length > 0" name="users" style="opacity: 0.4; float: right"/>
-                                            <icon v-else name="lock" class="text-secondary" style="float: right" title="Private resource"/>
-
-                                            <b>{{resource.name}}</b><br>
-                                            <small>{{resource.config.desc}}</small>
-                                        </p>
-                                        -->
                                         <resource :resource="resource" style="0px 0px 3px #0002;"/>
 
-                                        <div v-if="resource.status != 'ok'" class="resource-status bg-secondary">
+                                        <div v-if="resource.status != 'ok'" class="resource-status bg-danger">
                                             <icon name="exclamation" style="position: relative; top: -3px;"/>
                                             {{resource.status}}
                                             <span class="score">Score {{resource.score}}</span>

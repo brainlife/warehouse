@@ -870,7 +870,7 @@ right: 250px;
 .loading {
     position: fixed;
     bottom: 25px;
-    left: 230px; 
+    left: 80px; 
     z-index: 10;
     opacity: 0.5;  
 }

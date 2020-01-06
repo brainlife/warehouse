@@ -200,26 +200,6 @@
                     </b-badge>
                 </p>
 
-                <!--
-                <p>
-                    <b-badge pill class="bigpill" title="Number of subjects stored in archvie"
-                        v-if="selected.stats && selected.stats.datasets && selected.stats.datasets.subject_count">
-                        <icon name="user-friends" style="opacity: 0.4;"/>&nbsp;&nbsp;{{selected.stats.datasets.subject_count}} 
-                        <small>Subjects</small>
-                    </b-badge>                           
-                </p>
-                -->
-
-                <!--
-                <p>
-                    <b-badge pill class="bigpill" title="Number of datasets stored in archive"
-                        v-if="selected.stats && selected.stats.datasets && selected.stats.datasets.count">
-                        <icon name="cubes" style="opacity: 0.4;"/>&nbsp;&nbsp;{{selected.stats.datasets.count}}
-                        <small>Data-objects</small>
-                    </b-badge>
-                </p>
-                -->
-
                 <p>
                     <b-badge pill class="bigpill" title="Total size of data stored in archive"
                         v-if="selected.stats && selected.stats.datasets && selected.stats.datasets.size">
@@ -249,7 +229,8 @@
                     </b-badge>
                 </p>
 
-                <p>
+                <!--datatype was deprecated by datatype_details-->
+                <p v-if="!selected.stats.datasets.datatype_details">
                     <span class="form-header">Datatypes</span>
                     <span v-for="datatype_id in selected.stats.datasets.datatypes" :key="datatype_id">
                         <b-badge variant="light">
@@ -258,6 +239,17 @@
                         &nbsp;
                     </span>
                 </p>
+
+                <div v-if="selected.stats.datasets.datatypes_detail">
+                    <p v-for="detail in selected.stats.datasets.datatypes_detail" :key="detail.type">
+                        <datatypetag :datatype="detail.type"/> 
+                        <small style="opacity: 0.6;">
+                            <icon name="user-friends"/> {{detail.subject_count}}
+                            <icon name="cubes"/> {{detail.count}}
+                            <span v-if="detail.size">({{detail.size|filesize}})</span>
+                        </small>
+                    </p>
+                </div>
 
             </div><!--page-right-content-->
 

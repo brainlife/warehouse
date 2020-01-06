@@ -5,7 +5,7 @@
         <div style="max-height: 75px; overflow: hidden;">
             <h4 class="name">
                 <icon v-if="app_.projects && app_.projects.length > 0" scale="0.9" name="lock" title="not working.." class="text-secondary"/>
-                <icon v-if="app_.deprecated_by" scale="0.9" name="ban" title="deprecated" class="text-secondary"/>
+                <icon v-if="app_.deprecated_by" scale="0.9" name="regular/calendar-times" title="deprecated" class="text-secondary"/>
                 {{app_.name}} <span class="github" style="font-weight: normal;">{{app_.github}}</span> 
                 <b-badge>{{branch||app_.github_branch}}</b-badge>
             </h4>

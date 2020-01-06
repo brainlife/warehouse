@@ -63,11 +63,13 @@ export default {
                         {admins: Vue.config.user.sub},
                     ],
                     removed: false,
+                    openneuro: {$exists: false}, //don't show openneuro psudo projects
                 };
             } else {
                 //load project that user is admin/member/guest, or public (who can read from datasets)
                 find = {
                     removed: false,
+                    openneuro: {$exists: false}, //don't show openneuro psudo projects
                 };
             }
 
@@ -76,6 +78,7 @@ export default {
                 let project_query = {
                     datatype: this.datatype._id||this.datatype,
                     removed: false,
+                    openneuro: {$exists: false}, //don't show openneuro psudo projects
                 } 
 
                 if(this.datatype_tags && this.datatype_tags.length > 0) {

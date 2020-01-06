@@ -536,4 +536,12 @@ background-size: 100% 40px, 100% 40px, 100% 14px, 100% 14px;
 /* Opera doesn't support this in the shorthand */
 background-attachment: local, local, scroll, scroll;
 }
+
+.btn-primary {
+/*
+background-image: linear-gradient(90deg, #2693ff, #159957);
+*/
+background-color: #2693ff;
+border-color: #2693ff90;
+}
 </style>

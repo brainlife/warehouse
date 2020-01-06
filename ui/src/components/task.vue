@@ -134,7 +134,7 @@
                 <transition name="fadeHeight">
                     <div v-if="activeSections.rawoutput" style="background-color: #fafafa;">
                         <filebrowser v-if="task.resource_id" :task="task"></filebrowser>
-                        <b-alert show v-else title="Not yet submitted to computing resource" :variant="warning"></b-alert>
+                        <b-alert show v-else variant="secondary">Not yet submitted to computing resource</b-alert>
                     </div>
                 </transition>
             </div>
@@ -148,8 +148,6 @@ import Vue from 'vue'
 
 import filebrowser from '@/components/filebrowser'
 import statusicon from '@/components/statusicon'
-//import mute from '@/components/mute'
-//import tags from '@/components/tags'
 import taskconfig from '@/components/taskconfig'
 import contact from '@/components/contact'
 import VueMarkdown from 'vue-markdown'

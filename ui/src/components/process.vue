@@ -1,5 +1,5 @@
 <template>
-<div v-if="projects && instance" ref="process">
+<div v-if="projects && instance" ref="process" class="process">
     <p class="loading" v-if="loading"><icon name="cog" scale="1.25" spin/> Loading...</p>
     <div v-if="!loading" ref="process-header" class="process-header">
         <div class="instance-action">
@@ -598,6 +598,9 @@ export default {
 </script>
 
 <style scoped>
+.process {
+scroll-behavior: smooth;
+}
 .sidebar {
 background-color: #ddd;
 position: fixed;

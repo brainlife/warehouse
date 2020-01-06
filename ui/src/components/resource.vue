@@ -3,7 +3,7 @@
     <div style="height: 150px; position: absolute; width: 100%; z-index: 1;">
         <div class="resource-tags">
             <b-badge v-if="resource_obj.status == 'ok'" variant="success">OK</b-badge>
-            <b-badge v-if="resource_obj.status != 'ok'" variant="secondary">{{resource_obj.status}}</b-badge>
+            <b-badge v-if="resource_obj.status != 'ok'" variant="danger">{{resource_obj.status}}</b-badge>
         </div>
         <div style="height: 90px; padding: 5px; overflow: hidden;">
             <b-badge v-if="!resource_obj.active" title="This resource is manually disabled by the resource owner, or status has been non-OK for long time.">Inactive</b-badge>

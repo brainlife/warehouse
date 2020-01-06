@@ -703,21 +703,41 @@ exports.update_dataset_stats = async function(project_id, cb) {
             }, count: {$sum: 1}, size: {$sum: "$size"} })
             .sort({"_id.subject":1});
         let subjects = new Set();
-        let datatypes = new Set();
+        //let datatypes = new Set(); //obsoleted by datatypes_detail
         let stats = {
             subject_count: 0,
             count: 0, 
             size: 0,
+            datatypes_detail: [],
         }
         inventory.forEach(item=>{
             subjects.add(item._id.subject);
+            
             //some project contains dataset without datatype??
-            if(item._id.datatype) datatypes.add(item._id.datatype.toString());
+            if(item._id.datatype) {
+                let type = item._id.datatype;
+                
+                //datatypes.add(type); //datatypes is obsoleted by datatypes_detail
+
+                let datatype = stats.datatypes_detail.find(datatype=>datatype.type.toString() == type.toString());
+                if(datatype) {
+                    datatype.subject_count++;
+                    datatype.count += item.count;
+                    datatype.size += item.size;
+                } else {
+                    stats.datatypes_detail.push({ type, count: item.count, size: item.size, subject_count: 1 });
+                }
+            }
+
+            //calculate total
             stats.count += item.count;
             stats.size += item.size;
         });
         stats.subject_count = subjects.size;
-        stats.datatypes = [...datatypes].sort();
+        //stats.datatypes = [...datatypes].sort();
+
+        //console.log(JSON.stringify(stats, null, 4));
+
         let doc = await db.Projects.findByIdAndUpdate(project_id, {$set: {"stats.datasets": stats}}, {new: true});
         if(cb) cb(null, doc);
     } catch(err) {
