@@ -141,9 +141,10 @@ exports.storage_default = function() {
 */
 
 exports.archive = {
-    storage_default: "wrangler",  
+    //storage_default: "wrangler",  
+    storage_default: "osiris",  
     storage_config: {
-        resource_id: "59ea931df82bb308c0197c3d", //wrangler
+        resource_id: "59ea931df82bb308c0197c3d", //wrangler-nfs server
     },
     gid: 137, //warehouse group enabled to access storage service
 }
@@ -275,9 +276,7 @@ function connect_wrangler(cb) {
     });
 
     conn.connect({
-        //username: "hayashis",
         username: "brlife",
-        //host: "wrangler.iu.xsede.org",
         host: "149.165.156.63",
         privateKey: fs.readFileSync(__dirname+'/brlife.id_rsa'),
         //passphrase: "somepass",  //what's the point?
@@ -369,6 +368,113 @@ exports.storage_systems.wrangler = {
             console.log("got wrangler streams for remove");
             if(err) return cb(err);
             let _path = get_wrangler_archive_path(dataset);
+            conn.exec("rm -f "+_path, (err, stream)=>{
+                if(err) {
+                    conn.end();
+                    return cb(err);
+                }
+                stream.on('error', err=>{
+                    console.error(err);
+                });
+                stream.on('close', (code, signal)=>{
+                    conn.end(); 
+                    if(code == 0) return cb(null);
+                    else cb("rm failed with code:"+code);
+                });
+                stream.on('data', data=>{
+                    console.log(data.toString());
+                });
+                stream.stderr.on('data', data=>{
+                    console.error(data.toString());
+                });
+            });
+        });
+    }
+} 
+
+function get_osiris_archive_path(dataset) {
+    let _path = "/mnt/osiris-encfs/dev-archive/";
+    _path += dataset.project+"/";
+    _path += dataset._id+".tar";
+    console.log(_path);
+    return _path;
+}
+
+exports.storage_systems.osiris = {
+    need_backup: true, //need_backup if it's our storage (not openneuro)
+    test: cb=>{
+        connect_wrangler((err, conn, sftp)=>{
+            if(err) return cb(err);
+            //TODO - I need to update this for OSiRIS
+            console.log("loading quota.info from wrangler homedir.. should be created by cron..");
+            let stream = sftp.createReadStream("/mnt/wrangler/my-quota", {encoding: "ascii"});
+            let content = "";
+            stream.on('readable', function() {
+                //could be called multiple times..
+                let chunk;
+                while (null !== (chunk = stream.read())) {
+                    content += chunk.toString();
+                }
+            });
+            stream.on('end', ()=>{
+                conn.end();
+                //parse quota content
+                let lines = content.split("\n");
+                if(lines[0] != "Disk quotas for usr hayashis (uid 833400):") {
+                    return cb("quota info looks odd.. "+content);
+                }
+                let stats = lines[3].trim().split(/[ ]+/);
+                let disk_used = parseInt(stats[0]);
+                let disk_quota = parseInt(stats[2]);
+                let files_used = parseInt(stats[4]);
+                let files_quota = parseInt(stats[6]);
+                if(disk_used / disk_quota > 0.85) return cb("disk >85% used");
+                if(files_used / files_quota > 0.85) return cb("files >85% used");
+                cb();
+            });
+        });
+    }, 
+
+    stat: (dataset, cb)=>{
+        connect_wrangler((err, conn, sftp)=>{
+            if(err) return cb(err);
+            sftp.stat(get_osiris_archive_path(dataset), (err,stat)=>{
+                conn.end();
+                cb(err, stat);
+            });
+        });
+    },
+
+    download: (dataset, cb)=>{
+        connect_wrangler((err, conn, sftp)=>{
+            if (err) {
+                conn.end();
+                return cb(err);
+            }
+            let path = get_osiris_archive_path(dataset);
+            let filename = path.split("/").pop();
+            console.debug(["loading...", path, filename]);
+            conn.exec("cat "+path, (err, stream)=>{
+                stream.on('error', err=>{
+                    console.error("stream failed but train has already left the station", err);
+                });
+                stream.on('close', code=>{
+                    conn.end();
+                });
+                //I believe listening to stream is required for close event to fire..?
+                stream.stderr.on('data', data=>{
+                    console.error(data.toString());
+                });
+                cb(err, stream, filename);
+            });
+        });
+    },
+
+    remove: (dataset, cb)=>{
+        connect_wrangler((err, conn, sftp)=>{
+            console.log("got wrangler streams for remove");
+            if(err) return cb(err);
+            let _path = get_osiris_archive_path(dataset);
             conn.exec("rm -f "+_path, (err, stream)=>{
                 if(err) {
                     conn.end();
@@ -694,76 +800,6 @@ exports.storage_systems["datalad"] = {
     },
 
     download: (dataset, cb)=>{
-        /*
-        //console.log("datalad getting");
-        //run datalad get on each files
-        async.each(dataset.storage_config.files, (file, next_file)=>{
-            child_process.exec("datalad get "+file.src, {cwd: datalad_root}, (err, stdout, stderr)=>{
-                if(err) return next_file(err);
-                console.debug(stdout);
-                console.error(stderr);
-                next_file();
-            });
-        }, err=>{
-            if(err) return cb(err);
-            
-            //create tar ball
-            let archive = archiver('tar');
-            let gzip = zlib.createGzip();
-            async.forEach(dataset.storage_config.files, async file=>{
-                let source_path = datalad_root+"/"+file.src;
-                let stat = fs.statSync(source_path);
-                if(stat.isDirectory()) {
-                    //I need to deference symbolic link as archiver won't deference symlinks
-                    let entries = await walk(source_path);
-                    console.dir(entries);
-                    entries.forEach(entry=>{
-                        let subpath = entry.substring(source_path.length);
-                        console.log(entry, file.dest+subpath);
-                        archive.append(fs.createReadStream(entry), {name: file.dest+subpath});
-                    });
-                    //archive.directory(source_path, file.dest);
-                } else {
-                    let stream = fs.createReadStream(source_path);
-                    if(file.src.endsWith(".nii")) {
-                        //compress .nii with .nii.gz as *all* brainlife datatype uses .nii.gz for nifti
-                        console.log("passing", file.src, "through gzip stream");
-                        stream = stream.pipe(gzip);
-                    }
-                    archive.append(stream, {name: file.dest});
-                }
-            }, err=>{
-                archive.finalize();
-                cb(err, archive, dataset._id+".tar");
-            });
-        });
-        */
-
-        /*
-        connect_wrangler((err, conn, sftp)=>{
-            if (err) {
-                conn.end();
-                return cb(err);
-            }
-            let path = get_wrangler_archive_path(dataset);
-            let filename = path.split("/").pop();
-            console.debug(["loading...", path, filename]);
-            conn.exec("cat "+path, (err, stream)=>{
-                stream.on('error', err=>{
-                    console.error("stream failed but train has already left the station", err);
-                });
-                stream.on('close', code=>{
-                    conn.end();
-                });
-                //I believe listening to stream is required for close event to fire..?
-                stream.stderr.on('data', data=>{
-                    console.error(data.toString());
-                });
-                cb(err, stream, filename);
-            });
-        });
-        */
-
         connect_wrangler((err, conn, sftp)=>{
             if (err) {
                 conn.end();

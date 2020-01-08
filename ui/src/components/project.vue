@@ -18,7 +18,7 @@
         </b-col>
         <b-col md="1" v-if="config.user">
             <div class="contacts">
-                <contact v-for="c in contacts" :key="c._id" :id="c" size="tiny" style="margin-left: -6px"/>
+                <contact v-for="c in contacts" :key="c._id" :id="c" size="tiny" style="margin-left: -6px; margin-bottom: -4px"/>
             </div>
         </b-col>
         <b-col md="3">
@@ -105,7 +105,6 @@ export default {
 background-color: white;
 padding: 3px 6px;
 margin-bottom: 1px;
-color: #555;
 }
 .project:hover {
 background-color: #f9f9f9;

@@ -89,7 +89,7 @@
 
     <!--task details-->
     <div class="status-color" :class="task.status" style="padding-left: 3px;">
-        <div style="background-color: #fafafa; color: #555; position: relative;">
+        <div style="background-color: #fafafa; color: #333; position: relative;">
             <div class="note" v-if="task.desc || editing_desc">
                 <div v-if="task.desc && !editing_desc" @click="editing_desc = true" class="note-text">
                     <vue-markdown :source="task.desc" class="readme" style="margin: 0px 5px;"/>

@@ -11,6 +11,10 @@ common.redis.on('ready', ()=>{
     logger.info("removing health.warehouse.*");
     common.redis.keys("health.warehouse.*", (err, keys)=>{
         if(err) throw err;
+        if(keys.length == 0) {
+            console.log("no keys to remove");
+            process.exit(0);
+        }
         common.redis.del(keys, (err, reps)=>{
             if(err) throw err;
             logger.debug(reps);

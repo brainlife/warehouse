@@ -47,6 +47,12 @@ export default {
         }})
         .then(res=>{
             this.pubs = res.data.pubs;
+
+            Vue.nextTick(()=>{
+                console.log("initializing altmetric embed")
+                _altmetric_embed_init(this.$el);
+            });
+
         }, res=>{
             console.error(res);
         });
@@ -63,7 +69,6 @@ margin-bottom: 10px;
 }
 .page-content {
 top: 0px;
-background-color: #eee;
 }
 .page-content h3 {
 margin-bottom: 0px;

@@ -859,8 +859,8 @@ right: 250px;
     opacity: 0.5;
 }
 .list  .subjects {
-    border-top: 1px solid #eee;
-    padding: 5px 0px;
+border-top: 1px solid #eee;
+padding: 5px 0px;
 }
 .list  .truncate {
     white-space: nowrap;

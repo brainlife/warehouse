@@ -394,7 +394,11 @@ export default {
                         t: 20, //top
                         b: 35, //bottom
                         r: 20, //right
-                        l: 20,
+                        l: 30,
+                    },
+                    xaxis: {
+                        //title: 'Running Jobs',
+                        //showgrid: false,
                     },
                     yaxis: {
                         //title: 'Running Jobs',

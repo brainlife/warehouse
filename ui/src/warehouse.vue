@@ -55,7 +55,7 @@ font-family: 'Montserrat', sans-serif;
 #warehouse {
 height: 100%;
 background-color: #f9f9f9;
-color: #555;
+color: #444;
 font-size: 14px;
 font-family: -apple-system,BlinkMacSystemFont,Segoe UI,Helvetica,Arial,sans-serif,Apple Color Emoji,Segoe UI Emoji;
 }

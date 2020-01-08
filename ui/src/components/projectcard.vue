@@ -131,7 +131,6 @@ padding: 5px;
 margin-bottom: 0px;
 height: 30px;
 overflow: hidden;
-color: #555;
 white-space: nowrap; 
 text-overflow: ellipsis;
 }

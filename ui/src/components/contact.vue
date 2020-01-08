@@ -117,7 +117,6 @@ display: inline-block;
 height: 20px;
 margin-right: 10px;
 font-size: 11px;
-color: #555;
 font-weight: 700;
 white-space: nowrap;
 line-height: 20px;

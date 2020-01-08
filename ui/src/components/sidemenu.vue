@@ -71,6 +71,7 @@
         -->
         <li v-if="config.user" @click="go('/settings')" :class="{active: active == 'setting'}">
             <icon name="cog" scale="1.2"/>
+            <span v-if="!config.user.profile.aup" style="position: absolute; top: -15px; left: 20px; font-size: 350%;" class="text-danger">&bull;</span>
             <h4>Settings</h4>
         </li>    
     </ul>
@@ -91,9 +92,24 @@
         </li>
         <b-popover target="user-popover" triggers="hover" placement="right">
              <template v-slot:title>
-                {{config.user.profile.fullname||config.user.profile.username}}
+                {{config.user.profile.username}}&nbsp;
+                <b-badge>{{config.user.sub}}</b-badge>
              </template>
-            <b-button size="sm" variant="light" @click="signout"> <icon name="sign-out-alt" scale="1.2"/>&nbsp; Signout                 </b-button>
+            <p>
+                {{config.user.profile.fullname}} &lt;{{config.user.profile.email}}&gt;
+            </p>
+            <!--
+            <p v-if="config.debug">
+                <b>Member Groups</b><br>
+                <tags :tags="config.user.gids"/>
+            </p>
+            -->
+            <p>
+                <b>Authorization</b>
+                <pre style="font-size: 80%;">{{JSON.stringify(config.user.scopes, null, 4)}}</pre>
+            </p>
+            <hr>
+            <b-button size="sm" variant="secondary" @click="signout"> <icon name="sign-out-alt" scale="1.2"/>&nbsp; Signout </b-button>
         </b-popover>
 
         <li v-if="!config.user" @click="login">
@@ -122,9 +138,13 @@
 import Vue from 'vue'
 import md5 from 'md5'
 
+import tags from '@/components/tags'
+
+
 const lib = require('@/lib'); //for avatar_url
 
 export default {
+    components: { tags },
     data () {
         return {
             showmenu: true,

@@ -15,8 +15,13 @@
 
         <!--main content-->
         <b-container>
+
             <!--profile-->
             <div v-if="tab == 0">
+                <b-alert :show="!profile.private.aup" variant="danger" style="margin-bottom: 20px">
+                    <icon name="exclamation-circle"/> Please agree to brainlife.io acceptable user policy below.
+                </b-alert>
+
                 <b-form @submit="submit_profile">
                     <h5 style="opacity: 0.7">Public Profile</h5>
                     <p><small>The following information will be shared publically among all brainlife users.</small></p>
