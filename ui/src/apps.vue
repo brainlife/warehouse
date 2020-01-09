@@ -80,20 +80,6 @@
                 <br>
                 <br>
             </div>
-
-            <!--
-            <div style="background-color: #159957; color: white;">
-                <h4 class="group-title" style="color: inherit; background-color: inherit;">Register New App</h4>
-                <div style="padding: 10px 20px; opacity: 0.8;">
-                    <p>Do you have a code that you'd like to publish on Brainlife?</p>
-                    <p>You can publish it so that other users can execute your code!</p>
-                    <b-button variant="success" @click="go('/app/_/edit')">Register New App</b-button> 
-                </div>
-
-                <br>
-                <br>
-            </div>
-            -->
         </div>
 
         <b-button v-if="config.user" class="button-fixed" @click="go('/app/_/edit')" v-b-tooltip.hover title="Register App">
@@ -107,7 +93,6 @@
 import Vue from 'vue'
 import app from '@/components/app'
 
-import 'perfect-scrollbar/css/perfect-scrollbar.css'
 import PerfectScrollbar from 'perfect-scrollbar'
 
 let query_debounce;
@@ -133,7 +118,6 @@ export default {
     },
 
     created() {
-        
         //load datatypes first.. then load apps
         this.$http.get('datatype').then(res=>{
             this.datatypes = {};
@@ -153,7 +137,6 @@ export default {
     watch: {
         show_dep(nv, ov) {
             if(nv == ov) return;
-            //console.log(this.show_dep);
             localStorage.setItem("apps.show_dep", this.show_dep);
             this.load();
         },
@@ -169,18 +152,7 @@ export default {
 
     methods: {
         focus_search() {
-            /*
-            if(this.datatypes) return; //already loaded
-            return this.$http.get('datatype')
-            .then(res=>{
-                this.datatypes = {};
-                res.data.datatypes.forEach((d)=>{
-                    this.datatypes[d._id] = d;
-                });
-            }).catch(err=>{
-                console.error(err);
-            });
-            */
+            //TODO - show advanced search controller?
         },
 
         get_mongo_query() {
@@ -235,8 +207,6 @@ export default {
                 });
             }
 
-            //console.log(JSON.stringify(ands, null, 4));
-            //console.log("loading apps", ands);
             this.$http.get('app', {params: {
                 find: JSON.stringify({$and: ands}),
                 limit: 500, //TODO - this is not sustailable
@@ -245,7 +215,6 @@ export default {
             .then(res=>{
                 this.loading = false;
                 this.apps = res.data.apps;
-                console.log("got apps.. organizing");
 
                 //organize apps into various tags
                 res.data.apps.forEach(app=>{
@@ -259,22 +228,6 @@ export default {
                 });
                 this.sorted_tags.sort();
 
-                /*
-                if(Vue.config.debug) {
-                    console.log("adding dummy apps to test performance");
-                    let template = Object.assign({}, res.data.apps[0]);
-                    let apps = [];
-                    for(let i = 0;i < 200; i++) {
-                        apps.push(Object.assign({}, template, {
-                            _id: Math.random().toString()+Math.random().toString(),
-                            desc: "This app will quickly check the dwi image to see if any bvecs directions needs to be flipped. The algorithm finds bvecs that are pointing toward certain direction and find the volume slice within 4D DWI data and see how many image slices indeed seems to contain features that are orthogonal to the bvecs directions. Inconclusive output from this App usually means you have some data quality issue with your dwi.",
-                        }));
-                    }
-                    this.app_groups['dummy'] = apps;
-                    this.sorted_tags.push('dummy');
-                }
-                */
-
                 if(!this.query) {
                     //find most recently created apps as *new apps*
                     let apps = res.data.apps.filter(a=>{
@@ -286,17 +239,12 @@ export default {
                     this.app_groups._new = apps.slice(0, 6);
                 }
 
-                console.log("waitng for nexttick");
                 this.$nextTick(()=>{
                     if(document.location.hash) {
                         this.jump(document.location.hash.substring(1));
                     }
-                    console.log("updating active");
                     this.handle_scroll();
-
                     let grouplist = this.$refs["group-list"];
-
-                    console.log("setting scrollbar");
                     ps = new PerfectScrollbar(grouplist);
                     grouplist.scrollTop = 0;
                 });

@@ -40,8 +40,6 @@
 import Vue from 'vue'
 import Router from 'vue-router'
 
-import 'perfect-scrollbar/css/perfect-scrollbar.css'
-import PerfectScrollbar from 'perfect-scrollbar'
 import VueMarkdown from 'vue-markdown'
 
 import datatype from '@/components/datatype'

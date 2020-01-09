@@ -8,6 +8,7 @@
                     <b-tab title="Profile"/>
                     <b-tab title="Avatar"/>
                     <b-tab title="Account"/>
+                    <b-tab title="Notifications"/>
                     <!--<b-tab title="Notifications"/>-->
                 </b-tabs>
             </b-container>
@@ -189,6 +190,33 @@
             <div v-if="tab == 2">
                 Please visit the legacy <a href="/auth/#!/settings/account" target="_blank">Account Settings</a> page.
             </div>
+
+            <!--notification-->
+            <div v-if="tab == 3">
+                <b-form @submit="submit_profile">
+                    <b-row>
+                        <b-col cols="2">
+                            <span class="form-header">News Letters</span>
+                        </b-col>
+                        <b-col>
+                            <b-form-checkbox name="aup" v-model="profile.private.notification.newsletter_general">
+                                Receive brainlife.io general newsletters (about once a month).
+                            </b-form-checkbox>    
+                        </b-col>
+                    </b-row>
+
+                    <br>
+                    <br>
+                    <br>
+                    <br>
+                    <div class="page-footer">
+                        <b-container>
+                            <b-button type="submit" variant="primary">Update</b-button>
+                        </b-container>
+                    </div>
+                </b-form>
+            </div>
+
         </b-container>
         <br>
         <br>
@@ -226,6 +254,9 @@ export default {
                     programming_experience: null, 
                     computing_experience: null, 
                     */
+                    notification: {
+                       newsletter_general: false,
+                    }
                 }
             },
 
@@ -245,8 +276,8 @@ export default {
 
     mounted() {
         this.$http.get(Vue.config.auth_api+"/profile").then(res=>{
-            console.log("downloading user profile");
-            console.dir(res.data);
+            //console.log("downloading user profile");
+            //console.dir(res.data);
             this.fullname = res.data.fullname;
             if(res.data.profile) Object.assign(this.profile, res.data.profile);
         })

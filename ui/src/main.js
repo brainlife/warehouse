@@ -16,6 +16,7 @@ import Vue from 'vue'
 import 'vue-select/dist/vue-select.css';
 import vSelect from 'vue-select' 
 
+import 'perfect-scrollbar/css/perfect-scrollbar.css'
 //import VueHighlightJS from 'vue-highlightjs'
 
 import Notifications from 'vue-notification' //override element-ui ugly $notify..

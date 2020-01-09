@@ -45,7 +45,11 @@ db.init(async err=>{
 
             //if there are no data, something went wrong..
             if(bids.datasets.length == 0) {
-                skipped.push(dataset_path);
+                skipped.push({dataset_path, reason: "empty dataset"});
+                return next_dir();
+            }
+            if(!bids.dataset_description) {
+                skipped.push({dataset_path, reason: "empty dataset_description?"});
                 return next_dir();
             }
 
@@ -75,7 +79,7 @@ function handle_bids(key, bids, cb) {
     //upsert dl-dataset record
     db.DLDatasets.findOne(key, (err, dldataset)=>{
         if(err) return next_dir(err);
-        if(!dldataset) dldataset = new db.DLDatasets(key);
+        if(!dldataset.dataset_description) return next_dir();
 
         if(bids.README) dldataset.README = bids.README;
         if(bids.CHANGED) dldataset.CHANGES = bids.CHANGES;

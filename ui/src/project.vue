@@ -184,7 +184,7 @@
                 </div>
             </div><!-- main content-->
 
-            <div class="page-right-content" style="padding: 20px 10px;" v-if="selected.stats">
+            <div class="page-right-content" style="padding: 20px 10px;" v-if="selected.stats" ref="page-right-content">
 
                 <!--
                 <p v-if="selected.stats && get_total(selected.stats.instances) > 0">
@@ -310,6 +310,10 @@ import datatypeselecterModal from '@/modals/datatypeselecter'
 
 import ReconnectingWebSocket from 'reconnectingwebsocket'
 
+import PerfectScrollbar from 'perfect-scrollbar'
+
+let ps;
+
 export default {
     components: { 
         projectaccess, pageheader, contact, 
@@ -376,6 +380,10 @@ export default {
                 this.pub_editing = null;
 
                 this.$router.replace("/project/"+this.selected._id+"/"+this.tabs[this.tab].id);
+            }
+
+            if(tabid == 'detail') {
+                this.init_ps();
             }
         },
     },
@@ -498,9 +506,21 @@ export default {
             this.open_project(project);
         },
 
+        init_ps() {
+            this.$nextTick(()=>{
+                //console.log("resetting scrollbar");
+                let right = this.$refs["page-right-content"];
+                if(right) {
+                    ps = new PerfectScrollbar(right);
+                }
+            });
+        },
+
         open_project(project) {
             if(this.selected == project) return; //no point of opening project if it's already opened
             this.selected = project;
+            this.init_ps();
+
             this.$http.get('project', {params: {
                 find: JSON.stringify({
                     _id: project._id,
@@ -516,6 +536,7 @@ export default {
                 if(this.$refs.disqus && window.DISQUS) {
                     this.$refs.disqus.reset(window.DISQUS);
                 }
+
             });
 
             if(this.ws) this.ws.close();

@@ -110,7 +110,6 @@
 <script>
 import Vue from 'vue'
 
-import 'perfect-scrollbar/css/perfect-scrollbar.css'
 import PerfectScrollbar from 'perfect-scrollbar'
 import statusicon from '@/components/statusicon'
 import contact from '@/components/contact'

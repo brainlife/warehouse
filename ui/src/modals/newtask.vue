@@ -418,9 +418,11 @@ export default {
                         if(!selected) return; //not set?
 
                         var dataset = selected.dataset;
-                        if(!~this.deps_config.indexOf(dataset.task._id)) {
+                        let dep_config = this.deps_config.find(dep=>dep.task == dataset.task._id);
+                        if(!dep_config) {
                             //this.deps.push(dataset.task._id); //deprecated by deps_config
-                            this.deps_config.push({task: dataset.task._id});
+                            dep_config = {task: dataset.task._id};
+                            this.deps_config.push(dep_config);
                         }
 
                         //use file path specified in datatype..
@@ -437,9 +439,8 @@ export default {
                             base+="/"+dataset.subdir;
 
                             //add to subdirs list
-                            let dep_config = this.deps_config.find(dep=>dep.task == dataset.task._id);
                             if(!dep_config.subdirs) dep_config.subdirs = [];
-                            dep_config.subdirs.push(dataset.subdir);
+                            if(!dep_config.subdirs.includes(dataset.subdir)) dep_config.subdirs.push(dataset.subdir);
                         }
                         var path = base+"/"+(file.filename||file.dirname);
                         if(dataset.files && dataset.files[node.file_id]) {

@@ -196,7 +196,6 @@ import license from '@/components/license'
 
 import VueMarkdown from 'vue-markdown'
 
-import 'perfect-scrollbar/css/perfect-scrollbar.css'
 import PerfectScrollbar from 'perfect-scrollbar'
 
 import pagesplitter from '@/mixins/pagesplitter'
