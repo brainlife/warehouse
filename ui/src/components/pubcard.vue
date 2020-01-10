@@ -10,6 +10,7 @@
                 data-badge-popover="left" 
                 data-hide-no-mentions="true" 
                 :data-doi="pub.doi||config.debug_doi"></div>
+            <br>
         </div>
 
         <div style="margin-right: 150px;">
@@ -49,6 +50,11 @@ import doibadge from '@/components/doibadge'
 export default {
     components: { contact, projectavatar, doibadge },
     props: ['pub', 'compact'],
+    data() {
+        return {
+            config: Vue.config,
+        }
+    },
 
     methods: {
         click: function() {
@@ -63,7 +69,7 @@ export default {
 
 <style scoped>
 .pubcard {
-transition: background-color 0.3s;
+transition: background-color 0.3s, color 0.3s, box-shadow 0.3s;
 border-bottom: 1px solid #eee;
 font-size: 90%;
 clear: both;
@@ -78,7 +84,8 @@ color: #333;
 cursor: pointer;
 }
 .pubcard.clickable:hover {
-background-color: white;
+background-color: #fffc;
+box-shadow: 1px 1px 4px #0004;
 }
 .name {
 color: #333;

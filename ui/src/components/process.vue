@@ -1,154 +1,157 @@
 <template>
-<div v-if="projects && instance" ref="process" class="process">
-    <p class="loading" v-if="loading"><icon name="cog" scale="1.25" spin/> Loading...</p>
-    <div v-if="!loading" ref="process-header" class="process-header">
+<div v-if="projects && instance">
+    <div v-if="!loading" ref="process-header" class="process-header" :style="{left: splitter_pos+'px'}">
         <div class="instance-action">
             <div @click.stop="remove()" class="button">
                 <icon name="trash"/>
             </div>
         </div>
         <div style="margin-right: 40px;">
-            <b-form-textarea v-model="desc" @input="updatedesc" placeholder="Enter process description" rows="2" max-rows="4"></b-form-textarea>
+            <b-form-textarea v-model="desc" @input="updatedesc" placeholder="Enter process description" rows="2" max-rows="4" style="height: 55px"></b-form-textarea>
         </div>
     </div>
 
-    <b-alert variant="secondary" :show="!loading && tasks && tasks.length == 0">Please stage datasets by clicking "Stage New dataset" button below.</b-alert>
-    <div class="task-area" v-if="!loading && tasks" v-for="task in tasks" :key="task._id" :id="task._id">
-        <div v-if="!task.show" class="task-id" @click="toggle_task(task)">
-            <icon name="caret-right"/>
-            t.{{task.config._tid}}
-        </div>
-        <!--full detail-->
-        <task :task="task" class="task" v-if="task.show">
-            <!--header-->
-            <div slot="header" style="background-color: white;">
-                <!--task-id and toggler-->
-                <div :title="task._id" class="task-id" @click="toggle_task(task)">
-                    <icon name="caret-down" v-if="task.show"/>
-                    t.{{task.config._tid}}
-                </div>
+    <div ref="process" class="process" :style="{left: splitter_pos+'px'}">
+        <p class="loading" v-if="loading"><icon name="cog" scale="1.25" spin/> Loading...</p>
 
-                <div v-if="task.app && task.show">
-                    <app :app="task.app" :branch="task.service_branch||'master'" :compact="true"/>
-                </div>
-                <div v-else>
-                    <h4 style="padding: 7px; margin-bottom: 0px; opacity: 0.8;">
-                        <icon name="paper-plane"/>&nbsp;&nbsp;{{task.name}}
-                    </h4>
-                </div>
+        <b-alert variant="secondary" :show="!loading && tasks && tasks.length == 0">Please stage datasets by clicking "Stage Data" button below.</b-alert>
+        <div class="task-area" v-if="!loading && tasks" v-for="task in tasks" :key="task._id" :id="task._id">
+            <div v-if="!task.show" class="task-id" @click="toggle_task(task)">
+                <icon name="caret-right"/>
+                t.{{task.config._tid}}
             </div>
-
-            <!--input-->
-            <div slot="input" v-if="task.config._inputs">
-                <div v-for="(input, idx) in task.config._inputs" :key="idx" class="input">
-                    <b v-if="input.meta && input.meta.subject">{{input.meta.subject}}</b>
-                    <small v-if="input.meta && input.meta.session" style="opacity: 0.8"> / {{input.meta.session}}</small>
-                    <div style="display: inline-block;" v-if="find_task(input.task_id)" class="clickable" @click="scrollto(input.task_id)">
-                        <datatypetag :datatype="datatypes[input.datatype]" :tags="input.datatype_tags" :clickable="false"/>
-                        <span style="opacity: 0.5;">
-                            <small v-for="(tag,idx) in input.tags" :key="idx"> | {{tag}} </small>
-                            <statusicon v-if="find_task(input.task_id).status != 'finished'" :status="find_task(input.task_id).status"/>
-                            <icon style="margin: 0 5px" name="arrow-left" scale="0.8"/> 
-                            <b>t.{{find_task(input.task_id).config._tid}}</b>
-                            {{find_task(input.task_id).name}}
-                        </span>
+            <!--full detail-->
+            <task :task="task" class="task" v-if="task.show">
+                <!--header-->
+                <div slot="header" style="background-color: white;">
+                    <!--task-id and toggler-->
+                    <div :title="task._id" class="task-id" @click="toggle_task(task)">
+                        <icon name="caret-down" v-if="task.show"/>
+                        t.{{task.config._tid}}
                     </div>
-                    <div v-else style="display: inline-block;">
+
+                    <div v-if="task.app && task.show">
+                        <app :app="task.app" :branch="task.service_branch||'master'" :compact="true"/>
+                    </div>
+                    <div v-else>
+                        <h4 style="padding: 7px; margin-bottom: 0px; opacity: 0.8;">
+                            <icon name="paper-plane"/>&nbsp;&nbsp;{{task.name}}
+                        </h4>
+                    </div>
+                </div>
+
+                <!--input-->
+                <div slot="input" v-if="task.config._inputs">
+                    <div v-for="(input, idx) in task.config._inputs" :key="idx" class="input">
+                        <b v-if="input.meta && input.meta.subject">{{input.meta.subject}}</b>
                         <small v-if="input.meta && input.meta.session" style="opacity: 0.8"> / {{input.meta.session}}</small>
-                        <datatypetag :datatype="datatypes[input.datatype]" :tags="input.datatype_tags" :clickable="false"/>
-                        <span style="opacity: 0.5;">
-                            <small v-for="(tag,idx) in input.tags" :key="idx"> | {{tag}} </small>
-                        </span>
-                        <b-badge variant="danger">Removed</b-badge>
+                        <div style="display: inline-block;" v-if="find_task(input.task_id)" class="clickable" @click="scrollto(input.task_id)">
+                            <datatypetag :datatype="datatypes[input.datatype]" :tags="input.datatype_tags" :clickable="false"/>
+                            <span style="opacity: 0.5;">
+                                <small v-for="(tag,idx) in input.tags" :key="idx"> | {{tag}} </small>
+                                <statusicon v-if="find_task(input.task_id).status != 'finished'" :status="find_task(input.task_id).status"/>
+                                <icon style="margin: 0 5px" name="arrow-left" scale="0.8"/> 
+                                <b>t.{{find_task(input.task_id).config._tid}}</b>
+                                {{find_task(input.task_id).name}}
+                            </span>
+                        </div>
+                        <div v-else style="display: inline-block;">
+                            <small v-if="input.meta && input.meta.session" style="opacity: 0.8"> / {{input.meta.session}}</small>
+                            <datatypetag :datatype="datatypes[input.datatype]" :tags="input.datatype_tags" :clickable="false"/>
+                            <span style="opacity: 0.5;">
+                                <small v-for="(tag,idx) in input.tags" :key="idx"> | {{tag}} </small>
+                            </span>
+                            <b-badge variant="danger">Removed</b-badge>
+                        </div>
+                        <small class="ioid" v-if="task.app">({{compose_desc(task.app.inputs, input.id)}})</small>
                     </div>
-                    <small class="ioid" v-if="task.app">({{compose_desc(task.app.inputs, input.id)}})</small>
                 </div>
-            </div>
 
-            <!--output-->
-            <div slot="output">
-                <div v-for="(output, idx) in task.config._outputs" :key="idx" class="output">
-                    <div class="output-actions">
-                        <div class="button" v-if="output.dataset_id" @click="open_dataset(output.dataset_id)" title="Show Dataset Detail">
-                            <icon name="cubes"/>
-                        </div>
-                        <div v-if="task.status == 'finished'" style="display: inline-block;">
-                            <div class="button" title="View" @click="set_viewsel_options(task, output)">
-                                <icon name="eye"/>
-                            </div>
-                            <div class="button" @click="download(task, output)" title="Download"><icon name="download"/></div>
-                            <div class="button" title="Archive" @click="open_archiver(task, output)"><icon name="archive"/></div>
-                        </div>
-                    </div>
-
-
-                    <b v-if="output.meta && output.meta.subject">{{output.meta.subject}}</b>
-                    <small v-if="output.meta && output.meta.session" style="opacity: 0.8"> / {{output.meta.session}}</small>
-                    <datatypetag :datatype="datatypes[output.datatype]" :tags="output.datatype_tags" :clickable="false"/>
-                    <mute>
-                        <small v-for="(tag,idx) in output.tags" :key="idx"> | {{tag}}</small>
-                    </mute>
-                    <div v-if="output.archive" style="display: inline-block;">
-                        <small style="opacity: 0.5"><icon name="arrow-right" scale="0.8" style="position: relative; top: -2px;"/> will archive to</small>
-                        <icon style="opacity: 0.5; margin-left: 3px;" name="shield-alt" scale="1.0"/>
-                        <small v-if="project._id != output.archive.project">{{projectname(output.archive.project)}}</small>
-                        <small v-else style="opacity: 0.6">This Project</small>
-                    </div>
-
-                    <!--foreign project-->
-                    <span class="text-muted" v-if="output.dataset_id && output.project != project._id">
-                        <icon style="opacity: 0.5; margin: 0 5px" name="arrow-left" scale="0.8"/><small>from</small> <icon name="shield-alt"/> <b>{{projectname(output.project)}}</b>
-                    </span>
-                    <small class="ioid" v-if="task.app">({{compose_desc(task.app.outputs, output.id)}})</small>
-
-                    <div v-if="findarchived(task, output).length > 0" class="archived-datasets">
-                        <div class="archived-datasets-title">Archived Datasets</div>
-                        <ul class="archived">
-                            <li v-for="dataset in findarchived(task, output)" :key="dataset._id" @click="open_dataset(dataset._id)" class="clickable">
-                                <timeago class="text-muted" style="float: right" :datetime="dataset.create_date" :auto-update="10"/>
-
+                <!--output-->
+                <div slot="output">
+                    <div v-for="(output, idx) in task.config._outputs" :key="idx" class="output">
+                        <div class="output-actions">
+                            <div class="button" v-if="output.dataset_id" @click="open_dataset(output.dataset_id)" title="Show Dataset Detail">
                                 <icon name="cubes"/>
-                                <mute>{{dataset.desc||'(no desc)'}}</mute>
+                            </div>
+                            <div v-if="task.status == 'finished'" style="display: inline-block;">
+                                <div class="button" title="View" @click="set_viewsel_options(task, output)">
+                                    <icon name="eye"/>
+                                </div>
+                                <div class="button" @click="download(task, output)" title="Download"><icon name="download"/></div>
+                                <div class="button" title="Archive" @click="open_archiver(task, output)"><icon name="archive"/></div>
+                            </div>
+                        </div>
 
-                                <tags :tags="dataset.tags"/>
-                                <span class="text-muted" v-if="dataset.project != project._id">
-                                    <small>on</small> <icon name="shield-alt"/> <b>{{projectname(dataset.project)}}</b>
-                                </span>
 
-                                <!--show dataset status if it's not stored-->
-                                <small style="font-size: 80%; color: #2693ff;" v-if="dataset.status == 'storing'">
-                                    <icon name="cog" :spin="true"/> {{dataset.status_msg||dataset.status||'no status'}}
-                                </small> 
-                                <span v-else-if="dataset.status == 'stored'"></span>
-                                <span v-else><statustag :status="dataset.status"/></span>
-                            </li>
-                        </ul>
+                        <b v-if="output.meta && output.meta.subject">{{output.meta.subject}}</b>
+                        <small v-if="output.meta && output.meta.session" style="opacity: 0.8"> / {{output.meta.session}}</small>
+                        <datatypetag :datatype="datatypes[output.datatype]" :tags="output.datatype_tags" :clickable="false"/>
+                        <mute>
+                            <small v-for="(tag,idx) in output.tags" :key="idx"> | {{tag}}</small>
+                        </mute>
+                        <div v-if="output.archive" style="display: inline-block;">
+                            <small style="opacity: 0.5"><icon name="arrow-right" scale="0.8" style="position: relative; top: -2px;"/> will archive to</small>
+                            <icon style="opacity: 0.5; margin-left: 3px;" name="shield-alt" scale="1.0"/>
+                            <small v-if="project._id != output.archive.project">{{projectname(output.archive.project)}}</small>
+                            <small v-else style="opacity: 0.6">This Project</small>
+                        </div>
+
+                        <!--foreign project-->
+                        <span class="text-muted" v-if="output.dataset_id && output.project != project._id">
+                            <icon style="opacity: 0.5; margin: 0 5px" name="arrow-left" scale="0.8"/><small>from</small> <icon name="shield-alt"/> <b>{{projectname(output.project)}}</b>
+                        </span>
+                        <small class="ioid" v-if="task.app">({{compose_desc(task.app.outputs, output.id)}})</small>
+
+                        <div v-if="findarchived(task, output).length > 0" class="archived-datasets">
+                            <div class="archived-datasets-title">Archived Datasets</div>
+                            <ul class="archived">
+                                <li v-for="dataset in findarchived(task, output)" :key="dataset._id" @click="open_dataset(dataset._id)" class="clickable">
+                                    <timeago class="text-muted" style="float: right" :datetime="dataset.create_date" :auto-update="10"/>
+
+                                    <icon name="cubes"/>
+                                    <mute>{{dataset.desc||'(no desc)'}}</mute>
+
+                                    <tags :tags="dataset.tags"/>
+                                    <span class="text-muted" v-if="dataset.project != project._id">
+                                        <small>on</small> <icon name="shield-alt"/> <b>{{projectname(dataset.project)}}</b>
+                                    </span>
+
+                                    <!--show dataset status if it's not stored-->
+                                    <small style="font-size: 80%; color: #2693ff;" v-if="dataset.status == 'storing'">
+                                        <icon name="cog" :spin="true"/> {{dataset.status_msg||dataset.status||'no status'}}
+                                    </small> 
+                                    <span v-else-if="dataset.status == 'stored'"></span>
+                                    <span v-else><statustag :status="dataset.status"/></span>
+                                </li>
+                            </ul>
+                        </div>
                     </div>
+                    <product :product="task.product"/>
+                    <div v-if="task.config._outputs.length == 0 && !task.product" style="padding: 10px; opacity: 0.5">No output</div>
                 </div>
-                <product :product="task.product"/>
-                <div v-if="task.config._outputs.length == 0 && !task.product" style="padding: 10px; opacity: 0.5">No output</div>
-            </div>
-        </task>
+            </task>
 
-        <!--task summary (hidden detail)-->
-        <div v-else class="task-summary">
-            <div style="display: inline-block; float: left; width: 25px;">
-                <statusicon :status="task.status"/>
+            <!--task summary (hidden detail)-->
+            <div v-else class="task-summary">
+                <div style="display: inline-block; float: left; width: 25px;">
+                    <statusicon :status="task.status"/>
+                </div>
+                <span>
+                    <appname v-if="task.app" :app="task.app"/>
+                    <b v-else style="padding: 7px;" class="text-muted">
+                        {{task.name}}
+                    </b>
+                </span>
             </div>
-            <span>
-                <appname v-if="task.app" :app="task.app"/>
-                <b v-else style="padding: 7px;" class="text-muted">
-                    {{task.name}}
-                </b>
-            </span>
         </div>
+        <!--give it a bit of space after the last task-->
+        <br>
+        <br>
+        <br>
     </div>
-    <!--give it a bit of space after the last task-->
-    <br>
-    <br>
-    <br>
 
-    <div class="new-action">
+    <div class="new-action" :style="{left: splitter_pos+'px'}">
         <b-row no-gutters>
             <b-col v-if="_datasets.length > 0">
                 <div class="new-action-button new-action-button-newtask" @click="newtask"><icon name="play"/>&nbsp;&nbsp;Submit App</div>
@@ -189,7 +192,7 @@ let cache_projects = null;
 
 export default {
     mixins: [appcache],
-    props: [ 'project', 'instance' ],
+    props: [ 'project', 'instance', 'splitter_pos' ],
 
     components: { 
         task, 
@@ -207,7 +210,7 @@ export default {
             archived: [], //archived datasets from this process
             projects: null,
 
-            selected_task_id: null,
+            //selected_task_id: null,
             
             ws: null, //websocket
             desc: "",
@@ -223,11 +226,11 @@ export default {
         this.$root.$on('datasetselecter.submit', this.submit_stage);
         this.$root.$on('newtask.submit', this.submit_task);
         this.$root.$on('showtask', id=>{
-            this.selected_task_id = id;
+            //this.selected_task_id = id;
             this.scrollto(id);
         }); 
 
-        //load full list of datatypes and projects
+        //don't load datatype / projects if we already loaded it
         if(cache_datatypes && cache_projects) {
             this.datatypes = cache_datatypes;
             this.projects = cache_projects;
@@ -251,8 +254,15 @@ export default {
                 this.projects[project._id] = project;
             });
             cache_projects = this.projects;
-
-            this.load();
+            this.load(()=>{
+                this.$nextTick(()=>{
+                    let hash = document.location.hash;
+                    if(hash) {
+                        let id = hash.substring(1);
+                        this.scrollto(id);
+                    }
+                });
+            });
         });
 
     },
@@ -305,7 +315,7 @@ export default {
     },
 
     watch: {
-        instance: function() {
+        instance: function(nv, ov) {
             this.load();
         },
         'input_dialog.project': function(p) {
@@ -336,9 +346,13 @@ export default {
         scrollto(id) {
             let elem = document.getElementById(id);
             if(!elem) return; //maybe not loaded yet?
-            let header = this.$refs["process-header"];
-            var top = elem.offsetTop-header.clientHeight;
-            this.$refs.process.scrollTop = top;
+            //let header = this.$refs["process-header"];
+            //var top = elem.offsetTop-header.clientHeight;
+            this.$refs.process.scrollTop = elem.offsetTop;//top;
+
+            //document.location.hash = id;
+            history.replaceState(null, null, '#'+id);
+            //window.dispatchEvent(new HashChangeEvent('hashchange'));
         },
         open_dataset(id) {
             this.$root.$emit('dataset.view', {id});
@@ -348,7 +362,7 @@ export default {
             this.$root.$emit('archiver.show', {task, output});
         },
 
-        load() {
+        load(cb) {
             this.loading = true;
             if(this.ws) this.ws.close();
             var url = Vue.config.event_ws+"/subscribe?jwt="+Vue.config.jwt;
@@ -370,6 +384,7 @@ export default {
                         key: this.project._id+".#",
                     }
                 }));
+
                 this.ws.onmessage = (json)=>{
                     var event = null;
                     try {
@@ -477,10 +492,7 @@ export default {
                     limit: 300,
                 }}).then(res=>{
                     this.archived = res.data.datasets;
-                    this.$nextTick(()=>{
-                        console.log("trying to scroll to", this.selected_task_id);
-                        this.scrollto(this.selected_task_id);
-                    });
+                    if(cb) cb();
                 });
             });
         },
@@ -600,6 +612,11 @@ export default {
 <style scoped>
 .process {
 scroll-behavior: smooth;
+position: fixed;
+bottom: 45px;
+right: 0;
+top: 175px;
+overflow: auto;
 }
 .sidebar {
 background-color: #ddd;
@@ -690,8 +707,10 @@ margin-bottom: 1px;
 
 .new-action {
 background-color: white;
-position: sticky;
+position: fixed;
 bottom: 0px;
+height: 45px;
+right: 0px;
 z-index: 7;
 }
 
@@ -750,8 +769,12 @@ margin-right: 5px;
 }
 .process-header {
 padding: 10px; 
-position: sticky; 
-top: 0px; 
+padding-left: 0px;
+position: fixed; 
+top: 100px; 
+right: 0;
+left: 600px;
+height: 75px;
 z-index: 7; 
 background-color: #eee;
 }

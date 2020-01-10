@@ -102,6 +102,7 @@
                 class="process" 
                 @updatedesc="updatedesc" 
                 @remove="toggle_instance(selected)"
+                :splitter_pos="splitter_pos+10"
                 :style="{left: splitter_pos+10+'px'}"/>
     </transition>
 </div>
