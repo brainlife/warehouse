@@ -930,7 +930,8 @@ export default {
                 let datatype = this.datatypes[input.datatype];
                 input.files = [];
                 datatype.files.forEach(file => {
-                    if (file.required) this.add_file(idx, file.id);
+                    /*if (file.required)*/ //let's add all registered files.. user can just remove them if they don't use it.
+                    this.add_file(idx, file.id);
                 });
             }
         },
