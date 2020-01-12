@@ -88,8 +88,19 @@
                         </div>
                         <!--
                         <filebrowser v-if="sample_task" :path="datatype.sample" :task="sample_task" style="background-color: white; margin: 5px; margin-bottom: 5px"/>
+                        -->
+
+                        <br>
+                    </b-col>
+                </b-row>
+
+                <b-row>
+                    <b-col cols="2">
+                        <span class="form-header">Visualizers</span>
+                    </b-col>
+                    <b-col>
                         <p v-if="datatype.uis.length == 0" style="opacity: 0.8;">No visualizer</p>
-                        <p v-else><small style="opacity: 0.7">The following visualizers can be used to visualize this datatype on Brainlife.</small></p>
+                        <p v-else><small style="opacity: 0.7">The following visualizers can be used to visualize this datatype</small></p>
                         <b-row>
                             <b-col :cols="4" class="ui" v-for="ui in datatype.uis" :key="ui._id">
                                 <b-card 
@@ -104,8 +115,6 @@
                                 </b-card>
                             </b-col>
                         </b-row>
-                        -->
-                        <br>
                     </b-col>
                 </b-row>
 

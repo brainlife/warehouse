@@ -19,7 +19,7 @@
                 <!--<small>{{pub.project.name}} <icon name="arrow-right"/></small>-->
                 {{pub.name}}
             </h5>
-            <p style="opacity: 0.8; line-height: 170%;">
+            <p style="opacity: 0.8; line-height: 180%;">
                 {{pub.desc}}
                 <br>
                 <b-badge v-for="tag in pub.tags" :key="tag" class="topic">{{tag}}</b-badge>
@@ -69,7 +69,7 @@ export default {
 
 <style scoped>
 .pubcard {
-transition: background-color 0.3s, color 0.3s, box-shadow 0.3s;
+transition: background-color 0.3s, box-shadow 0.3s;
 border-bottom: 1px solid #eee;
 font-size: 90%;
 clear: both;
@@ -91,6 +91,7 @@ box-shadow: 1px 1px 4px #0004;
 color: #333;
 padding: 0px;
 padding-top: 10px;
+transition: color 0.3s;
 }
 .pubcard.clickable:hover .name {
 color: #2693ff;

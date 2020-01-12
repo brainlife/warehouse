@@ -52,7 +52,7 @@
                             <a target="github" :href="'https://github.com/'+app.github+'/tree/'+(app.github_branch||'master')" style="color: gray;">{{app.github}}</a>
                             <small><b-badge variant="secondary" v-if="app.github_branch" style="position: relative; top: -2px"><icon name="code-branch" scale="0.6"/> {{app.github_branch}}</b-badge></small>
                         </h6>
-                        <p style="opacity: 0.85">
+                        <p style="opacity: 0.8">
                             {{app.desc_override||app.desc}}
                         </p>
                     </b-col>

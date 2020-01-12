@@ -2,7 +2,7 @@
 <div>
     <!--modal that can be called from any view -->
     <dataset/>
-    <datatype/>
+    <!--<datatype/>-->
     <agreements/>
     <downscript/>
 
@@ -28,7 +28,7 @@ import Vue from 'vue'
 
 import viewselecter from '@/modals/viewselecter'
 import dataset from '@/modals/dataset'
-import datatype from '@/modals/datatype'
+//import datatype from '@/modals/datatype'
 import datasetselecter from '@/modals/datasetselecter'
 import uploader from '@/modals/uploader'
 import instanceselecter from '@/modals/instanceselecter'
@@ -43,7 +43,7 @@ import importer from '@/modals/importer'
 
 export default {
     components: {
-        viewselecter, dataset, datatype, 
+        viewselecter, dataset, 
         uploader, datasetselecter, instanceselecter, 
         archiver, agreements, downscript, taskinfo, appsubmit, copytarget, importer,
         //dsimport

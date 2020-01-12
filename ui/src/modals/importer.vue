@@ -102,6 +102,10 @@ export default {
 
         submit() {
             if(!this.createnew) return this.submit_import();
+            if(this.datatypes.length == 0) {
+                alert("Please specify at least one datatype to import");
+                return;
+            }
 
             this.$notify({text: "Creating project"});
             this.$http.post('project', {
@@ -119,17 +123,18 @@ export default {
         },
 
         submit_import() {
-            console.log("submit import");
-            this.$notify({text: "Importing datasets.."});
+            this.$root.$emit("loading",{message: "Importing Dataset ..."});
             this.$http.post('datalad/import/'+this.dataset._id, {
                 project: this.project, 
                 datatypes: this.datatypes,
                 meta: this.get_meta(),
                 meta_info: this.dataset.participants_info,
             }).then(res=>{
+                this.$root.$emit("loading", {show: false});
                 this.$router.push("/project/"+this.project+"/dataset");
             }).catch(err=>{
                 console.error(err);
+                this.$root.$emit("loading", {show: false});
                 this.$notify({type: "error", text: err.response.data.message});
             });
         }

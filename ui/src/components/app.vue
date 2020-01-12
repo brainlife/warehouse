@@ -140,7 +140,6 @@ cursor: pointer;
 }
 
 .appcard.clickable:hover .name,
-/*.appcard.clickable:hover .desc,*/
 .appcard.clickable:hover .github {
 color: #007bff;
 }
@@ -153,19 +152,19 @@ margin-right: 7px;
 margin-left: 7px;
 }
 .name {
-color: #666;
+color: #444;
 padding: 0px;
 padding-top: 7px;
 margin-bottom: 0px;
 transition: color 0.5s;
 }
 .desc {
-opacity: 0.9;
+opacity: 0.85;
 margin-top: 0px;
 padding: 7px;
 margin-bottom: 32px;
 transition: color 0.5s;
-font-size: 86%;
+font-size: 11px;
 }
 .image {
 width: 100%;
@@ -178,6 +177,7 @@ padding-bottom: 0px;
 }
 h5 {
 font-size: 12px;
+line-height: 160%;
 }
 .compact .name {
 padding-top: 5px;

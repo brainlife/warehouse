@@ -75,6 +75,23 @@ exports.warehouse = {
     //submit task on amaretti
     //query gids from auth
     jwt: fs.readFileSync(__dirname+'/warehouse.jwt', 'ascii').trim(),
+
+    //nodemailer config
+}
+
+exports.mail = {
+    from: "brainlife.io <brlife@iu.edu>",
+
+    //node mailer config
+    mailer: {
+        host: 'mail-relay.iu.edu', //max recipents per email: 30
+        secure: true, //port 465
+        auth: {
+            user: 'brlife',
+            pass: fs.readFileSync(__dirname+'/smtp.password', {encoding: 'ascii'}).trim(),
+        },
+        pool: true, //use connection pool
+    },
 }
 
 exports.metrics = {

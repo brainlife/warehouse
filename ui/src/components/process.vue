@@ -7,7 +7,7 @@
             </div>
         </div>
         <div style="margin-right: 40px;">
-            <b-form-textarea v-model="desc" @input="updatedesc" placeholder="Enter process description" rows="2" max-rows="4" style="height: 55px"></b-form-textarea>
+            <b-form-textarea v-model="desc" @input="updatedesc" placeholder="Enter process description" rows="2" max-rows="4" style="height: 60px"></b-form-textarea>
         </div>
     </div>
 
@@ -82,7 +82,6 @@
                                 <div class="button" title="Archive" @click="open_archiver(task, output)"><icon name="archive"/></div>
                             </div>
                         </div>
-
 
                         <b v-if="output.meta && output.meta.subject">{{output.meta.subject}}</b>
                         <small v-if="output.meta && output.meta.session" style="opacity: 0.8"> / {{output.meta.session}}</small>
@@ -168,7 +167,7 @@
 <script>
 import Vue from 'vue'
 
-import message from '@/components/message'
+//import message from '@/components/message'
 import task from '@/components/task'
 import tags from '@/components/tags'
 import app from '@/components/app'
@@ -196,7 +195,7 @@ export default {
 
     components: { 
         task, 
-        message, tags, 
+        tags, 
         app, 
         statusicon, mute,
         datatypetag, appname, statustag,
@@ -221,7 +220,6 @@ export default {
     },
 
     mounted() {
-
         //don't forget to add remove listener on destroyed (debug loader won't destroy parent.. so you will end up with bunch of the same event firing)
         this.$root.$on('datasetselecter.submit', this.submit_stage);
         this.$root.$on('newtask.submit', this.submit_task);
@@ -234,9 +232,13 @@ export default {
         if(cache_datatypes && cache_projects) {
             this.datatypes = cache_datatypes;
             this.projects = cache_projects;
-            return this.load();
+            console.log("skip loading cache");
+            return this.load(err=>{
+                this.readHash();
+            });
         }
 
+        console.log("loading cache");
         this.$http.get('datatype').then(res=>{
             this.datatypes = {};
             res.data.datatypes.forEach(datatype=>{
@@ -255,13 +257,7 @@ export default {
             });
             cache_projects = this.projects;
             this.load(()=>{
-                this.$nextTick(()=>{
-                    let hash = document.location.hash;
-                    if(hash) {
-                        let id = hash.substring(1);
-                        this.scrollto(id);
-                    }
-                });
+                this.readHash();
             });
         });
 
@@ -316,7 +312,9 @@ export default {
 
     watch: {
         instance: function(nv, ov) {
-            this.load();
+            this.load(err=>{
+                this.readHash();
+            });
         },
         'input_dialog.project': function(p) {
             this.input_dialog.datasets_groups = {};
@@ -350,7 +348,7 @@ export default {
             //var top = elem.offsetTop-header.clientHeight;
             this.$refs.process.scrollTop = elem.offsetTop;//top;
 
-            //document.location.hash = id;
+            console.log("updating hash");
             history.replaceState(null, null, '#'+id);
             //window.dispatchEvent(new HashChangeEvent('hashchange'));
         },
@@ -360,6 +358,17 @@ export default {
 
         open_archiver(task, output) {
             this.$root.$emit('archiver.show', {task, output});
+        },
+
+        readHash() {
+            console.log("reading hash!");
+            this.$nextTick(()=>{
+                let hash = document.location.hash;
+                if(hash) {
+                    let id = hash.substring(1);
+                    this.scrollto(id);
+                }
+            });
         },
 
         load(cb) {
@@ -771,10 +780,10 @@ margin-right: 5px;
 padding: 10px; 
 padding-left: 0px;
 position: fixed; 
-top: 100px; 
+top: 95px; 
 right: 0;
 left: 600px;
-height: 75px;
+height: 80px;
 z-index: 7; 
 background-color: #eee;
 }

@@ -20,7 +20,7 @@
             <!--profile-->
             <div v-if="tab == 0">
                 <b-alert :show="!profile.private.aup" variant="danger" style="margin-bottom: 20px">
-                    <icon name="exclamation-circle"/> Please agree to brainlife.io acceptable user policy below.
+                    <icon name="exclamation-circle"/> Please agree to the brainlife.io acceptable use policy listed below.
                 </b-alert>
 
                 <b-form @submit="submit_profile">

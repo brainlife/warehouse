@@ -4,6 +4,7 @@
     <router-view/>
     <notifications position="top right"/>
     <modals/>
+    <loading/>
 </div>
 </template>
 
@@ -12,11 +13,13 @@
 import Vue from 'vue'
 import modals from '@/components/modals'
 import sidemenu from '@/components/sidemenu'
+import loading from '@/components/loading'
 
 export default {
     components: {
         modals,
         sidemenu,
+        loading,
     },
 
     data() {
@@ -39,8 +42,7 @@ font-family: 'Inconsolata', monospace;
 font-family: 'Cabin', sans-serif;
 font-family: 'VT323', monospace;
 font-family: 'Nunito', sans-serif;
-font-family: 'Nunito Sans', sans-serif;
-
+font-family: 'Nunito Sans', sans-serif; 
 @import url('//fonts.googleapis.com/css?family=Muli');
 font-size: 11pt; font-family: muli;
 
@@ -48,6 +50,8 @@ font-size: 11pt; font-family: muli;
 font-family: 'Montserrat', sans-serif;
 
 @import url('//fonts.googleapis.com/css?family=IBM+Plex+Sans');
+@import url('//fonts.googleapis.com/css?family=Roboto');
+font-family: -apple-system,BlinkMacSystemFont,Segoe UI,Helvetica,Arial,sans-serif,Apple Color Emoji,Segoe UI Emoji;
 @import url('//fonts.googleapis.com/css?family=Roboto');
 
 */
@@ -57,8 +61,12 @@ height: 100%;
 background-color: #f9f9f9;
 color: #444;
 font-size: 14px;
-font-family: -apple-system,BlinkMacSystemFont,Segoe UI,Helvetica,Arial,sans-serif,Apple Color Emoji,Segoe UI Emoji;
+/*
+font-family: Roboto;
+letter-spacing: 0.2px;
+*/
 }
+
 .select2-container, 
 .form-control,
 .custom-select {
@@ -167,7 +175,6 @@ font-weight: 600;
 }
 table.info td {
 padding: 10px;
-line-height: 140%;
 }
 #warehouse .table thead th {
 opacity: 0.5;
@@ -374,7 +381,6 @@ opacity: 0.35;
 font-size: 95%;
 }
 div.readme p, p.text {
-line-height: 150%;
 }
 .readme img {
 max-width: 100%;

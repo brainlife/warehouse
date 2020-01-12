@@ -359,14 +359,26 @@ export default {
             }
         },
 
-        toggle_instance(instance) {
+        toggle_instance(instance, task) {
+            console.log("toggle_instance");
+            let url = "/project/"+this.project._id+"/process";
             if(this.selected != instance) {
-                //if jumping to instance below currently selected, I should adjust current scroll position
-                this.$router.replace("/project/"+this.project._id+"/process/"+instance._id);
                 this.selected = instance;
+                //if jumping to instance below currently selected, I should adjust current scroll position
+                url += "/"+instance._id;
+                if(task) url += "#"+task;
+                this.$router.replace(url, ()=>{
+                    //console.log("emit show task", task);
+                    /*
+                    this.$nextTick(()=>{
+                        this.$root.$emit('showtask', task);   
+                    });  
+                    */
+                    
+                });
             } else {
                 //close!
-                this.$router.replace("/project/"+this.project._id+"/process");
+                this.$router.replace(url);
                 this.selected = null;
             }
 
@@ -381,11 +393,12 @@ export default {
         select_task(instance, summary) {
             if(this.selected != instance) {
                 //not selected.. so let's open it first
-                this.toggle_instance(instance);
+                this.toggle_instance(instance, summary.task_id);
+            } else {
+                //this.$nextTick(()=>{
+                    this.$root.$emit('showtask', summary.task_id);
+                //});
             }
-            this.$nextTick(()=>{
-                this.$root.$emit('showtask', summary.task_id);
-            });
         },
 
         newinstance() {

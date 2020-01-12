@@ -90,7 +90,7 @@
         <li v-if="config.user" id="user-popover">
             <img :src="avatar_url(config.user.profile, 22)" width="18px" class="avatar"/>
         </li>
-        <b-popover target="user-popover" triggers="hover" placement="right">
+        <b-popover target="user-popover" triggers="hover" placement="right" v-if="config.user">
              <template v-slot:title>
                 {{config.user.profile.username}}&nbsp;
                 <b-badge>{{config.user.sub}}</b-badge>
@@ -164,12 +164,6 @@ export default {
     },
 
     computed: {
-        /*
-        gurl: function() {
-            if(!this.config.user.profile.email) return null;
-            return "//www.gravatar.com/avatar/"+md5(this.config.user.profile.email)+"?s=22";
-        },
-        */
         styles: function() {
             switch(window.location.hostname) {
             case "localhost-dis":
