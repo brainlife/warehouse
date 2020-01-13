@@ -85,7 +85,7 @@ cursor: pointer;
 }
 .pubcard.clickable:hover {
 background-color: #fffc;
-box-shadow: 1px 1px 4px #0004;
+box-shadow: 3px 3px 3px #0003;
 }
 .name {
 color: #333;

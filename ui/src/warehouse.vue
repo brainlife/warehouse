@@ -507,6 +507,7 @@ border: 1px solid #ddd;
 padding: 4px 15px; 
 opacity: 0.7;
 color: black;
+height: 26px;
 }
 .bigpill svg {
 min-height: 16px;

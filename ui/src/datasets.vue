@@ -89,7 +89,7 @@
                 <p v-else style="margin-left: 40px; font-style: italic;">{{selected.dataset_description.License}}</p>
             </div>
 
-            <div v-if="selected.dataset_description.Acknowledgements">
+            <div v-if="selected.dataset_description.Acknowledgements && selected.dataset_description.Acknowledgements != ''">
                 <span class="form-header">Acknowledgements</span>
                 <ul><li v-for="(ack, idx) in selected.dataset_description.Acknowledgements" :key="idx">{{ack}}</li></ul>
             </div>
@@ -99,14 +99,14 @@
                 <p style="margin-left: 40px;"><i>{{selected.dataset_description.HowToAcknowledge}}</i></p>
             </div>
 
-            <div v-if="selected.dataset_description.Funding">
+            <div v-if="selected.dataset_description.Funding && selected.dataset_description.Funding != ''">
                 <span class="form-header">Funding</span>
                 <ul><li v-for="(fund, idx) in selected.dataset_description.Funding" :key="idx">{{fund}}</li></ul>
             </div>
 
-            <div v-if="selected.dataset_description.ReferencesAndLinks">
+            <div v-if="selected.dataset_description.ReferencesAndLinks && selected.dataset_description.ReferencesAndLinks.filter(ref=>ref != '').length > 0">
                 <span class="form-header">References And Links</span>
-                <ul><li v-for="(ref, idx) in selected.dataset_description.ReferencesAndLinks" :key="idx">{{ref}}</li></ul>
+                <ul><li v-for="(ref, idx) in selected.dataset_description.ReferencesAndLinks.filter(ref=>ref != '')" :key="idx">{{ref}}</li></ul>
             </div>
 
             <!--

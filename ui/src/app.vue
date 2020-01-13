@@ -235,10 +235,6 @@
                             <img :src="config.api+'/app/'+app._id+'/badge'" @click="show_badge_url('/app/'+app._id+'/badge')" class="clickable" v-if="app.stats.serviceinfo"/>
                             -->
                         </p>
-                        <!--<span class="form-header">Topics</span>-->
-                        <p style="line-height: 250%;">
-                            <b-badge v-for="tag in app.tags" :key="tag" class="topic">{{tag}}</b-badge>
-                        </p>
 
                         <p title="Users who executed this App">
                             <b-badge pill v-if="app.stats.users" class="bigpill">
@@ -262,6 +258,11 @@
                             <b-badge pill v-if="app.stats.serviceinfo && app.stats.serviceinfo.runtime_mean" class="bigpill">
                                 <icon name="clock" style="opacity: 0.4;"/>&nbsp;&nbsp;&nbsp;{{avg_runtime(app.stats.serviceinfo.runtime_mean, app.stats.serviceinfo.runtime_std)}}
                             </b-badge>
+                        </p>
+
+                        <!--<span class="form-header">Topics</span>-->
+                        <p style="line-height: 250%;">
+                            <b-badge v-for="tag in app.tags" :key="tag" class="topic">{{tag}}</b-badge>
                         </p>
 
                         <div class='altmetric-embed' 
