@@ -249,7 +249,7 @@
                         </p>
 
                         <p title="Registration Date">
-                            <b-badge pill v-if="app.stats.serviceinfo && app.stats.serviceinfo.runtime_mean" class="bigpill">
+                            <b-badge pill v-if="app.create_date" class="bigpill">
                                 <icon name="calendar" style="opacity: 0.4;"/>&nbsp;&nbsp;&nbsp;<small>Registerd</small>&nbsp;&nbsp;{{new Date(app.create_date).toLocaleDateString()}}
                             </b-badge>
                         </p>

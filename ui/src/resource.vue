@@ -404,6 +404,8 @@ export default {
                         //title: 'Running Jobs',
                     },
                     font: Vue.config.plotly.font,
+                    plot_bgcolor: "#fff0",
+                    paper_bgcolor: "#fff0",
                 };
             }).catch(console.error);
         },

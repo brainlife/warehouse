@@ -407,7 +407,15 @@ export default {
                             },
 
                             nodes: {
-                                shadow: true, //TODO - shadow is for string..
+                                shadow: {
+                                    enabled: true,
+
+                                    //make it less pronounced than default
+                                    size: 3,
+                                    x: 1,
+                                    y: 1 ,
+                                    color: 'rgba(0,0,0,0.2)',
+                                },
                                 borderWidth: 0,
                             },
                         });

@@ -81,8 +81,7 @@ export default {
             }
             path += "#"+btoa(JSON.stringify(uiconfig));
 
-            //launch the viewer`
-            window.open(path, "", "width=1200,height=800,resizable=no,menubar=no"); 
+            window.open(path, this.opt.task._id, "width=1200,height=801,menubar=no"); //chrome opens window with 799 pixels if I specify 800.. why!?
         }
     }
 }
