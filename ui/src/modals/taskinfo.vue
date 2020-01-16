@@ -286,7 +286,7 @@ export default {
                 let memory_rss = {};
                 let memory_vsz = {};
                 records.forEach(record_json=>{
-                    console.log(record_json);
+                    //console.log(record_json);
                     if(record_json == "") return;
                     try {
                         let record = JSON.parse(record_json);

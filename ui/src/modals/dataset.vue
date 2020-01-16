@@ -108,6 +108,18 @@
                                 <br>
                             </b-col>
                         </b-row>
+                        <b-row v-if="dataset.prov && dataset.prov.task">
+                            <b-col cols="3"><span class="form-header">App Commit ID</span></b-col>
+                            <b-col cols="9">
+                                <a :href="'https://github.com/'+dataset.prov.task.service+'/tree/'+dataset.prov.task.commit_id">
+                                    <b-badge pill class="bigpill">
+                                        <icon name="brands/github" style="opacity: 0.4;"/>&nbsp;&nbsp;&nbsp;{{dataset.prov.task.commit_id}}
+                                    </b-badge>
+                                </a>
+                                <br>
+                                <br>
+                            </b-col>
+                        </b-row>
                         <b-row v-if="resource">
                             <b-col cols="3"><span class="form-header">Produced In</span></b-col>
                             <b-col>
@@ -427,7 +439,7 @@ export default {
                                 }
                                 if(node.startsWith("task.")) {
                                     let fullnode = this.prov.nodes.find(n=>n.id == node);
-                                    console.dir(fullnode);
+                                    //console.dir(fullnode);
                                     if(fullnode._app) this.$router.replace("/app/"+fullnode._app);
                                 }
                             });
@@ -572,7 +584,7 @@ export default {
             console.log("loading dataset. archive_task");
             this.$http.get(Vue.config.amaretti_api+'/task/'+this.dataset.archive_task_id).then(res=>{
                 console.log("loaded archive_task_id");
-                console.dir(res);
+                //console.dir(res);
                 this.dataset.archive_task = res.data; 
             });
         },
@@ -738,7 +750,7 @@ export default {
                     let task = res.data.tasks[0];
                     if(task) {
                         console.log("task that produced this data-object still exists... using it");
-                        console.dir(task);
+                        //console.dir(task);
                         //look for dataset/files in case app was using deprecated filemapping
                         let output = task.config._outputs.find(output=>output.id == this.dataset.prov.output_id);
                         return cb(task, this.dataset.prov.subdir, output.files);

@@ -34,7 +34,6 @@ exports.send_mail = async ()=>{
     users = users.slice(0, 1); //limit
 
     //override with debug 
-    /*
     users = [
     //    {fullname: "Brainlife.io", email: "brlife@iu.edu"},
     //    {fullname: "Soichi Hayashi", email: "soichih@gmail.com"},
@@ -42,7 +41,6 @@ exports.send_mail = async ()=>{
     //    {fullname: "Stephanie McGavin", email: "smcgavin@iu.edu"},
     //    {fullname: "Soichi Hayashi (IU-1)", email: "hayashis+1@iu.edu"},
     ];
-    */
 
     let message = {
         subject: "brainlife.io Newsletter - January 2020",
