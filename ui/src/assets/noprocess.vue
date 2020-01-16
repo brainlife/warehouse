@@ -1,5 +1,5 @@
 <template>
-<div>
+<div style="overflow-y: auto; position: fixed; top: 95px; bottom: 0;">
     <b-alert show variant="secondary">
         Only the admins or members of this project can access processes. Please contact the project admins to give you access.
     </b-alert>

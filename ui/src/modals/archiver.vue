@@ -1,15 +1,19 @@
 <template>
-<b-modal v-if="output" :no-close-on-backdrop='true' title="Archive Dataset" ref="archiver" size="lg" @ok="submit">
+<b-modal v-if="output" :no-close-on-backdrop='true' title="Archive Data-Object" ref="archiver" size="lg" @ok="submit">
     <h5><datatypetag :datatype="output.datatype" :tags="output.datatype_tags"/></h5>
+
+    <b-form-group label="Project">
+        <projectselecter :required="true" :canwrite="true" v-model="project" placeholder="Project to archive this data-object to"/>
+    </b-form-group>
 
     <b-form-group>
         <b-form-textarea v-model="output.desc" placeholder="Enter Description" :rows="2" style="width: 100%;"></b-form-textarea>
     </b-form-group>
 
-    <b-form-group label="Project">
-        <projectselecter :required="true" :canwrite="true" v-model="project" placeholder="Project to archive this dataset to"/>
-    </b-form-group>
 
+    <small>* You can override tags / metadata once the data-object is archived.</small>
+    <!-- we have to merge meta/tag from config._output, then product.json root and product.json id specific content. 
+        both from technical and UI point of view, it's hard to keep everything consistent. 
     <b-form-group label="Dataset Tags">
         <tageditor placeholder="Optional" v-model="tags" :options="other_tags"/>
     </b-form-group>
@@ -17,6 +21,7 @@
     <b-form-group label="Metadata">
         <editor v-model="_meta" @init="editorInit" lang="json" height="100"></editor>
     </b-form-group>
+    -->
 </b-modal>
 </template>
 
@@ -42,9 +47,9 @@ export default {
             output: null,
 
             other_tags: [],
-            tags: [],
+            //tags: [],
 
-            _meta: "",
+            //_meta: "",
 
             config: Vue.config,
         }
@@ -62,11 +67,18 @@ export default {
     created: function() {
         //{task, output}}
         this.$root.$on("archiver.show", opt=>{
+            /*
+                {
+                    task:  //task that contains the data to archive
+                    output: //normally an entry from config._outputs
+                }
+            */
 
             this.task = opt.task;
-            this.output = Object.assign({}, opt.output);
-
+            this.output = Object.assign({}, opt.output); //we let user override desc
+            /*
             //add tags specified in task.product.tags to dataset tags
+            //TODO - need to handle cases where tags/meta are set for each output ID/directory.
             this.tags = opt.output.tags||[];
             if(this.task.product && this.task.product.tags) {
                 this.task.product.tags.forEach(tag=>{
@@ -74,7 +86,7 @@ export default {
                 });
             }
             this._meta = JSON.stringify(this.output.meta, null, 4);
-
+            */
             //wait for b-modal v-if flag to be triggered
             this.$nextTick(()=>{
                 this.$refs.archiver.show();
@@ -103,6 +115,7 @@ export default {
                 this.$refs.archiver.hide();
             });
 
+            /*
             //try parsing _meta
             var meta = null;
             try {   
@@ -112,16 +125,17 @@ export default {
                 this.$notify({text: "Failed to parse meta", type: "error"});
                 return;
             }
+            */
 
             this.$http.post('dataset', {
                 project: this.project,                 
                 task_id: this.task._id,
                 output_id: this.output.id, 
                 subdir: this.output.subdir, //subdir that contains the actual content under the task
-
-                meta,
                 desc: this.output.desc,
-                tags: this.tags, 
+
+                //meta,
+                //tags: this.tags, 
 
                 //await: false, //request to not wait for dataset to be archived before returning
             }).then(res=>{

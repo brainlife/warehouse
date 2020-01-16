@@ -342,15 +342,11 @@ export default {
         },
 
         scrollto(id) {
+            console.log("scrollto", id);
             let elem = document.getElementById(id);
             if(!elem) return; //maybe not loaded yet?
-            //let header = this.$refs["process-header"];
-            //var top = elem.offsetTop-header.clientHeight;
             this.$refs.process.scrollTop = elem.offsetTop;//top;
-
-            console.log("updating hash");
             history.replaceState(null, null, '#'+id);
-            //window.dispatchEvent(new HashChangeEvent('hashchange'));
         },
         open_dataset(id) {
             this.$root.$emit('dataset.view', {id});
@@ -625,7 +621,8 @@ position: fixed;
 bottom: 45px;
 right: 0;
 top: 175px;
-overflow: auto;
+overflow-y: auto;
+overflow-x: hidden;
 }
 .sidebar {
 background-color: #ddd;

@@ -75,7 +75,7 @@
                             </b-col>
                         </b-row>
                         <b-row>
-                            <b-col cols="3"><span class="form-header">Data-Object Tags</span></b-col>
+                            <b-col cols="3"><span class="form-header">Tags</span></b-col>
                             <b-col cols="9">
                                 <div v-if="dataset._canedit && alltags">
                                     <tageditor :value="dataset.tags" v-model="dataset.tags" @input="dataset._tags_dirty = true" :options="alltags"/>
@@ -241,7 +241,6 @@ import contact from '@/components/contact'
 import tags from '@/components/tags'
 import app from '@/components/app'
 import datatype from '@/components/datatype'
-//import metadata from '@/components/metadata'
 import pageheader from '@/components/pageheader'
 import appavatar from '@/components/appavatar'
 import datatypetag from '@/components/datatypetag'

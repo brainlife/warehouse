@@ -250,13 +250,13 @@ export default {
                     return res;
                 },
             }).then(res=>{
-                console.dir(res);
+                //console.dir(res);
                 let records = res.data.split("\n");
 
                 //first record should be host/job info
                 this.smon.info = JSON.parse(records.shift()); 
                 let begin_date = new Date(this.smon.info.time*1000);
-                let end_date = null;
+                let end_date =  new Date(); //default to now.. in case we don't have any data
 
                 function shorten(long) {
                     if(long.length < 50) return long;
@@ -286,47 +286,12 @@ export default {
                 let memory_rss = {};
                 let memory_vsz = {};
                 records.forEach(record_json=>{
+                    console.log(record_json);
                     if(record_json == "") return;
                     try {
                         let record = JSON.parse(record_json);
                         let time = new Date(record.time*1000);
                         end_date = time;
-
-/*
-{
-	"processes": [{
-		"pcpu": 0.0,
-		"cmd": "slurmstepd: [40555]",
-		"pid": "27289",
-		"etime": "01:03",
-		"pmem": 0.0,
-		"vsz": 133808,
-		"rss": 4852
-	}, {
-		"pcpu": 0.0,
-		"cmd": "/bin/bash /var/lib/slurm-llnl/slurmd/job40555/slurm_script",
-		"pid": "27293",
-		"etime": "01:02",
-		"pmem": 0.0,
-		"vsz": 11248,
-		"rss": 2932
-	}, {
-		"pcpu": 10.7,
-		"cmd": "/usr/lib/x86_64-linux-gnu/singularity/bin/docker-extract /home/brlife/.singularity/docker/sha256:69375bcede9e50197544edde37a64e3a9e8a2c724c79aae0623cb8f74f6bc6d4.tar.gz",
-		"pid": "27380",
-		"etime": "00:47",
-		"pmem": 0.0,
-		"vsz": 67956,
-		"rss": 5224
-	}],
-	"disks": [{
-		"path": ".",
-		"size": 2365716
-	}],
-	"memory_avail": 13919813632,
-	"time": 1541644209.550354
-}
-*/
 
                         //deal with disk usage
                         if(record.disks) record.disks.forEach(rd=>{
@@ -357,7 +322,6 @@ export default {
                         console.error(err);
                     }
                 });
-
                 this.smon.disk.data = [disk];
                 this.smon.disk.layout = {
                     title: "Disk Usage",
@@ -375,6 +339,9 @@ export default {
                             family: 'sans-serif',
                             size: 10,
                         }
+                    },
+                    xaxis: {
+                        range: [begin_date, end_date],
                     },
                     yaxis: {
                         title: 'MB',
