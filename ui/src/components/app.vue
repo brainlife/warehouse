@@ -163,8 +163,8 @@ opacity: 0.85;
 margin-top: 0px;
 padding: 7px;
 margin-bottom: 32px;
-transition: color 0.5s;
 font-size: 11px;
+color: #444;
 }
 .image {
 width: 100%;

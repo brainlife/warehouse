@@ -614,7 +614,7 @@ top: -2px;
 padding: 15px;
 position: sticky;
 top: 0px;
-z-index: 5; /*make it on top of the most content*/
+z-index: 7; /*make it on top of scrollbar for log view*/
 }
 .rule.rule-selected:not(:first-child) .rule-header {
 margin-top: 20px;

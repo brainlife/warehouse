@@ -183,77 +183,77 @@
                     <pre>{{selected}}</pre>
                 </div>
             </div><!-- main content-->
-
-            <div class="page-right-content" style="padding: 20px 10px;" v-if="selected.stats" ref="page-right-content">
-
-                <!--
-                <p v-if="selected.stats && get_total(selected.stats.instances) > 0">
-                    <span class="form-header">Processes</span>
-                    <stateprogress :states="selected.stats.instances" title="Tasks currently running"/>
-                </p>
-                -->
-                
-                <p>
-                    <b-badge pill class="bigpill" title="Project creation date">
-                        <icon name="calendar" style="opacity: 0.4;"/>&nbsp;&nbsp;
-                        {{new Date(selected.create_date).toLocaleDateString()}}
-                    </b-badge>
-                </p>
-
-                <p>
-                    <b-badge pill class="bigpill" title="Total size of data stored in archive"
-                        v-if="selected.stats && selected.stats.datasets && selected.stats.datasets.size">
-                        <icon name="folder" style="opacity: 0.4;"/>&nbsp;&nbsp;{{selected.stats.datasets.size|filesize}}
-                        <small>Total</small> <br>
-                    </b-badge>
-                </p>
-
-                <p>
-                    <b-badge pill class="bigpill" v-if="selected.stats.rules && selected.stats.rules.active > 0" title="Number of pipeline rules configured for this project">
-                        <icon name="robot" style="opacity: 0.4;"/>&nbsp;&nbsp;{{selected.stats.rules.active}}
-                        <small>Active Pipeline Rules</small>
-                    </b-badge>
-                </p>
-
-                <p>
-                    <b-badge pill class="bigpill" title="Total CPU hours consumed by this project">
-                        <icon name="server" style="opacity: 0.4;"/>&nbsp;&nbsp;{{(total_walltime/(3600*1000)).toFixed(2)}}
-                        <small>CPU Hours</small>
-                    </b-badge>
-                </p>
-        
-                <p>
-                    <b-badge pill class="bigpill" title="Group ID used by amaretti">
-                        <icon name="id-badge" style="opacity: 0.4;"/>&nbsp;&nbsp;{{selected.group_id}}
-                        <small>Group ID</small>
-                    </b-badge>
-                </p>
-
-                <!--datatype was deprecated by datatype_details-->
-                <p v-if="!selected.stats.datasets.datatype_details">
-                    <span class="form-header">Datatypes</span>
-                    <span v-for="datatype_id in selected.stats.datasets.datatypes" :key="datatype_id">
-                        <b-badge variant="light">
-                            <datatypetag :datatype="datatype_id"/> 
-                        </b-badge>
-                        &nbsp;
-                    </span>
-                </p>
-
-                <div v-if="selected.stats.datasets.datatypes_detail">
-                    <p v-for="detail in selected.stats.datasets.datatypes_detail" :key="detail.type">
-                        <datatypetag :datatype="detail.type"/> 
-                        <small style="opacity: 0.6;">
-                            <icon name="user-friends"/> {{detail.subject_count}}
-                            <icon name="cubes"/> {{detail.count}}
-                            <span v-if="detail.size">({{detail.size|filesize}})</span>
-                        </small>
-                    </p>
-                </div>
-
-            </div><!--page-right-content-->
-
         </div><!-- project detail content-->
+        
+        <div class="page-right-content" style="padding: 20px 10px;" v-if="selected.stats" ref="page-right-content">
+
+            <!--
+            <p v-if="selected.stats && get_total(selected.stats.instances) > 0">
+                <span class="form-header">Processes</span>
+                <stateprogress :states="selected.stats.instances" title="Tasks currently running"/>
+            </p>
+            -->
+            
+            <p>
+                <b-badge pill class="bigpill" title="Project creation date">
+                    <icon name="calendar" style="opacity: 0.4;"/>&nbsp;&nbsp;
+                    {{new Date(selected.create_date).toLocaleDateString()}}
+                </b-badge>
+            </p>
+
+            <p>
+                <b-badge pill class="bigpill" title="Total size of data stored in archive"
+                    v-if="selected.stats && selected.stats.datasets && selected.stats.datasets.size">
+                    <icon name="folder" style="opacity: 0.4;"/>&nbsp;&nbsp;{{selected.stats.datasets.size|filesize}}
+                    <small>Total</small> <br>
+                </b-badge>
+            </p>
+
+            <p>
+                <b-badge pill class="bigpill" v-if="selected.stats.rules && selected.stats.rules.active > 0" title="Number of pipeline rules configured for this project">
+                    <icon name="robot" style="opacity: 0.4;"/>&nbsp;&nbsp;{{selected.stats.rules.active}}
+                    <small>Active Pipeline Rules</small>
+                </b-badge>
+            </p>
+
+            <p>
+                <b-badge pill class="bigpill" title="Total CPU hours consumed by this project">
+                    <icon name="server" style="opacity: 0.4;"/>&nbsp;&nbsp;{{(total_walltime/(3600*1000)).toFixed(2)}}
+                    <small>CPU Hours</small>
+                </b-badge>
+            </p>
+    
+            <p>
+                <b-badge pill class="bigpill" title="Group ID used by amaretti">
+                    <icon name="id-badge" style="opacity: 0.4;"/>&nbsp;&nbsp;{{selected.group_id}}
+                    <small>Group ID</small>
+                </b-badge>
+            </p>
+
+            <!--datatype was deprecated by datatype_details-->
+            <p v-if="!selected.stats.datasets.datatype_details">
+                <span class="form-header">Datatypes</span>
+                <span v-for="datatype_id in selected.stats.datasets.datatypes" :key="datatype_id">
+                    <b-badge variant="light">
+                        <datatypetag :datatype="datatype_id"/> 
+                    </b-badge>
+                    &nbsp;
+                </span>
+            </p>
+
+            <div v-if="selected.stats.datasets.datatypes_detail">
+                <p v-for="detail in selected.stats.datasets.datatypes_detail" :key="detail.type">
+                    <datatypetag :datatype="detail.type"/> 
+                    <small style="opacity: 0.6;">
+                        <icon name="user-friends"/> {{detail.subject_count}}
+                        <icon name="cubes"/> {{detail.count}}
+                        <span v-if="detail.size">({{detail.size|filesize}})</span>
+                    </small>
+                </p>
+            </div>
+
+        </div><!--page-right-content-->
+
     </div>
 
     <div v-if="tabs[tab].id == 'dataset'" style="margin-left: 40px; margin-top: 95px">
@@ -307,9 +307,7 @@ import datatypetag from '@/components/datatypetag'
 //modals
 import newtaskModal from '@/modals/newtask'
 import datatypeselecterModal from '@/modals/datatypeselecter'
-
 import ReconnectingWebSocket from 'reconnectingwebsocket'
-
 import PerfectScrollbar from 'perfect-scrollbar'
 
 let ps;

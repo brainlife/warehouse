@@ -7,7 +7,8 @@
 
         <b-form-group label="App *" horizontal>
             <p class="text-muted">Select App to run</p>
-            <v-select required v-model="rule.app" label="name" :filterable="false" :options="search_apps" @search="search_app" placeholder="Please enter App name to search">
+            <v-select required v-model="rule.app" label="name" :filterable="false" :options="search_apps" @search="search_app" 
+                placeholder="Please enter App name to search">
                 <template slot="no-options">please enter App name / desc to search</template>
                 <template slot="option" slot-scope="app">
                     <app :app="app" :compact="true" :clickable="false"/>

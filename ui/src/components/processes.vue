@@ -98,8 +98,7 @@
         <process transition="slide" 
                 :project="project" 
                 :instance="selected" 
-                v-if="selected" 
-                class="process" 
+                v-if="selected"
                 @updatedesc="updatedesc" 
                 @remove="toggle_instance(selected)"
                 :splitter_pos="splitter_pos+10"
@@ -565,7 +564,7 @@ top: 175px;
 left: 40px;
 width: 400px;
 }
-
+/*
 .process {
 position: fixed;
 top: 95px;
@@ -575,6 +574,7 @@ background-color: #eee;
 overflow-y: auto;
 overflow-x: hidden;
 }
+*/
 
 .instance-header {
 border-bottom: 1px solid rgba(0,0,0,0.1);
