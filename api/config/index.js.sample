@@ -330,7 +330,7 @@ exports.storage_systems.wrangler = {
                 conn.end();
                 //parse quota content
                 let lines = content.split("\n");
-                if(lines[0] != "Disk quotas for usr hayashis (uid 833400):") {
+                if(lines[0] != "Disk quotas for user hayashis (uid 833400):") {
                     return cb("quota info looks odd.. "+content);
                 }
                 let stats = lines[3].trim().split(/[ ]+/);

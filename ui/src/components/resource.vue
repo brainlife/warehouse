@@ -1,6 +1,6 @@
 <template>
 <div class="resource" v-if="resource_obj" @click="open" :class="{'resource-inactive': !resource_obj.active}" :title="resource_obj.config.desc">
-    <small style="float: right; opacity: 0.3; z-index: 1; position: relative; top: px; right: 10px;">7d</small>
+    <small style="float: right; opacity: 0.3; z-index: 1; position: relative; top: px; right: 10px;">24h</small>
     <div style="padding: 10px 15px;">
         <div style="opacity: 0.7; display: inline-block;">
             <!--
@@ -83,9 +83,8 @@ export default {
                 let v = point[1];
                 
                 if(Vue.config.debug) v += Math.random()*4;
-                v = 4;
                 
-                v = 90 - v / this.resource_obj.config.maxtask * 80; //don't let it touch the top of the graph
+                v = 90 - v / this.resource_obj.config.maxtask * 75; //don't let it touch the top of the graph
                 points.push([t,v]);
             });
 
