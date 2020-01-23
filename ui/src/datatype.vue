@@ -80,7 +80,7 @@
                                     <datatypetag :datatype="datatype" :tags="dataset.datatype_tags"/>
                                 </b-col>
                                 <b-col>
-                                    {{dataset.meta.subject}} <small>{{dataset.desc}}</small>
+                                    {{dataset.meta.subject}} <span v-if="dataset.meta.session">{{dataset.meta.session}}</span> <small>{{dataset.desc}}</small>
                                     <!-- <span style="float: right"><b>From</b> {{dataset.project.name}}</span> -->
                                     <tags :tags="dataset.tags"/>
                                 </b-col>

@@ -173,7 +173,7 @@
                             <b-row>
                                 <b-col cols="6" v-for="resource in resources" :key="resource._id">
                                     <div class="resource" v-b-popover.hover.d1000="resource.config.desc+'\n\n'+resource.detail.msg+'\nstatus:'+resource.status" :title="null">
-                                        <resource :resource="resource" style="0px 0px 3px #0002;"/>
+                                        <resource :resource="resource"/>
 
                                         <div v-if="resource.status != 'ok'" class="resource-status bg-danger">
                                             <icon name="exclamation" style="position: relative; top: -3px;"/>

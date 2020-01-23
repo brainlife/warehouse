@@ -31,6 +31,19 @@ export default {
                 }})
                 .then(res=>{
                     this.search_apps = res.data.apps;
+                    /*
+                    //group into 2 categories
+                    let active = [];
+                    let deprecated = [];
+                    res.data.apps.forEach(app=>{
+                        if(app.deprecated_dy) deprecated.push(app);
+                        else active.push(app);
+                    });
+                    this.search_apps = [
+                        { name: "Active Apps", options: active},
+                        { name: "Deprecated Apps", options: deprecated},
+                    ];
+                    */
                     loading(false);
                 });
             }, 300);

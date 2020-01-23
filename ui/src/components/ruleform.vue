@@ -19,6 +19,15 @@
             </v-select>
             <div v-if="rule.app">
                 <app :app="rule.app" :compact="true" :clickable="false" style="margin-top: 5px;"/>
+                <div v-if="rule.app.deprecated_by" style="margin-top: 10px">
+                    <b-card v-if="rule.app.deprecated_by" no-body style="margin-bottom: 10px">
+                        <span slot="header">
+                            <icon name="regular/calendar-times"/> This App has been deprecated by the following App
+                            <small>(Please consider using this App instead)</small>
+                        </span>
+                        <app :appid="rule.app.deprecated_by"/>
+                    </b-card>
+                </div>
             </div>
         </b-form-group>
 

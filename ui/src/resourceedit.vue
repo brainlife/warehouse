@@ -247,6 +247,7 @@ export default {
 
         this.$http.get("app", {params: {
             select: "github",
+            limit: 1000, //TODO - do something smarter
         }}).then(res=>{
             this.service_names = res.data.apps.map(app=>app.github);
             this.service_names = [...new Set(this.service_names)]; //debupe

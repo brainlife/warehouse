@@ -128,7 +128,6 @@ export default {
 <style scoped>
 .page-content {
 top: 0px;
-background-color: #eee;
 }
 .page-content h2 {
 margin-bottom: 0px;

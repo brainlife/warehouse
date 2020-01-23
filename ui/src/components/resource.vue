@@ -1,31 +1,34 @@
 <template>
-<div class="resource" v-if="resource_obj" @click="open">
-    <div style="height: 150px; position: absolute; width: 100%; z-index: 1;">
-        <div class="resource-tags">
-            <b-badge v-if="resource_obj.status == 'ok'" variant="success">OK</b-badge>
-            <b-badge v-if="resource_obj.status != 'ok'" variant="danger">{{resource_obj.status}}</b-badge>
-        </div>
-        <div style="height: 90px; padding: 5px; overflow: hidden;">
-            <b-badge v-if="!resource_obj.active" title="This resource is manually disabled by the resource owner, or status has been non-OK for long time.">Inactive</b-badge>
+<div class="resource" v-if="resource_obj" @click="open" :class="{'resource-inactive': !resource_obj.active}" :title="resource_obj.config.desc">
+    <small style="float: right; opacity: 0.3; z-index: 1; position: relative; top: px; right: 10px;">7d</small>
+    <div style="padding: 10px 15px;">
+        <div style="opacity: 0.7; display: inline-block;">
+            <!--
+                <b-badge variant="light" v-if="!resource_obj.active" title="This resource is manually disabled by the resource owner, or status has been non-OK for long time.">Inactive</b-badge>
+            -->
             <b-badge v-if="!resource.gids || resource.gids.length == 0" variant="secondary" title="Private resource that's not shared with anyone."><icon name="lock" scale="0.8"/></b-badge>
             <span>{{resource_obj.name}}</span><br>
-            <span style="font-size: 80%; opacity: 0.8;">{{resource_obj.config.desc}}</span>
+        </div>
+
+        <div>
+            <b-badge v-if="resource_obj.status == 'ok'" variant="success">OK</b-badge>
+            <b-badge v-if="resource_obj.status != 'ok'" variant="danger" style="text-transform: uppercase;">{{resource_obj.status}}</b-badge>
+            <span>
+                <small style="opacity: 0.5; text-transform: uppercase;">running</small>
+                <b style="font-size: 125%;">{{running}}</b>
+            </span>
+            <span style="opacity: 0.7">
+                / {{resource_obj.config.maxtask}}      
+                <small style="opacity: 0.5; text-transform: uppercase;">max</small>         
+            </span>
         </div>
     </div>
-    <div style="bottom: 10px; position: absolute; left: 10px;">
-        <b style="margin-bottom: 0px;">{{resource_obj.config.maxtask}}</b><br>
-        <small style="opacity: 0.5; text-transform: uppercase;">max tasks</small>
-    </div>
-    <div style="bottom: 10px; right: 10px; position: absolute; text-align: right;">
-        <b style="margin-bottom: 0px;">{{running}}</b><br>
-        <small style="opacity: 0.5; text-transform: uppercase;">running</small>
-    </div>
-    <svg viewBox="0 0 200 100" style="position: absolute; bottom: 0px; height: 150px; width: 100%;" preserveAspectRatio="none">
+    <svg viewBox="0 0 200 100" style="position: absolute; bottom: 10px; height: 50px; width: 200px; right: 10px;" preserveAspectRatio="none">
         <linearGradient id="grad1" x1="0%" y1="0%" x2="0%" y2="100%">
-          <stop offset="30%" style="stop-color:#07f;stop-opacity:0.2" />
-          <stop offset="70%" style="stop-color:#00f;stop-opacity:0.01" />
+            <stop offset="20%" style="stop-color:#2693ff;stop-opacity:0.2" />
+            <stop offset="60%" style="stop-color:#00f;stop-opacity:0.0" />
         </linearGradient>
-        <path :d="usage_path" fill="url(#grad1)" stroke="#2693ff60" stroke-width="1"/>
+        <path :d="usage_path" fill="url(#grad1)" stroke="#2693ffdd" stroke-width="2"/>
     </svg>
 </div>
 </template>
@@ -80,8 +83,9 @@ export default {
                 let v = point[1];
                 
                 if(Vue.config.debug) v += Math.random()*4;
+                v = 4;
                 
-                v = 100 - v / this.resource_obj.config.maxtask * 80; //don't let it touch the top of the graph
+                v = 90 - v / this.resource_obj.config.maxtask * 80; //don't let it touch the top of the graph
                 points.push([t,v]);
             });
 
@@ -165,14 +169,25 @@ export default {
 padding: 2px 5px;
 }
 .resource {
-height: 150px;
+height: 75px;
 position: relative;
+background-color: white;
+cursor: pointer;
+transition: box-shadow 0.5s;
 }
 .resource-tags {
-float: right; 
+float: left;
 font-size: 125%; 
+padding: 10px;
 text-transform: uppercase; 
-padding: 0px 5px;
 overflow: hidden;
+}
+.resource:hover {
+box-shadow: 2px 2px 8px rgba(0,0,0,0.2);
+}
+.resource.resource-inactive {
+opacity: 0.5;
+background-color: #f6f6f6;
+color: #666;
 }
 </style>

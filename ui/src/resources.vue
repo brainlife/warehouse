@@ -14,10 +14,8 @@
             <h4 class="header-sticky"><b-container>My Resources</b-container></h4> 
             <b-container>
                 <b-row no-gutters>
-                <b-col cols="4" v-for="resource in my_resources" :key="resource._id">
-                    <b-card no-body class="resource-card" :class="{'resource-inactive': !resource.active}">
-                        <resource :resource="resource"/>
-                    </b-card>
+                <b-col cols="6" v-for="resource in my_resources" :key="resource._id">
+                    <resource class="resource" :resource="resource"/>
                 </b-col>
                 </b-row>
             </b-container>
@@ -28,11 +26,11 @@
             <p>
                 <small>The following resources are shared among all Brainlife users.</small>
             </p>
-            <b-card-group columns style="margin: 15px 0px;">
-                <b-card no-body v-for="resource in shared_resources" :key="resource._id" class="resource-card" :class="{'resource-inactive': !resource.active}">
-                    <resource :resource="resource"/>
-                </b-card>
-            </b-card-group>
+            <b-row no-gutters>
+            <b-col cols="6" v-for="resource in my_resources" :key="resource._id">
+                <resource class="resource" :resource="resource"/>
+            </b-col>
+            </b-row>
         </b-container>
 
         <b-button v-if="config.has_role('resource.create', 'amaretti')" class="button-fixed" @click="newresource" v-b-tooltip.hover title="New Resource">
@@ -128,7 +126,6 @@ export default {
 <style scoped>
 .page-content {
 top: 0px;
-background-color: #eee;
 }
 .page-content h2 {
 margin-bottom: 0px;
@@ -162,22 +159,10 @@ box-shadow: 0 0 1px #ccc;
 padding-top: 12px;
 height: 50px;
 }
-
-.resource-card {
-cursor: pointer;
+.resource {
 margin-bottom: 5px;
 margin-right: 5px;
-border: none;
-box-shadow: 2px 2px 4px rgba(0,0,0,0.1);
-transition: box-shadow 0.5s;
-}
-.resource-card:hover {
-box-shadow: 2px 2px 8px rgba(0,0,0,0.3);
-}
-.resource-card.resource-inactive {
-opacity: 0.5;
-background-color: #f6f6f6;
-color: #666;
+box-shadow: 2px 2px 3px #0001;
 }
 </style>
 

@@ -329,7 +329,6 @@ opacity: 0.8;
 .page-content {
 top: 50px;
 margin-right: 240px;
-background-color: #eee;
 }
 .group-list {
 position: fixed;
