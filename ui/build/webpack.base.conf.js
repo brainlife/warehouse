@@ -35,6 +35,11 @@ module.exports = {
   resolve: {
     extensions: ['.js', '.vue', '.json'],
     alias: {
+
+      //attempt to reduce plotlyjs dep size (like mapbox..) It doesn't work
+      //https://github.com/statnett/vue-plotly/issues/14#issuecomment-545813235
+      //'plotly.js': 'plotly.js/dist/plotly-basic.js',
+
       'vue$': 'vue/dist/vue.esm.js',
       '@': resolve('src'),
     }

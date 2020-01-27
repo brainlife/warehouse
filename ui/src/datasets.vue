@@ -357,9 +357,9 @@ export default {
 
         open_dataset(dataset_id) {
             if(this.selected && this.selected._id == dataset_id) {
-                this.$router.push('/datasets');
+                this.$router.push('/datasets'+document.location.hash);
             } else {
-                this.$router.push('/datasets/'+dataset_id);
+                this.$router.push('/datasets/'+dataset_id+document.location.hash);
                 document.getElementsByClassName("page-main")[0].scrollTop = 0;
             }
         },
