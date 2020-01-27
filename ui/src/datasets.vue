@@ -582,12 +582,19 @@ background-color: #9993;
 }
 
 .dataset.dataset_selected {
+/*
+position: sticky;
+
+//making it sticky on top causes some browser bug? the list will go on top
+//of selected element. adjusting z-index causes scrollbar to be hidden 
+//under the selected item
+top: 0;
+
+bottom: 0;
+*/
+
 background-color: #2693ff;
 color: white;
-position: sticky;
-top: 0;
-bottom: 0;
-z-index: 1;
 }
 
 .count {

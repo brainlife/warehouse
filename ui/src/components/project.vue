@@ -26,12 +26,17 @@
                 <contact v-for="c in contacts" :key="c._id" :id="c" size="tiny" style="margin-left: -6px; margin-bottom: -4px"/>
             </div>
         </b-col>
-        <b-col md="3">
-            <div class="datatypes" v-if="project.stats && project.stats.datasets">
+        <b-col md="2">
+            <div class="datatypes" v-if="project.stats && project.stats.datasets" style="display: inline-block;">
                 <datatypetag v-for="datatype_id in project.stats.datasets.datatypes" 
                 :key="datatype_id"
                 :datatype="datatype_id" style="font-size: 85%; margin-right: 2px"/>
             </div>
+        </b-col>
+        <b-col md="1">
+            <b-badge pill class="bigpill">
+                <icon name="calendar" style="opacity: 0.4;"/>&nbsp;&nbsp;&nbsp;{{new Date(project.create_date).toLocaleDateString()}}
+            </b-badge>
         </b-col>
         <b-col md="2" style="font-size: 85%; margin-top: 2px;">
             <stateprogress v-if="project.stats && project.stats.instances && !project.openneuro" 

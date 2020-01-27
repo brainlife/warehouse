@@ -27,7 +27,7 @@
                 <small>The following resources are shared among all Brainlife users.</small>
             </p>
             <b-row no-gutters>
-            <b-col cols="6" v-for="resource in my_resources" :key="resource._id">
+            <b-col cols="6" v-for="resource in shared_resources" :key="resource._id">
                 <resource class="resource" :resource="resource"/>
             </b-col>
             </b-row>

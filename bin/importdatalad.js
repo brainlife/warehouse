@@ -19,17 +19,15 @@ db.init(async err=>{
 
     //find dataset_description.json
     console.log("looking for dataset_description.json");
-
-    let bids_dirs = child_process.execSync("find datasets.datalad.org -name dataset_description.json", {encoding: "utf8"}).split("\n");
-    //let bids_dirs = child_process.execSync("cat bids.list", {encoding: "utf8"}).split("\n");
+    let datalad_datasets = child_process.execSync("find datasets.datalad.org -maxdepth 4 -name dataset_description.json", {encoding: "utf8"}).split("\n").filter(dataset=>!dataset.startsWith("datasets.datalad.org/openneuro"));
+    let openneuro_datasets = child_process.execSync("find OpenNeuroDatasets -maxdepth 2 -name dataset_description.json", {encoding: "utf8"}).split("\n");
 
     //debug..
     //bids_dirs = ["datasets.datalad.org/openneuro/ds002311/dataset_description.json"];
     //bids_dirs = ["datasets.datalad.org/openneuro/ds001021/dataset_description.json"];
 
     let skipped = [];
-
-    async.eachSeries(bids_dirs, (bids_dir, next_dir)=>{
+    async.eachSeries([...datalad_datasets, ...openneuro_datasets], (bids_dir, next_dir)=>{
         let dataset_path = path.dirname(bids_dir);
 
         console.log(dataset_path+".......................");
@@ -78,8 +76,12 @@ async function load_datatypes() {
 function handle_bids(key, bids, cb) {
     //upsert dl-dataset record
     db.DLDatasets.findOne(key, (err, dldataset)=>{
-        if(err) return next_dir(err);
-        if(!dldataset.dataset_description) return next_dir();
+        if(err) return cb(err);
+        if(!bids.dataset_description) return next_dir();
+
+        if(!dldataset) {
+            dldataset = new db.DLDatasets(key);
+        }
 
         if(bids.README) dldataset.README = bids.README;
         if(bids.CHANGED) dldataset.CHANGES = bids.CHANGES;
