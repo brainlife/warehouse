@@ -54,7 +54,7 @@
         <div style="padding: 10px">
             <b-button variant="primary" @click="openImporter" class="import-button"><icon name="cloud-download-alt"/> Import</b-button>
             <p>
-                <a v-if="selected.dataset_description.DatasetDOI" :target="selected._id" :href="'https://doi.org/'+selected.dataset_description.DatasetDOI">
+                <a v-if="selected.dataset_description && selected.dataset_description.DatasetDOI" :target="selected._id" :href="'https://doi.org/'+selected.dataset_description.DatasetDOI">
                     <b-badge variant="light">{{selected.dataset_description.DatasetDOI}}</b-badge>
                 </a>
                 <pre v-else style="opacity: 0.5; font-size: 70%">{{selected.path}}</pre>
@@ -109,15 +109,6 @@
                 <ul><li v-for="(ref, idx) in selected.dataset_description.ReferencesAndLinks.filter(ref=>ref != '')" :key="idx">{{ref}}</li></ul>
             </div>
 
-            <!--
-            <div v-if="selected.dataset_description.DatasetDOI">
-                <span class="form-header">Dataset DOI</span>
-                <p style="margin-left: 40px;">
-                    <doibadge :doi="selected.dataset_description.DatasetDOI"/>
-                </p>
-            </div>
-            -->
-
             <div v-if="selected.CHANGES">
                 <span class="form-header">CHANGES</span>
                 <p>{{selected.CHANGES}}</p>
@@ -160,11 +151,7 @@
             </div>
             <p v-if="selected.participants_info"><pre>{{selected.participants_info}}</pre></p>
         </div>
-        <!--
-        <div v-if="config.debug">
-            <pre>{{selected}}</pre>
-        </div>
-        -->
+
     </div>
 
     <div class="page-main" v-else style="padding: 20px 40px; opacity: 0.7; background-color: #eee;" :style="{left: splitter_pos+10+'px'}"> 
@@ -260,7 +247,12 @@ export default {
             console.log("route changed", dataset_id);
             if(dataset_id == ov) return;
             this.load_dataset(dataset_id);
-        }
+        },
+
+        '$route': function() {
+            console.log("route changed");
+        },
+
     },
 
     filters: {
@@ -291,6 +283,7 @@ export default {
     },
 
     mounted() {
+        this.readHash();
         this.load_datasets();
         let dataset_list  = this.$refs["dataset-list"];
         this.dataset_ps = new PerfectScrollbar(dataset_list);        
@@ -301,6 +294,21 @@ export default {
     },
     
     methods: {
+        readHash() {
+            let hash = document.location.hash;
+            if(hash) {
+                hash = unescape(hash.substring(1)); //remove #
+                try {
+                    let query = JSON.parse(hash);
+                    this.query = query.query;
+                    this.datatypes = query.datatypes;
+                    console.log(query);
+                } catch (err) {
+                    console.error(err);
+                }
+            }
+        },
+
         load_datasets() {
             this.loading_datasets = true;
             this.datasets = [];
@@ -312,6 +320,11 @@ export default {
             for(let datatype_id of this.datatypes) {
                 find["stats.datatypes."+datatype_id] = {$exists: true};
             }
+
+            //remember query
+            let hash = JSON.stringify({query: this.query, datatypes: this.datatypes});
+            history.replaceState(null, null, '#'+escape(hash));
+
             this.$http('datalad/datasets', {params: {
                 find: JSON.stringify(find),
                 select: 'path name dataset_description stats',
@@ -328,7 +341,7 @@ export default {
 
                 //scroll list to the selected element
                 this.$nextTick(()=>{
-                    if(this.$route.params.dataset_id) {
+                    if(this.$route.params.dataset_id && this.$refs[this.$route.params.dataset_id]) {
                         let item = this.$refs[this.$route.params.dataset_id][0];
                         if(item) item.scrollIntoView();
                     }
@@ -556,19 +569,27 @@ z-index: -1;
 transition: color 0.5s;
 opacity: 0.5;
 }
+
 .dataset {
 padding: 7px 10px;
 font-size: 95%;
 border-top: 1px solid #0001;
 }
+
 .dataset:hover {
 cursor: pointer;
 background-color: #9993;
 }
+
 .dataset.dataset_selected {
 background-color: #2693ff;
 color: white;
+position: sticky;
+top: 0;
+bottom: 0;
+z-index: 1;
 }
+
 .count {
 float: right;
 opacity: 0.7;
@@ -590,23 +611,29 @@ z-index: 1;
 text-transform: uppercase;
 font-weight: bold;
 }
+
 .table-body {
 padding: 0px 10px;
 }
+
 .subject-group {
 border-bottom: 1px solid #ddd9;
 padding: 5px 0px;
 font-size: 90%;
 }
+
 .subject-group .dataobject:hover {
 background-color: #eee;
 cursor: pointer;
 }
+
 .import-button {
 float: right; 
 position: sticky;
 top: 10px;
 margin-left: 30px;
+z-index: 1;
 }
+
 </style>
 

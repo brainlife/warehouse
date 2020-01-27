@@ -244,6 +244,7 @@
             <div v-if="selected.stats.datasets.datatypes_detail">
                 <p v-for="detail in selected.stats.datasets.datatypes_detail" :key="detail.type">
                     <datatypetag :datatype="detail.type"/> 
+                    <br>
                     <small style="opacity: 0.6;">
                         <icon name="user-friends"/> {{detail.subject_count}}
                         <icon name="cubes"/> {{detail.count}}

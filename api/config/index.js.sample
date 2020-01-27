@@ -422,33 +422,9 @@ exports.storage_systems.osiris = {
     test: cb=>{
         connect_wrangler((err, conn, sftp)=>{
             if(err) return cb(err);
-            //TODO - I need to update this for OSiRIS
-            console.log("loading quota.info from wrangler homedir.. should be created by cron..");
-            let stream = sftp.createReadStream("/mnt/wrangler/my-quota", {encoding: "ascii"});
-            let content = "";
-            stream.on('readable', function() {
-                //could be called multiple times..
-                let chunk;
-                while (null !== (chunk = stream.read())) {
-                    content += chunk.toString();
-                }
-            });
-            stream.on('end', ()=>{
-                conn.end();
-                //parse quota content
-                let lines = content.split("\n");
-                if(lines[0] != "Disk quotas for usr hayashis (uid 833400):") {
-                    return cb("quota info looks odd.. "+content);
-                }
-                let stats = lines[3].trim().split(/[ ]+/);
-                let disk_used = parseInt(stats[0]);
-                let disk_quota = parseInt(stats[2]);
-                let files_used = parseInt(stats[4]);
-                let files_quota = parseInt(stats[6]);
-                if(disk_used / disk_quota > 0.85) return cb("disk >85% used");
-                if(files_used / files_quota > 0.85) return cb("files >85% used");
-                cb();
-            });
+            //TODO - check for osiris quota
+            conn.end();
+            cb();
         });
     }, 
 

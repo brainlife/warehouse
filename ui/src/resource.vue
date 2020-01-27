@@ -84,29 +84,27 @@
                             <small>The following services are enabled to run on this resource</small>
                         </p>
                         <div class="">
-                            <b-row style="margin-bottom: 8px; opacity: 0.7;">
-                                <b-col>
-                                    Service <small>(score)</small>
-                                </b-col>
-                                <b-col>
-                                    Total Requests <small style="float: right">success rate</small>
-                                </b-col>
-                            </b-row>
-                            <b-row v-for="service in resource.config.services" :key="service.name" style="border-top: 1px solid #ddd; padding: 2px 0px">
-                                <b-col>
-                                    {{service.name}}
-                                    <small>({{service.score}})</small>
-                                </b-col>
-                                <b-col>
-                                    <div v-if="resource.stats && resource.stats.services && resource.stats.services[service.name]">
-                                        <span>{{resource.stats.services[service.name].running}}</span>
-                                        <!--
-                                        <stateprogress :states="{'finished': resource.stats.services[service.name].finished, 'failed': resource.stats.services[service.name].failed}" style="margin-right: 125px;"/>
-                                        -->
-                                        <small style="float: right;">{{success_rate(service.name)}}</small>
-                                    </div>
-                                </b-col>
-                            </b-row>
+                            <table class="table table-sm table-dark">
+                                <tr>
+                                    <th>Service <small>(score)</small></th>
+                                    <th>Total Requests <small style="float: right">success rate</small></th>
+                                </tr>
+                                <tr v-for="service in resource.config.services" :key="service.name">
+                                    <td>
+                                        {{service.name}}
+                                        <small>({{service.score}})</small>
+                                    </td>
+                                    <td>
+                                        <div v-if="resource.stats && resource.stats.services && resource.stats.services[service.name]">
+                                            <span>{{resource.stats.services[service.name].running}}</span>
+                                            <!--
+                                            <stateprogress :states="{'finished': resource.stats.services[service.name].finished, 'failed': resource.stats.services[service.name].failed}" style="margin-right: 125px;"/>
+                                            -->
+                                            <small style="float: right;">{{success_rate(service.name)}}</small>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </table>
                         </div>
                         <br>
                     </b-col>

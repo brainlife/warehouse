@@ -1,8 +1,11 @@
 <template>
 <transition name="fade">
-  <div v-if="show" class="loading-overlay">
-      <div class="loading-message"><icon name="cog" spin scale="1" style="position: relative; top: -1px;"/> {{message}}</div>
-  </div>
+    <div v-if="show" class="loading-overlay">
+        <div class="loading-message">
+            <icon name="cog" spin scale="2" style="position: relative; top: -1px; opacity: 0.8; margin-right: 15px;"/> 
+            {{message}}
+        </div>
+    </div>
 </transition>
 </template>
 
@@ -44,11 +47,17 @@ z-index: 10;
 .loading-message {
 text-align: center;
 color: #0009;
-font-size: 150%;
+font-size: 200%;
 text-shadow: 0px 0px 5px #fff;
 padding: 30px;
 margin: 25%;
 background-color: #fffa;
 box-shadow: 0 0 8px #0006;
+}
+.fade-enter-active, .fade-leave-active {
+  transition: opacity .5s;
+}
+.fade-enter, .fade-leave-to /* .fade-leave-active below version 2.1.8 */ {
+  opacity: 0;
 }
 </style>

@@ -6,9 +6,14 @@
             <div class="header-row">
                 <projectaccess :access="project.access"/>
                 <div style="float: right; font-size: 90%; opacity: 0.9;" v-if="project.stats.datasets && project.stats.datasets.subject_count">
-                    <icon name="user-friends" style="opacity: 0.7" scale="0.8"/>&nbsp;{{project.stats.datasets.subject_count}}
-                    <icon name="cubes" style="opacity: 0.7" scale="0.8"/>&nbsp;{{project.stats.datasets.count}}
-                    <span v-if="project.stats.datasets.size" style="opacity: 0.8; font-size: 85%;"> ({{project.stats.datasets.size | filesize}})</span>
+                    {{project.stats.datasets.subject_count}} <span style="opacity: 0.5;">sub</span>
+                    <span style="opacity: 0.2;">|</span>
+                    {{project.stats.datasets.count}} <span style="opacity: 0.5;">objs</span>
+                    <div v-if="project.stats.datasets.size" style="display: inline-block; opacity: 0.5;">
+                        <span>
+                            ({{project.stats.datasets.size | filesize}})
+                        </span>
+                    </div>
                 </div>
                 <span class="title">
                     {{project.name}}
@@ -131,11 +136,5 @@ font-weight: bold;
 .desc {
 font-size: 85%;
 opacity: 0.7;
-}
-.contacts {
-}
-.status {
-}
-.progress {
 }
 </style>

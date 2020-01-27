@@ -110,22 +110,10 @@ export default {
                 return;
             }
 
-            this.$notify({text: "Archive requested.."});
+            this.$root.$emit("loading",{message: "Registering Data-object ..."});
             this.$nextTick(()=>{
                 this.$refs.archiver.hide();
             });
-
-            /*
-            //try parsing _meta
-            var meta = null;
-            try {   
-                meta = JSON.parse(this._meta);
-            } catch(err) {
-                console.error(err);
-                this.$notify({text: "Failed to parse meta", type: "error"});
-                return;
-            }
-            */
 
             this.$http.post('dataset', {
                 project: this.project,                 
@@ -139,8 +127,10 @@ export default {
 
                 //await: false, //request to not wait for dataset to be archived before returning
             }).then(res=>{
-                this.$notify({text: "Dataset registered", type: "success"});
+                this.$root.$emit("loading", {show: false});
+                this.$notify({text: "Data-object registered", type: "success"});
             }).catch(err=>{
+                this.$root.$emit("loading", {show: false});
                 this.$notify({text: err.response.data.message, type: "error"});
             });
         },

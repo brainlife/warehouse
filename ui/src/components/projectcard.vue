@@ -17,12 +17,11 @@
     </div>
     <div class="status">
         <b-row v-if="project.stats">
-            <b-col md="3" title="unique subjects" v-if="project.stats.datasets">
-                <icon name="user-friends" scale="0.8"/>&nbsp;{{project.stats.datasets.subject_count}}
-            </b-col>
-            <b-col md="6" title="number of datasets" v-if="project.stats.datasets">
-                <icon name="cubes" scale="0.8"/>&nbsp;{{project.stats.datasets.count}}
-                <span v-if="project.stats.datasets.size"> ({{project.stats.datasets.size | filesize}})</span>
+            <b-col md="9" title="unique subjects" v-if="project.stats.datasets">
+                {{project.stats.datasets.subject_count}} <span style="opacity:0.6;">sub</span>
+                <span style="opacity:0.2;">|</span>
+                {{project.stats.datasets.count}} <span style="opacity:0.6;">objs</span>
+                <span v-if="project.stats.datasets.size" style="opacity:0.8;">({{project.stats.datasets.size | filesize}})</span>
             </b-col>
             <b-col md="3" title="active pipeline rules" v-if="project.stats.rules">
                 <icon name="robot" scale="0.8"/>&nbsp;{{project.stats.rules.active}}
@@ -152,7 +151,7 @@ overflow: hidden;
 .status {
 background-color: #f7f7f7;
 padding: 4px 10px;
-color: #bbb;
+color: #666;
 clear: both;
 font-size: 90%;
 /*
