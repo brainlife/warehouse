@@ -19,7 +19,11 @@ db.init(async err=>{
 
     //find dataset_description.json
     console.log("looking for dataset_description.json");
-    let datalad_datasets = child_process.execSync("find datasets.datalad.org -maxdepth 4 -name dataset_description.json", {encoding: "utf8"}).split("\n").filter(dataset=>!dataset.startsWith("datasets.datalad.org/openneuro"));
+    let datalad_datasets = child_process.execSync("find datasets.datalad.org -maxdepth 4 -name dataset_description.json", {encoding: "utf8"}).split("\n").filter(dataset=>{
+        if(dataset.startsWith("datasets.datalad.org/openneuro")) return false;
+        if(dataset.startsWith("datasets.datalad.org/openfmri")) return false;
+        return true;
+    });
     let openneuro_datasets = child_process.execSync("find OpenNeuroDatasets -maxdepth 2 -name dataset_description.json", {encoding: "utf8"}).split("\n");
 
     //debug..
