@@ -84,10 +84,7 @@
             <!--show info-->
             <b-form-group horizontal v-for="(v, k) in tasks.validation.product" :key="k" 
                 v-if="k != 'errors' && k != 'warnings' && k != 'datatype_tags' && k != 'tags' && k != 'brainlife'" :label="k">
-                <pre v-highlightjs="v" v-if="typeof v == 'string'" style="max-height: 200px; overflow: auto;"><code class="text hljs"></code></pre>
-                <div v-else>
-                    <pre>{{v}}</pre>
-                </div>
+                <pre style="max-height: 200px; overflow: auto;">{{v}}</pre>
             </b-form-group>
 
         </div>
@@ -100,7 +97,7 @@
         </b-form-group>
         <b-form-group v-if="mode == 'validate'">
             <b-button @click="mode = 'upload'">Back</b-button>
-            <b-button variant="primary" @click="finalize()" :disabled="!can_archive()">Archive</b-button>
+            <b-button variant="primary" @click="finalize()" :disabled="!can_archive()"><icon name="archive"/> Archive</b-button>
         </b-form-group>
     </div>
 </b-modal>
@@ -115,7 +112,6 @@ import projectaccess from '@/components/projectaccess'
 import task from '@/components/task'
 import tageditor from '@/components/tageditor'
 import product from '@/components/product'
-//import datatypetag from '@/components/datatypetag'
 
 //singleton instance to handle upload request
 export default {
@@ -393,8 +389,8 @@ export default {
         },
 
         finalize() {
-            this.$notify({ text: 'Archive request submitted..'});
             this.$refs.modal.hide();
+            this.$root.$emit("loading",{message: "Registering Data-Object..."});
 
             //remove null meta
             let clean_meta = {};
@@ -412,7 +408,8 @@ export default {
                 desc: this.desc,
             }).then(res=>{
                 var dataset = res.data;
-                this.$notify({ type: 'success', text: 'Successfully uploaded a new dataset. Please give a few minutes for your data to become available.', });
+                this.$root.$emit("loading", {show: false});
+                this.$notify({ type: 'success', text: 'Successfully uploaded a new data-object. Please give a few minutes for your data to become available.', });
                 this.$router.push("/project/"+this.project._id+"/dataset/"+dataset._id);
 
                 //TODO need to reload so that new subject group will show up on dataset paage..
@@ -420,8 +417,10 @@ export default {
                 document.location.reload(); 
 
                 this.reset();
-            }, res=>{
-                console.error(res);
+            }).catch(err=>{
+                console.error(err);
+                this.$root.$emit("loading", {show: false});
+                this.$notify({type: "error", text: err.response.data.message});
             });
         },
 

@@ -30,11 +30,12 @@
             </div>
             <br>
             <b-container>
+                <div class="card">
                 <b-row>
                     <b-col cols="2">
                         <span class="form-header">Status</span>
                     </b-col>
-                    <b-col>
+                    <b-col cols="10">
                         <div class="">
                             <statustag :status="resource.status"/>
                             <span style="padding-left: 15px; opacity: 0.8;">
@@ -50,7 +51,7 @@
                     <b-col cols="2">
                         <span class="form-header">Running Jobs</span>
                     </b-col>
-                    <b-col>
+                    <b-col cols="10">
                         <vue-plotly :data="usage_data" :layout="usage_layout" :autoResize="true"/>
                         <br>
 
@@ -71,10 +72,11 @@
                             </b-row>
                         </div>
                         <p style="opacity: 0.7;" v-if="tasks.length ==0">No tasks running on this resource.</p>
-                        <br>
                     </b-col>
                 </b-row>
+                </div><!--end card-->
 
+                <div class="card">
                 <b-row>
                     <b-col cols="2">
                         <span class="form-header">Apps</span>
@@ -106,10 +108,11 @@
                                 </tr>
                             </table>
                         </div>
-                        <br>
                     </b-col>
                 </b-row>
+                </div><!--end card-->
 
+                <div class="card">
                 <b-row v-if="projects">
                     <b-col cols="2">
                         <span class="form-header">Projects</span>
@@ -140,9 +143,9 @@
                                 </b-row>
                             </div>
                         </div>
-                        <br>
                     </b-col>
                 </b-row>
+                </div><!--card-->
  
                 <!--
                 <b-row v-if="groups && groups.length > 0">
@@ -166,6 +169,7 @@
                 </b-row>
                 -->
 
+                <div class="card">
                 <b-row>
                     <b-col cols="2">
                         <span class="form-header">Login Host</span>
@@ -199,8 +203,6 @@
                         </p>
                     </b-col>
                 </b-row>
-
-
                 <b-row>
                     <b-col cols="2">
                         <span class="form-header">Owner</span>
@@ -257,24 +259,18 @@
                         </p>
                     </b-col>
                 </b-row>
+                </div><!--card-->
 
-                <b-row>
-                    <b-col cols="2">
-                    </b-col>
-                    <b-col>
-                        <hr>
-                        <p style="opacity: 0.7;">
-                            <icon name="calendar"/> Created on {{new Date(resource.create_date).toLocaleDateString()}}
-                        </p>
-                        <p style="opacity: 0.7;">
-                            <icon name="calendar"/> Updated on {{new Date(resource.update_date).toLocaleDateString()}}
-                        </p>
-                        <p style="opacity: 0.7;">
-                            <icon name="calendar"/> Last OK date {{new Date(resource.lastok_date).toLocaleDateString()}}
-                        </p>
-                        <br>
-                    </b-col>
-                </b-row>
+                <hr>
+                <p style="opacity: 0.7;">
+                    <icon name="calendar"/> Created on {{new Date(resource.create_date).toLocaleDateString()}}
+                </p>
+                <p style="opacity: 0.7;">
+                    <icon name="calendar"/> Updated on {{new Date(resource.update_date).toLocaleDateString()}}
+                </p>
+                <p style="opacity: 0.7;">
+                    <icon name="calendar"/> Last OK date {{new Date(resource.lastok_date).toLocaleDateString()}}
+                </p>
 
                 <div v-if="config.debug">
                     <pre>{{resource}}</pre>
@@ -507,6 +503,11 @@ padding: 10px;
 .button-page {
 margin-top: 10px;
 opacity: 0.6;
+}
+.card {
+    margin-bottom: 20px;
+    padding: 20px;
+    border: none;
 }
 </style>
 

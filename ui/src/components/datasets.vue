@@ -9,7 +9,7 @@
             </div>
 
             <div style="padding: 5px 0px; margin-bottom: 10px;">
-                <b>{{total_subjects}}</b> Subjects &nbsp;&nbsp;&nbsp; <b>{{total_datasets}}</b> Datasets
+                <b>{{total_subjects}}</b> Subjects &nbsp;&nbsp;&nbsp; <b>{{total_datasets}}</b> Objects
                 <span v-if="total_size">({{total_size|filesize}})</span>
             </div>
 

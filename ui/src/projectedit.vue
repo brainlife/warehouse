@@ -141,7 +141,7 @@
 
             <div class="page-footer">
                 <b-container>
-                    <b-button variant="danger" @click="remove" style="float: left">Remove</b-button>
+                    <b-button variant="danger" @click="remove" style="float: left"><icon name="trash"/> Remove</b-button>
                     <b-button variant="secondary" @click="cancel">Cancel</b-button>
                     <b-button type="submit" variant="primary" :disabled="submitting"><icon v-if="submitting" name="cog" spin/> Submit</b-button>
                 </b-container>

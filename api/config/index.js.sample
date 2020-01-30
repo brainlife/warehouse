@@ -158,8 +158,8 @@ exports.storage_default = function() {
 */
 
 exports.archive = {
-    //storage_default: "wrangler",  
-    storage_default: "osiris",  
+    storage_default: "wrangler",  
+    //storage_default: "osiris",  
     storage_config: {
         resource_id: "59ea931df82bb308c0197c3d", //wrangler-nfs server
     },
