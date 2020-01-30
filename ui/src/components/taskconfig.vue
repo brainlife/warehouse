@@ -14,8 +14,8 @@
             </td>
             <td v-else width="30%"><pre style="white-space: pre-wrap;">{{v}}</pre></td>
             
-            <td style="font-size: 85%;" width="50%" :title="appconfig[k].desc" v-b-tooltip.hover>
-                <div v-if="appconfig[k]" style="white-space: pre-line; overflow: hidden; text-overflow: ellipsis; height: 15px;">
+            <td style="font-size: 85%;" width="50%" v-if="appconfig[k]" :title="appconfig[k].desc" v-b-tooltip.hover>
+                <div style="white-space: pre-line; overflow: hidden; text-overflow: ellipsis; height: 15px;">
                     <span style="opacity: 0.7;">default: {{get_default(k)}}</span> {{appconfig[k].desc}} 
                 </div>
             </td>

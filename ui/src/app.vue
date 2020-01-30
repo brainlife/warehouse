@@ -155,9 +155,9 @@
                             <br>
                         </div>
 
-                        <div v-if="resources">
+                        <div v-if="resources_considered">
                             <span class="form-header">Computing Resources</span>
-                            <b-alert show variant="secondary" v-if="resources.length == 0" style="margin-bottom: 10px;">
+                            <b-alert show variant="secondary" v-if="resources_considered.length == 0" style="margin-bottom: 10px;">
                                 This App is not registered to run on any resource that you have access to. 
                             </b-alert>
                             <b-alert show variant="secondary" v-else-if="!preferred_resource" style="margin-bottom: 10px;">
@@ -171,10 +171,9 @@
                             </p>
 
                             <b-row>
-                                <b-col cols="6" v-for="resource in resources" :key="resource._id">
+                                <b-col cols="6" v-for="resource in resources_considered" :key="resource._id">
                                     <div class="resource" v-b-popover.hover.d1000="resource.config.desc+'\n\n'+resource.detail.msg+'\nstatus:'+resource.status" :title="null">
                                         <resource :resource="resource"/>
-
                                         <div v-if="resource.status != 'ok'" class="resource-status bg-danger">
                                             <icon name="exclamation" style="position: relative; top: -3px;"/>
                                             {{resource.status}}
@@ -339,7 +338,7 @@ export default {
             noaccess: false,
 
             preferred_resource: null,
-            resources: null,
+            resources_considered: null,
             readme: null,
             //info: null,
 
@@ -374,8 +373,8 @@ export default {
 
     computed: {
         shared_resources() {
-            if(!this.resources) return [];
-            return this.resources.filter(r=>r.gids.length > 0);
+            if(!this.resources_considered) return [];
+            return this.resources_considered.filter(r=>r.gids.length > 0);
         },
     },
 
@@ -468,7 +467,7 @@ export default {
             }})
             .then(res => {
                 if(res.data.resource) this.preferred_resource = res.data.resource;
-                this.resources = res.data.considered.sort((a, b) => {
+                this.resources_considered = res.data.considered.sort((a, b) => {
                     if (a.score < b.score) return 1;
                     if (a.score > b.score) return -1;
                     return 0;

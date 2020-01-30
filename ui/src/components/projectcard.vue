@@ -98,9 +98,7 @@ filter: saturate(20%);
 padding: 0px 5px;
 margin-bottom: 0px;
 overflow: hidden; 
-text-overflow: ellipsis;
 font-size: 85%;
-height: 20px;
 }
 .avatar {
 float: right;

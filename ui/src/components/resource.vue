@@ -59,6 +59,10 @@ export default {
     },
     computed: {
         running() {
+            //app passes resource object from resource/best api - which contains somewhat abbreviated resource info
+            if(this.resource_obj.detail && this.resource_obj.detail.running) return this.resource_obj.detail.running;
+
+            //for full resource detail
             if(!this.resource_obj.stats || !this.resource_obj.stats.recent_job_counts) return 0;
             let raw_points = this.resource_obj.stats.recent_job_counts; 
             if(raw_points.length == 0) return 0;
@@ -138,8 +142,6 @@ export default {
                 const cpe = controlPoint(point, a[i - 1], a[i + 1], true)
                 return `C ${cps[0]},${cps[1]} ${cpe[0]},${cpe[1]} ${point[0]},${point[1]}`
             }
-
-            //let points = this.resource_obj.stats.recent_job_counts;
 
             // build the d attributes by looping over the points
             const d = points.reduce((acc, point, i, a) => {
