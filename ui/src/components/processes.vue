@@ -70,7 +70,7 @@
                             <icon name="robot" v-if="instance.config.rule_subject" style="opacity: 0.5"/>
                             <!--<b>{{instance.name}}</b>-->
                             {{instance.desc}}
-                            <span v-if="!instance.desc" style="opacity: 0.4;">No Description ({{instance._id}})</span>
+                            <span v-if="!instance.desc" style="opacity: 0.3; font-size: 75%;">{{instance._id}}</span>
                             &nbsp;
                             <div v-if="instance.config && instance.config.summary" style="display: contents; opacity: 0.8;">
                                 <span v-for="summary in get_nonstaging_summary(instance)" 

@@ -288,7 +288,7 @@ export default {
                 return this.$http.post(Vue.config.wf_api+'/task', {
                     instance_id: this.instance._id,
                     name: "upload",
-                    service: "brainlife/app-noop",
+                    service: "brainlife/app-noop", //TODO - I should rename to app-upload?
                     preferred_resource_id: this.validator_resource, 
                 });
             }).then(res=>{

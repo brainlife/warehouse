@@ -14,7 +14,10 @@
             </div>
             <div style="margin-left: 45px; margin-right: 5px; padding-bottom: 4px; position: relative;">
                 <div style="float: right;">
-                    <div class="button" style="opacity: 0.7" v-if="!editing_desc" @click="editing_desc = true" title="Edit Notes"><icon name="edit"/></div>
+                    <!--
+                        <div class="button" style="opacity: 0.7" v-if="editing_desc === null" @click="editing_desc = task.desc" title="Edit Notes">
+                            <icon name="edit"/></div>
+                    -->
                     <div class="button" style="opacity: 0.7" :id="'popover'+task.config._tid" @click="openinfo"><icon name="info"/></div>
                     <b-popover :target="'popover'+task.config._tid" triggers="hover">
                         <template slot="title"><span class="text-muted"><small>ID</small> {{task._id}}</span></template>
@@ -90,15 +93,17 @@
     <!--task details-->
     <div class="status-color" :class="task.status" style="padding-left: 3px;">
         <div style="background-color: #fafafa; color: #333; position: relative;">
-            <div class="note" v-if="task.desc || editing_desc">
-                <div v-if="task.desc && !editing_desc" @click="editing_desc = true" class="note-text">
+            <!--
+            <div class="note" v-if="task.desc || editing_desc !== null">
+                <div v-if="task.desc && editing_desc === null" @click="editing_desc = task.desc" class="note-text">
                     <vue-markdown :source="task.desc" class="readme" style="margin: 0px 5px;"/>
                 </div>
-                <div v-if="editing_desc" style="position: relative;">
-                    <div class="button" @click="editing_desc = false" style="position: absolute; top: 0; right: 0px; background-color: #666; margin: 5px;"><icon name="times"/></div>
-                    <b-form-textarea ref="desc_editor" v-model="task.desc" placeholder="Enter Notes in Markdown" :rows="3" style="background-color: #f0f0f0; border: none; border-radius: 0;"/>
+                <div v-if="editing_desc !== null" style="position: relative;">
+                    <div class="button" @click="editing_desc = null" style="position: absolute; top: 0; right: 0px; background-color: #666; margin: 5px;"><icon name="times"/></div>
+                    <b-form-textarea ref="desc_editor" v-model="editing_desc" placeholder="Enter Notes in Markdown" :rows="3" style="background-color: #f0f0f0; border: none; border-radius: 0;"/>
                 </div>
             </div>
+            -->
 
             <div v-if="task.service!='soichih/sca-product-raw'&&task.service!='brainlife/app-stage'">
                 <taskconfig :task="task" style="padding: 10px;"/>
@@ -150,15 +155,14 @@ import filebrowser from '@/components/filebrowser'
 import statusicon from '@/components/statusicon'
 import taskconfig from '@/components/taskconfig'
 import contact from '@/components/contact'
-import VueMarkdown from 'vue-markdown'
 
 let resource_cache = {};
-let desc_debounce = null;
+//let desc_debounce = null;
 
 export default {
     props: ['task'],
     components: { 
-        filebrowser, statusicon, taskconfig, contact, VueMarkdown,
+        filebrowser, statusicon, taskconfig, contact,
     },
     data () {
         return {
@@ -167,8 +171,8 @@ export default {
                 input: true,
             },
             show_masked_config: false,
-            editing_desc: false,
-            desc: null,
+            //editing_desc: null,
+            //desc: null,
 
             resource: null,
 
@@ -183,11 +187,13 @@ export default {
                 this.load_resource_info(this.task.resource_id);
             }
         },
-        'task.desc'(nv, ov) {
+        /*
+        editing_desc(nv, ov) {
             if(nv == null || ov == null) return;
             clearTimeout(desc_debounce);
             desc_debounce = setTimeout(this.update_desc, 2000);
         },
+        */
     },
 
     mounted() {
@@ -292,14 +298,16 @@ export default {
             });
         },
 
+        /*
         update_desc() {
-            this.$http.put(Vue.config.wf_api+'/task/'+this.task._id, {desc: this.task.desc})
+            this.$http.put(Vue.config.wf_api+'/task/'+this.task._id, {desc: this.editing_desc})
             .then(res=>{
                 this.$notify({text: "Note successfully updated", type: 'success'});
             }).catch(err=>{
                 console.error(err); 
             });
         },
+        */
 
         openinfo() {
             this.$root.$emit("taskinfo.open", {task: this.task, resource: this.resource});

@@ -219,8 +219,8 @@ function handle_task(task, cb) {
                 logger.info("handling task outputs");
                 let outputs = [];
 
+                //check to make sure that the output is not already registered
                 async.eachSeries(task.config._outputs, (output, next_output)=>{
-                    //check to make sure that the output is not already registered
                     db.Datasets.findOne({
                         "prov.task_id": task._id,
                         "prov.output_id": output.id,
@@ -247,7 +247,7 @@ function handle_task(task, cb) {
 
         next=>{
             if(task.service == "brainlife/app-archive") {
-                logger.info("handling app-archive envets");
+                logger.info("handling app-archive events");
                 async.eachSeries(task.config.datasets, (dataset_config, next_dataset)=>{
                     let _set = {
                         status_msg: task.status_msg,
@@ -267,12 +267,9 @@ function handle_task(task, cb) {
                         break;
                     case "failed":
                         _set.status = "failed";
-                        //_set.desc = task.status_msg; //user can look at archive job status instead
                         break;
                     }
-                    //console.log(JSON.stringify(dataset_config, null, 4));
                     db.Datasets.findByIdAndUpdate(dataset_config.dataset._id, {$set: _set}, next_dataset);
-                    //db.Datasets.findByIdAndUpdate(dataset_config.id, {$set: _set}, next_dataset);
                 }, next);
             } else next();
         },

@@ -7,7 +7,9 @@
             </div>
         </div>
         <div style="margin-right: 40px;">
-            <b-form-textarea v-model="desc" @input="updatedesc" placeholder="Enter process description" rows="2" max-rows="4" style="height: 60px"></b-form-textarea>
+            <b-form-textarea v-model="desc" @input="updatedesc" 
+                placeholder="Enter process name"
+                style="background-color: #fff; border: none; border-radius: 0; height: 60px;"/>
         </div>
     </div>
 
@@ -143,6 +145,30 @@
                     </b>
                 </span>
             </div>
+
+            <div class="task-joint">
+                <div v-if="!task.desc && editing_taskdesc[task.config._tid] === undefined" style="opacity: 0.3; cursor: pointer;" @click="edit_taskdesc(task)">
+                    <icon name="edit"/>
+                </div>
+                <div v-if="editing_taskdesc[task.config._tid] !== undefined" style="padding: 5px 0">
+                    <b-form-textarea v-model="editing_taskdesc[task.config._tid]" 
+                        :ref="'textarea-focus-'+task.config._tid"
+                        rows="2"
+                        max-rows="10"
+                        placeholder="Enter Notes in Markdown" 
+                        style="background-color: #f0f0f0; border: none; border-radius: 0;"/>
+                    <div style="padding-top: 5px;">
+                        <b-button-group style="float: right">
+                            <b-button size="sm" @click="editing_taskdesc[task.config._tid] = undefined" variant="secondary"><icon name="times"/></b-button>
+                            <b-button size="sm" @click="update_taskdesc(task)" variant="primary">Save</b-button>
+                        </b-button-group>
+                    </div>
+                    <br clear="both">
+                </div>
+                <div v-if="task.desc && editing_taskdesc[task.config._tid] === undefined" @click="edit_taskdesc(task)" style="padding: 5px 0;">
+                    <vue-markdown :source="task.desc" class="readme" style="margin: 0px 5px;"/>
+                </div>
+            </div>
         </div>
         <!--give it a bit of space after the last task-->
         <br>
@@ -177,6 +203,7 @@ import statustag from '@/components/statustag'
 import mute from '@/components/mute' //deprecate?
 import datatypetag from '@/components/datatypetag'
 import product from '@/components/product'
+import VueMarkdown from 'vue-markdown'
 
 import appcache from '@/mixins/appcache'
 
@@ -200,11 +227,14 @@ export default {
         statusicon, mute,
         datatypetag, appname, statustag,
         product, 
+        VueMarkdown,
     },
 
     data() {
         return {
             tasks: null,
+            editing_taskdesc: {},
+
             datatypes: {}, 
             archived: [], //archived datasets from this process
             projects: null,
@@ -324,6 +354,23 @@ export default {
     methods: {
         updatedesc() {
             this.$emit("updatedesc", this.desc);
+        },
+
+        edit_taskdesc(task) {
+            Vue.set(this.editing_taskdesc, task.config._tid, task.desc||'');
+            this.$nextTick(()=>{
+                this.$refs['textarea-focus-'+task.config._tid][0].$el.focus();
+            });
+        },
+        update_taskdesc(task) {
+            task.desc = this.editing_taskdesc[task.config._tid];
+            this.$http.put(Vue.config.wf_api+'/task/'+task._id, {desc: this.editing_taskdesc[task.config._tid].trim()})
+            .then(res=>{
+                this.editing_taskdesc[task.config._tid] = undefined;
+            }).catch(err=>{
+                //revert to edit?
+                console.error(err); 
+            });
         },
 
         find_task(id) {
@@ -477,6 +524,7 @@ export default {
                 this.tasks = res.data.tasks;
                 this.loading = false;
                 this.desc = this.instance.desc;
+                this.editing_taskdesc = {};
 
                 //load app detail
                 this.tasks.forEach(task=>{
@@ -750,8 +798,13 @@ padding: 10px 20px;
 font-size: 125%;
 color: #999;
 }
+.task-joint {
+border-left: 3px solid #ddd;
+padding: 2px 5px;
+margin-left: 20px;
+padding-left: 15px;
+}
 .task-area {
-padding: 0 0 5px 1px;
 }
 .instance-action {
 float: right;
