@@ -25,13 +25,15 @@ db.init(async err=>{
         return true;
     });
     let openneuro_datasets = child_process.execSync("find OpenNeuroDatasets -maxdepth 2 -name dataset_description.json", {encoding: "utf8"}).split("\n");
+    let dataset = [...datalad_datasets, ...openneuro_datasets];
 
     //debug..
     //bids_dirs = ["datasets.datalad.org/openneuro/ds002311/dataset_description.json"];
     //bids_dirs = ["datasets.datalad.org/openneuro/ds001021/dataset_description.json"];
+    //let datasets = ["OpenNeuroDatasets/ds002317/dataset_description.json"];
 
     let skipped = [];
-    async.eachSeries([...datalad_datasets, ...openneuro_datasets], (bids_dir, next_dir)=>{
+    async.eachSeries(datasets, (bids_dir, next_dir)=>{
         let dataset_path = path.dirname(bids_dir);
 
         console.log(dataset_path+".......................");
@@ -42,8 +44,10 @@ db.init(async err=>{
         //debug
         //if(dataset_path != "datasets.datalad.org/openneuro/ds001590") return next_dir();
 
+        console.log("walking bids..");
         bids_walker(dataset_path, (err, bids)=>{
             if(err) return next_dir(err);
+            //console.dir(bids);
 
             //if there are no data, something went wrong..
             if(bids.datasets.length == 0) {

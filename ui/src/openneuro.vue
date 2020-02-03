@@ -58,7 +58,7 @@ export default {
 
         this.$http.get('datalad/datasets', {params: {
             find: JSON.stringify({
-                path: "datasets.datalad.org/openneuro/"+this.$route.params.id,
+                path: {$regex: this.$route.params.id+"$"},
             })
         }})
         .then(res=>{

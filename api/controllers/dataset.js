@@ -809,7 +809,6 @@ function generate_prov(origin_dataset_id, cb) {
  * @apiParam {String} project           Project ID used to store this dataset under
  * @apiParam {String} task_id           WF service Task ID (of output task)
  * @apiParam {String} output_id         output_id to archive
- * @apiParam {String} [subdir]          Subdirectory where all files are actually stored under the task output
  *
  * @apiParam {Object} [meta]            Metadata - to override
  * @apiParam {String[]} [tags]          List of tags to add

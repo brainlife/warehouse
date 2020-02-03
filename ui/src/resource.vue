@@ -76,41 +76,31 @@
                 </b-row>
                 </div><!--end card-->
 
-                <div class="card">
-                <b-row>
-                    <b-col cols="2">
-                        <span class="form-header">Apps</span>
-                    </b-col>
-                    <b-col>
-                        <p>
-                            <small>The following services are enabled to run on this resource</small>
-                        </p>
-                        <div class="">
-                            <table class="table table-sm table-dark">
-                                <tr>
-                                    <th>Service <small>(score)</small></th>
-                                    <th>Total Requests <small style="float: right">success rate</small></th>
-                                </tr>
-                                <tr v-for="service in resource.config.services" :key="service.name">
-                                    <td>
-                                        {{service.name}}
-                                        <small>({{service.score}})</small>
-                                    </td>
-                                    <td>
-                                        <div v-if="resource.stats && resource.stats.services && resource.stats.services[service.name]">
-                                            <span>{{resource.stats.services[service.name].running}}</span>
-                                            <!--
-                                            <stateprogress :states="{'finished': resource.stats.services[service.name].finished, 'failed': resource.stats.services[service.name].failed}" style="margin-right: 125px;"/>
-                                            -->
-                                            <small style="float: right;">{{success_rate(service.name)}}</small>
-                                        </div>
-                                    </td>
-                                </tr>
-                            </table>
-                        </div>
-                    </b-col>
-                </b-row>
-                </div><!--end card-->
+                <span class="form-header">Apps</span>
+                <small>The following services are enabled to run on this resource</small>
+                <div class="">
+                    <table class="table table-sm">
+                        <tr>
+                            <th>Service <small>(score)</small></th>
+                            <th>Total Requests <small style="float: right">success rate</small></th>
+                        </tr>
+                        <tr v-for="service in resource.config.services" :key="service.name" style="background-color: white;">
+                            <td>
+                                {{service.name}}
+                                <small>({{service.score}})</small>
+                            </td>
+                            <td>
+                                <div v-if="resource.stats && resource.stats.services && resource.stats.services[service.name]">
+                                    <span>{{resource.stats.services[service.name].running}}</span>
+                                    <!--
+                                    <stateprogress :states="{'finished': resource.stats.services[service.name].finished, 'failed': resource.stats.services[service.name].failed}" style="margin-right: 125px;"/>
+                                    -->
+                                    <small style="float: right;">{{success_rate(service.name)}}</small>
+                                </div>
+                            </td>
+                        </tr>
+                    </table>
+                </div>
 
                 <div class="card">
                 <b-row v-if="projects">
@@ -393,9 +383,18 @@ export default {
                     xaxis: {
                         //title: 'Running Jobs',
                         //showgrid: false,
+                        //linecolor: '#fff',
+                        zeroline: false,
+                        tickfont: {
+                            color: 'gray',
+                        },
                     },
                     yaxis: {
                         //title: 'Running Jobs',
+                        zeroline: false,
+                        tickfont: {
+                            color: 'gray',
+                        },
                     },
                     font: Vue.config.plotly.font,
                     plot_bgcolor: "#fff0",
@@ -508,6 +507,12 @@ opacity: 0.6;
     margin-bottom: 20px;
     padding: 20px;
     border: none;
+}
+.table th {
+border: none;
+font-size: 90%;
+padding-left: 0px;
+opacity: 0.7;
 }
 </style>
 

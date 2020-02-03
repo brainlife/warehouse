@@ -255,8 +255,8 @@ exports.archive_task_outputs = async function(user_id, task, outputs, cb) {
             if(err) return cb(err);
             if(datasets.length == 0) return cb();
             try {
-                //TODO - I forgot why I can't just use admin jwt to stage this for the user? 
-                //maybe so that the task will belong to the regular user - not admin and only admin can access?
+                //only archiver group user can run app-stage/arcvehi, 
+                //so I need to add group access temporarily
                 let user_jwt = await exports.issue_archiver_jwt(user_id);
 
                 //submit app-archive!

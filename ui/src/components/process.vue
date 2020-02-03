@@ -9,7 +9,7 @@
         <div style="margin-right: 40px;">
             <b-form-textarea v-model="desc" @input="updatedesc" 
                 placeholder="Enter process name"
-                style="background-color: #fff; border: none; border-radius: 0; height: 60px;"/>
+                style="background-color: #f6f6f6; border: none; border-radius: 0; border: 1px solid #d8d8d8; height: 60px;"/>
         </div>
     </div>
 
@@ -70,7 +70,7 @@
                 </div>
 
                 <!--output-->
-                <div slot="output">
+                <div slot="output" v-if="task.config._outputs">
                     <div v-for="(output, idx) in task.config._outputs" :key="idx" class="output">
                         <div class="output-actions">
                             <div class="button" v-if="output.dataset_id" @click="open_dataset(output.dataset_id)" title="Show Dataset Detail">
@@ -127,6 +127,10 @@
                                 </li>
                             </ul>
                         </div>
+                        
+                        <div v-if="get_dtv_task(task, output)">
+                            Validation Status: {{get_dtv_task(task, output).status}}
+                        </div>
                     </div>
                     <product :product="task.product"/>
                     <div v-if="task.config._outputs.length == 0 && !task.product" style="padding: 10px; opacity: 0.5">No output</div>
@@ -148,7 +152,7 @@
 
             <div class="task-joint">
                 <div v-if="!task.desc && editing_taskdesc[task.config._tid] === undefined" style="opacity: 0.3; cursor: pointer;" @click="edit_taskdesc(task)">
-                    <icon name="edit"/>
+                    <icon name="edit" class="edit_taskdesc"/>
                 </div>
                 <div v-if="editing_taskdesc[task.config._tid] !== undefined" style="padding: 5px 0">
                     <b-form-textarea v-model="editing_taskdesc[task.config._tid]" 
@@ -174,6 +178,14 @@
         <br>
         <br>
         <br>
+        {{dtv_tasks}}
+        <!--
+        <div v-if="config.debug">
+            <p v-for="task in tasks" :key="task._id">
+                {{task}}
+            </p>
+        </div>
+        -->
     </div>
 
     <div class="new-action" :style="{left: splitter_pos+'px'}">
@@ -233,6 +245,9 @@ export default {
     data() {
         return {
             tasks: null,
+
+            dtv_tasks: {},
+
             editing_taskdesc: {},
 
             datatypes: {}, 
@@ -352,6 +367,19 @@ export default {
     },
 
     methods: {
+        set_dtv_task(dtv_task) {
+            let task_id = dtv_task.deps_config[0].task; 
+            let output_id = dtv_task.config.output.id;
+            let task = this.tasks.find(task=>task._id == task_id);
+            //let output = task.config._outputs.find(output=>output.id == output_id);
+            if(!this.dtv_tasks[task_id]) Vue.set(this.dtv_tasks, task_id, {});
+            if(!this.dtv_tasks[task_id][output_id]) Vue.set(this.dtv_tasks[task_id], output_id, dtv_task);
+        },
+        get_dtv_task(task, output) {
+            if(!this.dtv_tasks[task._id]) return null;
+            return this.dtv_tasks[task._id][output.id]; 
+        },
+
         updatedesc() {
             this.$emit("updatedesc", this.desc);
         },
@@ -457,37 +485,42 @@ export default {
                     switch(event.dinfo.exchange) {
                     case "wf.task":
                         var task = event.msg;
-                        var t = this.tasks.find(t=>t._id == task._id);
-                        if(!task.config._tid) break; //not ui task
-                        if(!t) {
-                            //new task?
-                            this.$notify("new t."+task.config._tid+"("+task.name+") "+task.status_msg);
-                            task.show = true;
-                            if(task.config._app) this.appcache(task.config._app, (err, app)=>{
-                                if(err) return console.error(err);
-                                task.app = app;
-                                this.$forceUpdate();
-                            });
-                            this.tasks.push(task); 
-                            Vue.nextTick(()=>{
-                                this.scrollto(task._id);
-                            });
-                        } else {
-                            //update
-                            if(t.status != task.status) {
-                                var text = "t."+task.config._tid+"("+task.name+") "+task.status+" "+task.status_msg;
-                                var type = null;
-                                switch(task.status) {
-                                case "failed": type = "error"; break;
-                                case "finished": type = "success"; break;
-                                case "stopped": type = "warn"; break;
-                                default: 
-                                    type = "";
+                        if(task.name == "__dtv") {
+                            console.log("----------dtv----------");
+                            console.dir(task);
+                            this.set_dtv_task(task);
+                        } else if(task.config._tid) {
+                            //ui task
+                            var t = this.tasks.find(t=>t._id == task._id);
+                            if(!t) {
+                                //new task?
+                                this.$notify("new t."+task.config._tid+"("+task.name+") "+task.status_msg);
+                                task.show = true;
+                                if(task.config._app) this.appcache(task.config._app, (err, app)=>{
+                                    if(err) return console.error(err);
+                                    task.app = app;
+                                    this.$forceUpdate();
+                                });
+                                this.tasks.push(task); 
+                                Vue.nextTick(()=>{
+                                    this.scrollto(task._id);
+                                });
+                            } else {
+                                //update
+                                if(t.status != task.status) {
+                                    var text = "t."+task.config._tid+"("+task.name+") "+task.status+" "+task.status_msg;
+                                    var type = null;
+                                    switch(task.status) {
+                                    case "failed": type = "error"; break;
+                                    case "finished": type = "success"; break;
+                                    case "stopped": type = "warn"; break;
+                                    default: 
+                                        type = "";
+                                    }
+                                    this.$notify({type, text});
                                 }
-                                this.$notify({type, text});
+                                for(var k in task) t[k] = task[k]; //apply updates
                             }
-                            for(var k in task) t[k] = task[k]; //apply updates
-                            //for(var k in task) Vue.set(t, k, task[k]);
                         }
                         break;
                     case "warehouse.dataset":
@@ -507,21 +540,26 @@ export default {
                 find: JSON.stringify({
                     instance_id: this.instance._id,
                     status: {$ne: "removed"},
-                    'config._tid': {$exists: true}, //use _tid to know that it's meant for process view
+                    //'config._tid': {$exists: true}, //use _tid to know that it's meant for process view
                 }),
                 limit: 1000, //should be enough.. for now
                 sort: 'create_date',
             }})
             .then(res=>{
+                //find "ui" tasks
+                this.tasks = res.data.tasks.filter(task=>Boolean(task.config._tid));
+
+                //sort dtv tasks into corresponding task
+                this.dtv_tasks = {};
+                res.data.tasks.filter(task=>(task.name == '__dtv')).forEach(this.set_dtv_task);
 
                 //load show/hide status
-                res.data.tasks.forEach(task=>{
+                this.tasks.forEach(task=>{
                     task.show = true;
                     var show = localStorage.getItem("task.show."+task._id);
                     if(show == "false") task.show = false;
                 });
 
-                this.tasks = res.data.tasks;
                 this.loading = false;
                 this.desc = this.instance.desc;
                 this.editing_taskdesc = {};
@@ -804,7 +842,12 @@ padding: 2px 5px;
 margin-left: 20px;
 padding-left: 15px;
 }
-.task-area {
+.task-joint .edit_taskdesc {
+opacity: 0;
+transition: 0.3s opacity;
+}
+.task-joint:hover .edit_taskdesc {
+opacity: 1;
 }
 .instance-action {
 float: right;

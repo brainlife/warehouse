@@ -2,7 +2,7 @@
 <div style="display: inline-block">
 
     <!--contact tag-->
-    <div class="contact" :id="uuid" :class="{'text-muted': !user.profile.active, 'contact-tiny': size == 'tiny'}">
+    <div class="contact" :id="uuid" :class="{'text-muted': !user.active, 'contact-tiny': size == 'tiny'}">
         <img v-lazy="avatar_url(user, 20)">
         <div v-if="size != 'tiny'" style="display: inline-block;">
             <div class="name">{{user.fullname||'No Name'}}</div>
@@ -68,12 +68,10 @@ export default {
     data () {
         return {
             user: {
-                profile: {
-                    active: true,
-                },
                 username: null,  
                 fullname: null,
                 email: null,
+                active: true,
             },
 
             uuid: Math.random().toString(), //for popover

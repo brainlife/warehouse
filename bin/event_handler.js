@@ -4,7 +4,8 @@ const amqp = require('amqp');
 const winston = require('winston');
 const mongoose = require('mongoose');
 const async = require('async');
-const request = require('request-promise-native');
+const request = require('request-promise-native'); //TODO switch to rp
+const rp = require('request-promise-native');
 const redis = require('redis');
 const fs = require('fs');
 
@@ -214,9 +215,91 @@ function handle_task(task, cb) {
 
     //handle event
     async.series([
+
+        //submit output validators
         next=>{
             if(task.status == "finished" && task.config && task.config._outputs) {
-                logger.info("handling task outputs");
+                logger.info("handling task outputs - validator");
+                async.eachSeries(task.config._outputs, async (output)=>{
+
+                    //just validate anat/t1w for now
+                    if(output.datatype != "58c33bcee13a50849b25879a") return;
+
+                    //let's validate the app that uses subdir output
+                    //if(!output.subdir) return;
+
+                    //see if we already submitted validator for this output
+                    let find = {
+                        "name": "__dtv",
+                        "deps_config.task": task._id,
+                        //"config._tid": task.config._tid,
+                        "config.output.id": output.id,
+                        //"deps_config.subdirs": subdirs,
+                        service: "soichih/dtv-neuro-anat",
+                        instance_id: task.instance_id,
+                    };
+
+                    let subdirs;
+                    if(output.subdir) {
+                        //find['deps_config.subdir'] = [output.subdir];
+                        subdirs = [output.subdir];
+                    }
+                    let tasks = await rp.get({
+                        url: config.amaretti.api+"/task?find="+JSON.stringify(find)+"&limit=1",
+                        json: true,
+                        headers: {
+                            authorization: "Bearer "+config.warehouse.jwt,
+                        }
+                    });
+
+                    console.log("--------------------------------------", tasks.tasks.length);
+                    console.dir(tasks.tasks);
+                    if(tasks.tasks.length) {
+                        console.log("validator already submitted");
+                        return;
+                    }
+
+                    //only archiver group user can run dtv apps on wrangler
+                    //so I need to add group access temporarily
+                    let user_jwt = await common.issue_archiver_jwt(task.user_id);
+                    
+                    //submit datatype validator - if not yet submitted
+                    let remove_date = new Date();
+                    remove_date.setDate(remove_date.getDate()+7); //remove in 7 days(?)
+                    let dtv_task = await rp.post({
+                        url: config.amaretti.api+"/task",
+                        json: true,
+                        body: {
+                            name: "__dtv",
+                            deps_config: [ {task: task._id, subdirs} ],
+                            service: "soichih/dtv-neuro-anat",
+                            instance_id: task.instance_id,
+                            config: {
+                                //_tid: task.config._tid,
+                                output,
+                            },
+                            max_runtime: 1000*3600, //1 hour should be enough for most..
+                            remove_date,
+                            //preferred_resource_id: storage_config.resource_id,
+                        },
+                        headers: {
+                            //authorization: "Bearer "+config.warehouse.jwt,
+                            authorization: "Bearer "+user_jwt,
+                        }
+                    });
+                    console.log("submitted new task");
+                    console.dir(dtv_task);
+                }, err=>{
+                    if(err) return next(err);
+                    next();
+                });
+            } else next();
+        },
+        
+        //submit output archivers
+        next=>{
+            if(task.status == "finished" && task.config && task.config._outputs) {
+                logger.info("handling task outputs - archiver");
                 let outputs = [];
 
                 //check to make sure that the output is not already registered
@@ -245,6 +328,7 @@ function handle_task(task, cb) {
             } else next();
         },
 
+        //report archive status back to user through dataset_config
         next=>{
             if(task.service == "brainlife/app-archive") {
                 logger.info("handling app-archive events");
@@ -274,6 +358,7 @@ function handle_task(task, cb) {
             } else next();
         },
 
+        //poke rule to trigger re-evaluation
         next=>{
             if(task.status == "removed" && task.config && task.config._rule) {
                 logger.info("rule submitted task is removed. updating update_date:"+task.config._rule.id);

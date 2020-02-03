@@ -119,7 +119,7 @@ export default {
                 project: this.project,                 
                 task_id: this.task._id,
                 output_id: this.output.id, 
-                subdir: this.output.subdir, //subdir that contains the actual content under the task
+                //subdir: this.output.subdir, //subdir that contains the actual content under the task
                 desc: this.output.desc,
 
                 //meta,

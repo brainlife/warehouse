@@ -100,7 +100,7 @@
                                 </b-col>
                             </b-row> 
                             <p v-if="rule.input_tags_count[input.id] === null">Counting matching datasets..</p>
-                            <b-alert v-else :show="rule.input_tags_count[input.id] == 0" variant="warning">There are no input datasets that matches the specified criteria.</b-alert>
+                            <b-alert v-else :show="rule.input_tags_count[input.id] == 0" variant="warning">There are no input data-objects that match the specified criteria.</b-alert>
                         </div>
                     </b-card>
                 </div><!--border-->
