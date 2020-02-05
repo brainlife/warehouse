@@ -59,16 +59,14 @@
                                 </b-form-checkbox>
                             </div>
                             <div style="margin-left: 100px;">
-                                <span>{{rule.app.name}}</span>
+                                <span>{{rule.app.name}}</span> <b-badge variant="secondary">{{rule.branch}}</b-badge><br>
+                                <span v-if="rule.subject_match" title="Only handle subjects that matches this regex">
+                                    <b-badge variant="light">SUBJECT: {{rule.subject_match}}</b-badge>&nbsp;
+                                </span>     
+                                <span v-if="rule.session_match" title="Only handle session that matches this regex">
+                                    <b-badge variant="light">SESSION: {{rule.session_match}}</b-badge>&nbsp;
+                                </span>     
                                 <small>{{rule.name}}</small>
-                                <div style="float: right; margin-right: 5px">
-                                    <span v-if="rule.subject_match" title="Only handle subjects that matches this regex">
-                                        <b-badge variant="light">SUBJECT: {{rule.subject_match}}</b-badge>&nbsp;
-                                    </span>     
-                                    <span v-if="rule.session_match" title="Only handle session that matches this regex">
-                                        <b-badge variant="light">SESSION: {{rule.session_match}}</b-badge>&nbsp;
-                                    </span>     
-                                </div>
                             </div>
                         </b-col>
                         <b-col :cols="1">
@@ -586,6 +584,7 @@ margin-top: 2px;
 }
 .rule.rule-selected {
 margin: 0px;
+margin-top: 20px;
 background-color: #f0f0f0;
 margin-bottom: 20px;
 box-shadow: none;
@@ -615,9 +614,6 @@ padding: 15px;
 position: sticky;
 top: 0px;
 z-index: 7; /*make it on top of scrollbar for log view*/
-}
-.rule.rule-selected:not(:first-child) .rule-header {
-margin-top: 20px;
 }
 .rule-body {
 margin-right: 100px; 

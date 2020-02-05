@@ -2,7 +2,7 @@
 <b-modal :no-close-on-backdrop='true' title="Upload Dataset" ref="modal" id="uploader" size="lg">
     <div v-if="mode == 'upload'">
         <b-form-group horizontal label="Data Type" v-if="datatypes">
-            <v-select v-model="datatype" placeholder="Please select" label="desc" :options="Object.values(datatypes)"/>
+            <v-select v-model="datatype" placeholder="Search Datatype" label="desc" :options="Object.values(datatypes)"/>
         </b-form-group>
 
         <div v-if="datatype">

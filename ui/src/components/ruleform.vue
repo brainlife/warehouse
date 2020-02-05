@@ -3,7 +3,7 @@
     <div style="margin: 20px;">
         <b-form-group label="App to run *" horizontal>
             <v-select required v-model="rule.app" label="name" :filterable="false" :options="search_apps" @search="search_app" 
-                placeholder="Please enter App name to search">
+                placeholder="Search App">
                 <template slot="no-options">please enter App name / desc to search</template>
                 <template slot="option" slot-scope="app">
                     <app :app="app" :compact="true" :clickable="false"/>
@@ -31,8 +31,8 @@
                 <branchselecter v-model="rule.branch" :service="this.rule.app.github"/>
             </b-form-group>
 
-            <b-form-group label="Name *" horizontal>
-                <b-form-input required v-model="rule.name" type="text" placeholder="Please enter name for this rule (used for output dataset description)"></b-form-input>
+            <b-form-group label="Description" horizontal>
+                <b-form-input v-model="rule.name" type="text" placeholder="Please enter description for this rule"></b-form-input>
             </b-form-group>
 
             <b-form-group label="Configuration" horizontal>
@@ -235,15 +235,12 @@ export default {
                 //first time?
                 this.rule.branch = this.rule.app.github_branch || 'master';
             }
-            this.rule.name = this.rule.app.name + " - "+this.rule.branch;
+            //if(!this.rule.name) this.rule.name = this.rule.app.name;
             this.ensure_ids_exists();
             this.ensure_config_exists();
             this.load_dataset_tags();
         },
 
-        "rule.branch": function() {
-            this.rule.name = this.rule.app.name + " - "+this.rule.branch;
-        },
 
         //can't just watch rule with deep:true because there are so many fields that
         //has nothing to do with querying 
