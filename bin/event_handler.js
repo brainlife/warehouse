@@ -218,6 +218,8 @@ function handle_task(task, cb) {
 
         //submit output validators
         next=>{
+            if(!config.debug) return next(); 
+
             if(task.status == "finished" && task.config && task.config._outputs) {
                 logger.info("handling task outputs - validator");
                 async.eachSeries(task.config._outputs, async (output)=>{

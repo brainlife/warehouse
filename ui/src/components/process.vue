@@ -22,6 +22,8 @@
                 <icon name="caret-right"/>
                 t.{{task.config._tid}}
             </div>
+
+
             <!--full detail-->
             <task :task="task" class="task" v-if="task.show">
                 <!--header-->
@@ -178,12 +180,12 @@
         <br>
         <br>
         <br>
-        {{dtv_tasks}}
         <!--
         <div v-if="config.debug">
             <p v-for="task in tasks" :key="task._id">
                 {{task}}
             </p>
+            {{dtv_tasks}}
         </div>
         -->
     </div>
@@ -661,6 +663,7 @@ export default {
 
         toggle_task(task) {
             task.show = !task.show;
+            this.$forceUpdate();
             localStorage.setItem("task.show."+task._id, task.show);
         },
 
@@ -880,4 +883,5 @@ height: 80px;
 z-index: 7; 
 background-color: #eee;
 }
+
 </style>

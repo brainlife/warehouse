@@ -1,12 +1,7 @@
 <template>
 <b-form @submit="submit" v-if="ready">
     <div style="margin: 20px;">
-        <b-form-group label="Name *" horizontal>
-            <b-form-input required v-model="rule.name" type="text" placeholder="Please enter name for this rule (used for output dataset description)"></b-form-input>
-        </b-form-group>
-
-        <b-form-group label="App *" horizontal>
-            <p class="text-muted">Select App to run</p>
+        <b-form-group label="App to run *" horizontal>
             <v-select required v-model="rule.app" label="name" :filterable="false" :options="search_apps" @search="search_app" 
                 placeholder="Please enter App name to search">
                 <template slot="no-options">please enter App name / desc to search</template>
@@ -34,6 +29,10 @@
         <div v-if="rule.app">
             <b-form-group label="Branch" horizontal>
                 <branchselecter v-model="rule.branch" :service="this.rule.app.github"/>
+            </b-form-group>
+
+            <b-form-group label="Name *" horizontal>
+                <b-form-input required v-model="rule.name" type="text" placeholder="Please enter name for this rule (used for output dataset description)"></b-form-input>
             </b-form-group>
 
             <b-form-group label="Configuration" horizontal>
@@ -231,15 +230,19 @@ export default {
             if(oldv && newv._id != oldv._id) {
                 //switching to another app
                 this.reset_rule();
-                console.log("reset app");
-                console.log(this.rule.app.github_branch);
                 this.rule.branch = this.rule.app.github_branch || 'master';
             } else if(!this.rule.branch) {
+                //first time?
                 this.rule.branch = this.rule.app.github_branch || 'master';
             }
+            this.rule.name = this.rule.app.name + " - "+this.rule.branch;
             this.ensure_ids_exists();
             this.ensure_config_exists();
             this.load_dataset_tags();
+        },
+
+        "rule.branch": function() {
+            this.rule.name = this.rule.app.name + " - "+this.rule.branch;
         },
 
         //can't just watch rule with deep:true because there are so many fields that
@@ -516,37 +519,7 @@ export default {
             });
             
         },
-
-        load_branches() {
-            /*
-            console.log("loading tags/branches", this.rule.branch);
-            this.$http.get('https://api.github.com/repos/' + this.rule.app.github + '/branches', 
-                { headers: { Authorization: null } })
-            .then(res=>{
-                this.github_branches = res.data.map(b => {
-                    return {
-                        value: b.name,
-                        text: b.name
-                    };
-                });
-                
-                //pick a default if rule.branch not set
-                if(!this.rule.branch) this.rule.branch = this.rule.app.github_branch || 'master';
-                
-            }).catch(console.error);
-            this.$http.get("/app/info/"+this.rule.app.github).then(res=>{
-                this.github_tags = res.data.tags.map(b => {
-                    return b.name;
-                });
-                this.github_branches = res.data.branches.map(b => {
-                    return b.name;
-                });
-            }).catch(err=>{
-                console.error(err);
-            });
-            */
-        },
-        
+       
         edit_etag(input) {
             input.edit_extra_tags = true;
             this.$forceUpdate();

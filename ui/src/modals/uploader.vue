@@ -195,17 +195,6 @@ export default {
             if(!this.datatype) return null;
             return this.datatype.files;
         },
-        /*
-        datatypes_with_validator: function() {
-            let types = [];
-            for(let id in this.datatypes) { 
-                let type = this.datatypes[id];
-                type.label = type.desc;
-                if(type.validator) types.push(type);
-            }
-            return types;
-        },
-        */
     },
 
     methods: {
@@ -276,7 +265,7 @@ export default {
         prep_upload() {
             //find resource that I can run validator
             this.$http.get(Vue.config.wf_api+'/resource/best/', {params: {
-                service: this.get_validator(),
+                service: this.datatype.validator,
             }}).then(res=>{
                 if(!res.data.resource) { 
                     this.$notify({ type: 'error', title: 'Server Busy', text: 'Validator service is busy. Please try again later' });
@@ -347,10 +336,6 @@ export default {
             xhr.send(f);
         },
 
-        get_validator() {
-            return this.datatype.validator;
-        },
-
         cancel() {
             this.$refs.modal.hide();
         },
@@ -377,7 +362,8 @@ export default {
             this.$http.post(Vue.config.wf_api+'/task', {
                 instance_id: this.instance._id,
                 name: "validation",
-                service: this.get_validator(),
+                service: this.datatype.validator,
+                service_branch: this.datatype.validator_branch,
                 config,
                 deps_config: [ {task: this.tasks.upload._id} ], 
             }).then(res=>{

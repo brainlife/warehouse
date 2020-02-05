@@ -194,7 +194,11 @@
                     <span class="form-header">Validator / Normalizer</span>
                 </b-col> 
                 <b-col cols="9">
-                    <b-input type="text" v-model="datatype.validator" placeholder="enter org/reponame"/>
+                    <b-input-group prepend="Org/Reponame">
+                        <b-input type="text" v-model="datatype.validator" placeholder="enter org/reponame"/>
+                        <b-input-group-prepend is-text>branch/tag</b-input-group-prepend>
+                        <b-input type="text" v-model="datatype.validator_branch" placeholder="master"/>
+                    </b-input-group>
                     <p class="text-muted"><small>Required if you want to allow user to upload dataset with this datatype through UI</small></p>
                 </b-col>
             </b-row>

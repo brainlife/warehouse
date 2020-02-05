@@ -453,6 +453,7 @@ var datatypeSchema = mongoose.Schema({
 
     //name of ABCD service that is used to validate this data (if not set, user can't import this datatype via UI)
     validator: String, 
+    validator_branch: String,  
 
     //spec used to export this datatype to bids
     bids: new mongoose.Schema({

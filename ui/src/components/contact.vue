@@ -14,15 +14,12 @@
         <img v-lazy="avatar_url(user, 60)" style="float: left">
         <div style="margin-left: 70px; min-height: 60px;">
             <b>{{user.fullname}}</b> <small style="opacity: 0.5">{{user.username}}</small>
-            <div v-if="user.profile.public && user.profile.public.bio">
+            <div v-if="user.profile && user.profile.public && user.profile.public.bio">
                 <p style="margin-top: 5px; opacity: 0.8; margin-bottom: 0px;">{{user.profile.public.bio}}</p>
                 <small style="opacity: 0.5;" v-if="user.profile.public.institution">
                     <icon name="university"/> {{user.profile.public.institution}}
                 </small>
             </div>
-            <!--
-            <div v-else style="opacity: 0.5"><p style="opacity: 0.5">No bio..</p></div>
-            -->
         </div>
         <div style="margin-top: 10px; padding-top: 5px; border-top: 1px solid #eee">
             <small>{{user.email}}</small>
@@ -72,6 +69,7 @@ export default {
                 fullname: null,
                 email: null,
                 active: true,
+                profile: null,
             },
 
             uuid: Math.random().toString(), //for popover

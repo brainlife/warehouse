@@ -178,8 +178,9 @@
                     </b-col>
                     <b-col>
                         <p><small style="opacity: 0.7">The following validator service is used to validate/normalize when a dataset of this datatype is imported by Brainlife UI.</small></p>
-                        <p><a :href="'https://github.com/'+datatype.validator"><b>{{datatype.validator}}</b></a></p>
-                        <!--<p v-else style="opacity: 0.8">No validator</p>-->
+                        <p>
+                            <a :href="'https://github.com/'+datatype.validator"><b>{{datatype.validator}}</b> <b-badge variant="secondary">{{datatype.validator_branch}}</b-badge></a>
+                        </p>
                         <br>
                     </b-col>
                 </b-row>
