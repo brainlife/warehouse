@@ -89,28 +89,22 @@
     <ul class="items items-bottom">
         <li v-if="config.user" id="user-popover">
             <img :src="avatar_url(config.user.profile, 22)" width="18px" class="avatar"/>
+            <b-popover target="user-popover" triggers="hover" placement="right">
+                 <template v-slot:title>
+                    {{config.user.profile.username}}&nbsp;
+                    <b-badge>{{config.user.sub}}</b-badge>
+                 </template>
+                <p>
+                    {{config.user.profile.fullname}} &lt;{{config.user.profile.email}}&gt;
+                </p>
+                <p>
+                    <b>Authorization</b>
+                    <pre style="font-size: 80%;">{{JSON.stringify(config.user.scopes, null, 4)}}</pre>
+                </p>
+                <hr>
+                <b-button size="sm" variant="secondary" @click="signout"> <icon name="sign-out-alt" scale="1.2"/>&nbsp; Signout </b-button>
+            </b-popover>
         </li>
-        <b-popover target="user-popover" triggers="hover" placement="right" v-if="config.user">
-             <template v-slot:title>
-                {{config.user.profile.username}}&nbsp;
-                <b-badge>{{config.user.sub}}</b-badge>
-             </template>
-            <p>
-                {{config.user.profile.fullname}} &lt;{{config.user.profile.email}}&gt;
-            </p>
-            <!--
-            <p v-if="config.debug">
-                <b>Member Groups</b><br>
-                <tags :tags="config.user.gids"/>
-            </p>
-            -->
-            <p>
-                <b>Authorization</b>
-                <pre style="font-size: 80%;">{{JSON.stringify(config.user.scopes, null, 4)}}</pre>
-            </p>
-            <hr>
-            <b-button size="sm" variant="secondary" @click="signout"> <icon name="sign-out-alt" scale="1.2"/>&nbsp; Signout </b-button>
-        </b-popover>
 
         <li v-if="!config.user" @click="login">
             <icon name="sign-in-alt" scale="1.2"/>

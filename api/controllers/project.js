@@ -27,10 +27,13 @@ const common = require('../common');
  * @apiSuccess {Object}         List of projects (maybe limited / skipped) and total count
  */
 router.get('/', jwt({secret: config.express.pubkey, credentialsRequired: false}), (req, res, next)=>{
+    //console.log("project get recieved--------------------------------------------");
     var find = {};
     if(req.query.find) find = JSON.parse(req.query.find);
     var skip = req.query.skip||0;
     let limit = req.query.limit||100;
+
+    //console.dir(find);
 
     //always load user_id so that we can compute canedit properly
     var select = null;
@@ -99,7 +102,7 @@ router.post('/', jwt({secret: config.express.pubkey}), function(req, res, next) 
 
     //make sure submitter is listed as admin
     if(!req.body.admins) req.body.admins = [];
-    if(!req.body.admins.includes(req.user.sub)) req.body.admins.push(req.user.sub);
+    if(!req.body.admins.includes(req.user.sub.toString())) req.body.admins.push(req.user.sub);
 
 	//create a new group
 	request.post({ url: config.auth.api+"/group", headers: { authorization: req.headers.authorization }, json: true,

@@ -16,7 +16,7 @@
         <b-container>
             <b-row>
                 <b-col cols="3">
-                    <span class="form-header">Name</span>
+                    <span class="form-header">Name *</span>
                 </b-col> 
                 <b-col cols="9">
                     <b-input type="text" v-model="project.name" placeholder="Project Name" required/>
@@ -26,7 +26,7 @@
 
             <b-row>
                 <b-col cols="3">
-                    <span class="form-header">Description</span>
+                    <span class="form-header">Description *</span>
                 </b-col> 
                 <b-col cols="9">
                     <p>

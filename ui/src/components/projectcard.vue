@@ -17,7 +17,7 @@
     </div>
     <div class="status">
         <b-row v-if="project.stats">
-            <b-col md="9" title="unique subjects" v-if="project.stats.datasets">
+            <b-col md="9" title="unique subjects" v-if="project.stats.datasets && project.stats.datasets.subject_count">
                 {{project.stats.datasets.subject_count}} <span style="opacity:0.6;">sub</span>
                 <span style="opacity:0.2;">|</span>
                 {{project.stats.datasets.count}} <span style="opacity:0.6;">objs</span>
