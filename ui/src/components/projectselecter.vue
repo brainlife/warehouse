@@ -53,27 +53,25 @@ export default {
         },
 
         load_projects() {         
-            var find = null;
+            var find = {
+                removed: false,
+                openneuro: {$exists: false}, //don't show openneuro psudo projects anymore
+            };  
+
             if(this.canwrite) {
                 //only load project that user has write access to
-                console.log("only showing member/admin projects");
-                find = {
-                    $or: [
-                        {members: Vue.config.user.sub},
-                        {admins: Vue.config.user.sub},
-                    ],
-                    removed: false,
-                    openneuro: {$exists: false}, //don't show openneuro psudo projects
-                };
-            } else {
-                //load project that user is admin/member/guest, or public (who can read from datasets)
-                find = {
-                    removed: false,
-                    openneuro: {$exists: false}, //don't show openneuro psudo projects
-                };
+                find['$or'] = [
+                    {members: Vue.config.user.sub},
+                    {admins: Vue.config.user.sub},
+                ];
             }
 
-            //if datatype filter is set, only pull projects that has datasets with specified datatype
+            if(this.datatype) {
+                find['stats.datasets.datatypes_detail.type'] = {$in: this.datatype._id||this.datatype};
+            }
+
+            this.query_projects(find);
+/*
             if(this.datatype) {
                 let project_query = {
                     datatype: this.datatype._id||this.datatype,
@@ -105,6 +103,7 @@ export default {
                 //no further query
                 this.query_projects(find);
             }
+*/
         },
 
         query_projects(find) {

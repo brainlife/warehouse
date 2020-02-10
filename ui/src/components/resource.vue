@@ -11,8 +11,12 @@
         </div>
 
         <div>
-            <b-badge v-if="resource_obj.status == 'ok'" variant="success">OK</b-badge>
-            <b-badge v-if="resource_obj.status != 'ok'" variant="danger" style="text-transform: uppercase;">{{resource_obj.status}}</b-badge>
+            <b-badge v-if="resource_obj.status == 'ok'" variant="success">
+                <icon name="check-circle" scale="0.6"/> OK
+            </b-badge>
+            <b-badge v-if="resource_obj.status != 'ok'" variant="danger" style="text-transform: uppercase;">
+                <icon name="exclamation-circle" scale="0.6"/> {{resource_obj.status}}
+            </b-badge>
             <span>
                 <small style="opacity: 0.5; text-transform: uppercase;">running</small>
                 <b style="font-size: 125%;">{{running}}</b>

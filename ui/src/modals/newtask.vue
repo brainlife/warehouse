@@ -17,7 +17,7 @@
             <b-alert v-if="!loading && apps.all.length == 0" show variant="secondary">No App can be submitted with currently staged datasets.</b-alert>
             <div v-else>
                 <icon name="search" class="search-icon" scale="1.3"/>
-                <input class="search" v-model="filter" placeholder="Filter Apps" @change="update_lists"/>
+                <input class="search" ref="search" v-model="filter" placeholder="Filter Apps" @change="update_lists"/>
             </div>
 
             <div class="apps">
@@ -47,7 +47,13 @@
                     </div>
                     <br>
                 </div>
+
+                <br clear="both">
+                <small>* If you cannot find the App you are looking for, please check the required inputs for the App and make sure you have staged/generated all required data-objects with those datatypes.</small>
             </div>
+
+
+
         </div> 
 
         <br clear="both">
@@ -231,6 +237,9 @@ export default {
             this.datasets = info.datasets;
             this.project = info.project;
             this.open = true;
+            this.$nextTick(()=>{
+                this.$refs.search.focus();
+            });
 
             //reset form
             this.app = null;

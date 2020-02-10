@@ -33,7 +33,11 @@ router.get('/', jwt({secret: config.express.pubkey, credentialsRequired: false})
     var skip = req.query.skip||0;
     let limit = req.query.limit||100;
 
-    //console.dir(find);
+    /*
+    if(req.query.datatypes) {
+        find['stats.datasets.datatypes_detail.type'] = {$in: req.query.datatypes}
+    }
+    */
 
     //always load user_id so that we can compute canedit properly
     var select = null;
