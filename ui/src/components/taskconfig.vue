@@ -73,7 +73,7 @@ export default {
 
         load_config: function(config) {
             if(!config._app) {
-                console.error("can't load config without _app set");
+                //console.error("can't load config without _app set");
                 return;
             }
             this.appcache(config._app, (err, app)=>{

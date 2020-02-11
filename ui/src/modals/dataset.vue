@@ -579,13 +579,13 @@ export default {
         },
 
         load_archive_task() {
-            if(!this.dataset.archive_task_id) return; //no task_id
-            if(this.dataset.archive_task) return; //already loaded
+            if(!this.dataset || !this.dataset.archive_task_id) return; //no task_id
+            //if(this.dataset.archive_task) return; //already loaded
             console.log("loading dataset. archive_task");
             this.$http.get(Vue.config.amaretti_api+'/task/'+this.dataset.archive_task_id).then(res=>{
                 console.log("loaded archive_task_id");
-                //console.dir(res);
-                this.dataset.archive_task = res.data; 
+                Vue.set(this.dataset, 'archive_task', res.data)
+                setTimeout(this.load_archive_task, 5000)
             });
         },
 

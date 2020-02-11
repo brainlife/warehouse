@@ -85,7 +85,7 @@ export default {
                         let remove_date = new Date();
                         remove_date.setHours(remove_date.getHours()+3); 
 
-                        let dep_config = { task: this.taskid};
+                        let dep_config = { task: this.taskid };
                         if(this.subdir) dep_config.subdirs = [ this.subdir ];
 
                         //submit novnc service for the first time!

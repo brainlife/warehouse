@@ -218,9 +218,14 @@ function handle_task(task, cb) {
 
         //submit output validators
         next=>{
+            //this is experimental
             if(!config.debug) return next(); 
 
             if(task.status == "finished" && task.config && task.config._outputs) {
+
+                //don't run validator on validator output..
+                if(task.service.includes("/validator-")) return next();
+
                 logger.info("handling task outputs - validator");
                 async.eachSeries(task.config._outputs, async (output)=>{
 
@@ -234,11 +239,12 @@ function handle_task(task, cb) {
                     let find = {
                         "name": "__dtv",
                         "deps_config.task": task._id,
-                        //"config._tid": task.config._tid,
                         "config.output.id": output.id,
-                        //"deps_config.subdirs": subdirs,
-                        service: "soichih/dtv-neuro-anat",
                         instance_id: task.instance_id,
+                    
+                        //TODO - query from datatype id
+                        service: "brain-life/validator-neuro-anat", 
+                        service_branch: "master",
                     };
 
                     let subdirs;
@@ -271,11 +277,8 @@ function handle_task(task, cb) {
                     let dtv_task = await rp.post({
                         url: config.amaretti.api+"/task",
                         json: true,
-                        body: {
-                            name: "__dtv",
+                        body: Object.assign(find, {
                             deps_config: [ {task: task._id, subdirs} ],
-                            service: "soichih/dtv-neuro-anat",
-                            instance_id: task.instance_id,
                             config: {
                                 //_tid: task.config._tid,
                                 output,
@@ -283,7 +286,7 @@ function handle_task(task, cb) {
                             max_runtime: 1000*3600, //1 hour should be enough for most..
                             remove_date,
                             //preferred_resource_id: storage_config.resource_id,
-                        },
+                        }),
                         headers: {
                             //authorization: "Bearer "+config.warehouse.jwt,
                             authorization: "Bearer "+user_jwt,

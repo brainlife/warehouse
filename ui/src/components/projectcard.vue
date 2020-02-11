@@ -7,8 +7,7 @@
             {{project.name}}
         </p>
         <p class="datatypes" v-if="project.stats && project.stats.datasets">
-            <datatypetag v-for="datatype_id in project.stats.datasets.datatypes" :key="datatype_id" :datatype="datatype_id" 
-                style="font-size: 85%; margin-right: 2px"/>
+            <datatypetag v-for="datatype in project.stats.datasets.datatypes_detail" :key="datatype._id" :datatype="datatype.type" style="font-size: 85%; margin-right: 2px"/>
         </p>
         <p class="desc">{{project.desc}}</p>
         <p v-if="config.user" class="contacts" style="margin-left: 5px;">

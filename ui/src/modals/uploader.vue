@@ -2,7 +2,12 @@
 <b-modal :no-close-on-backdrop='true' title="Upload Dataset" ref="modal" id="uploader" size="lg">
     <div v-if="mode == 'upload'">
         <b-form-group horizontal label="Data Type" v-if="datatypes">
-            <v-select v-model="datatype" placeholder="Search Datatype" label="desc" :options="Object.values(datatypes)"/>
+            <v-select v-model="datatype" placeholder="Search Datatype" label="name" :options="Object.values(datatypes)" :selectable="option => option.validator">
+                <template v-slot:option="option">
+                    <datatypetag :datatype="option" :clickable="false"/><br>
+                    <small>{{ option.desc}}</small>
+                </template>
+            </v-select>
         </b-form-group>
 
         <div v-if="datatype">
@@ -68,11 +73,8 @@
     </div><!--meta-->
 
     <div v-if="mode == 'validate' && tasks.validation">
-        <task :task="tasks.validation" v-if="!tasks.validation.product"/>
-        <div v-else>
-            <b-alert :show="can_archive()" variant="success">
-                Your data looks good! Please check information below and click Archive button.
-            </b-alert>
+        <task :task="tasks.validation"/>
+        <div v-if="tasks.validation.status == 'failed' && tasks.validation.product">
             <b-alert :show="tasks.validation.product.errors.length > 0" variant="danger" v-for="(error, idx) in tasks.validation.product.errors" :key="idx">
                 {{error}}
             </b-alert>
@@ -86,7 +88,6 @@
                 v-if="k != 'errors' && k != 'warnings' && k != 'datatype_tags' && k != 'tags' && k != 'brainlife'" :label="k">
                 <pre style="max-height: 200px; overflow: auto;">{{v}}</pre>
             </b-form-group>
-
         </div>
     </div>
 
@@ -97,7 +98,9 @@
         </b-form-group>
         <b-form-group v-if="mode == 'validate'">
             <b-button @click="mode = 'upload'">Back</b-button>
+            <!--
             <b-button variant="primary" @click="finalize()" :disabled="!can_archive()"><icon name="archive"/> Archive</b-button>
+            -->
         </b-form-group>
     </div>
 </b-modal>
@@ -112,17 +115,19 @@ import projectaccess from '@/components/projectaccess'
 import task from '@/components/task'
 import tageditor from '@/components/tageditor'
 import product from '@/components/product'
+import datatypetag from '@/components/datatypetag'
 
 //singleton instance to handle upload request
 export default {
     components: { 
         pageheader, 
         task, tageditor, product,
-        //datatypetag,
+        datatypetag,
     },
     data () {
         return {
             instance: null, //instance to upload things to
+            ws: null, //websocket to receive all event for this instance
 
             project: null, //set by uploader.options event
 
@@ -154,26 +159,15 @@ export default {
     },
 
     mounted() {
-        console.log("loading all datatypes - todo. switch to datatypecache mixin");
+        console.log("loading all datatypes");
         this.$http.get('datatype', {params: {
             sort: 'name', 
             find: JSON.stringify({validator: {$exists: true}}),
         }}).then(res=>{
-            //console.dir(res);
             this.datatypes = {};
             res.data.datatypes.forEach((type)=>{
                 this.datatypes[type._id] = type;
             });
-            
-            /*
-            //override meta 
-            for(let id in this.datatypes) {
-                this.datatypes[id].meta = [
-                    {id: "subject", type: "string", required: true},
-                    {id: "session", type: "string", required: false},
-                ];
-            }
-            */
         });
 
         this.$root.$on("uploader.option", (opt)=>{
@@ -191,10 +185,21 @@ export default {
     },
 
     computed: {
-        files: function() {
+        files() {
             if(!this.datatype) return null;
             return this.datatype.files;
         },
+
+        /*
+        datatypeSelectOptions() {
+            return Object.values(this.datatypes).map(dt=>{
+                console.dir(dt);
+                return Object.assign({
+                    label: dt.name+" / "+dt.desc,
+                }, dt);
+            });
+        },
+        */
     },
 
     methods: {
@@ -205,6 +210,8 @@ export default {
             if(this.datatype) this.datatype.files.forEach(this.clearfile);
             this.datatype = null;
             this.desc = "";
+            this.tasks.upload = null;
+            this.tasks.validation = null;
         },
 
         filechange(file, e) {
@@ -221,17 +228,17 @@ export default {
 
                 //lastly, subscribe to the whole instance task events
                 var url = Vue.config.event_ws+"/subscribe?jwt="+Vue.config.jwt;
-                var ws = new ReconnectingWebSocket(url, null, {debug: Vue.config.debug, reconnectInterval: 3000});
-                ws.onopen = (e)=>{
+                this.ws = new ReconnectingWebSocket(url, null, {debug: Vue.config.debug, reconnectInterval: 3000});
+                this.ws.onopen = (e)=>{
                     console.log("websocket opened binding to wf.task", this.instance._id+".#");
-                    ws.send(JSON.stringify({
+                    this.ws.send(JSON.stringify({
                       bind: {
                         ex: "wf.task",
                         key: this.instance._id+".#",
                       }
                     }));
                 }
-                ws.onmessage = (json)=>{
+                this.ws.onmessage = (json)=>{
                     var event = JSON.parse(json.data);
                     if(event.error) {
                         console.error(event.error);
@@ -242,11 +249,11 @@ export default {
                     if(this.tasks.upload && task._id == this.tasks.upload._id) {
                         this.tasks.upload = task;
                     }
-                    //TODO - could we use event_handler to the archiving?
                     if(this.tasks.validation && task._id == this.tasks.validation._id) {
                         this.tasks.validation = task;
+                        /*
                         if(task.status == "finished") {
-                            console.log("validation finished!", task)
+                            console.log("validation finished!", task);
                             if(task.product.tags) {
                                 this.tags = [... new Set(this.product.tags.concat(task.tags))];
                             }
@@ -254,6 +261,21 @@ export default {
                             if(task.product.datatype_tags) {
                                 this.datatype_tags = [... new Set(task.product.datatype_tags.concat(this.datatype_tags))];
                             }
+                        }
+                        */
+                    }
+
+                    if(task.service == "brainlife/app-archive") {
+                        let archive = task.deps_config.find(t=>t.task == this.tasks.validation._id);
+                        if(archive) {
+                            this.$refs.modal.hide();
+                            this.$router.push("/project/"+this.project._id+"/dataset/"+task.config.datasets[0].dataset._id);
+
+                            //TODO need to reload so that new subject group will show up on dataset paage..
+                            //it will be nice if I can just force dataset reload (just use event?)
+                            document.location.reload(); 
+
+                            this.reset();
                         }
                     }
                 }
@@ -300,9 +322,11 @@ export default {
             return valid;
         },
 
+        /*
         can_archive() {
             return (this.tasks.validation && this.tasks.validation.product && this.tasks.validation.product.errors.length == 0);
         },
+        */
  
         upload(file, f) {
             if(!this.tasks.upload.resource_id) return;
@@ -344,6 +368,12 @@ export default {
             this.mode = "validate";
             this.tasks.validation = null;
 
+            //remove null meta
+            let clean_meta = {};
+            for(let id in this.meta) {
+                if(this.meta[id] !== "") clean_meta[id] = this.meta[id];
+            }
+
             //create validator config
             var config = {
                 //_app: (no app id for validator)
@@ -351,7 +381,15 @@ export default {
                     id: "output",
                     datatype: this.datatype._id,
                     datatype_tags: this.datatype_tags,
-                    meta: this.meta,
+                    meta: clean_meta,
+                    tags: this.tags,
+                    desc: this.desc, //what is this for?
+
+                    subdir: "output",
+                    archive: {
+                        project: this.project._id,
+                        desc: this.desc, //dataset desc to be used
+                    }
                 }]
             };
             this.datatype.files.forEach(file=>{
@@ -368,12 +406,14 @@ export default {
                 deps_config: [ {task: this.tasks.upload._id} ], 
             }).then(res=>{
                 console.log("submitted validation task");
+                console.log(this.datatype.validator, this.datatype.valdiator_branch);
                 this.tasks.validation = res.data.task;
             }, res=>{
                 console.error(res);
             });
         },
 
+        /*
         finalize() {
             this.$refs.modal.hide();
             this.$root.$emit("loading",{message: "Registering Data-Object..."});
@@ -409,6 +449,7 @@ export default {
                 this.$notify({type: "error", text: err.response.data.message});
             });
         },
+        */
 
         clearfile: function(file) {
             file.uploaded = null;

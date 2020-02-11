@@ -28,9 +28,7 @@
         </b-col>
         <b-col md="2">
             <div class="datatypes" v-if="project.stats && project.stats.datasets" style="display: inline-block;">
-                <datatypetag v-for="datatype_id in project.stats.datasets.datatypes" 
-                :key="datatype_id"
-                :datatype="datatype_id" style="font-size: 85%; margin-right: 2px"/>
+                <datatypetag v-for="datatype in project.stats.datasets.datatypes_detail" :key="datatype._id" :datatype="datatype.type" style="font-size: 85%; margin-right: 2px"/>
             </div>
         </b-col>
         <b-col md="1">
