@@ -302,48 +302,6 @@ var datasetSchema = mongoose.Schema({
         task_id: String, //deprecated by prov.task._id
         //
         ///////////////////////////////////////
-
-        /* task.config sample..
-        "_app": "5a21bf932adf297d2e3afa29",
-        "_tid": 1,
-        "_inputs": [
-            {
-                "keys": [
-                    "t1"
-                ],
-                "id": "anat",
-                "subdir": "5bcf676af36818213e17e5b3",
-                "dataset_id": "5bcf676af36818213e17e5b3",
-                "task_id": "5bd34be2e04a503518838804",
-                "datatype": "58c33bcee13a50849b25879a",
-                "datatype_tags": [
-                    "acpc_aligned"
-                ],
-                "tags": [
-                    "soichi"
-                ],
-                "meta": {
-                    "subject": "0001"
-                },
-                "project": "58eeceaabb2e2e2bd70d4682"
-            }
-        ],
-        "_outputs": [
-            {
-                "id": "out",
-                "datatype": "58c33bcee13a50849b25879a",
-                "desc": "out from ACPC alignment via ART",
-                "meta": {
-                    "subject": "0001"
-                },
-                "files": null,
-                "datatype_tags": [
-                    "acpc_aligned"
-                ]
-            }
-        ]
-        */
-
     },
 
     //product.json content for this dataset (new) - might be subset of task.product
@@ -361,7 +319,6 @@ var datasetSchema = mongoose.Schema({
 
     create_date: { type: Date, default: Date.now }, //date when this dataset was registered
     backup_date: Date, //date when this dataset was copied to the SDA (not set if it's not yet backed up)
-    //download_date: { type: Date, default: Date.now } , //last time this dataset was downloaded (or staged) (redundant with update_date as updating download_count should update it)
     remove_date: Date, //date when this dataset was removed
     update_date: { type: Date, index: true }, //date which this document was last updated (used by rule handler, and to see when this dataset was last downloaded / used /touched, etc..)
 

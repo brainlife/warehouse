@@ -643,7 +643,7 @@ function generate_prov(origin_dataset_id, cb) {
                     if(defer.edge.to != defer.edge.from) edges.push(defer.edge);
                     to = defer.node.id;
                 }
-                load_stage(to, null, (dataset.prov.subdir||dataset._id), cb);
+                load_stage(to, null, (dataset._id||dataset.prov.subdir), cb);
             } else {
                 //should be a normal task..
                 add_node(Object.assign({
