@@ -95,4 +95,7 @@ transition: box-shadow 0.5s;
 cursor: pointer;
 box-shadow: 0px 0px 8px #666;
 }
+img.card-img {
+height: 170px;
+}
 </style>

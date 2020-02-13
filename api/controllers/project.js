@@ -125,6 +125,7 @@ router.post('/', jwt({secret: config.express.pubkey}), function(req, res, next) 
 		project.save(err=>{
 			if (err) return next(err); 
 			project = JSON.parse(JSON.stringify(project));
+            common.publish("project.create."+project._id, {})
 			res.json(project);
 		});
 	});

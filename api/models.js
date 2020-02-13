@@ -65,9 +65,16 @@ exports.dataset_event = function(dataset) {
         logger.error("no project set - can't publish event");
         return;
     }
-    let project = dataset.project._id || dataset.project;
-    let key = project+"."+dataset._id;
-    dataset_ex.publish(key, dataset, {});
+
+    //unpopulate
+    dataset.project = dataset.project._id || dataset.project;
+    dataset.datatype = dataset.datatype._id || dataset.datatype;
+
+    //let slim_dataset = Object.assign(dataset, {prov: null, product: null}); //hide heavy stuff that we can lookup via database
+    let key = dataset.project+"."+dataset._id;
+    common.publish("dataset.update."+key, dataset);
+
+    dataset_ex.publish(key, dataset, {}); //deprecated
 }
 
 exports.rule_event = function(rule) {

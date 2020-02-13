@@ -20,6 +20,8 @@
                 </b-row>
             </b-container>
         </div>
+        <br>
+        <br>
 
         <h4 class="header-sticky"><b-container>Shared Resources</b-container></h4> 
         <b-container>
@@ -32,6 +34,10 @@
             </b-col>
             </b-row>
         </b-container>
+        <br>
+        <br>
+        <br>
+        <br>
 
         <b-button v-if="config.has_role('resource.create', 'amaretti')" class="button-fixed" @click="newresource" v-b-tooltip.hover title="New Resource">
             <icon name="plus" scale="2"/>

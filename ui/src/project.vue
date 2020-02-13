@@ -14,8 +14,6 @@
             <icon name="angle-left" scale="1.25"/>
         </div>
         <h4>
-            <!--<icon name="shield-alt" scale="1.5"  style="position: relative; top: -2px; opacity: 0.8;"/>-->
-            <!--<projectavatar :project="selected" :width="50" :height="50" style="position: absolute; top: 0; left: 0;"/>-->
             <projectaccess :access="selected.access" style="position: relative; top: -3px;"/> 
             {{selected.name}}
         </h4>
@@ -63,8 +61,33 @@
         <div class="page-content">
         <!--detail-->
             <div class="project-header">
-                <projectavatar :project="selected" :height="120" :width="120" style="float: left;"/>
-                <p style="opacity: 0.8; margin-left: 150px; margin-bottom: 0px">{{selected.desc||'no description.'}}</p>
+                <projectavatar :project="selected" :height="100" :width="100" style="float: left;"/>
+                <p style="margin-left: 130px; line-height: 2.5em; margin-bottom: 0px; position: relative; top: -5px">
+                    <b-badge pill class="bigpill" title="Project creation date">
+                        <icon name="calendar" style="opacity: 0.4;"/>&nbsp;&nbsp;
+                        {{new Date(selected.create_date).toLocaleDateString()}}
+                    </b-badge>
+                    <b-badge pill class="bigpill" title="Total size of data stored in archive"
+                        v-if="selected.stats && selected.stats.datasets && selected.stats.datasets.size">
+                        <icon name="folder" style="opacity: 0.4;"/>&nbsp;&nbsp;{{selected.stats.datasets.size|filesize}}
+                        <small>Total</small> <br>
+                    </b-badge>
+                    <b-badge pill class="bigpill" v-if="selected.stats.rules && selected.stats.rules.active > 0" title="Number of pipeline rules configured for this project">
+                        <icon name="robot" style="opacity: 0.4;"/>&nbsp;&nbsp;{{selected.stats.rules.active}}
+                        <small>Active Pipeline Rules</small>
+                    </b-badge>
+                    <b-badge pill class="bigpill" title="Total CPU hours consumed by this project">
+                        <icon name="server" style="opacity: 0.4;"/>&nbsp;&nbsp;{{(total_walltime/(3600*1000)).toFixed(2)}}
+                        <small>CPU Hours</small>
+                    </b-badge>
+                    <b-badge pill class="bigpill" title="Group ID used by amaretti">
+                        <icon name="id-badge" style="opacity: 0.4;"/>&nbsp;&nbsp;{{selected.group_id}}
+                        <small>Group ID</small>
+                    </b-badge>
+                </p>
+                <p style="opacity: 0.8; margin-left: 130px; margin-bottom: 0px">
+                    {{selected.desc||'no description.'}}
+                </p>
                 <br clear="left">
             </div><!--project header-->
 
@@ -72,88 +95,98 @@
             <b-alert :show="selected.access == 'private' && selected.listed" style="border-radius: 0px; color: #888;" variant="secondary">
                 This project is listed for all users but only the members of the project can access its datasets, processes, and pipelines.
             </b-alert>
-            
-            <!--
-            <b-alert v-if="(ismember()||isadmin()||isguest()) && selected.stats && selected.stats.datasets && selected.stats.datasets.size > selected.quota" show variant="danger">
-                This project is currently over quota for archive storage. 
-                (<b>{{selected.stats.datasets.size|filesize}}</b> stored with <b>{{selected.quota|filesize}}</b> project quota)
-                Please remove any data derivatives that are no longer needed for subsequent data processing. You may not be able to 
-                run new process / archive output datasets until you reduce the archive usage.
-            </b-alert>
-            -->
+        
+            <!--datatype box-->
+            <div style="float: right; width: 280px; padding: 20px; position: sticky; top: 140px;" v-if="selected.stats">
+                <span class="form-header">Datatypes</span>
+                <p><small>This project contains the following datatypes</small></p>
 
-            <div style="margin: 20px;">
-                <!--
-                <div v-if="!selected.openneuro && selected.stats.instances && Object.keys(selected.stats.instances).length > 0">
-                    <span class="form-header">Processes</span>
-                    <p>
-                        <small class="text-muted">Processes are used to run analysis.</small>
-                    </p>
-                    <p>
-                        <stateprogress :states="selected.stats.instances"/>
+                <!--datatype was deprecated by datatype_details-->
+                <p v-if="!selected.stats.datasets.datatype_details">
+                    <span v-for="datatype_id in selected.stats.datasets.datatypes" :key="datatype_id">
+                        <b-badge variant="light">
+                            <datatypetag :datatype="datatype_id"/> 
+                        </b-badge>
+                        &nbsp;
+                    </span>
+                </p>
+
+                <div v-if="selected.stats.datasets.datatypes_detail">
+                    <p v-for="detail in selected.stats.datasets.datatypes_detail" :key="detail.type">
+                        <datatypetag :datatype="detail.type"/> 
+                        <br>
+                        <small style="opacity: 0.6;">
+                            <icon name="user-friends"/> {{detail.subject_count}}
+                            <icon name="cubes"/> {{detail.count}}
+                            <span v-if="detail.size">({{detail.size|filesize}})</span>
+                        </small>
                     </p>
                 </div>
-                -->
+            </div>
+
+            <div style="margin: 20px; margin-right: 300px;">
                 <div v-if="selected.agreements && selected.agreements.length > 0">
                     <span class="form-header">Agreements</span>
-                    <p> <small class="text-muted">You must consent to the following agreement(s) before accessing datasets on this project.</small> </p>
+                    <p> <small class="text-muted">You must consent to the following agreement(s) before accessing data on this project.</small> </p>
                     <agreements :agreements="selected.agreements"/>
                     <br>
                 </div>
 
-                <b-row>
-                    <b-col>
-                        <span class="form-header">Admins</span>
-                        <p style="height: 50px; margin-bottom: 3px;">
-                            <small class="text-muted">Update project details, share processes, and create rules / publications.</small>
-                        </p>
-                        <p v-for="c in selected.admins" :key="c._id" style="margin-bottom: 8px;">
-                            <contact :id="c"/>
-                        </p>
-                        <br>
-                    </b-col>
-
-                    <b-col>
-                        <span class="form-header">Members</span>
-                        <p style="height: 50px; margin-bottom: 3px;">
-                            <small class="text-muted">Read/Write access to datasets, share processes, and create rules / publications.</small>
-                        </p>
-                        <p v-for="c in selected.members" :key="c._id" style="margin-bottom: 8px;">
-                            <contact :id="c"/>
-                        </p>
-                        <p class="text-muted" v-if="selected.members.length == 0"><small>No Members</small></p>
-                        <br>
-                    </b-col>
-
-                    <b-col v-if="config.user && selected.access == 'private' && selected.guests && selected.guests.length > 0">
-                            <span class="form-header">Guests</span>
+                <div class="box">
+                    <b-row>
+                        <b-col>
+                            <span class="form-header">Admins</span>
                             <p style="height: 50px; margin-bottom: 3px;">
-                                <small class="text-muted">Read access to dataset.</small>
+                                <small class="text-muted">Update project details, share processes, and create rules / publications.</small>
                             </p>
-                            <p v-for="c in selected.guests" :key="c._id" style="margin-bottom: 8px;">
+                            <p v-for="c in selected.admins" :key="c._id" style="margin-bottom: 8px;">
                                 <contact :id="c"/>
                             </p>
-                            <!--
-                            <p class="text-muted" v-if="!selected.guests || selected.guests.length == 0"><small>No Guests</small></p>
-                            -->
                             <br>
-                    </b-col>
-                </b-row>
+                        </b-col>
 
-                <div v-if="selected.readme">
-                    <span class="form-header">Readme</span>
-                    <vue-markdown v-if="selected.readme" :source="selected.readme" class="readme"></vue-markdown>
-                    <br>
+                        <b-col>
+                            <span class="form-header">Members</span>
+                            <p style="height: 50px; margin-bottom: 3px;">
+                                <small class="text-muted">Read/Write access to data, share processes, and create rules / publications.</small>
+                            </p>
+                            <p v-for="c in selected.members" :key="c._id" style="margin-bottom: 8px;">
+                                <contact :id="c"/>
+                            </p>
+                            <p class="text-muted" v-if="selected.members.length == 0"><small>No Members</small></p>
+                            <br>
+                        </b-col>
+
+                        <b-col v-if="config.user && selected.access == 'private' && selected.guests && selected.guests.length > 0">
+                                <span class="form-header">Guests</span>
+                                <p style="height: 50px; margin-bottom: 3px;">
+                                    <small class="text-muted">Read access to dataset.</small>
+                                </p>
+                                <p v-for="c in selected.guests" :key="c._id" style="margin-bottom: 8px;">
+                                    <contact :id="c"/>
+                                </p>
+                                <!--
+                                <p class="text-muted" v-if="!selected.guests || selected.guests.length == 0"><small>No Guests</small></p>
+                                -->
+                                <br>
+                        </b-col>
+                    </b-row>
                 </div>
 
-                <div v-if="resource_usage && total_walltime > 3600*1000">      
+                <div v-if="selected.readme" class="box">
+                    <span class="form-header">Readme</span>
+                    <br>
+                    <vue-markdown v-if="selected.readme" :source="selected.readme" class="readme"></vue-markdown>
+                </div>
+
+                <div v-if="resource_usage && total_walltime > 3600*1000" class="box">      
                     <span class="form-header">Resource Usage</span>     
-                    <p><small>Datasets on this project has been computed using the following apps/resources.</small></p>             
+                    <p><small>Data-objects on this project has been computed using the following apps/resources.</small></p>             
                     <vue-plotly :data="resource_usage.data" :layout="resource_usage.layout" :options="resource_usage.options"
                             ref="resource_usage" :autoResize="true" :watchShallow="true"/>
                 </div>
 
-                <div v-if="resource_citations.length > 0">
+                <div v-if="resource_citations.length > 0" class="box">
                     <span class="form-header">Resource Citations</span>
                     <p><small>Please use the following citations to cite the resources used by this project.</small></p>
                     <p v-for="(resource_citation, idx) in resource_citations" :key="idx">
@@ -164,19 +197,18 @@
                     </p>
                 </div>
 
-                <div v-if="selected.meta">
+                <div v-if="selected.meta" class="box">
                     <span class="form-header">Meta (todo)</span>
                     <pre style="font-size: 80%;">{{selected.meta}}</pre>
                     <br>
                 </div>
 
-                <div v-if="selected.meta_info">
+                <div v-if="selected.meta_info" class="box">
                     <span class="form-header">Meta Info (todo)</span>
                     <pre style="font-size: 80%;">{{selected.meta_info}}</pre>
                     <br>
                 </div>
 
-                <hr>
                 <vue-disqus ref="disqus" shortname="brain-life" :identifier="selected._id"/>
 
                 <div v-if="config.debug">
@@ -185,76 +217,6 @@
             </div><!-- main content-->
         </div><!-- project detail content-->
         
-        <div class="page-right-content" style="padding: 20px 10px;" v-if="selected.stats" ref="page-right-content">
-
-            <!--
-            <p v-if="selected.stats && get_total(selected.stats.instances) > 0">
-                <span class="form-header">Processes</span>
-                <stateprogress :states="selected.stats.instances" title="Tasks currently running"/>
-            </p>
-            -->
-            
-            <p>
-                <b-badge pill class="bigpill" title="Project creation date">
-                    <icon name="calendar" style="opacity: 0.4;"/>&nbsp;&nbsp;
-                    {{new Date(selected.create_date).toLocaleDateString()}}
-                </b-badge>
-            </p>
-
-            <p>
-                <b-badge pill class="bigpill" title="Total size of data stored in archive"
-                    v-if="selected.stats && selected.stats.datasets && selected.stats.datasets.size">
-                    <icon name="folder" style="opacity: 0.4;"/>&nbsp;&nbsp;{{selected.stats.datasets.size|filesize}}
-                    <small>Total</small> <br>
-                </b-badge>
-            </p>
-
-            <p>
-                <b-badge pill class="bigpill" v-if="selected.stats.rules && selected.stats.rules.active > 0" title="Number of pipeline rules configured for this project">
-                    <icon name="robot" style="opacity: 0.4;"/>&nbsp;&nbsp;{{selected.stats.rules.active}}
-                    <small>Active Pipeline Rules</small>
-                </b-badge>
-            </p>
-
-            <p>
-                <b-badge pill class="bigpill" title="Total CPU hours consumed by this project">
-                    <icon name="server" style="opacity: 0.4;"/>&nbsp;&nbsp;{{(total_walltime/(3600*1000)).toFixed(2)}}
-                    <small>CPU Hours</small>
-                </b-badge>
-            </p>
-    
-            <p>
-                <b-badge pill class="bigpill" title="Group ID used by amaretti">
-                    <icon name="id-badge" style="opacity: 0.4;"/>&nbsp;&nbsp;{{selected.group_id}}
-                    <small>Group ID</small>
-                </b-badge>
-            </p>
-
-            <!--datatype was deprecated by datatype_details-->
-            <p v-if="!selected.stats.datasets.datatype_details">
-                <span class="form-header">Datatypes</span>
-                <span v-for="datatype_id in selected.stats.datasets.datatypes" :key="datatype_id">
-                    <b-badge variant="light">
-                        <datatypetag :datatype="datatype_id"/> 
-                    </b-badge>
-                    &nbsp;
-                </span>
-            </p>
-
-            <div v-if="selected.stats.datasets.datatypes_detail">
-                <p v-for="detail in selected.stats.datasets.datatypes_detail" :key="detail.type">
-                    <datatypetag :datatype="detail.type"/> 
-                    <br>
-                    <small style="opacity: 0.6;">
-                        <icon name="user-friends"/> {{detail.subject_count}}
-                        <icon name="cubes"/> {{detail.count}}
-                        <span v-if="detail.size">({{detail.size|filesize}})</span>
-                    </small>
-                </p>
-            </div>
-
-        </div><!--page-right-content-->
-
     </div>
 
     <div v-if="tabs[tab].id == 'dataset'" style="margin-left: 40px; margin-top: 95px">
@@ -347,8 +309,7 @@ export default {
         }
     },
 
-    computed: {
-    },
+    computed: {},
 
     watch: {
         '$route': function() {
@@ -381,9 +342,11 @@ export default {
                 this.$router.replace("/project/"+this.selected._id+"/"+this.tabs[this.tab].id);
             }
 
+            /*
             if(tabid == 'detail') {
                 this.init_ps();
             }
+            */
         },
     },
 
@@ -406,9 +369,14 @@ export default {
             res.data.projects.forEach((p)=>{
                 this.projects[p._id] = p;
             });
+
             //decide which project to open
             let project_id = this.$route.params.id
-            if(!this.projects[project_id]) project_id = null; //invalid project id specified?
+            if(!this.projects[project_id]) {
+                this.$notify({type: 'error', duration: 10000, text: "You don't have access to the project, or the project ID is invalid. Please contact the project owner and ask to add you to the member/guest of the project."});
+                this.$router.replace("/projects");
+                return;
+            }
   
             if(!project_id) {
                 //if no project id is specified, use last_projectid_used
@@ -505,6 +473,7 @@ export default {
             this.open_project(project);
         },
 
+        /*
         init_ps() {
             this.$nextTick(()=>{
                 //console.log("resetting scrollbar");
@@ -514,11 +483,12 @@ export default {
                 }
             });
         },
+        */
 
         open_project(project) {
             if(this.selected == project) return; //no point of opening project if it's already opened
             this.selected = project;
-            this.init_ps();
+            //this.init_ps();
 
             this.$http.get('project', {params: {
                 find: JSON.stringify({
@@ -558,50 +528,6 @@ export default {
                     }
                 };
             };
-
-            /*
-            //load list of datatypes stored in this project
-            let groups = {};
-            this.$http.get('dataset/inventory', {params: {
-                find: JSON.stringify({
-                    removed: false,
-                    project: project._id,
-                }),
-            }})
-            .then(res=>{
-                //group datasets by datatype
-                res.data.forEach(rec=>{
-                    let subject = rec._id.subject;
-                    let datatype = rec._id.datatype;
-                    let datatype_tags = rec._id.datatype_tags;
-                    let datatype_tags_s = JSON.stringify(rec._id.datatype_tags);
-                    if(!groups[datatype]) {
-                        groups[datatype] = { size: 0, count:0, datatype_tags: {}, subjects: new Set()};
-                    }
-                    if(!groups[datatype].datatype_tags[datatype_tags_s]) {
-                        groups[datatype].datatype_tags[datatype_tags_s] = {size: 0, count: 0};
-                    }
-                    groups[datatype].subjects.add(subject);
-                    let name = datatype+"."+datatype_tags.join(":");
-                    groups[datatype].datatype_tags[datatype_tags_s].size += rec.size;
-                    groups[datatype].datatype_tags[datatype_tags_s].count += rec.count;
-                    groups[datatype].size += rec.size;
-                    groups[datatype].count += rec.count;
-                });
-
-                //load datatype details
-                return this.$http.get('datatype', {params: {
-                    find: JSON.stringify({_id: {$in: Object.keys(groups)}}),
-                }});
-            }) 
-            .then(res=>{
-                res.data.datatypes.forEach((d)=>{
-                    this.datatypes[d._id] = d;
-                });
-                Vue.set(this.selected, "datatype_groups", groups);
-                this.$forceUpdate();
-            }).catch(console.error);
-            */
             this.update_resource_usage_graph();
         },
 
@@ -744,17 +670,18 @@ z-index: 1;
 .page-content {
 top: 95px;
 overflow-x: hidden;
-right: 250px;
 }
-.page-right-content {
-background-color: #eee; 
-box-shadow: inset 3px 0px 3px #ddd6;
-position: fixed;
-top: 95px;
-width: 250px;
-right: 0px;
-bottom: 0px;
-}
+/*
+    .page-right-content {
+    background-color: #eee; 
+    box-shadow: inset 3px 0px 3px #ddd6;
+    position: fixed;
+    top: 95px;
+    width: 250px;
+    right: 0px;
+    bottom: 0px;
+    }
+*/
 
 .project-header {
 padding: 20px; 
@@ -763,6 +690,8 @@ background-color: white;
 position: sticky;
 top: 0;
 z-index: 2;
+height: 140px;
+overflow: hidden;
 }
 
 .datasets_link {
@@ -783,11 +712,9 @@ opacity: 0.6;
 background-color: #eee;
 }
 .box {
-background-color: white;
-padding: 20px;
-box-shadow: 2px 2px 3px #eee;
-margin-left: -20px;
-margin-top: 10px;
+background-color: #fff; 
+padding: 20px; 
+margin-bottom: 20px;
 }
 .button-page {
 float: left;

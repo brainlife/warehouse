@@ -149,6 +149,7 @@ router.post('/', jwt({secret: config.express.pubkey}), (req, res, next)=>{
         }
         new db.Rules(Object.assign(req.body, override)).save((err, rule)=>{
             if(err) return next(err);
+            common.publish("rule.create."+req.body.project+"."+rule._id, {})
             res.json(rule); 
         });
     });
