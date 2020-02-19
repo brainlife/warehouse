@@ -356,7 +356,7 @@ datasetSchema.pre('save', function(next) {
 });
 
 datasetSchema.index({'$**': 'text'}) //make all text fields searchable
-datasetSchema.index({project: 1, 'prov.task.instance_id': 1, removed: 1});
+datasetSchema.index({project: 1, 'prov.task.instance_id': 1, removed: 1, 'meta.subject': 1, 'meta.session': 1, create_date: -1});
 datasetSchema.index({project: 1, update_date: 1, removed: 1}); //rule to query the lastest dataset touched
 datasetSchema.index({'prov.task_id': 1, 'prov.output_id': 1, removed: 1}); //for event_handler
 datasetSchema.index({datatype: 1, removed: 1}); //for searching projects that provides distinct datatypes

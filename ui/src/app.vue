@@ -155,7 +155,7 @@
                             <br>
                         </div>
 
-                        <div v-if="resources_considered">
+                        <div v-if="resources_considered" class="box">
                             <span class="form-header">Computing Resources</span>
                             <b-alert show variant="secondary" v-if="resources_considered.length == 0" style="margin-bottom: 10px;">
                                 This App is not registered to run on any resource that you have access to. 
@@ -172,7 +172,7 @@
 
                             <b-row>
                                 <b-col cols="6" v-for="resource in resources_considered" :key="resource._id">
-                                    <div class="resource" v-b-popover.hover.d1000="resource.config.desc+'\n\n'+resource.detail.msg+'\nstatus:'+resource.status" :title="null">
+                                    <div class="resource-area" v-b-popover.hover.d1000="resource.config.desc+'\n\n'+resource.detail.msg+'\nstatus:'+resource.status" :title="null">
                                         <resource :resource="resource"/>
                                         <div v-if="resource.status != 'ok'" class="resource-status bg-danger">
                                             <icon name="exclamation" style="position: relative; top: -3px;"/>
@@ -198,31 +198,33 @@
                             <br>
                         </div>
 
-                        <b-row>
-                            <b-col>
-                                <span class="form-header">Maintaners</span>
-                                <p style="height: 30px;"><small class="text-muted">List of users who currently maintains this App.</small></p>
-                                <p v-for="c in app.admins" :key="c._id">
-                                    <contact :id="c"/>
-                                </p>
-                                <br>
-                            </b-col>
-                            <b-col>
-                                <div v-if="app.contributors.length > 0">
-                                    <span class="form-header">Contributors</span>
-                                    <p style="height: 30px;"><small class="text-muted">List of code contributors.({{app.github}}).</small></p>
-                                    <p v-for="dev in app.contributors" :key="dev._id">
-                                        <contact :fullname="dev.name" :email="dev.email"/>
+                        <div class="box">
+                            <b-row>
+                                <b-col>
+                                    <span class="form-header">Maintaners</span>
+                                    <p style="height: 30px;"><small class="text-muted">List of users who currently maintains this App.</small></p>
+                                    <p v-for="c in app.admins" :key="c._id">
+                                        <contact :id="c"/>
                                     </p>
                                     <br>
-                                </div>
-                            </b-col>
-                        </b-row>
+                                </b-col>
+                                <b-col>
+                                    <div v-if="app.contributors.length > 0">
+                                        <span class="form-header">Contributors</span>
+                                        <p style="height: 30px;"><small class="text-muted">List of code contributors.({{app.github}}).</small></p>
+                                        <p v-for="dev in app.contributors" :key="dev._id">
+                                            <contact :fullname="dev.name" :email="dev.email"/>
+                                        </p>
+                                        <br>
+                                    </div>
+                                </b-col>
+                            </b-row>
+                        </div>
 
-                        <div v-if="readme">
+                        <div v-if="readme" class="box">
                             <p style="float: right;"><small class="text-muted">From github repo / README.md</small></p>
-                            <span class="form-header">README</span>
-                            <vue-markdown :source="readme" class="readme box"></vue-markdown>
+                            <span class="form-header">README</span><br>
+                            <vue-markdown :source="readme" class="readme"></vue-markdown>
                         </div>
                         <vue-disqus shortname="brain-life" :identifier="app._id"/>
                     </b-col>
@@ -567,10 +569,10 @@ margin-bottom: 5px;
 .project-card:hover {
 background-color: #ddd;
 }
-.resource {
+.resource-area {
 background-color: white;
-box-shadow: 2px 2px 2px #0001;
-position: relative;
+box-shadow: 1px 1px 3px #0003;
+margin-bottom: 10px;
 }
 .resource-status {
 font-size: 10pt;
@@ -580,7 +582,6 @@ background-color: #ddd;
 height: 30px;
 padding: 5px 10px;
 width: 100%;
-margin-bottom: 10px;
 }
 .resource-status .score {
 float: right;
@@ -588,8 +589,7 @@ float: right;
 .box {
 background-color: white;
 padding: 20px;
-box-shadow: 2px 2px 5px #eee;
-margin-bottom: 10px;
+margin-bottom: 20px;
 margin-left: -20px;
 }
 .io-card {

@@ -137,7 +137,6 @@ import VueDisqus from 'vue-disqus';
 import toNow from 'date-fns/distance_in_words_to_now'
 
 Vue.use(VueDisqus)
-//Vue.use(VueHighlightJS)
 Vue.use(VueAxios, axios)
 Vue.use(Notifications);
 Vue.use(VueLazyload)

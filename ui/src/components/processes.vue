@@ -1,8 +1,8 @@
 <template>
 <div>
     <!--no instance contents-->
-    <p v-if="!instances" class="loading"><icon name="cog" spin scale="1.5"/> Loading..</p>
-    <div class="instances" v-if="instances">
+    <p v-if="!instances" class="loading"><icon name="cog" spin scale="1.5"/> Loading...</p>
+    <div class="instances" v-else>
         <!--instances list-->
         <div class="instances-header" :style="{width: splitter_pos-40+'px'}">
             <div style="padding-top: 10px;">
@@ -529,8 +529,8 @@ export default {
 
 <style scoped>
 .loading {
-margin: 40px;
-margin-top: 120px;
+padding: 40px;
+margin-top: 95px;
 opacity: 0.5;
 font-size: 170%;
 }

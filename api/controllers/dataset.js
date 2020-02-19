@@ -143,7 +143,7 @@ router.get('/', jwt({secret: config.express.pubkey, credentialsRequired: false})
                 if(req.query.single) {
                     return res.json(datasets[0]);
                 } else {
-                    console.log("not single query");
+                    //console.log("not single query");
                     res.json({ datasets, count, size, });
                 }
             });

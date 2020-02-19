@@ -61,8 +61,8 @@
         <div class="page-content">
         <!--detail-->
             <div class="project-header">
-                <projectavatar :project="selected" :height="100" :width="100" style="float: left;"/>
-                <p style="margin-left: 130px; line-height: 2.5em; margin-bottom: 0px; position: relative; top: -5px">
+                <projectavatar :project="selected" :height="140" :width="140" style="float: right; margin: -20px 100px 0 30px;"/>
+                <p style="line-height: 2.5em; margin-bottom: 0px; position: relative; top: -8px">
                     <b-badge pill class="bigpill" title="Project creation date">
                         <icon name="calendar" style="opacity: 0.4;"/>&nbsp;&nbsp;
                         {{new Date(selected.create_date).toLocaleDateString()}}
@@ -85,7 +85,7 @@
                         <small>Group ID</small>
                     </b-badge>
                 </p>
-                <p style="opacity: 0.8; margin-left: 130px; margin-bottom: 0px">
+                <p style="opacity: 0.8;  margin-bottom: 0px">
                     {{selected.desc||'no description.'}}
                 </p>
                 <br clear="left">
