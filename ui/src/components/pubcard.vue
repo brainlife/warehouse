@@ -70,7 +70,6 @@ export default {
 <style scoped>
 .pubcard {
 transition: background-color 0.3s, box-shadow 0.3s;
-border-bottom: 1px solid #eee;
 font-size: 90%;
 clear: both;
 padding: 0 10px;
@@ -80,6 +79,7 @@ font-size: 15px;
 font-weight: bold;
 color: #333;
 }
+/*
 .pubcard.clickable {
 cursor: pointer;
 }
@@ -87,6 +87,7 @@ cursor: pointer;
 background-color: #fffc;
 box-shadow: 3px 3px 3px #0003;
 }
+*/
 .name {
 color: #333;
 padding: 0px;
