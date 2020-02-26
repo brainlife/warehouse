@@ -155,7 +155,7 @@ function remove_failed(cb) {
 
 function move_removed(cb) {
     let month_ago = new Date();
-    month_ago.setDate(month_ago.getDate()-30);
+    month_ago.setDate(month_ago.getDate()-90);
     
     //find datasets that failed to archive
     db.Datasets.find({
