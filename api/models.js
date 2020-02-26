@@ -357,10 +357,12 @@ datasetSchema.pre('save', function(next) {
 });
 
 datasetSchema.index({'$**': 'text'}) //make all text fields searchable
-datasetSchema.index({project: 1, 'prov.task.instance_id': 1, removed: 1, 'meta.subject': 1, 'meta.session': 1, create_date: -1});
+datasetSchema.index({project: 1, 'prov.task.instance_id': 1, removed: 1, 'meta.subject': 1, 'meta.session': 1, create_date: -1}); //is this deprecated by project/remove/subject/session/-create_ate?
+datasetSchema.index({ "project": 1, "removed": 1, "meta.subject": 1, "meta.session": 1, "create_date": -1}); //for dataset search by the archive view
 datasetSchema.index({project: 1, update_date: 1, removed: 1}); //rule to query the lastest dataset touched
 datasetSchema.index({'prov.task_id': 1, 'prov.output_id': 1, removed: 1}); //for event_handler
 datasetSchema.index({datatype: 1, removed: 1}); //for searching projects that provides distinct datatypes
+datasetSchema.index({ "status": 1, "user_id": 1, "config._rule.id": 1, "config._app": 1, "_group_id": 1 });//agrregate config._rule.)id/config._app or user_id/_group_id/$group
 
 //for some reason..  dataset query can't use the index that has "meta.run".. sort index has to match exactly?
 //datasetSchema.index({'meta.subject': 1, 'meta.session': 1, 'meta.run': 1, create_date: -1});
