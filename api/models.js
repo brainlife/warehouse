@@ -371,6 +371,13 @@ datasetSchema.index({'meta.subject': 1, 'meta.session': 1, create_date: -1});
 
 exports.Datasets = mongoose.model('Datasets', datasetSchema);
 
+///////////////////////////////////////////////////////////////////////////////////////////////////
+
+var datasetProductSchema = mongoose.Schema({
+    dataset_id: {type: mongoose.Schema.Types.ObjectId, ref: 'Datasets', index: true, unique: true},
+    product: mongoose.Schema.Types.Mixed,
+});
+exports.DatasetProducts = mongoose.model('DatasetProducts', datasetProductSchema);
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 //

@@ -75,10 +75,10 @@ exports.validate_projects = function(user, project_ids, cb) {
     });
 }
 
-function escape_dot(obj) {
+exports.escape_dot = function(obj) {
     if(typeof obj == "object") {
         for(let key in obj) {
-            escape_dot(obj[key]);
+            exports.escape_dot(obj[key]);
             if(key.includes(".")) {
                 let newkey = key.replace(/\./g, '-');
                 obj[newkey] = obj[key];
@@ -103,7 +103,7 @@ function register_dataset(task, output, product, cb) {
 
         //status: "waiting",
         status_msg: "Waiting for the archiver ..",
-        product: escape_dot(product),
+        //product: escape_dot(product),
 
         prov: {
             //only store the most important things
@@ -130,8 +130,16 @@ function register_dataset(task, output, product, cb) {
             task_id: task._id, //deprecated. use prov.task._id
         },
     }, (err, _dataset)=>{
-        if(!err) exports.publish("dataset.create."+task.user_id+"."+output.archive.project+"."+_dataset._id, {});
-        cb(err, _dataset);
+        if(err) return cb(err);
+        
+        //store product in different table
+        db.DatasetProducts.create({
+            dataset_id: _dataset._id,
+            product: exports.escape_dot(product),
+        }, (err, _dataset_product)=>{
+            if(!err) exports.publish("dataset.create."+task.user_id+"."+output.archive.project+"."+_dataset._id, {});
+            cb(err, _dataset);
+        });
     });
 }
 
