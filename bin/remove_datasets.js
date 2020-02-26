@@ -140,6 +140,7 @@ function remove_failed(cb) {
     .limit(limit) 
     .exec((err,datasets)=>{
         if(err) return cb(err);
+        if(datasets.length == 0) return cb(); //no record to remove
         logger.debug("failed to store datasets needs removed "+datasets.length);
         let count = 0;
         async.eachSeries(datasets, (dataset, next_dataset)=>{
