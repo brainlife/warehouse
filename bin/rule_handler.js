@@ -79,12 +79,17 @@ function run() {
     .exec((err, rules)=>{
 		if(err) throw err;
 
-        async.eachSeries(rules, handle_rule, err=>{
-            if(err) logger.error(err);
-            logger.debug("done handling "+rules.length+" rules - sleeping for a while (10sec)");
-            rule_ex.publish("done", {count: rules.length});    
+        if(!rules || rules.length == 0) {
+            logger.debug("no rules to handle - sleeping for a while (10sec)");
             setTimeout(run, 1000*10);
-        });
+        } else {
+            async.eachSeries(rules, handle_rule, err=>{
+                if(err) logger.error(err);
+                logger.debug("done handling "+rules.length+" rules - sleeping for a while (10sec)");
+                rule_ex.publish("done", {count: rules.length});    
+                setTimeout(run, 1000*10);
+            });
+        }
 	});
 }
 

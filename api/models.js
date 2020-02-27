@@ -114,7 +114,7 @@ var projectSchema = mongoose.Schema({
     members: [ String ], //list of users who can read/write things under this project
     guests: [ String ], //(for private project) list of users who has read access to datasets
 
-    group_id: Number, //group id from auth service to host admins/members
+    group_id: {type: Number, unique: true} , //group id from auth service to host admins/members
 
     tags: [String], //used to classify projects (TODO - I don't think this is used yet..)
 
@@ -360,7 +360,7 @@ datasetSchema.index({'$**': 'text'}) //make all text fields searchable
 datasetSchema.index({project: 1, 'prov.task.instance_id': 1, removed: 1, 'meta.subject': 1, 'meta.session': 1, create_date: -1}); //is this deprecated by project/remove/subject/session/-create_ate?
 datasetSchema.index({ "project": 1, "removed": 1, "meta.subject": 1, "meta.session": 1, "create_date": -1}); //for dataset search by the archive view
 datasetSchema.index({project: 1, update_date: 1, removed: 1}); //rule to query the lastest dataset touched
-datasetSchema.index({'prov.task_id': 1, 'prov.output_id': 1, removed: 1}); //for event_handler
+datasetSchema.index({'prov.task_id': 1, 'prov.output_id': 1, removed: 1, status: 1}); //for event_handler
 datasetSchema.index({datatype: 1, removed: 1}); //for searching projects that provides distinct datatypes
 datasetSchema.index({ "status": 1, "user_id": 1, "config._rule.id": 1, "config._app": 1, "_group_id": 1 });//agrregate config._rule.)id/config._app or user_id/_group_id/$group
 
@@ -368,6 +368,9 @@ datasetSchema.index({ "status": 1, "user_id": 1, "config._rule.id": 1, "config._
 //datasetSchema.index({'meta.subject': 1, 'meta.session': 1, 'meta.run': 1, create_date: -1});
 datasetSchema.index({'meta.subject': 1, 'meta.session': 1, create_date: -1}); 
 //datasetSchema.index({create_date: -1});  //for rule_handler- finding input
+datasetSchema.index({project: 1, removed: 1, "meta.subject": 1, datatype: 1, size: 1})
+datasetSchema.index({removed: 1, project: 1, publications: 1, size: 1});
+datasetSchema.index({publications: 1, "meta.subject": 1, datatype: 1, size: 1});
 
 exports.Datasets = mongoose.model('Datasets', datasetSchema);
 

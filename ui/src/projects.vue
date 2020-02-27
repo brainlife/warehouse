@@ -7,6 +7,7 @@
         </div>
     </div>
     <div class="page-content" v-if="my_projects">
+        <div v-if="loading" style="margin: 40px; opacity: 0.5"><h3><icon name="cog" spin scale="2"/> Loading ..</h3></div>
         <div class="mode-toggler">
             <b-form-group>
                 <b-form-radio-group v-model="mode" buttons button-variant="outline-secondary">
@@ -77,7 +78,8 @@ export default {
         return {   
             my_projects: null,
             other_projects: null,
-            //openneuro_projects: null,
+
+            loading: false,
 
             query: "",
             mode: localStorage.getItem("projects.mode")||"tile",
@@ -89,9 +91,11 @@ export default {
     mounted() {
         this.query = sessionStorage.getItem("projects.query");
         this.load();
+        /*
         this.reload_int = setInterval(()=>{
             this.load();
         }, 1000*60*5); //reload every 5 minutes (projectinfo is loaded every 5 minutes)
+        */
     },
 
     watch: {
@@ -126,6 +130,7 @@ export default {
 
             //load all projects that user has summary access (including removed ones so we can open it)
             this.my_projects = null;
+            this.loading = true;
             this.$http.get('project', {params: {
                 find: JSON.stringify({$and: ands}),
                 limit: 500, //TODO implement paging eventually
@@ -145,27 +150,12 @@ export default {
                         this.other_projects.push(p);
                     }
                 });
+                this.loading = false;
             }).catch(err=>{
                 console.error(err);
                 this.$notify({type: 'error', text: err.response.data.message()});
+                this.loading = false;
             });
-
-            /*
-            //load openneuro project separately..
-            this.openneuro_projects = null;
-            ands[0] = {removed: false, "openneuro": {$exists: true}};
-            this.$http.get('project', {params: {
-                find: JSON.stringify({$and: ands}),
-                limit: 100,
-                select: '-readme',
-                sort: 'name',
-            }}).then(res=>{
-                this.openneuro_projects = res.data.projects;
-            }).catch(err=>{
-                console.error(err);
-                this.$notify({type: 'error', text: err.response.data.message});               
-            })
-            */
         },
 
         change_query_debounce() {

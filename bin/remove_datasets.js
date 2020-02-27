@@ -20,10 +20,10 @@ console.log("limit to ", limit);
 db.init(function(err) {
     if(err) throw err;
     async.series([
+        //move_removed, //maybe we need to keep all removed datasets for provenance?
         remove_from_removed_projects, 
         free_storage, 
         remove_failed,
-        move_removed,
     ], err=>{
         if(err) throw err;
         logger.info("all done.. disconnecting");
@@ -160,26 +160,29 @@ function move_removed(cb) {
     //find datasets that failed to archive
     db.Datasets.find({
         removed: true,
-        remove_date: {$lt: month_ago }, //only remove if it's old enough
+        $or: [
+            {remove_date: {$lt: month_ago } }, //only remove if it's old enough
+            {remove_date: {$exists: false} }, //or remove_date is not set (super old?)
+        ]
     })
     .limit(limit) 
     .exec((err,datasets)=>{
         if(err) return cb(err);
         if(datasets.length == 0) return cb();
         logger.debug("removing old removed recoreds to datasets_removed:"+datasets.length);
-        mongoose.connection.db.collection('datasets_removed').insertMany(datasets,(err,success)=>{
-            if(err) return cb(err);
-            logger.debug("permanently puring records");
-            //console.dir(datasets[0]);
-            db.Datasets.remove({
-                removed: true,
-                remove_date: {$lt: month_ago }, //only remove if it's old enough
-            })
-            .limit(limit)
-            .exec((err, res)=>{
+        let ids = datasets.map(dataset=>dataset._id);
+        mongoose.connection.db.collection('datasets_removed').remove({_id: {$in: ids}}, (err, res)=>{
+            mongoose.connection.db.collection('datasets_removed').insertMany(datasets,(err,success)=>{
                 if(err) return cb(err);
-                logger.debug("removed");
-                cb();
+                logger.debug("permanently puring records");
+                //console.dir(datasets[0]);
+                console.dir(ids);
+                db.Datasets.remove({_id: {$in: ids}})
+                .exec((err, res)=>{
+                    if(err) return cb(err);
+                    logger.debug("removed");
+                    cb();
+                });
             });
         });
     });

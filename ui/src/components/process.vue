@@ -106,6 +106,11 @@
                         </span>
                         <small class="ioid" v-if="task.app">({{compose_desc(task.app.outputs, output.id)}})</small>
 
+                        <!--
+                        <editor @init="editorInit" lang="json" height="200">{{output.meta}}</editor>
+                        -->
+                        <pre style="max-height: 200px;">{{JSON.stringify(output.meta, null, 4)}}</pre>
+
                         <div v-if="findarchived(task, output).length > 0" class="archived-datasets">
                             <div class="archived-datasets-title">Archived Datasets</div>
                             <ul class="archived">
@@ -242,6 +247,7 @@ export default {
         datatypetag, appname, statustag,
         product, 
         VueMarkdown,
+        //editor: require('vue2-ace-editor'),
     },
 
     data() {
@@ -307,6 +313,7 @@ export default {
                 this.readHash();
             });
         });
+
 
     },
 
@@ -699,6 +706,14 @@ export default {
             }
         },
 
+/*
+        editorInit(editor) {
+            require('brace/mode/json')
+            editor.container.style.lineHeight = 1.25;
+            editor.renderer.updateFontSize();
+            editor.setReadOnly(true);
+        }
+*/
     },
 }
 </script>

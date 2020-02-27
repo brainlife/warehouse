@@ -97,11 +97,13 @@
                 <p>
                     {{config.user.profile.fullname}} &lt;{{config.user.profile.email}}&gt;
                 </p>
+                <!-- this messes up the signoff button
                 <p>
                     <b>Authorization</b>
                     <pre style="font-size: 80%;">{{JSON.stringify(config.user.scopes, null, 4)}}</pre>
                 </p>
                 <hr>
+                -->
                 <b-button size="sm" variant="secondary" @click="signout"> <icon name="sign-out-alt" scale="1.2"/>&nbsp; Signout </b-button>
             </b-popover>
         </li>

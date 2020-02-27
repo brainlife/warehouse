@@ -31,8 +31,8 @@ function canedit(user, rec, canwrite_project_ids) {
 
 function isimporttask(task) {
     return ( 
-        task.service == "soichih/sca-product-raw" ||  //deprecated
-        task.service == "soichih/sca-service-noop" || //deprecated
+        //task.service == "soichih/sca-product-raw" ||  //deprecated
+        //task.service == "soichih/sca-service-noop" || //deprecated
         task.service == "brainlife/app-stage" || 
         task.service == "brainlife/app-noop" ||
         ~task.service.indexOf("brainlife/validator-") ||
@@ -737,7 +737,7 @@ function generate_prov(origin_dataset_id, cb) {
                 //process uses app-stage to load input datasets
                 //instead of showing that, let's *skip* this node back to datasets that it loaded
                 //and load their tasks
-                if(dep_task.service == "soichih/sca-product-raw" || dep_task.service == "brainlife/app-stage") { 
+                if(/*dep_task.service == "soichih/sca-product-raw" ||*/ dep_task.service == "brainlife/app-stage") { 
                     let input_name = null;
                     if(task.config._inputs.length > 1) input_name = input.id;
                     load_stage("task."+task._id, input_name, input.dataset_id||input._id||input.subdir, next_dep);
