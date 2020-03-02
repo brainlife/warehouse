@@ -671,6 +671,7 @@ export default {
                 }});
             }).then(res=>{
                 this.alltags = res.data;
+                if(!this.dataset) return; //modal closed while we are loading (TODO can I cancel?)
 
                 //load all publications that this dataobjects is published in
                 let find = {};

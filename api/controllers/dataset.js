@@ -31,8 +31,8 @@ function canedit(user, rec, canwrite_project_ids) {
 
 function isimporttask(task) {
     return ( 
-        //task.service == "soichih/sca-product-raw" ||  //deprecated
-        //task.service == "soichih/sca-service-noop" || //deprecated
+        task.service == "soichih/sca-product-raw" ||  //deprecated
+        task.service == "soichih/sca-service-noop" || //deprecated
         task.service == "brainlife/app-stage" || 
         task.service == "brainlife/app-noop" ||
         ~task.service.indexOf("brainlife/validator-") ||
