@@ -196,8 +196,48 @@
                                 </b-col>
                             </b-row>
                             <br>
-                        </div>
+                        </div><!--resource_considered-->
 
+                        <div v-if="tasks.length > 0" class="box">
+                            <span class="form-header">Recent Jobs</span>
+                            <p style="opacity: 0.7; font-size: 80%;">Only showing up to 30 most recent jobs</p>
+                            <table class="table table-sm">
+                                <thead>
+                                    <tr>
+                                        <th>Group</th>
+                                        <th>Branch</th>
+                                        <th>Status</th>
+                                        <th>Submitter</th>
+                                        <th width="150px">Date</th>
+                                    </tr>
+                                </thead>
+                                <tr v-for="task in tasks" :key="task._id">
+                                    <td style="width: 70px">
+                                        <small><icon name="shield-alt"/> {{task._group_id}}</small>
+                                    </td>
+                                    <td>
+                                        <b-badge>{{task.service_branch}}</b-badge>
+                                    </td>
+                                    <td>
+                                        <span class="status-color" :class="task.status" style="padding: 3px 5px;">
+                                            <statusicon :status="task.status" /> <span style="text-transform: uppercase;" >{{task.status}}</span>
+                                        </span>
+                                        <small>{{task.status_msg}}</small>
+                                        <small style="font-size: 70%">{{task._id}}</small>
+                                    </td>
+                                    <td>
+                                        <contact :id="task.user_id" size="small"/>
+                                    </td>
+                                    <td>
+                                        <small v-if="task.status == 'requested'"><time>Requested <timeago :datetime="task.request_date" :auto-update="1"/></time></small>
+                                        <small v-else-if="task.status == 'running'"><time>Started <timeago :datetime="task.start_date" :auto-update="1"/></time></small>
+                                        <small v-else-if="task.status == 'finished'"><time>Finished <timeago :datetime="task.finish_date" :auto-update="1"/></time></small>
+                                        <small v-else-if="task.status == 'failed'"><time>Failed <timeago :datetime="task.fail_date" :auto-update="1"/></time></small>
+                                    </td>
+                                </tr>
+                            </table>
+                        </div>
+        
                         <div class="box">
                             <b-row>
                                 <b-col>
@@ -230,23 +270,8 @@
                     </b-col>
 
                     <b-col cols="3">
-                        <p v-if="app.doi || app.stats.serviceinfo">
+                        <p v-if="app.doi || app.stats">
                             <doibadge :doi="app.doi" v-if="app.doi"/>
-                            <!--
-                            <img :src="config.api+'/app/'+app._id+'/badge'" @click="show_badge_url('/app/'+app._id+'/badge')" class="clickable" v-if="app.stats.serviceinfo"/>
-                            -->
-                        </p>
-
-                        <p title="Users who executed this App">
-                            <b-badge pill v-if="app.stats.users" class="bigpill">
-                                <icon name="user-cog" style="opacity: 0.4;"/>&nbsp;&nbsp;&nbsp;{{app.stats.users}}&nbsp;&nbsp;<small>Users</small>
-                            </b-badge>
-                        </p>
-
-                        <p title="Number of time this App was requested">
-                            <b-badge pill v-if="app.stats.requested" class="bigpill">
-                                <icon name="play" style="opacity: 0.4;"/>&nbsp;&nbsp;&nbsp;{{app.stats.requested}}&nbsp;&nbsp;<small>Requests</small>
-                            </b-badge>
                         </p>
 
                         <p title="Registration Date">
@@ -255,9 +280,21 @@
                             </b-badge>
                         </p>
 
+                        <p v-if="app.stats && app.stats.users" title="Users who executed this App">
+                            <b-badge pill class="bigpill">
+                                <icon name="user-cog" style="opacity: 0.4;"/>&nbsp;&nbsp;&nbsp;{{app.stats.users}}&nbsp;&nbsp;<small>Users</small>
+                            </b-badge>
+                        </p>
+
+                        <p v-if="app.stats && app.stats.requested" title="Number of time this App was requested">
+                            <b-badge pill class="bigpill">
+                                <icon name="play" style="opacity: 0.4;"/>&nbsp;&nbsp;&nbsp;{{app.stats.requested}}&nbsp;&nbsp;<small>Requests</small>
+                            </b-badge>
+                        </p>
+
                         <p title="Average Runtime">
-                            <b-badge pill v-if="app.stats.serviceinfo && app.stats.serviceinfo.runtime_mean" class="bigpill">
-                                <icon name="clock" style="opacity: 0.4;"/>&nbsp;&nbsp;&nbsp;{{avg_runtime(app.stats.serviceinfo.runtime_mean, app.stats.serviceinfo.runtime_std)}}
+                            <b-badge pill v-if="app.stats && app.stats.runtime_mean" class="bigpill">
+                                <icon name="clock" style="opacity: 0.4;"/>&nbsp;&nbsp;&nbsp;{{avg_runtime(app.stats.runtime_mean, app.stats.runtime_std)}}
                             </b-badge>
                         </p>
 
@@ -272,16 +309,37 @@
                             :data-doi="app.doi" 
                             data-hide-no-mentions="true"/>
 
-                        <p v-if="app.stats.serviceinfo && app.stats.serviceinfo.success_rate" v-b-tooltip.hover.d1000.right title="finished/(failed+finished). Same request could be re-submitted / rerun.">
+                        <p v-if="app.stats && app.stats.success_rate" v-b-tooltip.hover.d1000.right title="finished/(failed+finished). Same request could be re-submitted / rerun.">
                             <!--<span class="form-header">Success Rate</span>-->
                             <svg width="70" height="70">
                                 <circle :r="140/(2*Math.PI)" cx="35" cy="35" fill="transparent" stroke="#666" stroke-width="15"/>
                                 <circle :r="140/(2*Math.PI)" cx="35" cy="35" fill="transparent" stroke="#28a745" stroke-width="15" 
-                                    :stroke-dasharray="app.stats.serviceinfo.success_rate*(140/100)+' '+(100-app.stats.serviceinfo.success_rate)*(140/100)" stroke-dashoffset="-105"/>
+                                    :stroke-dasharray="app.stats.success_rate*(140/100)+' '+(100-app.stats.success_rate)*(140/100)" stroke-dashoffset="-105"/>
                             </svg>
-                            <b>{{app.stats.serviceinfo.success_rate.toFixed(1)}}%</b> <span style="opacity: 0.5">Success Rate</span>
+                            <b>{{app.stats.success_rate.toFixed(1)}}%</b> <span style="opacity: 0.5">Success Rate</span>
                         </p>
                        
+                        <!--
+                        <p style="opacity: 0.8;">
+                            <table v-if="serviceinfo">
+                                <tr>
+                                    <th style="width: 80%; opacity: 0.8"><icon name="caret-right"/> Users</th>
+                                    <th style="width: 25px;"><span class="text-success"><statusicon status="finished" scale="0.8"/></span></th>
+                                    <th style="width: 25px;"><span class="text-danger"><statusicon status="failed" scale="0.8"/></span></th>
+                                </tr>
+                                <tr v-for="(info, user) in serviceinfo.user" :key="user">
+                                    <td><contact :id="user" size="small"/></td>
+                                    <td>
+                                        <b class="text-success">{{info.finished||0}}</b>
+                                    </td>
+                                    <td>
+                                        <b class="text-danger">{{info.failed||0}}</b>
+                                    </td>
+                                </tr>
+                            </table>
+                        </p>
+                        -->
+                        
                     </b-col>
 
                 </b-row>
@@ -312,6 +370,7 @@ import statustag from '@/components/statustag'
 import projectavatar from '@/components/projectavatar'
 import doibadge from '@/components/doibadge'
 import resource from '@/components/resource'
+import statusicon from '@/components/statusicon'
 
 export default {
     components: { 
@@ -321,7 +380,7 @@ export default {
         datatypetag, datatypefile,
         projectavatar,
         doibadge, app,
-        resource,
+        resource, statusicon,
         editor: require('vue2-ace-editor'),
     },
 
@@ -347,6 +406,9 @@ export default {
             selfurl: document.location.href,
 
             tab_index: 0,
+
+            tasks: [], //recent tasks submitted
+            serviceinfo: null,
 
             config: Vue.config,
         }
@@ -396,11 +458,11 @@ export default {
             if(min < 0) min = 0;
             let max = Math.round((mean+std/3)/(1000*60));
             if(max<90) {
-                return min+"-"+max+" min";
+                return min+" - "+max+" min";
             }
             let min_hours = Math.round(min/60*10)/10;
             let max_hours = Math.round(max/60*10)/10;
-            return min_hours+"-"+max_hours+" hour";
+            return min_hours+" - "+max_hours+" hour";
         },
 
         open_app() {
@@ -424,6 +486,14 @@ export default {
                     //re-initialize altmetric badge - now that we have badge <div> placed
                     _altmetric_embed_init(this.$el);
                 });
+
+                this.$http.get(Vue.config.amaretti_api+'/task/recent', {params: {service: this.app.github}}).then(res=>{
+                    this.tasks = res.data.recent;
+                }).catch(console.error);
+
+                this.$http.get(Vue.config.amaretti_api+'/service/info', {params: {service: this.app.github}}).then(res=>{
+                    this.serviceinfo = res.data;
+                }).catch(console.error);
 
                 //then load github README
                 var branch = this.app.github_branch||"master";

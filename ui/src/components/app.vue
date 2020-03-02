@@ -41,14 +41,14 @@
         </div>
         <div class="desc">{{app_.desc_override||app_.desc||'no description..'}}</div>
         <slot/>
-        <div class="stats" v-if="app_.stats && app_.stats.serviceinfo">
+        <div class="stats" v-if="app_.stats">
             <span class="stat" title="Number of time this App was requested">
-                <icon name="play" scale="0.8"/> {{app_.stats.serviceinfo.counts.requested}}
+                <icon name="play" scale="0.8"/> {{app_.stats.requested}}
                 &nbsp;
                 &nbsp;
             </span>
             <span class="stat" title="Number of unique users who requested this App">
-                <icon name="user" scale="0.8"/> {{app_.stats.serviceinfo.users}}
+                <icon name="user" scale="0.8"/> {{app_.stats.users}}
                 &nbsp;
                 &nbsp;
             </span>
@@ -57,8 +57,8 @@
                 &nbsp;
                 &nbsp;
             </span>
-            <span class="stat" style="float: right;" title="success rate = finished/(failed+finished)" v-if="app_.stats.serviceinfo.success_rate">
-                <icon name="check-circle" scale="0.8"/> {{app_.stats.serviceinfo.success_rate.toFixed(1)}}%
+            <span class="stat" style="float: right;" title="success rate = finished/(failed+finished)" v-if="app_.stats.success_rate">
+                <icon name="check-circle" scale="0.8"/> {{app_.stats.success_rate.toFixed(1)}}%
             </span>
         </div>
     </div>

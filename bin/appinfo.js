@@ -45,7 +45,7 @@ function run() {
         report.app_counts = apps.length;
         async.eachSeries(apps, handle_app, err=>{
             if(err) logger.error(err);
-            logger.info("done with all apps - sleeping for 3 hours");
+            logger.info("done or failed - sleeping for 3 hours");
             setTimeout(run, 1000*3600*3);
         });
 	});
@@ -62,12 +62,22 @@ function handle_app(app, cb) {
                 headers: { authorization: "Bearer "+config.warehouse.jwt },  //config.auth.jwt is deprecated
                 qs: {
                     service: app.github,
-                    //service_branch: app.github_branch,  //let's not group by branch for now.
                 }
             }, (err, res, info)=>{
                 if(err) return next(err);
                 if(res.statusCode != 200) return next("couldn't obtain service stats "+res.statusCode);
-                app.stats.serviceinfo = info;
+                if(!info) {
+                    console.error("service info not set for ", app.github);
+                    return next();
+                }
+
+                //cache things from serviceinfo..
+                app.stats.success_rate = info.success_rate;
+                app.stats.users = info.users;
+                app.stats.runtime_mean = info.runtime_mean;
+                app.stats.runtime_std = info.runtime_std;
+                app.stats.requested =  info.counts.requested,
+
                 app.markModified('stats');
                 common.update_appinfo(app, next);
             });

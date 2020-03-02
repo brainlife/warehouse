@@ -518,18 +518,24 @@ var appSchema = mongoose.Schema({
         archive: { type: Boolean, default: true }, //archive output by default
     })],
         
-    //_rate: {type: Number, default: 0}, //1-5 scale rating of this app - precomputed (0 means not set)
-
     //basic stats for this app (aggregated by bin/appinfo.js - most info comes from amaretti/service/info)
     stats: {
-        serviceinfo: Object,
+        success_rate: Number, //74.31192660550458,
+        users: Number, //2,
+        runtime_mean: Number, //4936275.125,
+        runtime_std: Number, //3342304.692416079,
+        requested: Number, //234
+
+        //serviceinfo: Object,
         gitinfo: Object,
         
+        /*
         //DEPRECTED - stats.serviceinfo / stats.gitinfo
         requested: Number, //number of times this app was requested
         users: Number, //number of users who used this app
         stars: Number, //github stars
         success_rate: Number, 
+        */
     },
     
     removed: { type: Boolean, default: false} ,

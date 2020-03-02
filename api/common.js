@@ -310,8 +310,6 @@ exports.update_appinfo = function(app, cb) {
         app.desc = repo.description;
         app.tags = repo.topics;
         if(!app.stats) app.stats = {};
-        //console.log("before....");
-        //console.dir(app.toString());
         app.stats.stars = repo.stargazers_count;
         app.markModified('stats');
         app.contributors = con_details.map(con=>{

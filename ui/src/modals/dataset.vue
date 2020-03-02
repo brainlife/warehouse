@@ -682,7 +682,7 @@ export default {
                 }});
             }).then(res=>{
                 this.$set(this.dataset, '_pubs', res.data.pubs);
-             }).catch(err=>{
+            }).catch(err=>{
                 console.error(err);
                 this.$notify({type: 'error', text: err});
             });

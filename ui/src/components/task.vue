@@ -317,9 +317,8 @@ export default {
             if(task.status != "running") return null;
             if(!task.app) return null;
             if(!task.app.stats) return null;
-            if(!task.app.stats.serviceinfo) return null;
-            let runtime_mean = task.app.stats.serviceinfo.runtime_mean;
-            let runtime_std = task.app.stats.serviceinfo.runtime_std;
+            let runtime_mean = task.app.stats.runtime_mean;
+            let runtime_std = task.app.stats.runtime_std;
             let runtime = new Date().getTime() - new Date(task.start_date).getTime();
             let remain = 1-runtime/(runtime_mean+runtime_std/3);
             if(remain < 0) remain = 0; //making taking longer than expected?
@@ -343,36 +342,6 @@ color: #444;
 .status-card {
 padding: 5px 0 0 4px;
 border: none;
-}
-.status-color.finished {
-color: white;
-background-color: #28a745;
-}
-.status-color.failed {
-color: white;
-background-color: #c00;
-}
-.status-color.running_sync,
-.status-color.running {
-color: white;
-background-color: #007bff;
-}
-.status-color.waiting {
-color: white;
-background-color: #50bfff;
-}
-.status-color.requested {
-color: white;
-background-color: #50bfff;
-}
-.status-color.removed,
-.status-color.stop_requested,
-.status-color.stopped {
-color: white;
-background-color: gray;
-}
-.status-color .button {
-color: white;
 }
 
 time {
@@ -443,5 +412,8 @@ height: 100%;
 top: 0; 
 right: 0px;
 transition: width 10s;
+}
+.status-color .button {
+color: white;
 }
 </style>

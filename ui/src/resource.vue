@@ -4,87 +4,91 @@
         <div v-if="!resource" class="loading">Loading ...</div>
         <div v-else>
             <div class="header header-sticky">
-                <b-container>
-                    <div style="float: right;">
+                <b-container  style="position: relative;">
+                    <div @click="back()" class="button button-page">
+                        <icon name="angle-left" scale="1.5"/>
+                    </div>
+                    <div style="float: right; margin-left: 20px; margin-bottom: 20px;">
                         <b-btn size="sm" @click="test" variant="success" v-if="resource._canedit && !testing" title="Test">Test</b-btn>
                         <b-btn size="sm" v-if="testing" title="Test" disabled><icon name="cog" :spin="true"/> Testing ... </b-btn>
                         <b-btn @click="edit" v-if="resource._canedit" variant="secondary" size="sm"><icon name="edit"/> Edit</b-btn>
                     </div>
-                    <b-row>
-                        <b-col cols="2">
-                            <div @click="back()" class="button button-page">
-                                <icon name="angle-left" scale="1.5"/>
-                            </div>
-                        </b-col>
-                        <b-col>
-                            <!--<p style="opacity: 0.6">{{resource._detail.desc}}</p>-->
-                            <h2>
-                                <b-badge v-if="!resource.active">Inactive</b-badge>
-                                <b-badge v-if="!resource.gids || resource.gids.length == 0" variant="secondary" title="Private resource"><icon name="lock" scale="0.9"/></b-badge>
-                                {{resource.name}}
-                            </h2>
-                            <p style="opacity: 0.6">{{resource.config.desc}}</p>
-                        </b-col>
-                    </b-row>
+                    <h5>
+                        <b-badge v-if="!resource.active">Inactive</b-badge>
+                        <b-badge v-if="!resource.gids || resource.gids.length == 0" variant="secondary" title="Private resource"><icon name="lock" scale="0.9"/></b-badge>
+                        {{resource.name}}
+                    </h5>
+                    <p style="opacity: 0.6">{{resource.config.desc}}</p>
+
+                    <p>
+                        <statustag :status="resource.status" style="font-size: 150%"/>
+                        <span style="padding-left: 15px; opacity: 0.3; font-size: 85%;">
+                            Tested <timeago :datetime="resource.status_update" :auto-update="1"/>
+                        </span>
+                        <pre v-if="resource.status != 'ok'" style="max-height: 300px; overflow: auto; color: #dc3545">{{resource.status_msg}}</pre>
+                    </p>
                 </b-container>
             </div>
             <br>
             <b-container>
                 <div class="card">
-                <b-row>
-                    <b-col cols="2">
-                        <span class="form-header">Status</span>
-                    </b-col>
-                    <b-col cols="10">
-                        <div class="">
-                            <statustag :status="resource.status"/>
-                            <span style="padding-left: 15px; opacity: 0.8;">
-                                Tested <timeago :datetime="resource.status_update" :auto-update="1"/>
-                            </span>
-                            <pre v-if="resource.status != 'ok'" style="max-height: 300px; margin-top: 15px; overflow: auto; color: #dc3545">{{resource.status_msg}}</pre>
-                        </div>
-                        <br>
-                    </b-col>
-                </b-row>
+                    <span class="form-header">Recent Jobs</span>
+                    <br>
+                    <vue-plotly :data="usage_data" :layout="usage_layout" style="background-color: #f6f6f6; margin: 0 -20px;"/>
+                    <br>
 
-                <b-row v-if="usage_data">
-                    <b-col cols="2">
-                        <span class="form-header">Running Jobs</span>
-                    </b-col>
-                    <b-col cols="10">
-                        <vue-plotly :data="usage_data" :layout="usage_layout" :autoResize="true"/>
-                        <br>
+                    <table class="table table-sm">
+                        <thead>
+                            <tr>
+                                <th>Group</th>
+                                <th>Status</th>
+                                <th>Submitter</th>
+                                <th>Date</th>
+                            </tr>
+                        </thead>
+                        <tr v-for="task in tasks" :key="task._id">
+                            <td style="width: 70px">
+                                <small><icon name="shield-alt"/> {{task._group_id}}</small><br>
+                            </td>
+                            <td>
+                                <span class="status-color" :class="task.status" style="padding: 3px 5px;">
+                                    <statusicon :status="task.status" /> <span style="text-transform: uppercase;" >{{task.status}}</span>
+                                </span>
+                                {{task.service}} <b-badge>{{task.service_branch}}</b-badge><br>
+                                <small>{{task.status_msg}}</small>
+                                <small style="font-size: 70%">{{task._id}}</small>
+                            </td>
+                            <td>
+                                <contact :id="task.user_id" size="small"/>
+                            </td>
+                            <td>
+                                <small v-if="task.status == 'requested'"><time>Requested <timeago :datetime="task.request_date" :auto-update="1"/></time></small>
+                                <small v-else-if="task.status == 'running'"><time>Started <timeago :datetime="task.start_date" :auto-update="1"/></time></small>
+                                <small v-else-if="task.status == 'finished'"><time>Finished <timeago :datetime="task.finish_date" :auto-update="1"/></time></small>
+                                <small v-else-if="task.status == 'failed'"><time>Failed <timeago :datetime="task.fail_date" :auto-update="1"/></time></small>
+                            </td>
+                        </tr>
+                    </table>
+                    <p style="opacity: 0.7; font-size: 80%;">Only showing up to 30 most recent jobs</p>
+                    <!--
+                    <p style="opacity: 0.7;" v-if="tasks.length ==0">No tasks running on this resource.</p>
+                    <span class="form-header">Job History</span>
+                    -->
 
-                        <!--<span class="form-header">Currently Running Tasks</span>-->
-                        <div v-for="task in tasks" :key="task._id" style="margin-bottom: 1px">
-                            <b-row>
-                                <b-col cols="4">
-                                    <contact :id="task.user_id" size="small"/>
-                                    <small><icon name="shield-alt"/> {{task._group_id}}</small><br>
-                                </b-col>
-                                <b-col style="word-break: break-all;">
-                                    <small style="float: right;" v-if="task.start_date"><time>Started <timeago :datetime="task.start_date" :auto-update="1"/></time></small>
-                                    <statusicon :status="task.status"/> <span style="text-transform: uppercase;">{{task.status}}</span>
-                                    {{task.service}} <b-badge>{{task.service_branch}}</b-badge><br>
-                                    <small>{{task.status_msg}}</small>
-                                    <small style="font-size: 70%">{{task._id}}</small>
-                                </b-col>
-                            </b-row>
-                        </div>
-                        <p style="opacity: 0.7;" v-if="tasks.length ==0">No tasks running on this resource.</p>
-                    </b-col>
-                </b-row>
-                </div><!--end card-->
+    
 
-                <span class="form-header">Apps</span>
-                <small>The following services are enabled to run on this resource</small>
-                <div class="">
+                </div>
+
+                <div class="card">
+                    <span class="form-header">Apps</span>
+                    <small>The following services are enabled to run on this resource</small>
+                    <br>
                     <table class="table table-sm">
                         <tr>
-                            <th>Service <small>(score)</small></th>
+                            <th>Github repos <small>(priority score)</small></th>
                             <th>Total Requests <small style="float: right">success rate</small></th>
                         </tr>
-                        <tr v-for="service in resource.config.services" :key="service.name" style="background-color: white;">
+                        <tr v-for="service in resource.config.services" :key="service.name">
                             <td>
                                 {{service.name}}
                                 <small>({{service.score}})</small>
@@ -357,7 +361,7 @@ export default {
             }).catch(console.error);
 
             this.$http.get(Vue.config.amaretti_api+'/resource/tasks/'+this.$route.params.id).then(res=>{
-                this.tasks = res.data;
+                this.tasks = res.data.recent;
             }).catch(console.error);
 
             this.$http.get(Vue.config.amaretti_api+'/resource/usage/'+this.$route.params.id).then(res=>{
@@ -500,7 +504,9 @@ background-color: white;
 padding: 10px;
 }
 .button-page {
-margin-top: 10px;
+position: absolute;
+left: -30px;
+z-index: 1;
 opacity: 0.6;
 }
 .card {

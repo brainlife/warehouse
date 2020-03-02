@@ -176,9 +176,12 @@ font-weight: 600;
 table.info td {
 padding: 10px;
 }
+
 #warehouse .table thead th {
 opacity: 0.5;
 text-transform: uppercase;
+padding: 5px;
+border: none;
 }
 
 .button-fixed {
@@ -554,5 +557,33 @@ background-image: linear-gradient(90deg, #2693ff, #159957);
 */
 background-color: #2693ff;
 border-color: #2693ff90;
+}
+
+.status-color.finished {
+color: white;
+background-color: #28a745;
+}
+.status-color.failed {
+color: white;
+background-color: #c00;
+}
+.status-color.running_sync,
+.status-color.running {
+color: white;
+background-color: #007bff;
+}
+.status-color.waiting {
+color: white;
+background-color: #50bfff;
+}
+.status-color.requested {
+color: white;
+background-color: #50bfff;
+}
+.status-color.removed,
+.status-color.stop_requested,
+.status-color.stopped {
+color: white;
+background-color: gray;
 }
 </style>

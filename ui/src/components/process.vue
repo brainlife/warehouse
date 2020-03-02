@@ -75,8 +75,11 @@
                 <div slot="output" v-if="task.config._outputs">
                     <div v-for="(output, idx) in task.config._outputs" :key="idx" class="output">
                         <div class="output-actions">
-                            <div class="button" v-if="output.dataset_id" @click="open_dataset(output.dataset_id)" title="Show Dataset Detail">
+                            <div class="button" v-if="output.dataset_id" @click="open_dataset(output.dataset_id)" title="Show Data-object Detail">
                                 <icon name="cubes"/>
+                            </div>
+                            <div class="button" v-if="!output.dataset_id" v-b-toggle="task._id+'.'+output.id" title="Show OUtput Detail">
+                               <icon name="cube"/>
                             </div>
                             <div v-if="task.status == 'finished'" style="display: inline-block;">
                                 <div class="button" title="View" @click="set_viewsel_options(task, output)">
@@ -84,6 +87,7 @@
                                 </div>
                                 <div class="button" @click="download(task, output)" title="Download"><icon name="download"/></div>
                                 <div class="button" title="Archive" @click="open_archiver(task, output)"><icon name="archive"/></div>
+                                
                             </div>
                         </div>
 
@@ -109,10 +113,14 @@
                         <!--
                         <editor @init="editorInit" lang="json" height="200">{{output.meta}}</editor>
                         -->
-                        <pre style="max-height: 200px;">{{JSON.stringify(output.meta, null, 4)}}</pre>
+                    
+                        <b-collapse :id="task._id+'.'+output.id" style="margin-top: 8px; margin-right: 20px;">
+                            <div class="output-subtitle">Metadata</div>
+                            <pre style="max-height: 300px; background-color: #eee;">{{JSON.stringify(output.meta, null, 4)}}</pre>
+                        </b-collapse>
 
                         <div v-if="findarchived(task, output).length > 0" class="archived-datasets">
-                            <div class="archived-datasets-title">Archived Datasets</div>
+                            <div class="output-subtitle">Archived Datasets</div>
                             <ul class="archived">
                                 <li v-for="dataset in findarchived(task, output)" :key="dataset._id" @click="open_dataset(dataset._id)" class="clickable">
                                     <timeago class="text-muted" style="float: right" :datetime="dataset.create_date" :auto-update="10"/>
@@ -773,7 +781,7 @@ border-left: 3px solid #ddd;
 padding-left: 8px;
 margin: 3px;
 }
-.archived-datasets-title {
+.output-subtitle {
 color: #aaa;
 font-weight: bold;
 font-size: 95%;

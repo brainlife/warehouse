@@ -21,6 +21,7 @@ export default {
                 return "hourglass-half";
             case "failed":
                 return "exclamation-circle";
+                //return "skull-crossbones";
             case "removed":
                 return "trash";
             case "stop_requested":

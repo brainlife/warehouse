@@ -111,6 +111,8 @@ import 'vue-awesome/icons/brands/skype.js'
 import 'vue-awesome/icons/brands/weibo.js'
 import 'vue-awesome/icons/regular/file.js'
 import 'vue-awesome/icons/regular/calendar-times.js'
+import 'vue-awesome/icons/skull-crossbones.js'
+
 import Icon from 'vue-awesome/components/Icon.vue'
 
 import VueLazyload from 'vue-lazyload'
