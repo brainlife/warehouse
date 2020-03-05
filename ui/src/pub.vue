@@ -12,27 +12,28 @@
                         https://searchworks.stanford.edu/view/rt034xr8593
                 -->
                 <b-row>
-                    <b-col cols="2">
-                        <projectavatar :project="pub.project"/>
-                    </b-col>
                     <b-col cols="10" style="background-color: white;"><!--hide avatar when screen is narrow-->
-                        <h4 style="color: #666; margin-bottom: 10px;">
+                        <h4 style="color: #666; margin-bottom: 5px;">
                             {{pub.name}} 
                         </h4>
-                        <p class="text">{{pub.desc}}</p>
+                        <p style="opacity: 0.7; min-height: 60px; max-height: 105px; overflow-y: auto; margin-bottom: 0px">{{pub.desc}}</p>
+                        
+                        <b-tabs class="brainlife-tab" v-model="tab_index">
+                            <b-tab title="Detail"/>
+                            <!--
+                            <b-tab title="Datasets"/>
+                            <b-tab title="Apps"/>
+                            -->
+                            <b-tab v-for="release in pub.releases" :key="release._id">
+                                <template slot="title"><!--<icon name="file" scale="0.9"/>--> Release {{release.name}}</template>
+                            </b-tab>
+                        </b-tabs>
+
+                    </b-col>
+                    <b-col cols="2">
+                        <projectavatar :project="pub.project" height="125" width="125"/>
                     </b-col>
                 </b-row>
-                <br>
-                <b-tabs class="brainlife-tab" v-model="tab_index">
-                    <b-tab title="Detail"/>
-                    <!--
-                    <b-tab title="Datasets"/>
-                    <b-tab title="Apps"/>
-                    -->
-                    <b-tab v-for="release in pub.releases" :key="release._id">
-                         <template slot="title"><!--<icon name="file" scale="0.9"/>--> Release {{release.name}}</template>
-                    </b-tab>
-                </b-tabs>
             </b-container>
         </div><!--header-->
 
@@ -42,48 +43,30 @@
             <!-- detail -->
             <div v-if="tab_index == 0">
                 <b-row>
-                    <b-col cols="10">
-                        <b-row>
-                            <b-col cols="2">
-                                <span class="form-header">Published On</span>
-                            </b-col>
-                            <b-col>
-                                <p><time>{{new Date(pub.create_date).toLocaleDateString()}}</time></p>
-                                <br>
-                            </b-col>
-                        </b-row>                         
-                        <b-row>
-                            <b-col cols="2">
-                                <span class="form-header">Authors</span>
-                            </b-col>
-                            <b-col>
-                                <p v-for="contact in pub.authors" :key="contact._id">
-                                    <contact :fullname="contact.fullname" :email="contact.email"></contact>
-                                </p>
-                                <br>
-                            </b-col>
-                        </b-row>
-                        <b-row v-if="pub.readme">
-                            <b-col cols="2">
-                                <span class="form-header">Detail</span>
-                            </b-col>
-                            <b-col>
-                                <vue-markdown :source="pub.readme" class="readme box"></vue-markdown>
-                                <br>
-                            </b-col>
-                        </b-row>  
-                        <b-row v-if="pub.contributors.length > 0">
-                            <b-col cols="2">
-                                <span class="form-header">Contributors</span>
-                            </b-col>
-                            <b-col>
-                                <p v-for="contact in pub.contributors" :key="contact._id">
-                                    <contact :fullname="contact.fullname" :email="contact.email"></contact>
-                                </p>
-                                <br>
-                            </b-col>
-                        </b-row>
-             
+                    <b-col cols="10">                     
+                        <div class="box">
+
+                            <b-row>
+                                <b-col>
+                                    <span class="form-header">Authors</span>
+                                    <br>
+                                    <p v-for="contact in pub.authors" :key="contact._id">
+                                        <contact :fullname="contact.fullname" :email="contact.email"></contact>
+                                    </p>
+                                </b-col>
+                                <b-col v-if="pub.contributors.length > 0">
+                                    <span class="form-header">Contributors</span>
+                                    <br>
+                                    <p v-for="contact in pub.contributors" :key="contact._id">
+                                        <contact :fullname="contact.fullname" :email="contact.email"></contact>
+                                    </p>
+                                </b-col>
+                            </b-row>
+
+                        </div>
+                        <div v-if="pub.readme" class="box">
+                            <vue-markdown :source="pub.readme" class="readme"></vue-markdown>
+                        </div>  
 
                         <b-row>
                             <b-col cols="2">
@@ -140,20 +123,16 @@
                             </b-col>
                         </b-row>
                     
-                        <b-row v-if="resource_citations.length > 0">
-                            <b-col cols="2">
-                                <span class="form-header">Resource Citations</span>
-                            </b-col>
-                            <b-col>
-                                <p><small>Datasets published on this dataset are computed on the following resources.</small></p>
-                                <p v-for="resource_citation in resource_citations">
-                                    <b>{{resource_citation.resource.name}}</b>
-                                    <small>{{resource_citation.resource.config.desc}}</small>
-                                    <br>
-                                    <i>{{resource_citation.citation}}</i>
-                                </p>
-                            </b-col>
-                        </b-row>
+                        <div v-if="resource_citations.length > 0" class="box">
+                            <span class="form-header">Resource Citations</span>
+                            <p><small>Datasets published on this dataset are computed on the following resources.</small></p>
+                            <p v-for="resource_citation in resource_citations">
+                                <icon name="caret-right"/> <b>{{resource_citation.resource.name}}</b>
+                                <small>{{resource_citation.resource.config.desc}}</small>
+                                <br>
+                                <i>{{resource_citation.citation}}</i>
+                            </p>
+                        </div>
 
                         <!--
                         <b-row>
@@ -198,17 +177,16 @@
                         -->
 
                         <hr>
-                        <b-row>
-                            <b-col cols="2">
-                            </b-col>
-                            <b-col>
-                                <vue-disqus shortname="brain-life" :identifier="pub._id"/>
-                            </b-col>
-                        </b-row>
+                        <vue-disqus shortname="brain-life" :identifier="pub._id"/>
 
                     </b-col>
                     <b-col cols="2">
                         <doibadge :doi="pub.doi" style="margin-bottom: 20px;"/>
+                        <p>
+                            <b-badge pill class="bigpill">
+                                <icon name="calendar" style="opacity: 0.4;"/>&nbsp;&nbsp;&nbsp;<small>Published</small>&nbsp;&nbsp;<time>{{new Date(pub.create_date).toLocaleDateString()}}</time>
+                            </b-badge>
+                        </p>
                         <p>
                             <span class="form-header">Topics</span>
                         </p>
@@ -682,7 +660,7 @@ right: 5px;
 .box {
 background-color: white;
 padding: 20px;
-box-shadow: 2px 2px 3px #eee;
+margin-bottom: 20px;
 }
 .citation-box {
 border: none;

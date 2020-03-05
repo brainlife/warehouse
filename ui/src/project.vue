@@ -85,7 +85,7 @@
                         <small>Group ID</small>
                     </b-badge>
                 </p>
-                <p style="opacity: 0.8;  margin-bottom: 0px">
+                <p style="opacity: 0.8;  padding-bottom: 10px; height: 85px; overflow-y: auto;">
                     {{selected.desc||'no description.'}}
                 </p>
                 <br clear="left">

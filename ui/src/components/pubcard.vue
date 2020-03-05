@@ -19,9 +19,10 @@
                 <!--<small>{{pub.project.name}} <icon name="arrow-right"/></small>-->
                 {{pub.name}}
             </h5>
-            <p style="opacity: 0.8; line-height: 180%;">
+            <p style="opacity: 0.8; line-height: 180%; max-height: 125px; overflow: auto;">
                 {{pub.desc}}
-                <br>
+            </p>
+            <p>
                 <b-badge v-for="tag in pub.tags" :key="tag" class="topic">{{tag}}</b-badge>
             </p>
             <p style="float: right;">

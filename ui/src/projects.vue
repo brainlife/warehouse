@@ -4,6 +4,7 @@
         <div class="search-box">
             <b-form-input v-model="query" type="text" placeholder="Search Projects" @input="change_query_debounce" class="input"/>
             <icon name="search" class="search-icon" scale="1.5"/>
+            <icon name="times" class="clear-search" scale="1.5" @click="clearQuery()" v-if="query != ''"/>
         </div>
     </div>
     <div class="page-content" v-if="my_projects">
@@ -110,6 +111,11 @@ export default {
     },
 
     methods: {
+        clearQuery() {
+            this.query = ''
+            this.change_query();
+        },
+
         load() {
             console.log("loading projects");
 
@@ -134,7 +140,7 @@ export default {
             this.$http.get('project', {params: {
                 find: JSON.stringify({$and: ands}),
                 limit: 500, //TODO implement paging eventually
-                select: '-readme -meta',
+                select: '-readme -meta -stats.resources',
                 sort: 'name',
             }}).then(res=>{
                 this.my_projects = [];

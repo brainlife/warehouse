@@ -467,6 +467,15 @@ left: 20px;
 z-index: -1;
 transition: color 0.5s;
 }
+.search-box .clear-search {
+position: absolute;
+top: 5px;
+right: 20px;
+z-index: 1;
+transition: color 0.5s;
+opacity: 0.4;
+cursor: pointer;
+}
 .search-box .input::placeholder {
 font-weight: bold;
 }

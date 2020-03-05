@@ -5,14 +5,15 @@
         <b-form-input required v-model="pub.name" type="text" placeholder="Title of the paper"></b-form-input>
     </b-form-group>
     <b-form-group label="Description *" horizontal>
-        <b-form-textarea v-model="pub.desc" :rows="3" placeholder="A short summary of this dataset/app publication." required></b-form-textarea>
+        <b-form-textarea v-model="pub.desc" :rows="3" placeholder="A short description (or subtitle) of this publication (please keep it under 500 characters.)" required></b-form-textarea>
+        <b-alert :show="pub.desc.length > 700" variant="danger">Sub-title is too long. Please use the Detail section below for detailed description of this publication.</b-alert>
+    </b-form-group>
+    <b-form-group label="Detail" horizontal>
+        <b-form-textarea v-model="pub.readme" :rows="10" placeholder="Enter detailed description for this publication and your project. Explain what other searchers can do with your data. You can enter chars / tables / katex(math equations) etc.."></b-form-textarea>
+        <small class="text-muted">in <a href="https://help.github.com/articles/basic-writing-and-formatting-syntax/" target="_blank">markdown format</a></small>
     </b-form-group>
     <b-form-group label="Tags" horizontal>
         <select2 :options="oldtags" v-model="pub.tags" :multiple="true" :tags="true"></select2>
-    </b-form-group>
-    <b-form-group label="Detail" horizontal>
-        <b-form-textarea v-model="pub.readme" :rows="10" placeholder="Any detailed description for this publications. You can enter chars / tables / katex(math equations) etc.."></b-form-textarea>
-        <small class="text-muted">in <a href="https://help.github.com/articles/basic-writing-and-formatting-syntax/" target="_blank">markdown format</a></small>
     </b-form-group>
     <b-form-group label="License *" horizontal>
         <b-form-select :options="licenses" required v-model="pub.license"/>

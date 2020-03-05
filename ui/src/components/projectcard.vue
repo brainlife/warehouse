@@ -15,14 +15,14 @@
         </p>
     </div>
     <div class="status">
-        <b-row v-if="project.stats">
+        <b-row v-if="project.stats" no-gutters="true">
             <b-col md="9" title="unique subjects" v-if="project.stats.datasets && project.stats.datasets.subject_count">
                 {{project.stats.datasets.subject_count}} <span style="opacity:0.6;">sub</span>
                 <span style="opacity:0.2;">|</span>
                 {{project.stats.datasets.count}} <span style="opacity:0.6;">objs</span>
                 <span v-if="project.stats.datasets.size" style="opacity:0.8;">({{project.stats.datasets.size | filesize}})</span>
             </b-col>
-            <b-col md="3" title="active pipeline rules" v-if="project.stats.rules">
+            <b-col md="3" title="active pipeline rules" v-if="project.stats.rules" style="font-size: 90%; text-align: right;">
                 <icon name="robot" scale="0.8"/>&nbsp;{{project.stats.rules.active}}
                 <span v-if="project.stats.rules.inactive > 0">/ {{project.stats.rules.inactive+project.stats.rules.active}}</span>
             </b-col>

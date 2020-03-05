@@ -5,6 +5,7 @@
         <div class="search-box">
             <b-form-input v-model="query" type="text" placeholder="Search Apps" @focus.native="focus_search()" @input="change_query_debounce" class="input"/>
             <icon name="search" class="search-icon" scale="1.5"/>
+            <icon name="times" class="clear-search" scale="1.5" v-if="query != ''" @click="clearQuery()"/>
         </div>
     </div>
     <div class="group-list" v-if="app_groups" ref="group-list">
@@ -153,6 +154,11 @@ export default {
     methods: {
         focus_search() {
             //TODO - show advanced search controller?
+        },
+
+        clearQuery() {
+            this.query = ''
+            this.change_query();
         },
 
         get_mongo_query() {
@@ -388,6 +394,9 @@ box-shadow: 2px 2px 6px rgba(0,0,0,0.2);
 }
 .button-fixed {
 right: 280px;
+}
+.search-box .clear-search {
+right: 260px;
 }
 </style>
 

@@ -34,7 +34,7 @@
                 <div class="card">
                     <span class="form-header">Recent Jobs</span>
                     <br>
-                    <vue-plotly :data="usage_data" :layout="usage_layout" style="background-color: #f6f6f6; margin: 0 -20px;"/>
+                    <vue-plotly v-if="usage_data" :data="usage_data" :layout="usage_layout" style="background-color: #f6f6f6; margin: 0 -20px;"/>
                     <br>
 
                     <table class="table table-sm">

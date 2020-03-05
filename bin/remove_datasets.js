@@ -153,6 +153,7 @@ function remove_failed(cb) {
     });
 }
 
+/* we should not remove dataset - data might be needed through published dataset
 function move_removed(cb) {
     let month_ago = new Date();
     month_ago.setDate(month_ago.getDate()-90);
@@ -187,4 +188,6 @@ function move_removed(cb) {
         });
     });
 }
+*/
+
 

@@ -118,7 +118,7 @@ router.get('/:id/badge', (req, res, next)=>{
 10|warehou |     "_id": "58c56d92e13a50849b258801"
 10|warehou | }
         */
-        res.redirect('https://img.shields.io/badge/brainlife-'+app.stats.serviceinfo.counts.requested+' runs ('+app.stats.serviceinfo.users+' users)-brightgreen.svg');
+        res.redirect('https://img.shields.io/badge/brainlife-'+app.stats.requested+' runs ('+app.stats.users+' users)-brightgreen.svg');
     });
 });
 

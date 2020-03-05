@@ -1,3 +1,4 @@
+#!/usr/bin/env node
 "use strict";
 
 const fs = require('fs');
@@ -31,22 +32,22 @@ exports.send_mail = async ()=>{
     let users = await exports.users_general();
 
     //for safety..
-    users = users.slice(0, 1); //limit
+    //users = users.slice(0, 1); //limit
 
     //override with debug 
     users = [
     //    {fullname: "Brainlife.io", email: "brlife@iu.edu"},
-    //    {fullname: "Soichi Hayashi", email: "soichih@gmail.com"},
-        {fullname: "Soichi Hayashi (IU)", email: "hayashis@iu.edu"},
-    //    {fullname: "Stephanie McGavin", email: "smcgavin@iu.edu"},
+        {fullname: "Soichi Hayashi", email: "soichih@gmail.com"},
+        //{fullname: "Stephanie McGavin", email: "smcgavin@iu.edu"},
+        //{fullname: "Franco Pestilli", email: "franpest@iu.edu"},
     //    {fullname: "Soichi Hayashi (IU-1)", email: "hayashis+1@iu.edu"},
     ];
 
     let message = {
-        subject: "brainlife.io Newsletter - January 2020",
+        subject: "brainlife.io Newsletter - March 2020",
         from: config.mail.from,
-        text: "Sorry.. Please open this newsletter with html enabled email client!",
-        html: fs.readFileSync(__dirname+'/newsletters/jan2020/index.html', "utf8"),
+        text: "Please open this newsletter with html enabled email client!",
+        html: fs.readFileSync(__dirname+'/newsletters/march2020/index.html', "utf8"),
         list: {
             help: 'brlife@iu.edu?subject=newsletter-help',
             unsubscribe: {
@@ -55,20 +56,27 @@ exports.send_mail = async ()=>{
             },
         },
         attachments: [
+            //common imiages
             {
                 filename: 'cloud.png',
-                path: __dirname+'/newsletters/jan2020/img/cloud.png',
+                path: __dirname+'/newsletters/img/cloud.png',
                 cid: 'img@cloud.png' //same cid value as in the html img src
             },
             {
                 filename: 'logo.png',
-                path: __dirname+'/newsletters/jan2020/img/logo.png',
+                path: __dirname+'/newsletters/img/logo.png',
                 cid: 'img@logo.png' //same cid value as in the html img src
+            },
+
+            //newsletter specific images
+            {
+                filename: 'classifyber.png',
+                path: __dirname+'/newsletters/march2020/img/classifyber.png',
+                cid: 'img@classifyber.png' //same cid value as in the html img src
             },
         ],
     };
     //console.dir(message);
-
     let transporter = nodemailer.createTransport(config.mail.mailer);
 
     //create batches of to address (IU mail server only accept up to 30)
@@ -84,16 +92,16 @@ exports.send_mail = async ()=>{
         }, "");
 
         console.log("sending to ", message.bcc);
-
         let info = await transporter.sendMail(message);
         console.dir(info);
     }, err=>{
+        if(err) throw err;
         transporter.close();
+        console.log("done..");
         process.exit(1);
     });
 }
 
-exports.send_mail();
 
 //test
 /*
@@ -110,3 +118,4 @@ exports.send_mail(users, err=>{
     if(err) throw err;
 });
 */
+exports.send_mail();
