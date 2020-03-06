@@ -214,9 +214,9 @@
                             <span class="form-header metadata">Metadata / sidecar <small v-if="dataset._canedit">(editable)</small></span>
                             <div style="margin-right: 30px">
                                 <editor v-model="dataset._meta" @init="editorInit" @input="update_meta_json()" lang="json" height="200"/>
-                                <div v-if="dataset._canedit">
-                                    <br>
+                                <div v-if="dataset._canedit" style="margin: 5px 0;">
                                     <b-button v-if="dataset._meta_dirty" variant="primary" @click="save_meta()" style="float: right;">Save Metadata</b-button>
+                                    <br clear="both">
                                 </div>
                             </div>
                         </div>
@@ -878,7 +878,6 @@ padding: 10px;
 .metadata.form-header {
 padding: 10px;
 margin-bottom: 0;
-background-color: #3300ff0d;
 }
 </style>
 

@@ -386,8 +386,16 @@ export default {
 
         preselect_single_items(input) {
             if (input.options.length == 1) {
-                //TODO - for multi inputs, what should I do?
-                this.inputs[input.id].selected[0] = input.options[0];
+                //we know which item goes here, but don't use it twice..
+                let selected = [];
+                for(let id in this.inputs) {
+                    let item = this.inputs[id].selected[0];
+                    if(item) selected.push(item.dataset.id);
+                }
+                //ok.. never been used, let's use it
+                if(!selected.includes(input.options[0].dataset.id)) {
+                    this.inputs[input.id].selected[0] = input.options[0];
+                }
             }
         },
 
