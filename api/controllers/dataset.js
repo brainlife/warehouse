@@ -241,7 +241,7 @@ router.get('/inventory', jwt({secret: config.express.pubkey, credentialsRequired
 /**
  * @apiGroup Dataset
  * @api {get} /dataset/prov/:id     Get provenance (edges/nodes)
- * @apiDescription                  Get provenance graph info
+ * @apiDescription                  Get provenance graph info (Public API)
  *
  */
 router.get('/prov/:id', (req, res, next)=>{
@@ -251,6 +251,33 @@ router.get('/prov/:id', (req, res, next)=>{
         res.json({nodes, edges});
     });
 });
+
+/**
+ * @apiGroup Dataset
+ * @api {get} /dataset/product/:id  Download dataobject product
+ *
+ */
+router.get('/product/:id', jwt({secret: config.express.pubkey}),  (req, res, next)=>{
+    let id = req.params.id;
+    console.log("looking for dataset", id);
+    common.getprojects(req.user, function(err, canread_project_ids, canwrite_project_ids) {
+        if(err) return next(err);
+        db.Datasets.findById(id, (err, dataset)=>{
+            if(err) return next_id(err);
+            if(!dataset) return next_id(new Error("can't find the dataset with id:"+id));
+            canread_project_ids = canread_project_ids.map(id=>id.toString());
+            if(!~canread_project_ids.indexOf(dataset.project.toString())) return next("can't access this dataset");
+
+            //now load products
+            db.DatasetProducts.findOne({dataset_id: id}, (err, rec)=>{
+                if(err) return next(err);
+                if(!rec) return res.json({product: null});
+                res.json({product: rec.product});
+            });
+        });
+    });
+});
+
 
 /**
  * @apiGroup Dataset

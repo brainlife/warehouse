@@ -36,212 +36,211 @@
                 <datatypetag v-if="dataset.datatype" :datatype="dataset.datatype" :tags="dataset.datatype_tags"></datatypetag>
             </h5>
         </div><!--header-->
-        <b-tabs class="brainlife-tab" v-model="tab_index">
-            <b-tab title="Details">
-                <div class="dataset-detail">
-                    <b-alert :show="dataset.removed" variant="secondary">This data-object has been removed</b-alert>
-                    <b-alert :show="!dataset.removed && dataset.status == 'storing'" variant="secondary"><icon name="cog" spin/> Archiving Data-Object.. Please wait for a minute before you can interact with this data-object.</b-alert>
-                    <!-- detail -->
-                    <div class="margin20">
-                        <b-row v-if="dataset._canedit">
-                            <b-col cols="3"></b-col>
-                            <b-col>
-                                <b-input-group prepend="Subject" size="sm" title="Only process subjects that matches this regex">
-                                    <b-form-input v-model="dataset.meta.subject" type="text" @input="update_meta()"></b-form-input>
-                                    <b-input-group-prepend is-text>Session</b-input-group-prepend>
-                                    <b-form-input v-model="dataset.meta.session" type="text" @input="update_meta()"></b-form-input>
-                                    <b-input-group-append v-if="dataset._meta_dirty">
-                                        <b-btn variant="primary" @click="save_meta()"><icon name="check"/></b-btn>
-                                    </b-input-group-append>
-                                </b-input-group>
-                                <br>
-                            </b-col>
-                        </b-row>
-                        <b-row v-if="dataset.desc || dataset._canedit">
-                            <b-col cols="3">
-                                <span class="form-header">Description</span>
-                            </b-col>
-                            <b-col>
-                                <div v-if="dataset._canedit">
-                                    <b-form-textarea v-model="dataset.desc" @input="dataset._desc_dirty = true" :rows="2"/>
-                                    <div v-if="dataset._desc_dirty" style="text-align:right;margin-top:10px;">
-                                        <b-button variant="primary" @click="save_desc()">Save Description</b-button>
-                                    </div>
-                                </div>
-                                <div v-else>
-                                    {{dataset.desc}}
-                                </div>
-                                <br>
-                            </b-col>
-                        </b-row>
-                        <b-row>
-                            <b-col cols="3"><span class="form-header">Tags</span></b-col>
-                            <b-col cols="9">
-                                <div v-if="dataset._canedit && alltags">
-                                    <tageditor :value="dataset.tags" v-model="dataset.tags" @input="dataset._tags_dirty = true" :options="alltags"/>
-                                    <div v-if="dataset._tags_dirty" style="text-align:right;margin-top:10px;">
-                                        <b-button variant="primary" @click="save_tags()">Save Tags</b-button>
-                                    </div>
-                                </div>
-                                <div v-else>
-                                    <span class="text-muted" v-if="dataset.tags.length == 0">No Tags</span>
-                                    <tags :tags="dataset.tags"></tags>
-                                </div>
-                                <br>
-                            </b-col>
-                        </b-row>
-                        <b-row>
-                            <b-col cols="3"><span class="form-header">Datatype</span></b-col>
-                            <b-col>
-                                <datatype :datatype="dataset.datatype" :datatype_tags="dataset.datatype_tags"></datatype>
-                                <br>
-                            </b-col>
-                        </b-row>
-                        <b-row v-if="dataset.prov && dataset.prov.task && dataset.prov.task.config && dataset.prov.task.config._app">
-                            <b-col cols="3"><span class="form-header">Produced by</span></b-col>
-                            <b-col cols="9">
-                                <app slot="header"
-                                    :appid="dataset.prov.task.config._app" 
-                                    :branch="dataset.prov.task.service_branch||'master'">
-                                    <taskconfig style="margin: 10px; margin-bottom: 40px;" :task="dataset.prov.task"/>
-                                </app>
-                                <br>
-                            </b-col>
-                        </b-row>
-                        <b-row v-if="dataset.prov && dataset.prov.task">
-                            <b-col cols="3"><span class="form-header">App Commit ID</span></b-col>
-                            <b-col cols="9">
-                                <a :href="'https://github.com/'+dataset.prov.task.service+'/tree/'+dataset.prov.task.commit_id">
-                                    <b-badge pill class="bigpill">
-                                        <icon name="brands/github" style="opacity: 0.4;"/>&nbsp;&nbsp;&nbsp;{{dataset.prov.task.commit_id}}
-                                    </b-badge>
-                                </a>
-                                <br>
-                                <br>
-                            </b-col>
-                        </b-row>
-                        <b-row v-if="resource">
-                            <b-col cols="3"><span class="form-header">Produced In</span></b-col>
-                            <b-col>
-                                <p :title="resource._id">
-                                    <icon name="server" style="opacity: 0.5; margin-right: 7px;"/>
-                                    {{resource.name}}
-                                    <small v-if="resource.desc">{{resource.desc}}</small>
-                                </p>
-                            </b-col>
-                        </b-row>              
-                        <b-row v-if="dataset.product">
-                            <b-col cols="3"><span class="form-header">Task Result <small>(product.json)</small></span></b-col>
-                            <b-col cols="9">
-                                <product :product="dataset.product"/>
-                                <br>
-                            </b-col>
-                        </b-row>
 
-                        <b-row>
-                            <b-col cols="3"><span class="form-header">Archived in</span></b-col>
-                            <b-col>
-                                <p>
-                                    <span v-if="dataset.status == 'stored'">
-                                        <b>
-                                            {{dataset.storage}} 
-                                            <span v-if="dataset.storage == 'copy'">- {{dataset.storage_config.storage}}</span>
-                                            <span v-if="dataset.storage_config && dataset.storage_config.path" style="opacity: 0.8; font-weight: normal; font-size: 90%">{{dataset.storage_config.path}}</span>
-                                        </b>
-                                        <span class="text-muted" v-if="dataset.size">({{dataset.size | filesize}})</span>
-                                        <div v-if="dataset.storage == 'url'">
-                                            <b-row v-for="file in dataset.storage_config.files" :key="file.id">
-                                                <b-col cols="2">{{file.local}}</b-col>
-                                                <b-col><a :href="file.url">{{file.url}}</a></b-col>
-                                            </b-row>
+            <b-tabs class="brainlife-tab" v-model="tab_index">
+                <b-tab title="Details">
+                    <div class="dataset-detail">
+                        <b-alert :show="dataset.removed" variant="secondary">This data-object has been removed</b-alert>
+                        <b-alert :show="!dataset.removed && dataset.status == 'storing'" variant="secondary"><icon name="cog" spin/> Archiving Data-Object.. Please wait for a minute before you can interact with this data-object.</b-alert>
+                        <!-- detail -->
+                        <div class="margin20">
+                            <b-row v-if="dataset._canedit">
+                                <b-col cols="3"></b-col>
+                                <b-col>
+                                    <b-input-group prepend="Subject" size="sm" title="Only process subjects that matches this regex">
+                                        <b-form-input v-model="dataset.meta.subject" type="text" @input="update_meta()"></b-form-input>
+                                        <b-input-group-prepend is-text>Session</b-input-group-prepend>
+                                        <b-form-input v-model="dataset.meta.session" type="text" @input="update_meta()"></b-form-input>
+                                        <b-input-group-append v-if="dataset._meta_dirty">
+                                            <b-btn variant="primary" @click="save_meta()"><icon name="check"/></b-btn>
+                                        </b-input-group-append>
+                                    </b-input-group>
+                                    <br>
+                                </b-col>
+                            </b-row>
+                            <b-row v-if="dataset.desc || dataset._canedit">
+                                <b-col cols="3">
+                                    <span class="form-header">Description</span>
+                                </b-col>
+                                <b-col>
+                                    <div v-if="dataset._canedit">
+                                        <b-form-textarea v-model="dataset.desc" @input="dataset._desc_dirty = true" :rows="2"/>
+                                        <div v-if="dataset._desc_dirty" style="text-align:right;margin-top:10px;">
+                                            <b-button variant="primary" @click="save_desc()">Save Description</b-button>
                                         </div>
-                                    </span> 
-                                    <span v-if="(dataset.status == 'failed' || dataset.status == 'storing')">
-                                        <task :task="dataset.archive_task" v-if="dataset.archive_task"/>
-                                    </span> 
-                                    <span v-if="!dataset.status">
-                                        Status is unknown
-                                    </span> 
-                                    <span title="Backup of this data-object exists in Scholarly Data Archive (SDA) system." v-if="dataset.backup_date" class="text-success">
-                                        <b-badge variant="success"><icon name="archive" scale="0.7"/> SDA</b-badge>
-                                    </span>
-                                </p>
-                            </b-col>
-                        </b-row>
-                        <b-row>
-                            <b-col cols="3"><span class="form-header">Archived by</span></b-col>
-                            <b-col>
-                                <p>
-                                    <contact :id="dataset.user_id"/> 
-                                    <span class="text-muted"> <icon name="calendar"/> {{new Date(dataset.create_date).toLocaleString()}}</span>
-                                </p>
-                            </b-col>
-                        </b-row>
-                        <b-row>
-                            <b-col cols="3"><span class="form-header">Download Count</span></b-col>
-                            <b-col>
-                                <p><b>{{dataset.download_count}}</b> times</p>
-                            </b-col>
-                        </b-row>
-
-                        <b-row v-if="dataset._pubs && dataset._pubs.length > 0">
-                            <b-col cols="3"><span class="form-header">Publications</span></b-col>
-                            <b-col cols="9">
-                                <p><small class="text-muted">This data-object has been published on the following publications.</small></p>
-                                <div v-for="(release, idx) in dataset.publications" :key="idx">
-                                    <div v-for="(pub, idx) in dataset._pubs.filter(p=>!p.removed)" :key="idx">
-                                        <p v-for="r in pub.releases.filter(r=>r._id == release && !r.removed)" :key="r._id">
-                                            <a href="javascript:void(0);" @click="openpub(pub)">
-                                                <icon name="book" scale="0.8"/> {{pub.name||pub}} - Release {{r.name}}
-                                            </a>
-                                        </p>
                                     </div>
-                                </div>
-                            </b-col>
-                        </b-row>
-                        <b-row>
-                            <b-col cols="3">
-                                <span class="form-header">Metadata / sidecar <small v-if="dataset._canedit">(editable)</small></span>
-                            </b-col>
-                            <b-col style="position: relative;">
-                                <editor v-model="dataset._meta" @init="editorInit" @input="update_meta_json()" lang="json" height="200"></editor>
+                                    <div v-else>
+                                        {{dataset.desc}}
+                                    </div>
+                                    <br>
+                                </b-col>
+                            </b-row>
+                            <b-row>
+                                <b-col cols="3"><span class="form-header">Tags</span></b-col>
+                                <b-col cols="9">
+                                    <div v-if="dataset._canedit && alltags">
+                                        <tageditor :value="dataset.tags" v-model="dataset.tags" @input="dataset._tags_dirty = true" :options="alltags"/>
+                                        <div v-if="dataset._tags_dirty" style="text-align:right;margin-top:10px;">
+                                            <b-button variant="primary" @click="save_tags()">Save Tags</b-button>
+                                        </div>
+                                    </div>
+                                    <div v-else>
+                                        <span class="text-muted" v-if="dataset.tags.length == 0">No Tags</span>
+                                        <tags :tags="dataset.tags"></tags>
+                                    </div>
+                                    <br>
+                                </b-col>
+                            </b-row>
+                            <b-row>
+                                <b-col cols="3"><span class="form-header">Datatype</span></b-col>
+                                <b-col>
+                                    <datatype :datatype="dataset.datatype" :datatype_tags="dataset.datatype_tags"></datatype>
+                                    <br>
+                                </b-col>
+                            </b-row>
+                            <b-row v-if="dataset.prov && dataset.prov.task && dataset.prov.task.config && dataset.prov.task.config._app">
+                                <b-col cols="3"><span class="form-header">Produced by</span></b-col>
+                                <b-col cols="9">
+                                    <app slot="header"
+                                        :appid="dataset.prov.task.config._app" 
+                                        :branch="dataset.prov.task.service_branch||'master'">
+                                        <taskconfig style="margin: 10px; margin-bottom: 40px;" :task="dataset.prov.task"/>
+                                    </app>
+                                    <br>
+                                </b-col>
+                            </b-row>
+                            <b-row v-if="dataset.prov && dataset.prov.task">
+                                <b-col cols="3"><span class="form-header">App Commit ID</span></b-col>
+                                <b-col cols="9">
+                                    <a :href="'https://github.com/'+dataset.prov.task.service+'/tree/'+dataset.prov.task.commit_id">
+                                        <b-badge pill class="bigpill">
+                                            <icon name="brands/github" style="opacity: 0.4;"/>&nbsp;&nbsp;&nbsp;{{dataset.prov.task.commit_id}}
+                                        </b-badge>
+                                    </a>
+                                    <br>
+                                    <br>
+                                </b-col>
+                            </b-row>
+                            <b-row v-if="resource">
+                                <b-col cols="3"><span class="form-header">Produced In</span></b-col>
+                                <b-col>
+                                    <p :title="resource._id">
+                                        <icon name="server" style="opacity: 0.5; margin-right: 7px;"/>
+                                        {{resource.name}}
+                                        <small v-if="resource.desc">{{resource.desc}}</small>
+                                    </p>
+                                </b-col>
+                            </b-row>              
+                            <b-row>
+                                <b-col cols="3"><span class="form-header">Archived in</span></b-col>
+                                <b-col>
+                                    <p>
+                                        <span v-if="dataset.status == 'stored'">
+                                            <b>
+                                                {{dataset.storage}} 
+                                                <span v-if="dataset.storage == 'copy'">- {{dataset.storage_config.storage}}</span>
+                                                <span v-if="dataset.storage_config && dataset.storage_config.path" style="opacity: 0.8; font-weight: normal; font-size: 90%">{{dataset.storage_config.path}}</span>
+                                            </b>
+                                            <span class="text-muted" v-if="dataset.size">({{dataset.size | filesize}})</span>
+                                            <div v-if="dataset.storage == 'url'">
+                                                <b-row v-for="file in dataset.storage_config.files" :key="file.id">
+                                                    <b-col cols="2">{{file.local}}</b-col>
+                                                    <b-col><a :href="file.url">{{file.url}}</a></b-col>
+                                                </b-row>
+                                            </div>
+                                        </span> 
+                                        <span v-if="(dataset.status == 'failed' || dataset.status == 'storing')">
+                                            <task :task="dataset.archive_task" v-if="dataset.archive_task"/>
+                                        </span> 
+                                        <span v-if="!dataset.status">
+                                            Status is unknown
+                                        </span> 
+                                        <span title="Backup of this data-object exists in Scholarly Data Archive (SDA) system." v-if="dataset.backup_date" class="text-success">
+                                            <b-badge variant="success"><icon name="archive" scale="0.7"/> SDA</b-badge>
+                                        </span>
+                                    </p>
+                                </b-col>
+                            </b-row>
+                            <b-row>
+                                <b-col cols="3"><span class="form-header">Archived by</span></b-col>
+                                <b-col>
+                                    <p>
+                                        <contact :id="dataset.user_id"/> 
+                                        <span class="text-muted"> <icon name="calendar"/> {{new Date(dataset.create_date).toLocaleString()}}</span>
+                                    </p>
+                                </b-col>
+                            </b-row>
+                            <b-row>
+                                <b-col cols="3"><span class="form-header">Download Count</span></b-col>
+                                <b-col>
+                                    <p><b>{{dataset.download_count}}</b> times</p>
+                                </b-col>
+                            </b-row>
+
+                            <b-row v-if="dataset._pubs && dataset._pubs.length > 0">
+                                <b-col cols="3"><span class="form-header">Publications</span></b-col>
+                                <b-col cols="9">
+                                    <p><small class="text-muted">This data-object has been published on the following publications.</small></p>
+                                    <div v-for="(release, idx) in dataset.publications" :key="idx">
+                                        <div v-for="(pub, idx) in dataset._pubs.filter(p=>!p.removed)" :key="idx">
+                                            <p v-for="r in pub.releases.filter(r=>r._id == release && !r.removed)" :key="r._id">
+                                                <a href="javascript:void(0);" @click="openpub(pub)">
+                                                    <icon name="book" scale="0.8"/> {{pub.name||pub}} - Release {{r.name}}
+                                                </a>
+                                            </p>
+                                        </div>
+                                    </div>
+                                </b-col>
+                            </b-row>                        
+                        </div>
+                    </div><!--dataset-detail-->
+                </b-tab>
+                <b-tab title="Provenance">
+                    <div v-if="prov" class="dataset-provenance">
+                        <div v-if="prov.edges.length == 0">
+                            <b-alert show variant="secondary">This data-object was uploaded by the user, and therefore has no provenance information.</b-alert>
+                        </div>
+                        <div v-else style="height: 100%">
+                            <div style="position: absolute; right: 10px; top: 10px; z-index: 1;">
+                                <span style="opacity: 0.6; margin-right: 10px;">Double click to open items</span>
+                            </div>
+                            <div ref="vis" style="height: 100%;"/>
+                        </div>
+                    </div>
+                </b-tab>
+                <b-tab title="Metadata">
+                    <div class="dataset-meta">
+                        <div>
+                            <span class="form-header metadata">Metadata / sidecar <small v-if="dataset._canedit">(editable)</small></span>
+                            <div style="margin-right: 30px">
+                                <editor v-model="dataset._meta" @init="editorInit" @input="update_meta_json()" lang="json" height="200"/>
                                 <div v-if="dataset._canedit">
                                     <br>
                                     <b-button v-if="dataset._meta_dirty" variant="primary" @click="save_meta()" style="float: right;">Save Metadata</b-button>
                                 </div>
-                                <br>
-                            </b-col>
-                        </b-row>
-                        
-                    </div>
-                </div><!--dataset-detail-->
-            </b-tab>
-            <b-tab title="Provenance">
-                <div v-if="prov" class="dataset-provenance">
-                    <div v-if="prov.edges.length == 0">
-                        <b-alert show variant="secondary">This data-object was uploaded by the user, and therefore has no provenance information.</b-alert>
-                    </div>
-                    <div v-else style="height: 100%">
-                        <div style="position: absolute; right: 10px; top: 10px; z-index: 1;">
-                            <span style="opacity: 0.6; margin-right: 10px;">Double click to open items</span>
+                            </div>
                         </div>
-                        <div ref="vis" style="height: 100%;"/>
-                    </div>
-                </div>
-            </b-tab>
-            <b-tab title="Apps">
-                <div class="dataset-apps" v-if="apps">
-                    <p v-if="apps.length > 0" class="text-muted">The following apps can be submitted with this data-object.</p>
-                    <b-alert :show="apps.length == 0" variant="secondary" style="margin: -20px;">There are currently no applications that use the datatype from this data-object.</b-alert>
-                    <div v-for="app in apps" :key="app._id" style="width: 33%; float: left;">
-                        <!-- why am I handling @click on the parent div - instead of letting <app> do it?-->
-                        <div style="margin-right: 10px; margin-bottom: 10px;" @click="openapp(app._id)" class="clickable">
-                            <app :app="app" height="270px" :clickable="false"></app>
+                        <div v-if="product">
+                            <span class="form-header metadata">Product <small v-if="dataset._canedit">(product.json)</small></span>
+                            <product :product="product" style="margin-right: 30px"/>
                         </div>
                     </div>
-                </div>
-            </b-tab>
-        </b-tabs>
+                </b-tab>
+                <!-- not useful?
+                <b-tab title="Apps">
+                    <div class="dataset-apps" v-if="apps">
+                        <p v-if="apps.length > 0" class="text-muted">The following apps can be submitted with this data-object.</p>
+                        <b-alert :show="apps.length == 0" variant="secondary" style="margin: -20px;">There are currently no applications that use the datatype from this data-object.</b-alert>
+                        <div v-for="app in apps" :key="app._id" style="width: 33%; float: left;">
+                            <div style="margin-right: 10px; margin-bottom: 10px;" @click="openapp(app._id)" class="clickable">
+                                <app :app="app" height="270px" :clickable="false"></app>
+                            </div>
+                        </div>
+                    </div>
+                </b-tab>
+                -->
+            </b-tabs>
+
     </b-container>
 </div>
 </transition>
@@ -289,6 +288,7 @@ export default {
             dataset: null,
             apps: null,
             prov: null, 
+            product: null,
             
             resource: null,
 
@@ -330,7 +330,10 @@ export default {
             if(this.tab_index == 1 && this.prov == null) {
                 this.load_prov();
             }
-            if(this.tab_index == 2 && this.apps == null) {
+            if(this.tab_index == 2 && this.product == null) {
+                this.load_product();
+            }
+            if(this.tab_index == 3 && this.apps == null) {
                 this.load_apps();
             }
         },
@@ -471,6 +474,14 @@ export default {
             });
         },
 
+        load_product() {
+            this.$http.get('dataset/product/'+this.dataset._id).then(res=>{
+                //if(!res) return; //TODO notify error?
+                //this.apps = lib.filter_apps(this.dataset, res.data.apps);
+                this.product = res.data.product;
+            });
+        },
+
         close() {
             if(!this.dataset) return;
             this.$router.replace(this.$route.path.replace(this.dataset._id, ""));
@@ -559,7 +570,7 @@ export default {
                     instance_id: instance._id,
                     dataset_ids: [ this.dataset._id ],
                 }).then(res=>{
-                    console.log(res);
+                    //console.log(res);
                     this.$router.replace("/project/"+project_id+"/process/"+instance._id);
                     this.dataset = null;
                 });
@@ -581,9 +592,9 @@ export default {
         load_archive_task() {
             if(!this.dataset || !this.dataset.archive_task_id) return; //no task_id
             //if(this.dataset.archive_task) return; //already loaded
-            console.log("loading dataset. archive_task");
+            //console.log("loading dataset. archive_task");
             this.$http.get(Vue.config.amaretti_api+'/task/'+this.dataset.archive_task_id).then(res=>{
-                console.log("loaded archive_task_id");
+                //console.log("loaded archive_task_id");
                 Vue.set(this.dataset, 'archive_task', res.data)
                 setTimeout(this.load_archive_task, 5000)
             });
@@ -620,6 +631,7 @@ export default {
             this.dataset = null;
             this.prov = null;
             this.apps = null;
+            this.product = null;
             this.resource = null;
             this.tab_index = 0;
             this.alltags = null;
@@ -682,6 +694,7 @@ export default {
                     find: JSON.stringify(find),
                 }});
             }).then(res=>{
+                if(!this.dataset) return; //modal closed while we are loading (TODO can I cancel?)
                 this.$set(this.dataset, '_pubs', res.data.pubs);
             }).catch(err=>{
                 console.error(err);
@@ -834,24 +847,38 @@ export default {
 <style scoped>
 .dataset-detail,
 .dataset-apps,
-.dataset-provenance {
-background-color: #f9f9f9;
+.dataset-provenance,
+.dataset-meta {
 position: absolute;
 top: 105px;
 left: 0;
 right: 0;
 bottom: 0px;
 }
+.dataset-provenance {
+background-color: #f9f9f9;
+}
 .dataset-detail {
 overflow: auto;
+background-color: #f9f9f9;
 }
 .dataset-apps {
 overflow: auto;
 padding: 20px;
+background-color: #f9f9f9;
+}
+.dataset-meta {
+overflow: auto;
+background-color: #f9f9f9;
 }
 pre.code {
 background-color: white;
 padding: 10px;
+}
+.metadata.form-header {
+padding: 10px;
+margin-bottom: 0;
+background-color: #3300ff0d;
 }
 </style>
 

@@ -92,7 +92,7 @@
             <b-popover target="user-popover" triggers="hover" placement="right">
                  <template v-slot:title>
                     {{config.user.profile.username}}&nbsp;
-                    <b-badge>{{config.user.sub}}</b-badge>
+                    <span style="float: right; opacity: 0.8; font-size: 80%;">{{config.user.sub}}</span>
                  </template>
                 <p>
                     {{config.user.profile.fullname}} &lt;{{config.user.profile.email}}&gt;
