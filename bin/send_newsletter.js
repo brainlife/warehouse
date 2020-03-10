@@ -35,16 +35,19 @@ exports.send_mail = async ()=>{
     //users = users.slice(0, 1); //limit
 
     //override with debug 
+    /*
     users = [
     //    {fullname: "Brainlife.io", email: "brlife@iu.edu"},
-        {fullname: "Soichi Hayashi", email: "soichih@gmail.com"},
-        //{fullname: "Stephanie McGavin", email: "smcgavin@iu.edu"},
+        {fullname: "Stephanie McGavin", email: "smcgavin@iu.edu"},
         //{fullname: "Franco Pestilli", email: "franpest@iu.edu"},
-    //    {fullname: "Soichi Hayashi (IU-1)", email: "hayashis+1@iu.edu"},
+        {fullname: "Soichi Hayashi (IU-1)", email: "hayashis@iu.edu"},
+        //{fullname: "Soichi Hayashi", email: "soichih@gmail.com"},
     ];
+    */
 
     let message = {
-        subject: "brainlife.io Newsletter - March 2020",
+        //subject: "brainlife.io Newsletter - March 2020",
+        subject: "New Microsoft fellowship to advance brainlife.io, segmentation tool added to platform, and more",
         from: config.mail.from,
         text: "Please open this newsletter with html enabled email client!",
         html: fs.readFileSync(__dirname+'/newsletters/march2020/index.html', "utf8"),
