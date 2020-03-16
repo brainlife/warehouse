@@ -125,7 +125,7 @@ router.post('/', jwt({secret: config.express.pubkey}), function(req, res, next) 
 		project.save(err=>{
 			if (err) return next(err); 
 			project = JSON.parse(JSON.stringify(project));
-            common.publish("project.create."+project._id, {})
+            common.publish("project.create."+req.user.sub+"."+project._id, {})
 			res.json(project);
 		});
 	});
@@ -181,6 +181,7 @@ router.put('/:id', jwt({secret: config.express.pubkey}), (req, res, next)=>{
             logger.debug("done updating group");
             project.save((err)=>{
                 if(err) return next(err);
+                common.publish("project.update."+req.user.sub+"."+project._id, project)
                 res.json(project);
             });
         });

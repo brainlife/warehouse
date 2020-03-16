@@ -126,7 +126,7 @@ export default {
                 this.datatypes[d._id] = d;
             });
 
-            this.query = sessionStorage.getItem("apps.query");
+            this.query = sessionStorage.getItem("apps.query")||"";
             this.show_dep = (localStorage.getItem("apps.show_dep") == "true");
             this.load();
         }).catch(err=>{

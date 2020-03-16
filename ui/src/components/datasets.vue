@@ -348,8 +348,8 @@ export default {
                 console.log("connected.. sending bind request");
                 this.ws.send(JSON.stringify({
                     bind: {
-                        ex: "warehouse.dataset",
-                        key: this.project._id+".#",
+                        ex: "warehouse",
+                        key: "dataset.update.*."+this.project._id+".#",
                     }
                 }));
             }
@@ -357,29 +357,33 @@ export default {
                 var event = JSON.parse(json.data);
                 if(!event.dinfo) return; //??
                 if(this.removing) return; //ignore rush of removed datasets events that slows down UI update
-                switch(event.dinfo.exchange) {
-                case "warehouse.dataset":
-                    let dataset = event.msg;
+                let dataset = event.msg;
 
-                    //look for the dataset
-                    this.pages.forEach(page=>{
-                        let old_dataset = null;
-                        for(var subject in page) {
-                            var datasets = page[subject];
-                            old_dataset = datasets.find(d=>d._id == dataset._id);
-                            if(old_dataset) break;
-                        }
-                        if(old_dataset) {
-                            //apply updates (don't apply all changes.. it could blow up populated field)
-                            old_dataset.desc = dataset.desc;
-                            old_dataset.tags = dataset.tags;
-                            old_dataset.meta = dataset.meta;
+                let routingKey = event.dinfo.routingKey; //"dataset.update.1.5aaeb3dc7bc1.5e309"
+                let dataset_id = routingKey.split(".")[4];
+                console.log(routingKey, dataset_id);
+
+                //look for the dataset
+                this.pages.forEach(page=>{
+                    let old_dataset = null;
+                    for(var subject in page) {
+                        var datasets = page[subject];
+                        old_dataset = datasets.find(d=>d._id == dataset_id);
+                        if(old_dataset) break;
+                    }
+                    if(old_dataset) {
+                        console.log("updating");
+                        //apply updates (don't apply all changes.. it could blow up populated field)
+                        if(dataset.desc) old_dataset.desc = dataset.desc;
+                        if(dataset.tags) old_dataset.tags = dataset.tags;
+                        if(dataset.meta) old_dataset.meta = dataset.meta;
+                        if(dataset.removed !== undefined) {
                             old_dataset.removed = dataset.removed;
-                            old_dataset.status = dataset.status;
                             if(dataset.removed) this.unselect(dataset);
                         }
-                    });
-                 } 
+                        if(dataset.status) old_dataset.status = dataset.status;
+                    }
+                });
             }
         },
         

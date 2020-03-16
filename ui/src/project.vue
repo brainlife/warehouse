@@ -516,11 +516,12 @@ export default {
                 this.ws.send(JSON.stringify({
                     bind: {
                         ex: "warehouse",
-                        key: "project.update."+project._id,
+                        key: "project.update.*."+project._id,
                     }
                 }));
                 this.ws.onmessage = (json)=>{
                     var event = JSON.parse(json.data);
+                    console.dir(event);
 
                     //update
                     for(var key in event.msg) {

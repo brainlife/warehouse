@@ -1101,6 +1101,7 @@ router.post('/stage', jwt({secret: config.express.pubkey}), (req, res, next)=>{
  *
  * @apiParam {String} [desc]    Description for this dataset 
  * @apiParam {String[]} [tags]  List of tags to classify this dataset
+ * @apiParam {String[]} [datatype_tags]  List of datatype_tags
  * @apiParam {Object} [meta]    Metadata
  * @apiParam {String[]} [admins]  List of new admins (auth sub)
  *
@@ -1119,12 +1120,20 @@ router.put('/:id', jwt({secret: config.express.pubkey}), (req, res, next)=>{
                 //types are checked by mongoose
                 if (req.body.desc) dataset.desc = req.body.desc;
                 if (req.body.tags) dataset.tags = req.body.tags;
+                if (req.body.datatype_tags) dataset.datatype_tags = req.body.datatype_tags;
                 if (req.body.meta) dataset.meta = req.body.meta;
                 if (req.body.admins) dataset.admins = req.body.admins;
                 dataset.save((err)=>{
                     if(err) return next(err);
                     dataset = JSON.parse(JSON.stringify(dataset));
                     dataset._canedit = canedit(req.user, dataset, canwrite_project_ids); //need to recompute with new admin/members list
+                    common.publish("dataset.update."+req.user.sub+"."+dataset.project+"."+dataset._id,{
+                        desc: dataset.desc,
+                        tags: dataset.tags,
+                        datatype_tags: dataset.datatype_tags,
+                        meta: dataset.meta,
+                        admins: dataset.admins,
+                    });
                     res.json(dataset);
                 });
             } else return res.status(401).end("you are not administartor of this dataset");
@@ -1132,7 +1141,7 @@ router.put('/:id', jwt({secret: config.express.pubkey}), (req, res, next)=>{
     });
 });
 
-function stream_dataset(dataset, res, next) {
+function stream_dataset(dataset, req, res, next) {
     var system = config.storage_systems[dataset.storage];
     var stat_timer = setTimeout(function() {
         logger.debug("timeout while calling stat on "+dataset.storage);
@@ -1182,6 +1191,7 @@ function stream_dataset(dataset, res, next) {
                 if(m.bytes == 0) logger.warn("meter count is 0... something went wrong?");
 
                 inc_download_count(dataset);
+                common.publish("dataset.download."+req.user.sub+"."+dataset.project+"."+dataset._id, {headers: req.headers});
                 dataset.save();
             });
         });
@@ -1294,13 +1304,15 @@ router.get('/download/:id', jwt({
         }
         if(!dataset.storage) return next("dataset:"+dataset._id+" doesn't have storage field set");
 
+        /*
         let sub = "guest";
         if(req.user) sub = req.user.sub;
         common.publish("dataset.download."+sub+"."+dataset.project+"."+dataset._id, {headers: req.headers});
+        */
         
         //app-stage can access any dataset
         if(req.user && req.user.scopes.warehouse && ~req.user.scopes.warehouse.indexOf('stage')) {
-            return stream_dataset(dataset, res, next);
+            return stream_dataset(dataset, req, res, next);
         }
 
         //access control (I could do this in parallel?)
@@ -1359,7 +1371,7 @@ router.get('/download/:id', jwt({
             //logger.debug(err);
             if(err) return res.status(403).json({err});
             //logger.debug("streaming..");
-            stream_dataset(dataset, res, next);
+            stream_dataset(dataset, req, res, next);
         });
     });
 });
@@ -1402,7 +1414,7 @@ router.get('/download/safe/:id', jwt({
         if(err) return next(err);
         if(!dataset) return res.status(404).json({message: "couldn't find the dataset specified"});
         if(!dataset.storage) return next("dataset:"+dataset._id+" doesn't have storage field set");
-        stream_dataset(dataset, res, next);
+        stream_dataset(dataset, req, res, next);
     });
 });
 
@@ -1429,6 +1441,7 @@ router.delete('/:id?', jwt({secret: config.express.pubkey}), function(req, res, 
                 dataset.remove_date = new Date();
                 dataset.removed = true;
                 dataset.save(next_id);
+                common.publish("dataset.update."+req.user.sub+"."+dataset.project+"."+dataset._id, dataset);
             });
         }, err=>{
             if(err) return next(err);
@@ -1657,7 +1670,10 @@ router.post('/copy', jwt({secret: config.express.pubkey}), (req, res, next)=>{
 
             db.Datasets.insertMany(datasets,(err, docs)=>{
                 if(err) return next(err);
-                docs.map(db.dataset_event);
+                //docs.map(db.dataset_event);
+                docs.map(doc=>{
+                    common.publish("dataset.create."+req.user.sub+"."+doc.project+"."+doc._id, doc);
+                });
                 res.json(docs);
             });
         });

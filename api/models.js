@@ -52,6 +52,7 @@ exports.init = (cb)=>{
 }
 
 //deprecated...
+/*
 exports.dataset_event = function(dataset) {
     if(!dataset) {
         logger.error("dataset_event called with undefined dataset");
@@ -76,7 +77,8 @@ exports.dataset_event = function(dataset) {
 
     dataset_ex.publish(key, dataset, {}); //deprecated
 }
-
+*/
+/*
 exports.rule_event = function(rule) {
     if(!rule) {
         logger.error("rule_event called with undefined rule");
@@ -88,16 +90,16 @@ exports.rule_event = function(rule) {
     }
     let project = rule.project._id || rule.project;
     let key = project+"."+rule._id;
-    /*
-    rule_ex.publish(key, rule, {});
-    */
     if(rule.app._id) rule.app = rule.app._id; //unpopulate
     common.publish("rule.update."+key, rule);
 }
+*/
 
+/*
 exports.project_event = function(project) {
     common.publish("project.update."+project._id, project);
 }
+*/
 
 exports.disconnect = function(cb) {
     mongoose.disconnect(cb);
@@ -215,8 +217,10 @@ var projectSchema = mongoose.Schema({
 
     removed: { type: Boolean, default: false },
 });
+/*
 projectSchema.post('save', exports.project_event);
 projectSchema.post('findOneAndUpdate', exports.project_event);
+*/
 exports.Projects = mongoose.model("Projects", projectSchema);
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -345,11 +349,13 @@ datasetSchema.post('validate', function() {
 });
 
 //TODO - I think it's better to have each model handle this as it's not transparent when/which middleware hooks gets called
+/*
 datasetSchema.post('save', exports.dataset_event);
 datasetSchema.post('updateOne', exports.dataset_event);
 datasetSchema.post('findOneAndUpdate', exports.dataset_event);
 datasetSchema.post('findOneAndRemove', exports.dataset_event);
 datasetSchema.post('remove', exports.dataset_event);
+*/
 datasetSchema.pre('save', function(next) {
     console.log("updating dataset....................................", this._id);
     this.update_date = new Date;
@@ -643,10 +649,12 @@ var ruleSchema = mongoose.Schema({
 
 }, {minimize: false}); //to keep empty config{} from disappearing
 
+/*
 ruleSchema.post('save', exports.rule_event);
 ruleSchema.post('findOneAndUpdate', exports.rule_event);
 ruleSchema.post('findOneAndRemove', exports.rule_event);
 ruleSchema.post('remove', exports.rule_event);
+*/
 
 //TODO not tested
 ruleSchema.pre('save', function(next) {

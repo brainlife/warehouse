@@ -32,7 +32,7 @@
             <stop offset="20%" style="stop-color:#2693ff;stop-opacity:0.2" />
             <stop offset="60%" style="stop-color:#00f;stop-opacity:0.0" />
         </linearGradient>
-        <path :d="usage_path" fill="url(#grad1)" stroke="#2693ffdd" stroke-width="2"/>
+        <path :d="usage_path" fill="url(#grad1)" stroke="rgba(26,93,255,0.7)" stroke-width="2"/>
     </svg>
 </div>
 </template>

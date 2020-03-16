@@ -63,20 +63,6 @@ export default {
             }).catch(res=>{
                 //no log usually means the rule hasn't been executed yet
             });
-    
-            /*
-            //load number of tasks submitted by this rule
-            this.$http.get(Vue.config.amaretti_api+"/task", {params: {
-                find: JSON.stringify({
-                    'config._rule.id': this.id,
-                    status: {$ne: "removed"},
-                }),
-                limit: 0, //I just need a count.
-            }})
-            .then(res=>{
-                this.taskcount = res.data.count;
-            });
-            */
         },
 
         editorInit(editor) {

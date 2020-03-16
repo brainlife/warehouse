@@ -134,7 +134,7 @@ function check_access(req, rule, cb) {
  * @apiParam {Object} config        Application configuration
  *
  * @apiHeader {String} authorization 
- *                              A valid JWT token "Bearer: xxxxx"
+ *                                  A valid JWT token "Bearer: xxxxx"
  *
  * @apiSuccess {Object}             Created rule object
  */
@@ -149,7 +149,7 @@ router.post('/', jwt({secret: config.express.pubkey}), (req, res, next)=>{
         }
         new db.Rules(Object.assign(req.body, override)).save((err, rule)=>{
             if(err) return next(err);
-            common.publish("rule.create."+req.body.project+"."+rule._id, {})
+            common.publish("rule.create."+req.user.sub+"."+req.body.project+"."+rule._id, {})
             res.json(rule); 
         });
     });
@@ -201,6 +201,7 @@ router.put('/:id', jwt({secret: config.express.pubkey}), (req, res, next)=>{
             rule.update_date = new Date();
             rule.save((err, _rule)=>{
                 if(err) return next(err);
+                common.publish("rule.update."+req.user.sub+"."+req.body.project+"."+rule._id, _rule)
                 res.json(_rule); 
             });
         });

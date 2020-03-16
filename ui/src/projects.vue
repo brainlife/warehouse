@@ -7,16 +7,16 @@
             <icon name="times" class="clear-search" scale="1.5" @click="clearQuery()" v-if="query != ''"/>
         </div>
     </div>
+<div class="mode-toggler" v-if="my_projects">
+    <b-form-group>
+	<b-form-radio-group v-model="mode" buttons button-variant="outline-secondary">
+	    <b-form-radio value="tile"><icon name="th"/></b-form-radio>
+	    <b-form-radio value="list"><icon name="list"/></b-form-radio>
+	</b-form-radio-group>
+    </b-form-group>
+</div>
     <div class="page-content" v-if="my_projects">
         <div v-if="loading" style="margin: 40px; opacity: 0.5"><h3><icon name="cog" spin scale="2"/> Loading ..</h3></div>
-        <div class="mode-toggler">
-            <b-form-group>
-                <b-form-radio-group v-model="mode" buttons button-variant="outline-secondary">
-                    <b-form-radio value="tile"><icon name="th"/></b-form-radio>
-                    <b-form-radio value="list"><icon name="list"/></b-form-radio>
-                </b-form-radio-group>
-            </b-form-group>
-        </div>
         <div v-if="config.user" class="position: relative">
             <h4 class="group-title">My Projects</h4>
             <div style="padding: 10px;" v-if="mode == 'tile'">
@@ -90,7 +90,7 @@ export default {
     },
 
     mounted() {
-        this.query = sessionStorage.getItem("projects.query");
+        this.query = sessionStorage.getItem("projects.query")||"";
         this.load();
         /*
         this.reload_int = setInterval(()=>{
@@ -193,7 +193,7 @@ export default {
 .mode-toggler {
 position: fixed;
 top: 60px;
-right: 25px;
+right: 30px;
 z-index: 2;
 opacity: 0.5;
 transition: opacity 0.3s;

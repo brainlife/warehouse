@@ -238,7 +238,7 @@ export default {
             this.ws.send(JSON.stringify({
                 bind: {
                     ex: "warehouse",
-                    key: "rule.update."+this.project._id+".#",
+                    key: "rule.update.*."+this.project._id+".#",
                 }
             }));
         }

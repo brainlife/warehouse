@@ -168,7 +168,7 @@ height: 50px;
 .resource {
 margin-bottom: 5px;
 margin-right: 5px;
-box-shadow: 2px 2px 3px #0001;
+box-shadow: 2px 2px 3px rgba(0,0,0,0.1);
 }
 </style>
 

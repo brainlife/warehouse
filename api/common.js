@@ -131,6 +131,7 @@ function register_dataset(task, output, product, cb) {
         },
     }, (err, _dataset)=>{
         if(err) return cb(err);
+        exports.publish("dataset.create."+task.user_id+"."+_dataset.project+"."+_dataset._id, _dataset);
         
         //store product in different table
         db.DatasetProducts.create({
@@ -874,6 +875,7 @@ exports.dataset_to_filename = function(dataset) {
 }
 
 exports.publish = (key, message, cb)=>{
+    if(!message) message = {};
     message.timestamp = (new Date().getTime())/1000; //it's crazy that amqp doesn't set this?
     if(!warehouse_ex) { 
         console.error("warehouse_ex not connected yet.. can't publish");

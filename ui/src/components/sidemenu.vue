@@ -235,11 +235,11 @@ top: 0px;
 left: 0px;
 width: 40px;
 bottom: 0px;
-color:  #fffd;
+color:  rgba(255,255,255,200);
 font-size: 8pt;
 background-image: linear-gradient(0deg, #159957, #2693ff);
 z-index: 2;
-box-shadow: inset -3px 0 2px #3331;
+box-shadow: inset -3px 0 2px rgba(33,33,33,0.1);
 }
 
 .title {
@@ -248,7 +248,7 @@ font-size: 24pt;
 font-weight: bold;
 padding: 8px 2px;
 margin-left: 8px;
-color: #fff6;
+color: rgba(255,255,255,0.6);
 }
 
 .items {
@@ -291,18 +291,18 @@ text-transform: uppercase;
 .items li:not(.divider):hover {
 color: #666;
 background-color: #fff;
-box-shadow: 2px 1px 5px #0002;
+box-shadow: 2px 1px 5px rgba(0, 0, 0, 0.2);
 z-index: 3;
 }
 
 .items li.active {
 color: white;
-background-color: #0004;
-box-shadow: inset 1px 1px 3px #0002;
+background-color: rgba(0,0,0,0.2);
+box-shadow: inset 1px 1px 3px rgba(0,0,0,0.1);
 }
 
 .items li.divider {
-border-bottom: 1px solid rgba(255,255,255,0.2);
+border-bottom: 1px solid rgba(255,255,255, 0.2);
 padding: 0px;
 margin: 0px;
 margin-bottom: 5px;
@@ -316,7 +316,7 @@ bottom: 0px;
 }
 
 li.secondary {
-background-color: #0001;
+	background-color: rgba(0,0,0,0.2);
 }
 
 li.secondary-first {
@@ -325,8 +325,8 @@ box-shadow: inset 0px 2px 2px rgba(0,0,0,0.05);
 
 .logo {
 cursor: pointer;
-background-color: #fff3;
-box-shadow: 0 0 5px #0002;
+background-color: rgba(255,255,255,0.3);
+box-shadow: 0 0 5px rgba(0,0,0,0.2);
 height: 50px;
 margin-bottom: 10px;
 }
@@ -343,7 +343,7 @@ width: 500px;
 transition: opacity 0.3s;
 background-color: #fcfcfc;
 z-index: 3;
-box-shadow: 0 0 8px #0004;
+box-shadow: 0 0 8px rgba(0,0,0,0.4);
 font-size: 0.9rem;
 }
 .panel-content .title {
