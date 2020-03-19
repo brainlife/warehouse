@@ -196,14 +196,18 @@ function handle_task(task, cb) {
 
     //event counts to store on graphite. these numbers can be aggregated to show various bar graphs
     if(task._status_changed) {
+        
         //number of task change for each user
-        inc_count("task.user."+task.user_id+"."+task.status);  
+        //inc_count("task.user."+task.user_id+"."+task.status); //too much data
+        
         //number of task change for each app
         if(task.config && task.config._app) inc_count("task.app."+task.config._app+"."+task.status); 
+        
         //number of task change for each resource
         if(task.resource_id) inc_count("task.resource."+task.resource_id+"."+task.status); 
+        
         //number of task change events for each project
-        if(task._group_id) inc_count("task.group."+task._group_id+"."+task.status); 
+        //if(task._group_id) inc_count("task.group."+task._group_id+"."+task.status);  //too much data
 
         if(task.config && task.config._rule) {
             logger.debug("rule task status changed");

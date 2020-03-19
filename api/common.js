@@ -890,4 +890,11 @@ exports.isadmin = (user, rec)=>{
     return false;
 }
 
+exports.ismember = (user, rec)=>{
+    if(user) {
+        if(user.scopes.warehouse && ~user.scopes.warehouse.indexOf('admin')) return true;
+        if(~rec.members.indexOf(user.sub.toString())) return true;
+    }
+    return false;
+}
 

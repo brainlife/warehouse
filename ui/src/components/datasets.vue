@@ -38,14 +38,16 @@
                     <!--{{page_idx}} {{page_info[page_idx]}}-->
                 </div>
                 <b-row class="subjects" v-for="(datasets, group) in page" :key="group" :ref="'sub-'+group" v-else>
-                    <b-col cols="2">
+                    <b-col cols="2" class="subject-column">
                         <strong>{{group}}</strong>
-                        <!-- need to show this else where..
-                        <div v-if="project.meta">
-                            <span class="keyvalue" v-for="(v, k) in project.meta[datasets._subject]" :key="k">
+
+                        <div class="participants">
+                            <span v-if="participants" v-for="(v, k) in participants[datasets._subject]" :key="k">
                                 <small>{{k}}</small> {{v}}
                             </span>
                         </div>
+                        <!--
+                        <span class="participants-edit" @click="editParticipants(datasets._subject)"><icon name="edit" /> Participant Info</span>
                         -->
                     </b-col>
                     <b-col cols="10">
@@ -168,7 +170,7 @@ export default {
     components: { 
         tags, pageheader, datatypetag, 
     },
-    props: ['project', 'projects'],
+    props: ['project', 'projects', 'participants'],
     data () {
         return {
             pages: [], //groups of datasets 
@@ -336,6 +338,8 @@ export default {
                 find: JSON.stringify({$and: this.get_mongo_query()}),
                 distinct: 'meta.subject'
             }}).then(res=>{
+                //console.log("loaded distinct subjects");
+                //console.dir(res);
                 this.total_subjects = res.data.length;
             }).catch(res=>{
                 this.$notify({type: 'error', text: res.data.message || JSON.stringify(res.data)});
@@ -541,26 +545,51 @@ export default {
 
                 Vue.set(this.pages, this.pages.length, groups);
 
-                this.$nextTick(()=>{
-                    //remember the page height
-                    var h = this.$refs["scrolled-area"].scrollHeight;
-                    var prev = 0;
-                    if(this.pages.length > 1) prev = this.page_info[this.pages.length-2].bottom;
-                    let info = {
-                        top: prev, 
-                        bottom: h, 
-                        height: h-prev, 
-                        visible: true
-                    };
-                    this.page_info.push(info);
-                    this.update_subject_visibility();
-                });
-                
+                this.$nextTick(this.rememberHeights);
+                this.loading = false;
+
+                /*
+                //only admin or member can load participants
+                if(this.isadmin() || this.ismember()) {
+
+                    console.log("loading participants info");
+                    this.participants = null;
+                    this.axios.get("/participant/"+this.project._id).then(res=>{
+                        if(res.data) {
+                            this.participants = res.data.rows||{}; 
+                        }
+                        this.loading = false;
+                        this.$nextTick(this.rememberHeights);
+                    }, err=>{
+                        this.$nextTick(this.rememberHeights);
+                        this.loading = false;
+                        console.error(err);
+                    });
+                } else {
+                    this.$nextTick(this.rememberHeights);
+                    this.loading = false;
+                }
+                */
             }, err=>{
                 this.loading = false;
                 console.error(err);
             });
         },
+
+        rememberHeights() {
+            //remember the page height
+            var h = this.$refs["scrolled-area"].scrollHeight;
+            var prev = 0;
+            if(this.pages.length > 1) prev = this.page_info[this.pages.length-2].bottom;
+            let info = {
+                top: prev, 
+                bottom: h, 
+                height: h-prev, 
+                visible: true
+            };
+            this.page_info.push(info);
+            this.update_subject_visibility();
+        }, 
 
         start_upload() {
             this.uploading = true;
@@ -754,22 +783,35 @@ export default {
                 this.clear_selected();
                 this.$router.replace("/project/"+project_id+"/process/"+instance._id);
             });
-         }
+        },
+
+        /*
+        editParticipants(subject) {
+            this.$root.$emit("participants.edit", {
+                project: this.project,
+                subject,
+                data: this.participants[subject],
+                cb: data=>{
+                    Vue.set(this.participants, subject, data);
+                },
+            });
+        },
+        */
     },
 }
 </script>
 
 <style scoped>
 .table-header {
-transition: 0.2s right, 0.2s bottom, 0.2s left;
-position: fixed;
-top: 100px;
-left: 40px;
-right: 0px;
-overflow-x: hidden;
-padding-left: 10px;
-padding-right: 16px;
-color: #999;
+    transition: 0.2s right, 0.2s bottom, 0.2s left;
+    position: fixed;
+    top: 100px;
+    left: 40px;
+    right: 0px;
+    overflow-x: hidden;
+    padding-left: 10px;
+    padding-right: 16px;
+    color: #999;
 }
 
 .table-column {
@@ -918,5 +960,24 @@ background-color: #2693ff;
 color: white;
 width: 100%;
 }
+.participants {
+white-space: nowrap;
+overflow: hidden;
+text-overflow: ellipsis;
+font-size: 90%;
+}
+.subject-column {
+min-height: 35px;
+}
+/*
+.participants-edit {
+opacity: 0;
+}
+.subjects:hover .participants-edit {
+opacity: 0.5;
+cursor: pointer;
+background-color: #eee;
+}
+*/
 </style>
 

@@ -186,6 +186,11 @@
                             ref="resource_usage" :autoResize="true" :watchShallow="true"/>
                 </div>
 
+                <div class="box">
+                    <span class="form-header">Participants Info</span>     
+                    <participants :rows="participants" :columns="participants_columns"/>
+                </div>
+
                 <div v-if="resource_citations.length > 0" class="box">
                     <span class="form-header">Resource Citations</span>
                     <p><small>Please use the following citations to cite the resources used by this project.</small></p>
@@ -197,6 +202,7 @@
                     </p>
                 </div>
 
+                <!--
                 <div v-if="selected.meta" class="box">
                     <span class="form-header">Meta (todo)</span>
                     <pre style="font-size: 80%;">{{selected.meta}}</pre>
@@ -208,6 +214,8 @@
                     <pre style="font-size: 80%;">{{selected.meta_info}}</pre>
                     <br>
                 </div>
+                -->
+                
 
                 <vue-disqus ref="disqus" shortname="brain-life" :identifier="selected._id"/>
 
@@ -219,9 +227,16 @@
         
     </div>
 
+    <!--
+    <div v-if="tabs[tab].id == 'participants'" style="margin-left: 40px; margin-top: 95px">
+        <b-alert show variant="secondary" v-if="!(ismember()||isadmin())">Only the admins or members of this project can access participants information. Please contact the project admin to give you access.</b-alert>
+        <participants :project="selected" v-else/>
+    </div>
+    -->
+
     <div v-if="tabs[tab].id == 'dataset'" style="margin-left: 40px; margin-top: 95px">
         <b-alert show variant="secondary" v-if="selected.access != 'public' && !(ismember()||isadmin()||isguest())">For non public project, only the admin/members/guests of this project can access processes.</b-alert>
-        <datasets :project="selected" :projects="projects" v-else/>
+        <datasets :project="selected" :projects="projects" v-else :participants="participants"/>
     </div>
 
     <div v-if="tabs[tab].id == 'process'" style="margin-left: 40px; margin-top: 95px">
@@ -266,6 +281,7 @@ import stateprogress from '@/components/stateprogress'
 import noprocess from '@/assets/noprocess'
 import resource from '@/components/resource'
 import datatypetag from '@/components/datatypetag'
+import participants from '@/components/participants'
 
 //modals
 import newtaskModal from '@/modals/newtask'
@@ -277,15 +293,28 @@ let ps;
 
 export default {
     components: { 
-        projectaccess, pageheader, contact, 
-        VueMarkdown, projectavatar, license,
-        pubcard, datasets,
-        processes, publications, pipelines,
-        agreements, datatypetag,
+        projectaccess, 
+        pageheader,     
+        contact, 
+        VueMarkdown, 
+        projectavatar, 
+        license,
+        pubcard, 
+        datasets,
+        processes, 
+        publications, 
+        pipelines,
+        agreements, 
+        datatypetag, 
+        participants,
 
-        noprocess, resource, VuePlotly,
+        noprocess, 
+        resource, 
+        VuePlotly,
 
-        newtaskModal, datatypeselecterModal, stateprogress,
+        newtaskModal, 
+        datatypeselecterModal, 
+        stateprogress,
     },
 
     data () {
@@ -293,6 +322,8 @@ export default {
             selected: null, 
             resource_usage: null,
             total_walltime: 0,
+            participants: null,
+            participants_columns: null,
 
             tabs: [],
 
@@ -341,12 +372,6 @@ export default {
 
                 this.$router.replace("/project/"+this.selected._id+"/"+this.tabs[this.tab].id);
             }
-
-            /*
-            if(tabid == 'detail') {
-                this.init_ps();
-            }
-            */
         },
     },
 
@@ -488,8 +513,8 @@ export default {
         open_project(project) {
             if(this.selected == project) return; //no point of opening project if it's already opened
             this.selected = project;
-            //this.init_ps();
 
+            //load full detail
             this.$http.get('project', {params: {
                 find: JSON.stringify({
                     _id: project._id,
@@ -505,8 +530,19 @@ export default {
                 if(this.$refs.disqus && window.DISQUS) {
                     this.$refs.disqus.reset(window.DISQUS);
                 }
-
             });
+
+            //optionally.. load participant info
+            if(this.isadmin() || this.ismember()) {
+                console.log("loading participants info");
+                this.participants = null;
+                this.axios.get("/participant/"+project._id).then(res=>{
+                    if(res.data) {
+                        this.participants = res.data.rows||{}; 
+                        this.participants_columns = res.data.columns||{}; 
+                    }
+                });
+            }
 
             if(this.ws) this.ws.close();
             var url = Vue.config.event_ws+"/subscribe?jwt="+Vue.config.jwt;
@@ -672,18 +708,6 @@ z-index: 1;
 top: 95px;
 overflow-x: hidden;
 }
-/*
-    .page-right-content {
-    background-color: #eee; 
-    box-shadow: inset 3px 0px 3px #ddd6;
-    position: fixed;
-    top: 95px;
-    width: 250px;
-    right: 0px;
-    bottom: 0px;
-    }
-*/
-
 .project-header {
 padding: 20px; 
 box-shadow: 0 0 2px #ccc;

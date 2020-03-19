@@ -832,9 +832,6 @@ export default {
         },
         editorInit(editor) {
             require('brace/mode/json')
-            //require('brace/theme/chrome')
-            //require('brace/theme/twilight')
-            //editor.setTheme("ace/theme/twilight")
             editor.container.style.lineHeight = 1.25;
             editor.renderer.updateFontSize();
             if(!this.dataset._canedit) editor.setReadOnly(true);

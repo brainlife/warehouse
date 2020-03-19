@@ -25,7 +25,7 @@ db.init(async err=>{
         return true;
     });
     let openneuro_datasets = child_process.execSync("find OpenNeuroDatasets -maxdepth 2 -name dataset_description.json", {encoding: "utf8"}).split("\n");
-    let dataset = [...datalad_datasets, ...openneuro_datasets];
+    let datasets = [...datalad_datasets, ...openneuro_datasets];
 
     //debug..
     //bids_dirs = ["datasets.datalad.org/openneuro/ds002311/dataset_description.json"];

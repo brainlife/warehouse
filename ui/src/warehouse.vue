@@ -33,295 +33,263 @@ export default {
 
 <style>
 
-/*
-@import url('https://fonts.googleapis.com/css?family=Cabin|Inconsolata|Nunito|Nunito+Sans|Pacifico|Quicksand|Rubik|VT323');
-font-family: 'Rubik', sans-serif;
-font-family: 'Pacifico', cursive;
-font-family: 'Quicksand', sans-serif;
-font-family: 'Inconsolata', monospace;
-font-family: 'Cabin', sans-serif;
-font-family: 'VT323', monospace;
-font-family: 'Nunito', sans-serif;
-font-family: 'Nunito Sans', sans-serif; 
-@import url('//fonts.googleapis.com/css?family=Muli');
-font-size: 11pt; font-family: muli;
-
-@import url('//fonts.googleapis.com/css?family=Montserrat');
-font-family: 'Montserrat', sans-serif;
-
-@import url('//fonts.googleapis.com/css?family=IBM+Plex+Sans');
-@import url('//fonts.googleapis.com/css?family=Roboto');
-font-family: -apple-system,BlinkMacSystemFont,Segoe UI,Helvetica,Arial,sans-serif,Apple Color Emoji,Segoe UI Emoji;
-@import url('//fonts.googleapis.com/css?family=Roboto');
-
-*/
-
 #warehouse {
-height: 100%;
-background-color: #f9f9f9;
-color: #444;
-font-size: 14px;
-/*
-font-family: Roboto;
-letter-spacing: 0.2px;
-*/
+    height: 100%;
+    background-color: #f9f9f9;
+    color: #444;
+    font-size: 14px;
 }
 
 .select2-container, 
 .form-control,
 .custom-select {
-font-size: 14px;
+    font-size: 14px;
 }
 .dropdown-menu {
-font-size: inherit;
+    font-size: inherit;
 }
 
 .progress {
-border-radius: inherit;
+    border-radius: inherit;
 }
 
 /*adjust bootstrap font sizes*/
 .input-group-text {
-font-size: 14px;
+    font-size: 14px;
 }
 legend {
-font-size: 1.1rem;
+    font-size: 1.1rem;
 }
 /*needed to keep iframe 100% with for view*/
 html,body {
-height:100%;
-overflow: hidden;
+    height:100%;
+    overflow: hidden;
 }
 
 /*deprecate below eventually*/
 
 .clickable {
-cursor: pointer;
+    cursor: pointer;
 }
 
 .margin20 {
-margin: 20px;
+    margin: 20px;
 }
 .margin10 {
-margin: 10px;
+    margin: 10px;
 }
 
 .page-header {
-height: 50px;
-box-shadow: 0px 0px 5px rgba(0,0,0,0.2);
-z-index: 1;
-background-color: white;
+    height: 50px;
+    box-shadow: 0px 0px 5px rgba(0,0,0,0.2);
+    z-index: 1;
+    background-color: white;
 }
 
 .page-header h4 {
-opacity: 0.8;
-overflow: hidden; 
-white-space: nowrap; 
-text-overflow: ellipsis;
+    opacity: 0.8;
+    overflow: hidden; 
+    white-space: nowrap; 
+    text-overflow: ellipsis;
 }
 
 .page-header,
 .page-content {
-position: fixed;
-left: 40px;
-right: 0px;
-top: 0px;
+    position: fixed;
+    left: 40px;
+    right: 0px;
+    top: 0px;
 }
 .page-content {
-top: 50px;
-bottom: 0px;
-overflow: auto;
+    top: 50px;
+    bottom: 0px;
+    overflow: auto;
 }
 .page-footer {
-text-align: right; 
-position: fixed; 
-height: 60px;
-left: 40px;
-right: 0px;
-bottom: 0px; 
-padding: 10px 30px;
-background-color: rgba(100,100,100,0.4);
-z-index: 3;
-pointer-events: none;
+    text-align: right; 
+    position: fixed; 
+    height: 60px;
+    left: 40px;
+    right: 0px;
+    bottom: 0px; 
+    padding: 10px 30px;
+    background-color: rgba(100,100,100,0.4);
+    z-index: 3;
+    pointer-events: none;
 }
 .page-footer .btn {
-pointer-events: auto;
+    pointer-events: auto;
 }
 
 .page-footer.with-menu,
 .page-header.with-menu,
 .page-content.with-menu {
-left: 480px;
-transition: 0.2s left;
+    left: 480px;
+    transition: 0.2s left;
 }
 code.hljs {
-font-size: 85%;
+    font-size: 85%;
 }
 table.info {
-width: 100%;
-border-spacing: 1px;
-font-size: 13px;
+    width: 100%;
+    border-spacing: 1px;
+    font-size: 13px;
 }
 table.info tr {
-background-color: white;
+    background-color: white;
 }
 table.info th {
-color: #777; 
-text-align: left;
-vertical-align: top;
-padding: 10px;
-margin: 0px;
-font-weight: 600;
+    color: #777; 
+    text-align: left;
+    vertical-align: top;
+    padding: 10px;
+    margin: 0px;
+    font-weight: 600;
 }
 table.info td {
-padding: 10px;
+    padding: 10px;
 }
 
 #warehouse .table thead th {
-opacity: 0.5;
-text-transform: uppercase;
-padding: 5px;
-border: none;
+    opacity: 0.8;
+    text-transform: uppercase;
+    padding: 5px;
+    border: none;
 }
 
 .button-fixed {
-opacity: 0.7;
-position: fixed;
-bottom: 20px;
-right: 30px;
-border-radius: 25px;
-width: 50px;
-height: 50px;
-padding: 10px;
-margin: 10px;
-font-weight: bold;
-color: white;
-background-color: gray;
-border: none;
-box-shadow: 1px 1px 5px rgba(0,0,0,0.2);
-transition: background-color 0.3s, transform 0.5s, box-shadow 0.5s, left 0.5s, right 0.5s, opacity 0.5s;
-z-index: 2;
+    opacity: 0.7;
+    position: fixed;
+    bottom: 20px;
+    right: 30px;
+    border-radius: 25px;
+    width: 50px;
+    height: 50px;
+    padding: 10px;
+    margin: 10px;
+    font-weight: bold;
+    color: white;
+    background-color: gray;
+    border: none;
+    box-shadow: 1px 1px 5px rgba(0,0,0,0.2);
+    transition: background-color 0.3s, transform 0.5s, box-shadow 0.5s, left 0.5s, right 0.5s, opacity 0.5s;
+    z-index: 2;
 }
 .button-fixed:hover {
-opacity: 1;
-background-color: #2693ff;
-transform: rotate(180deg);
-box-shadow: none;
-cursor: pointer;
+    opacity: 1;
+    background-color: #2693ff;
+    transform: rotate(180deg);
+    box-shadow: none;
+    cursor: pointer;
 }
 
 .fa-icon {
-position: relative;
-top: -0.1em;
+    position: relative;
+    top: -0.1em;
 }
 .button-fixed .fa-icon {
-top: 0;
+    top: 0;
 }
 
 .button {
-display: inline-block;
-color: rgba(0,0,0,0.5);
-padding: 4px 8px;
-min-width: 25px;
-cursor: pointer;
-border-radius: 3px;
-transition: background-color 0.3s;
+    display: inline-block;
+    color: rgba(0,0,0,0.5);
+    padding: 4px 8px;
+    min-width: 25px;
+    cursor: pointer;
+    border-radius: 3px;
+    transition: background-color 0.3s;
 }
+
 .button:hover {
-background-color: rgba(0,0,0,0.3);
-color: white;
+    background-color: rgba(0,0,0,0.3);
+    color: white;
 }
+
 .button-danger {
-color: #dc3545;
+    color: #dc3545;
 }
 .button-gray {
-opacity: 0.5;
+    opacity: 0.5;
 }
 .button-danger:hover {
-background-color: #dc3545;
-color: white;
+    background-color: #dc3545;
+    color: white;
 }
-
-
-/*
-.table th, .table td {
-border-top: none;
-}
-*/
 
 /*------------------------------------------------------------*/
 /* update bootstrap default tab */
 
 .brainlife-tab {
-min-height: 45px;
-padding-top: 5px;
+    min-height: 45px;
+    padding-top: 5px;
 }
 .brainlife-tab .nav-tabs {
-border: none;
-background-color: white;
+    border: none;
+    background-color: white;
 }
 
 .brainlife-tab .nav-item a {
-color: inherit;
-opacity: 0.6;
-border: none;
-transition: color 0.5s, opacity 0.5s;
-font-weight: bold;
+    color: inherit;
+    opacity: 0.6;
+    border: none;
+    transition: color 0.5s, opacity 0.5s;
+    font-weight: bold;
 }
 .brainlife-tab .nav-item a:hover {
-color: #007bff;
-opacity: 1;
+    color: #007bff;
+    opacity: 1;
 }
 .brainlife-tab .nav-item a[aria-selected="true"] {
-color: #2693ff;
-opacity: 1;
-border-bottom: 3px solid #2693ff;
+    color: #2693ff;
+    opacity: 1;
+    border-bottom: 3px solid #2693ff;
 }
 
 :focus {
-outline: none;
+    outline: none;
 }
 
 #warehouse .alert {
-border-radius: 0;
-border: none;
-margin-bottom: 0px;
+    border-radius: 0;
+    border: none;
+    margin-bottom: 0px;
 }
 #warehouse .card {
-border-radius: 0;
+    border-radius: 0;
 }
 
 .modal-content {
-border-radius: 0;
+    border-radius: 0;
 }
 .modal-dialog {
-box-shadow: 0 0 20px #000;
-font-size: 11pt;
+    box-shadow: 0 0 20px #000;
+    font-size: 11pt;
 }
 .brainlife-modal {
-background-color: #fff;
-height: 100%;
-padding: 0px;
-box-shadow: 0 0 20px #000;
-position: relative;
+    background-color: #fff;
+    height: 100%;
+    padding: 0px;
+    box-shadow: 0 0 20px #000;
+    position: relative;
 }
 .brainlife-modal-overlay {
-position: fixed;
-top: 0px;
-left: 0px;
-bottom: 0px;
-right: 0px;
-background-color: rgba(0,0,0,0.3);
-z-index: 10;
-padding: 30px;
+    position: fixed;
+    top: 0px;
+    left: 0px;
+    bottom: 0px;
+    right: 0px;
+    background-color: rgba(0,0,0,0.3);
+    z-index: 10;
+    padding: 30px;
 }
 .brainlife-modal-header {
-background-color: white;
-padding: 10px 20px;
-box-shadow: 0 0 3px rgba(0,0,0,0.5);
-z-index: 20;
-height: 60px;
-position: relative;
+    background-color: white;
+    padding: 10px 20px;
+    box-shadow: 0 0 3px rgba(0,0,0,0.5);
+    z-index: 20;
+    height: 60px;
+    position: relative;
 }
 .brainlife-modal-header-buttons {
 float: right;

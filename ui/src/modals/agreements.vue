@@ -1,7 +1,7 @@
 <template>
 <b-modal ref="modal" hide-footer v-if="project"> 
     <div slot="modal-title">
-        <icon name="handshake" scale="2" style="position: relative; top: 6px"/>&nbsp; {{project.name}} <small>Project Agreements</small>
+        <icon name="handshake" scale="2" style="opacity: 0.7; margin-top: 5px;"/>&nbsp; {{project.name}} <small>Project Agreements</small>
     </div>
     <p class="text-muted">You must consent to the following agreements before accessing datasets on this project.</p>
     <agreements :agreements="project.agreements" @agreed="close"/>

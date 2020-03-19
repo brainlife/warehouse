@@ -7,23 +7,27 @@
             <icon name="times" class="clear-search" scale="1.5" @click="clearQuery()" v-if="query != ''"/>
         </div>
     </div>
-<div class="mode-toggler" v-if="my_projects">
-    <b-form-group>
-	<b-form-radio-group v-model="mode" buttons button-variant="outline-secondary">
-	    <b-form-radio value="tile"><icon name="th"/></b-form-radio>
-	    <b-form-radio value="list"><icon name="list"/></b-form-radio>
-	</b-form-radio-group>
-    </b-form-group>
-</div>
+    <div class="mode-toggler" v-if="my_projects">
+        <b-form-group>
+        <b-form-radio-group v-model="mode" buttons button-variant="outline-secondary">
+            <b-form-radio value="tile"><icon name="th"/></b-form-radio>
+            <b-form-radio value="list"><icon name="list"/></b-form-radio>
+        </b-form-radio-group>
+        </b-form-group>
+    </div>
     <div class="page-content" v-if="my_projects">
         <div v-if="loading" style="margin: 40px; opacity: 0.5"><h3><icon name="cog" spin scale="2"/> Loading ..</h3></div>
         <div v-if="config.user" class="position: relative">
             <h4 class="group-title">My Projects</h4>
             <div style="padding: 10px;" v-if="mode == 'tile'">
-                <projectcard v-for="project in my_projects" :project="project" :key="project._id"/>
+                <div v-for="project in my_projects" :key="project._id" ref="project">
+                    <projectcard :project="project"/>
+                </div>
             </div>
             <div style="padding: 10px;" v-if="mode == 'list'">
-                <project v-for="project in my_projects" :project="project" :key="project._id"/>
+                <div v-for="project in my_projects" :key="project._id" ref="project">
+                    <project :project="project"/>
+                </div>
             </div>
             <p v-if="my_projects.length == 0 && query == ''" style="margin: 20px;">
                 Please create your project by clicking on the button at the bottom left corner of this page.
@@ -34,31 +38,19 @@
         <div v-if="other_projects && other_projects.length > 0" style="position: relative;">
             <h4 class="group-title">Public<small>/Protected</small> Projects</h4>
             <div style="padding: 10px;" v-if="mode == 'tile'">
-                <projectcard v-for="project in other_projects" :project="project" :key="project._id" class="projectcard"/>
+                <div v-for="project in other_projects" :key="project._id" ref="project">
+                    <projectcard :project="project"/>
+                </div>
             </div>
             <div style="padding: 10px;" v-if="mode == 'list'">
-                <project v-for="project in other_projects" :project="project" :key="project._id"/>
+                <div v-for="project in other_projects" :key="project._id" ref="project">
+                    <project :project="project"/>
+                </div>
             </div>
             <br clear="both">
         </div>
 
-        <!--
-        <div v-if="openneuro_projects && openneuro_projects.length > 0" style="position: relative;">
-            <h4 class="group-title">OpenNeuro Datasets</h4>
-            <p style="opacity: 0.8; margin: 20px;">
-                Only the projects with large number of downloads are linked to Brainlife. Please contact Brainlife Administrator to add other Openneuro dataset.
-            </p>
-            <div style="padding: 10px;" v-if="mode == 'tile'">
-                <projectcard v-for="project in openneuro_projects" :project="project" :key="project._id" class="projectcard"/>
-            </div>
-            <div style="padding: 10px;" v-if="mode == 'list'">
-                <project v-for="project in openneuro_projects" :project="project" :key="project._id"/>
-            </div>
-            <br clear="both">
-        </div>
-        -->
     </div>
-
     <b-button class="button-fixed" @click="newproject" v-b-tooltip.hover title="New Project">
         <icon name="plus" scale="2"/>
     </b-button>
@@ -86,17 +78,18 @@ export default {
             mode: localStorage.getItem("projects.mode")||"tile",
             reload_int: null,
             config: Vue.config,
+
+            /*
+            scrollTop: null,
+            scrollBottom: null,
+            visibleProjects: [],
+            */
         }
     },
 
     mounted() {
         this.query = sessionStorage.getItem("projects.query")||"";
         this.load();
-        /*
-        this.reload_int = setInterval(()=>{
-            this.load();
-        }, 1000*60*5); //reload every 5 minutes (projectinfo is loaded every 5 minutes)
-        */
     },
 
     watch: {
@@ -156,6 +149,11 @@ export default {
                         this.other_projects.push(p);
                     }
                 });
+                /*
+                this.$nextTick(()=>{
+                    this.handle_scroll();
+                });
+                */
                 this.loading = false;
             }).catch(err=>{
                 console.error(err);
@@ -185,6 +183,25 @@ export default {
                 alert('Please signup/login first to create a new project');
             }
         },
+
+        /*
+        handle_scroll() {
+            if(!this.$refs.scrolled) return;
+            this.scrollTop = this.$refs.scrolled.scrollTop;
+            this.scrollBottom = this.$refs.scrolled.scrollTop + this.$refs.scrolled.clientHeight;
+
+            this.visibleProjects = [];  
+            this.$refs.project.forEach(project=>{
+                if(project.offsetTop+project.clientHeight > this.scrollTop && project.offsetTop < this.scrollBottom) this.visibleProjects.push(project);
+            });
+        },
+
+        isvisible(project) {
+            console.dir(project);
+            if(this.visibleProjects.includes(project)) return true;
+            return false;
+        },
+        */
     }
 }
 </script>

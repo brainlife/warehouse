@@ -1,6 +1,5 @@
 <template>
 <b-modal :no-close-on-backdrop='true' :title="title" ref="modal" size="lg" @ok="submit">
-
     <b-row v-if="dataset">
         <b-col class="text-muted" cols="3">Datatypes to Import</b-col>
         <b-col>
@@ -100,10 +99,11 @@ export default {
             return meta;
         },
 
-        submit() {
+        submit(evt) {
             if(!this.createnew) return this.submit_import();
             if(this.datatypes.length == 0) {
                 alert("Please specify at least one datatype to import");
+                evt.preventDefault();
                 return;
             }
 

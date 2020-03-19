@@ -51,56 +51,6 @@ exports.init = (cb)=>{
     });
 }
 
-//deprecated...
-/*
-exports.dataset_event = function(dataset) {
-    if(!dataset) {
-        logger.error("dataset_event called with undefined dataset");
-        return;
-    }
-    if(!dataset_ex) {
-        logger.error("amqp not connected - but event handler called");
-        return;
-    }
-    if(!dataset.project) {
-        logger.error("no project set - can't publish event");
-        return;
-    }
-
-    //unpopulate
-    dataset.project = dataset.project._id || dataset.project;
-    dataset.datatype = dataset.datatype._id || dataset.datatype;
-
-    //let slim_dataset = Object.assign(dataset, {prov: null, product: null}); //hide heavy stuff that we can lookup via database
-    let key = dataset.project+"."+dataset._id;
-    common.publish("dataset.update."+key, dataset);
-
-    dataset_ex.publish(key, dataset, {}); //deprecated
-}
-*/
-/*
-exports.rule_event = function(rule) {
-    if(!rule) {
-        logger.error("rule_event called with undefined rule");
-        return;
-    }
-    if(!rule.project) {
-        logger.error("no project set - can't publish rule");
-        return;
-    }
-    let project = rule.project._id || rule.project;
-    let key = project+"."+rule._id;
-    if(rule.app._id) rule.app = rule.app._id; //unpopulate
-    common.publish("rule.update."+key, rule);
-}
-*/
-
-/*
-exports.project_event = function(project) {
-    common.publish("project.update."+project._id, project);
-}
-*/
-
 exports.disconnect = function(cb) {
     mongoose.disconnect(cb);
     common.disconnect_amqp(); //I don't think this works..
@@ -200,14 +150,18 @@ var projectSchema = mongoose.Schema({
 
     quota: {type: Number, default: 1000000000000}, //maximum archive size (1TB by default)
 
+    /*
     //TODO - will be deprecated when datalad goes online
     //for openneuro proxy project (not set if it's not openneuro)
     openneuro: {
         dataset_id: String,
     },
+    */
 
-    meta: mongoose.Schema.Types.Mixed, //metadata for each subject (keyed by subject id and child object)
-    meta_info: mongoose.Schema.Types.Mixed, //from participants info
+    //datalad datasets that data on this project was imported from
+    //TODO - we can just query the list of datasets stored on this project 
+    //to figure out where they came from
+    //dldatasets: [{type: mongoose.Schema.Types.ObjectId, ref: "DLDatasets"}],
 
     //project can store datasets on project specific storage. {resource_id}
     storage: String,  //default to warehouse config.archive.storage_default
@@ -217,11 +171,58 @@ var projectSchema = mongoose.Schema({
 
     removed: { type: Boolean, default: false },
 });
-/*
-projectSchema.post('save', exports.project_event);
-projectSchema.post('findOneAndUpdate', exports.project_event);
-*/
 exports.Projects = mongoose.model("Projects", projectSchema);
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
+
+var participantsSchema = mongoose.Schema({
+    project: {type: mongoose.Schema.Types.ObjectId, ref: "Projects"},
+
+    //from participants.json keyed by (column header)
+    columns: mongoose.Schema.Types.Mixed, 
+    //like.. 
+    //    "gender" : {
+    //        "LongName" : "gender",
+    //        "Description" : "gender",
+    //        "Levels" : {
+    //            "M" : "male",
+    //            "F" : "female"
+    //        }
+    //    },
+    //    "handedness" : {
+    //        "LongName" : "handedness",
+    //        "Description" : "handedness",
+    //        "Levels" : {
+    //            "R" : "right",
+    //            "L" : "left"
+    //        }
+    //    },
+    //    "age" : {
+    //        "LongName" : "age",
+    //        "Units" : "years"
+    //    },
+    //    "scandate" : {
+    //        "LongName" : "Date of the fMRI scan session",
+    //        "Units" : "DD-MM-YY"
+    //    },
+    //    "scan_time" : {
+    //        "LongName" : "Starting time of the fMRI scan session",
+    //        "Description" : "Variable indicates the starting time. fMRI scan sessions always lasted for 2 hours",
+    //        "Units" : "HH:mm"
+    //    }
+
+    //from participants.tsv (keyed by subject)
+    rows: mongoose.Schema.Types.Mixed, 
+    //like..
+    //"11" : {
+    //    "gender" : "M",
+    //    "handedness" : "R",
+    //    "age" : "24",
+    //    "scandate" : "19-02-15",
+    //    "scan_time" : "16:30"
+    //},
+});
+exports.Participants = mongoose.model("Participants", participantsSchema);
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -702,8 +703,7 @@ var dlDatasetSchema = mongoose.Schema({
         sessions: Number,
         datatypes: mongoose.Schema.Types.Mixed,
     },
-
-
+    import_count: { type: Number, default: 0}, //number of time this dataset was imported
 });
 dlDatasetSchema.index({path: 1, name: 1}, {unique: true}); 
 dlDatasetSchema.index({'$**': 'text'}) //make all text fields searchable
@@ -743,6 +743,7 @@ var dlItemSchema = mongoose.Schema({
     */
     create_date: { type: Date, default: Date.now },
     update_date: { type: Date, default: Date.now },
+
 });
 dlItemSchema.index({'dldataset': 1, 'dataset.datatype': 1, 'dataset.meta.subject': 1, 'dataset.meta.session': 1, 'dataset.meta.run': 1}); //importdatlad uses this as *key* for each item
 exports.DLItems = mongoose.model('DLItems', dlItemSchema);

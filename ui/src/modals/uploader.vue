@@ -41,11 +41,6 @@
                 </b-form-group>
             </div>
 
-            <!--
-            <b-form-group horizontal :label="m.id.toUpperCase()+(m.required?' *':'')" v-for="m in datatype.meta" :key="m.id">
-                <b-input type="text" v-model="meta[m.id]" :required="m.required" :placeholder="m.required?'':'(optional)'"/>
-            </b-form-group>
-            -->
             <b-form-group horizontal label="Subject *">
                 <b-input type="text" v-model="meta['subject']" required/>
             </b-form-group>
@@ -251,18 +246,6 @@ export default {
                     }
                     if(this.tasks.validation && task._id == this.tasks.validation._id) {
                         this.tasks.validation = task;
-                        /*
-                        if(task.status == "finished") {
-                            console.log("validation finished!", task);
-                            if(task.product.tags) {
-                                this.tags = [... new Set(this.product.tags.concat(task.tags))];
-                            }
-
-                            if(task.product.datatype_tags) {
-                                this.datatype_tags = [... new Set(task.product.datatype_tags.concat(this.datatype_tags))];
-                            }
-                        }
-                        */
                     }
 
                     if(task.service == "brainlife/app-archive") {
@@ -321,12 +304,6 @@ export default {
             });
             return valid;
         },
-
-        /*
-        can_archive() {
-            return (this.tasks.validation && this.tasks.validation.product && this.tasks.validation.product.errors.length == 0);
-        },
-        */
  
         upload(file, f) {
             if(!this.tasks.upload.resource_id) return;
@@ -412,44 +389,6 @@ export default {
                 console.error(res);
             });
         },
-
-        /*
-        finalize() {
-            this.$refs.modal.hide();
-            this.$root.$emit("loading",{message: "Registering Data-Object..."});
-
-            //remove null meta
-            let clean_meta = {};
-            for(let id in this.meta) {
-                if(this.meta[id] !== "") clean_meta[id] = this.meta[id];
-            }
-
-            this.$http.post('dataset', {
-                project: this.project._id,
-                task_id: this.tasks.validation._id, 
-                output_id: "output", //validation service isn't realy BL app, so I just have to come up with something
-
-                meta: clean_meta,
-                tags: this.tags,
-                desc: this.desc,
-            }).then(res=>{
-                var dataset = res.data;
-                this.$root.$emit("loading", {show: false});
-                this.$notify({ type: 'success', text: 'Successfully uploaded a new data-object. Please give a few minutes for your data to become available.', });
-                this.$router.push("/project/"+this.project._id+"/dataset/"+dataset._id);
-
-                //TODO need to reload so that new subject group will show up on dataset paage..
-                //it will be nice if I can just force dataset reload (just use event?)
-                document.location.reload(); 
-
-                this.reset();
-            }).catch(err=>{
-                console.error(err);
-                this.$root.$emit("loading", {show: false});
-                this.$notify({type: "error", text: err.response.data.message});
-            });
-        },
-        */
 
         clearfile: function(file) {
             file.uploaded = null;

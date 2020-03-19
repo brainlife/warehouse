@@ -75,6 +75,15 @@ router.post('/import/:dataset_id', jwt({secret: config.express.pubkey}), (req, r
             if(!canedit) return next("you can't import to this project"); 
 
             //update participants info
+            let participants = new db.Participants({
+                project,
+                columns: req.body.meta_info,
+                rows: req.body.meta,
+            });
+            common.publish("participant.create."+req.user.sub+"."+project._id, participants);
+            participants.save();
+
+            /*
             if(req.body.meta) {
                 if(!project.meta) project.meta = {};
                 Object.assign(project.meta, req.body.meta);
@@ -84,6 +93,12 @@ router.post('/import/:dataset_id', jwt({secret: config.express.pubkey}), (req, r
                 Object.assign(project.meta_info, req.body.meta_info);
             }
             project.save();
+            */
+
+            db.DLDatasets.updateOne({_id: dataset._id}, {$inc: {import_count: 1} }).then(err=>{
+                if(err) console.error(err);
+                else console.log("incremented import_count");
+            });
 
             //query datasets requested for import
             db.DLItems.find({
