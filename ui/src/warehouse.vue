@@ -114,7 +114,7 @@ html,body {
     bottom: 0px; 
     padding: 10px 30px;
     background-color: rgba(100,100,100,0.4);
-    z-index: 3;
+    z-index: 7;
     pointer-events: none;
 }
 .page-footer .btn {

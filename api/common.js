@@ -231,6 +231,7 @@ exports.archive_task_outputs = async function(user_id, task, outputs, cb) {
         if(err) return cb(err);
         let datasets = []; 
         let subdirs;
+        let noSubdirs = false;
         async.eachSeries(outputs, (output, next_output)=>{
 
             //only archive output that has archive requested
@@ -259,6 +260,7 @@ exports.archive_task_outputs = async function(user_id, task, outputs, cb) {
                     let datatype = await db.Datatypes.findById(output.datatype);
                     dataset_config.files = datatype.files;
                     dataset_config.files_override = output.files;
+                    noSubdirs = true; //old method requires the entire workdir to be synced.
                 }
                 datasets.push(dataset_config);
                 next_output();
@@ -274,6 +276,7 @@ exports.archive_task_outputs = async function(user_id, task, outputs, cb) {
                 //submit app-archive!
                 let remove_date = new Date();
                 remove_date.setDate(remove_date.getDate()+7); //remove in 7 days(?)
+                if(noSubdirs) subdirs = undefined;
                 let archive_task = await rp.post({
                     url: config.amaretti.api+"/task",
                     json: true,

@@ -362,6 +362,7 @@ function handle_task(task, cb) {
                         _set.status = "failed";
                         break;
                     }
+                    common.publish("dataset.update."+task.user_id+"."+dataset_config.project+"."+dataset_config.dataset._id, _set);
                     db.Datasets.findByIdAndUpdate(dataset_config.dataset._id, {$set: _set}, next_dataset);
                 }, next);
             } else next();
@@ -455,20 +456,6 @@ function handle_auth_event(msg, head, dinfo, cb) {
         let email = msg.email;
         let fullname = msg.fullname;
         if(config.slack) invite_slack_user(email, fullname);
-
-        /*
-        //set public profile
-        logger.debug("publishing profile");
-        request.put({
-            url: config.profile.api+"/public/"+sub, 
-            body: msg._profile,
-            headers: { Authorization: 'Bearer '+config.warehouse.jwt, },
-            json: true,
-        }, (err, res, body)=>{
-            if(err) console.error(err);
-            else logger.debug("successfully published profile");
-        });
-        */
     }
     cb();
 }

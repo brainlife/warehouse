@@ -71,7 +71,7 @@
                             {{instance.desc}}
                             <span v-if="!instance.desc" style="opacity: 0.3; font-size: 75%;">{{instance._id}}</span>
                             &nbsp;
-                            <div v-if="instance.config && instance.config.summary" style="display: inline-block; opacity: 0.8;">
+                            <div v-if="instance.config && instance.config.summary" style="display: inline-block;">
                                 <span v-for="summary in get_nonstaging_summary(instance)" 
                                     :class="summary_class(summary)" :title="summary.name+' (t.'+summary.tid+')'" 
                                     @click.stop="select_task(instance, summary)" :key="summary.task_id">

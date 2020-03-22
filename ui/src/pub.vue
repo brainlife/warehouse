@@ -31,7 +31,7 @@
 
                     </b-col>
                     <b-col cols="2">
-                        <projectavatar :project="pub.project" height="125" width="125"/>
+                        <projectavatar :project="pub.project" :height="125" :width="125"/>
                     </b-col>
                 </b-row>
             </b-container>

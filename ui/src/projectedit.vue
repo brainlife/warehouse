@@ -30,7 +30,7 @@
                 </b-col> 
                 <b-col cols="9">
                     <p>
-                        <b-form-textarea :rows="2" v-model="project.desc" placeholder="Enter description for this project." required/>
+                        <b-form-textarea v-model="project.desc" placeholder="Enter description for this project." required/>
                     </p>
                 </b-col>
             </b-row>
@@ -75,7 +75,7 @@
                     <p class="text-muted"><small>List of agreements that user must agree before accessing datasets stored on this project</small></p>
                     <b-row v-for="(agreement, idx) in project.agreements" :key="idx">
                         <b-col>
-                            <b-form-textarea :rows="4" :max-rows="20" v-model="agreement.agreement" placeholder="Enter agreemenet text(markdown) to be presented to the user"/>
+                            <b-form-textarea v-model="agreement.agreement" placeholder="Enter agreemenet text(markdown) to be presented to the user"/>
                             <br>
                         </b-col>
                         <b-col cols="1">
@@ -127,18 +127,21 @@
                 </b-col>
             </b-row>
 
-            <!--
-            <b-row>
+            <b-row v-if="participants">
                 <b-col cols="3">
-                    <span class="form-header"></span>
+                    <span class="form-header">Participants Info</span>
                 </b-col> 
                 <b-col cols="9">
-                    <b-form-checkbox v-if="project._id" v-model="project.removed">Removed</b-form-checkbox>
+                    <p class="text-muted"><small>Key/value dictionary for each subject(participants.tsv). You can use this information for group analysis.</small></p>
+                    <editor v-model="participants" @init="editorInit" lang="json" height="500"/>
+
                     <br>
+                    <span class="form-header">Column Definitions</span>
+                    <p class="text-muted"><small>Participants Info column Definitions (participants.json). Please read the <a href="https://bids-specification.readthedocs.io/en/stable/03-modality-agnostic-files.html#phenotypic-and-assessment-data">BIDS speficication</a></small></p>
+                    <editor v-model="participants_columns" @init="editorInit" lang="json" height="300"/>
                 </b-col>
             </b-row>
-            -->
-
+ 
             <div class="page-footer">
                 <b-container>
                     <b-button variant="danger" @click="remove" style="float: left"><icon name="trash"/> Remove</b-button>
@@ -168,7 +171,15 @@ import license from '@/components/license'
 import VueMarkdown from 'vue-markdown'
 
 export default {
-    components: { contactlist, pageheader, license, VueMarkdown },
+    components: { 
+        contactlist, 
+        pageheader, 
+        license, 
+        VueMarkdown,
+
+        editor: require('vue2-ace-editor'),
+    },
+
     data () {
         return {
             project: {
@@ -181,22 +192,62 @@ export default {
                 agreements: [],
             },
 
+            participants: null,
+            participants_columns: null,
+
             submitting: false,
 
             config: Vue.config,
         }
     },
     mounted: function() {
+        let participants_def = {
+            "01": {age: 12, sex: "F"},
+            "02": {age: 34, sex: "M"},
+        }
+        let participants_columns_def = {
+            "gender" : {
+                "LongName" : "gender",
+                "Description" : "gender",
+                "Levels" : {
+                    "M" : "male",
+                    "F" : "female"
+                }
+            },
+            "handedness" : {
+                "LongName" : "handedness",
+                "Description" : "handedness",
+                "Levels" : {
+                    "R" : "right",
+                    "L" : "left"
+                }
+            },
+            "age" : {
+                "LongName" : "age",
+                "Units" : "years"
+            },
+        }
+
         if(this.$route.params.id !== '_') {
             //load project to edit
-            this.$http.get('project', {params: {
+            this.axios.get('project', {params: {
                 find: JSON.stringify({_id: this.$route.params.id})
             }}).then(res=>{
                 this.project = res.data.projects[0];
                 if(!this.project.agreements) Vue.set(this.project, "agreements", []); //backward compatibility
             });
+
+            this.axios.get("/participant/"+this.$route.params.id).then(res=>{
+                if(res.data) {
+                    this.participants = JSON.stringify(res.data.rows||participants_def, null, 4);
+                    this.participants_columns = JSON.stringify(res.data.columns||participants_columns_def, null, 4);
+                }
+            });
+        
         } else {
             //new project
+            this.participants = JSON.stringify(participants_def, null, 4);
+            this.participants_columns = JSON.stringify(participants_columns_def, null, 4);
         } 
     },
 
@@ -222,16 +273,37 @@ export default {
             this.project.agreements.splice(idx, 1);
         },
 
+        editorInit(editor) {
+            require('brace/mode/json')
+            editor.container.style.lineHeight = 1.25;
+            editor.renderer.updateFontSize();
+        },
+
         submit(evt) {
-            console.log("submitting");
             if(this.submitting) return;
-            this.submitting = true;
             evt.preventDefault();
+
+            //validate
+            let participants;
+            let participants_columns;
+            try {
+                participants = JSON.parse(this.participants);
+                participants_columns = JSON.parse(this.participants_columns);
+            } catch(err) {
+                this.$notify({type: 'error', text: "Participants Info has a syntax error: "+err});
+                return; 
+            }        
+
+            this.submitting = true;
             if(this.project._id) {
                 //update
-                this.$http.put('project/'+this.project._id, this.project).then(res=>{
+                this.axios.put('project/'+this.project._id, this.project).then(res=>{
                     this.$root.$emit("refresh_jwt");
-                    //this.$router.push('/project/'+this.project._id);
+                    return this.axios.put('participant/'+this.project._id, {
+                        rows: participants,
+                        columns: participants_columns,
+                    });
+                }).then(res=>{
                     this.$router.go(-1);
                     this.submitting = false;
                 }).catch(err=>{
@@ -241,9 +313,16 @@ export default {
                 });
             } else {
                 //create
-                this.$http.post('project', this.project).then(res=>{
+                let project;
+                this.axios.post('project', this.project).then(res=>{
+                    project = res.data;
                     this.$root.$emit("refresh_jwt");
-                    this.$router.replace("/project/" + res.data._id);
+                    return this.axios.put('participant/'+project._id, {
+                        rows: participants,
+                        columns: participants_columns,
+                    });
+                }).then(res=>{
+                    this.$router.replace("/project/"+project._id);
                     this.submitting = false;
                 }).catch(err=>{
                     console.error(err);

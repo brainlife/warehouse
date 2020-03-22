@@ -101,6 +101,19 @@
                             <b-row v-if="dataset.prov && dataset.prov.task && dataset.prov.task.config && dataset.prov.task.config._app">
                                 <b-col cols="3"><span class="form-header">Produced by</span></b-col>
                                 <b-col cols="9">
+                                    <p v-if="!isimporttask(dataset.prov.task)">
+                                        <a :href="'https://github.com/'+dataset.prov.task.service+'/tree/'+dataset.prov.task.commit_id" title="App Commit ID">
+                                            <b-badge pill class="bigpill">
+                                                <icon name="brands/github" style="opacity: 0.4;"/>&nbsp;&nbsp;&nbsp;{{dataset.prov.task.commit_id}}
+                                            </b-badge>
+                                        </a>
+                                        &nbsp;
+                                        <a v-if="resource" :href="'/resource/'+resource._id" title="Resource Used">
+                                            <b-badge pill class="bigpill">
+                                                <icon name="server" style="opacity: 0.5; margin-right: 7px;"/>&nbsp;{{resource.name}}
+                                            </b-badge>
+                                        </a>
+                                    </p>
                                     <app slot="header"
                                         :appid="dataset.prov.task.config._app" 
                                         :branch="dataset.prov.task.service_branch||'master'">
@@ -109,28 +122,7 @@
                                     <br>
                                 </b-col>
                             </b-row>
-                            <b-row v-if="dataset.prov && dataset.prov.task">
-                                <b-col cols="3"><span class="form-header">App Commit ID</span></b-col>
-                                <b-col cols="9">
-                                    <a :href="'https://github.com/'+dataset.prov.task.service+'/tree/'+dataset.prov.task.commit_id">
-                                        <b-badge pill class="bigpill">
-                                            <icon name="brands/github" style="opacity: 0.4;"/>&nbsp;&nbsp;&nbsp;{{dataset.prov.task.commit_id}}
-                                        </b-badge>
-                                    </a>
-                                    <br>
-                                    <br>
-                                </b-col>
-                            </b-row>
-                            <b-row v-if="resource">
-                                <b-col cols="3"><span class="form-header">Produced In</span></b-col>
-                                <b-col>
-                                    <p :title="resource._id">
-                                        <icon name="server" style="opacity: 0.5; margin-right: 7px;"/>
-                                        {{resource.name}}
-                                        <small v-if="resource.desc">{{resource.desc}}</small>
-                                    </p>
-                                </b-col>
-                            </b-row>              
+
                             <b-row>
                                 <b-col cols="3"><span class="form-header">Archived in</span></b-col>
                                 <b-col>
@@ -156,7 +148,7 @@
                                             Status is unknown
                                         </span> 
                                         <span title="Backup of this data-object exists in Scholarly Data Archive (SDA) system." v-if="dataset.backup_date" class="text-success">
-                                            <b-badge variant="success"><icon name="archive" scale="0.7"/> SDA</b-badge>
+                                            <b-badge variant="success"><icon name="archive" scale="0.7"/> SDA Backup</b-badge>
                                         </span>
                                     </p>
                                 </b-col>
@@ -347,6 +339,21 @@ export default {
     },
 
     methods: {
+    
+        //same code in api/controllers/dataset.js
+        isimporttask(task) {
+            return ( 
+                //deprecated.. but for provenance sake, we need to keep them
+                task.service == "soichih/sca-product-raw" || 
+                task.service == "soichih/sca-service-noop" ||
+
+                task.service == "brainlife/app-stage" || 
+                task.service == "brainlife/app-noop" ||
+                ~task.service.indexOf("brainlife/validator-") ||
+                ~task.service.indexOf("brain-life/validator-")
+            );
+        },
+
         update_dataset(elem) {
             if(debounce) clearTimeout(debounce);
             debounce = setTimeout(()=>{
@@ -438,7 +445,17 @@ export default {
                             e.nodes.forEach(node=>{
                                 if(node.startsWith("dataset.")) {
                                     let dataset_id = node.substring(8);
-                                    this.$router.replace(this.$route.path.replace(this.dataset._id, dataset_id));
+
+                                    //most page uses $route.path for dataset link
+                                    if(this.$route.path.includes(this.dataset._id)) {
+                                        this.$router.replace(this.$route.path.replace(this.dataset._id, dataset_id));
+                                    }
+
+                                    //pub page uses hash to store dataset link
+                                    if(this.$route.hash.includes(this.dataset._id)) {
+                                        //this.$router.hash = "#"+dataset_id;
+                                        this.$root.$emit('dataset.view', {id: dataset_id});
+                                    }
                                 }
                                 if(node.startsWith("task.")) {
                                     let fullnode = this.prov.nodes.find(n=>n.id == node);

@@ -466,7 +466,7 @@ export default {
             this.ws = new ReconnectingWebSocket(url, null, {/*debug: Vue.config.debug,*/ reconnectInterval: 3000});
             this.ws.onopen = (e)=>{
 
-                //wf.task is deprecated by ex:warehouse.. probably use task.# instead
+                //wf.task will be deprecated by ex:amaretti
                 this.ws.send(JSON.stringify({
                     bind: {
                         ex: "wf.task",
@@ -474,11 +474,10 @@ export default {
                     }
                 }));
 
-                //warehouse.dataset is deprecated.. need to update to ex:warehouse, key "dataset.update.<project>.<dataset_id>"
                 this.ws.send(JSON.stringify({
                     bind: {
-                        ex: "warehouse.dataset",
-                        key: this.project._id+".#",
+                        ex: "warehouse",
+                        key: "dataset.*.*."+this.project._id+".#",
                     }
                 }));
 
@@ -503,8 +502,6 @@ export default {
                     case "wf.task":
                         var task = event.msg;
                         if(task.name == "__dtv") {
-                            console.log("----------dtv----------");
-                            console.dir(task);
                             this.set_dtv_task(task);
                         } else if(task.config._tid) {
                             //ui task
@@ -540,15 +537,22 @@ export default {
                             }
                         }
                         break;
-                    case "warehouse.dataset":
+                    case "warehouse":
                         //see if we care..
-                        let archived_dataset = this.archived.find(d=>d._id == event.msg._id);
+                        console.log("warehouse event received", event.dinfo.routingKey);
+                        console.dir(event);
+                        let routingKey = event.dinfo.routingKey.split(".");
+                        let dataset_id = routingKey[4];  
+                        let archived_dataset = this.archived.find(d=>d._id == dataset_id);
                         if(archived_dataset) {
                             for(var k in event.msg) archived_dataset[k] = event.msg[k]; //update 
                         } else {
                             this.archived.push(event.msg);
                         }
                         break;
+                    default:
+                        console.log("unknown event");
+                        console.error(event);
                     }
                 };
             };

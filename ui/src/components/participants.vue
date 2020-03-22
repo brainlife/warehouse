@@ -76,35 +76,16 @@ export default {
     },
 
     mounted() {
-       /*
-        this.axios.get("/participant/"+this.project._id).then(res=>{
-            this.rows = res.data.rows||{};
-            this.columns = res.data.columns||{};
-            this.subjects = [];
-            for(let subject in this.rows) {
-                this.subjects.push(subject);
-            }
-
-            //load subjects that might not be listed in participants.tsv
-            this.axios.get("/dataset/distinct", {params: {
-                distinct: 'meta.subject',
-                find: {
-                    project: this.project._id,
+        //add missing columns
+        for(let subject in this.rows) {
+            let row = this.rows[subject]; 
+            let keys = Object.keys(row);
+            keys.forEach(key=>{
+                if(!this.columns[key]) {
+                    this.columns[key] = {LongName: key};
                 }
-            }}).then(res=>{
-                res.data.forEach(subject=>{
-                    if(!subject) return; //don't include "null"
-                    subject = subject.trim(); //sometime we have white char prefixed - only on dev?
-                    if(!this.subjects.includes(subject)) {
-                        console.log(subject);
-                        this.subjects.push(subject);
-                        this.rows[subject] = {};
-                    }
-                });
-                this.updateSort('subject', false);
             });
-        });
-        */
+        }
     },
 
     computed: {
@@ -123,8 +104,13 @@ export default {
                     a = this.rows[a][this.sort];
                     b = this.rows[b][this.sort];
                 }
-                if(this.sort_reverse) return b.localeCompare(a);
-                else return a.localeCompare(b);
+                if(typeof a == 'string') {
+                    if(this.sort_reverse) return b.localeCompare(a);
+                    else return a.localeCompare(b);
+                } else {
+                    if(this.sort_reverse) return b-a;
+                    else return a-b;
+                }
             });
         },
     },

@@ -149,14 +149,6 @@ exports.datacite = {
 //  storage system where we can archive data
 exports.storage_systems = {};
 
-/*
-//pick default storage (TODO - deprecate thsi and use archive.storage_default instead
-exports.storage_default = function() {
-    //return "jetstream";
-    return "wrangler";
-}
-*/
-
 exports.archive = {
     storage_default: "wrangler",  
     //storage_default: "osiris",  
@@ -527,7 +519,7 @@ function get_copysource_dataset(dataset) {
     });
 }
 exports.storage_systems.copy = {
-    need_backup: false,
+    need_backup: true,
     test: cb=>{
         cb();
     }, 
@@ -546,7 +538,13 @@ exports.storage_systems.copy = {
     download: (dataset, cb)=>{
         let source_dataset = get_copysource_dataset(dataset);
         let system = exports.storage_systems[source_dataset.storage];
-        system.download(source_dataset, cb);
+        system.download(source_dataset, (err, stream, filename)=>{
+
+            //use the original dataset id as filename (but keep the .tar vs .tar.gz intact)
+            let copy_filename = filename.split(".");
+            copy_filename[0] = dataset._id;
+            cb(err, stream, copy_filename.join("."));
+        });
     },
 } 
 

@@ -7,7 +7,7 @@ const winston = require('winston');
 const ssh2 = require('ssh2');
 
 const config = require('../api/config');
-const logger = winston.createLogger(config.logger.winston);
+//const logger = winston.createLogger(config.logger.winston);
 const db = require('../api/models');
 
 console.log("connecting to db");
@@ -17,7 +17,7 @@ db.init(function(err) {
         if(err) throw err;
         run(sftp, err=>{
             if(err) throw err;
-            logger.info("all done.. disconnecting");
+            console.debug("all done.. disconnecting");
 
             conn.end();
             db.disconnect();
@@ -53,16 +53,16 @@ function run(sftp, cb) {
     for(var id in config.storage_systems) {
         if(config.storage_systems[id].need_backup) storages.push(id);
     }
-    logger.debug("need to backup:", storages);
+    console.log("need to backup:", storages);
     
-    logger.debug("finding project that needs to be backed up");
+    console.debug("finding project that needs to be backed up");
     db.Projects.find({removed: false})
     .sort('create_date')
     .exec((err, projects)=>{
         if(err) return cb(err);
 
         async.eachSeries(projects, (project, next_project)=>{
-            logger.debug("------------------------------ handling project", project.toString());
+            console.debug("------------------------------ handling project", project.toString());
             db.Datasets.find({
                 project,
                 removed: false,
@@ -76,43 +76,45 @@ function run(sftp, cb) {
             .populate('datatype')
             .exec((err,datasets)=>{
                 if(err) return next_project(err);
-                logger.debug("datasets needs backup:",datasets.length);
+                console.debug("datasets needs backup:",datasets.length);
                 let count = 0;
                 async.eachSeries(datasets, (dataset, next_dataset)=>{
                     count++;
 
-                    logger.debug("handling dataset", dataset.toString());
+                    console.debug("handling dataset", dataset.toString());
 
                     var system = config.storage_systems[dataset.storage];
                     system.download(dataset, (err, readstream, filename)=>{
                         if(err) return next_dataset(err);
 
-                        //logger.debug("processing dataset:", dataset._id.toString());
                         let dir = config.sda.basedir+"/"+project._id.toString();
                         let r = sftp.mkdir(dir, err=>{
                             if(err) {
                                 //code 4 means directory exists
                                 if(err.code == 4) {
-                                    logger.debug("project directory already exist.. ok")
+                                    console.debug("project directory already exist.. ok")
                                 } else return next_dataset(err);
                             }
 
+                            //I believe I switched to use download/filename instead of dataset._id
+                            //directly because old files are stored in .tar.gz
                             //let path = dir+"/"+dataset._id;
                             let path = dir+"/"+filename;
-                            logger.debug(count, "copying",dataset._id,"to",path);
+
+                            console.debug(count, "copying",dataset._id,"to",path);
                             let writestream = sftp.createWriteStream(path, {autoClose: false});
                             readstream.pipe(writestream);
                             readstream.on('error', err=>{
-                                logger.error("failed to pipe", err);
+                                console.error("failed to pipe", err);
                                 next_dataset(err);
                             });
                             writestream.on('finish', ()=>{
-                                logger.debug("done!", dataset._id.toString());
+                                console.debug("done!", dataset._id.toString());
                                 dataset.backup_date = new Date();
                                 dataset.save(next_dataset);
                             });
                         });
-                        logger.debug("mkdir returned", r);
+                        console.debug("mkdir returned", r);
                     });
                 }, next_project);
             });

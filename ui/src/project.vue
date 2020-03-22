@@ -179,16 +179,25 @@
                     <vue-markdown v-if="selected.readme" :source="selected.readme" class="readme"></vue-markdown>
                 </div>
 
+                <div class="box" v-if="participants">
+                    <span class="form-header">Participants Info</span>     
+                    <!--
+                    <div v-if="participants_editing">
+                        <editor v-model="participants_editing" @init="editorInit" lang="json" height="500"/>
+                        <div style="background-color: #ccc; padding: 8px 10px; text-align: right;">
+                            <b-btn @click="participants_editing = null" size="sm">Cancel</b-btn>
+                            <b-btn @click="saveParticipants()" variant="primary" size="sm">Save</b-btn>
+                        </div>
+                    </div>
+                    -->
+                    <participants :rows="participants" :columns="participants_columns" style="max-height: 500px; overflow: auto;"/>
+                </div>
+
                 <div v-if="resource_usage && total_walltime > 3600*1000" class="box">      
                     <span class="form-header">Resource Usage</span>     
                     <p><small>Data-objects on this project has been computed using the following apps/resources.</small></p>             
                     <vue-plotly :data="resource_usage.data" :layout="resource_usage.layout" :options="resource_usage.options"
                             ref="resource_usage" :autoResize="true" :watchShallow="true"/>
-                </div>
-
-                <div class="box">
-                    <span class="form-header">Participants Info</span>     
-                    <participants :rows="participants" :columns="participants_columns"/>
                 </div>
 
                 <div v-if="resource_citations.length > 0" class="box">
@@ -201,21 +210,6 @@
                         <i>{{resource_citation.citation}}</i>
                     </p>
                 </div>
-
-                <!--
-                <div v-if="selected.meta" class="box">
-                    <span class="form-header">Meta (todo)</span>
-                    <pre style="font-size: 80%;">{{selected.meta}}</pre>
-                    <br>
-                </div>
-
-                <div v-if="selected.meta_info" class="box">
-                    <span class="form-header">Meta Info (todo)</span>
-                    <pre style="font-size: 80%;">{{selected.meta_info}}</pre>
-                    <br>
-                </div>
-                -->
-                
 
                 <vue-disqus ref="disqus" shortname="brain-life" :identifier="selected._id"/>
 
@@ -322,8 +316,10 @@ export default {
             selected: null, 
             resource_usage: null,
             total_walltime: 0,
+
             participants: null,
             participants_columns: null,
+            //participants_editing: null,
 
             tabs: [],
 
@@ -498,18 +494,6 @@ export default {
             this.open_project(project);
         },
 
-        /*
-        init_ps() {
-            this.$nextTick(()=>{
-                //console.log("resetting scrollbar");
-                let right = this.$refs["page-right-content"];
-                if(right) {
-                    ps = new PerfectScrollbar(right);
-                }
-            });
-        },
-        */
-
         open_project(project) {
             if(this.selected == project) return; //no point of opening project if it's already opened
             this.selected = project;
@@ -671,6 +655,22 @@ export default {
             }
         },
 
+        /*
+        editParticipants() {
+            this.participants_editing = JSON.stringify(this.participants, null, 4);
+        },
+        saveParticipants() {
+            try {
+                this.participants = JSON.parse(this.participants_editing);
+                this.participants_editing = null;
+                //TODO - save
+
+            } catch(err) {
+                this.$notify({type: 'error', text: err});
+            }
+        },
+        */
+
         getvariant(state) {
             switch(state) {
             case "running": return "primary";
@@ -714,7 +714,7 @@ box-shadow: 0 0 2px #ccc;
 background-color: white;
 position: sticky;
 top: 0;
-z-index: 2;
+z-index: 7;
 height: 140px;
 overflow: hidden;
 }

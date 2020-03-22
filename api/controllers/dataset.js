@@ -29,6 +29,7 @@ function canedit(user, rec, canwrite_project_ids) {
     return false;
 }
 
+//same code in ui/modals/dataset.js
 function isimporttask(task) {
     return ( 
         //deprecated.. but for provenance sake, we need to keep them
@@ -580,6 +581,9 @@ This boutique descriptor that can be used to run the workflow used to generate t
     });
 });
 
+//TODO - I should split the algorithms to 2 parts
+//first part to generate a full provenance graph which might be too verbose - noisy but a complete picture (no defer)
+//second part to simplify the graph so that users can make sense of it (it could even be done at the UI side)
 function generate_prov(origin_dataset_id, cb) {
     let datatypes = {};
     let nodes = [];
@@ -620,7 +624,12 @@ function generate_prov(origin_dataset_id, cb) {
         if(dataset.datatype_tags) datatype_name += " "+dataset.datatype_tags.join(":")
         
         let label = "";
-        label += dataset.project.name+" / ";
+        if(dataset.project) {
+            label += dataset.project.name+" / ";
+        } else {
+            //some project records were removed... and now it's possible to have null project
+            label += "(removed project) / ";
+        }
         label += dataset.meta.subject + "\n";
         label += datatype_name + "\n";
         label += dataset.tags.join(" ");
@@ -1191,7 +1200,9 @@ function stream_dataset(dataset, req, res, next) {
                 if(m.bytes == 0) logger.warn("meter count is 0... something went wrong?");
 
                 inc_download_count(dataset);
-                common.publish("dataset.download."+req.user.sub+"."+dataset.project+"."+dataset._id, {headers: req.headers});
+                let sub = "guest";
+                if(req.user) sub = req.user.sub;
+                common.publish("dataset.download."+sub+"."+dataset.project+"."+dataset._id, {headers: req.headers});
                 dataset.save();
             });
         });
