@@ -41,7 +41,7 @@
                     <b-col cols="2" class="subject-column">
                         <strong>{{group}}</strong>
 
-                        <div class="participants">
+                        <div class="participants" v-if="participants">
                             <span v-if="participants" v-for="(v, k) in participants[datasets._subject]" :key="k">
                                 <small>{{k}}</small> {{v}}
                             </span>
@@ -547,29 +547,6 @@ export default {
 
                 this.$nextTick(this.rememberHeights);
                 this.loading = false;
-
-                /*
-                //only admin or member can load participants
-                if(this.isadmin() || this.ismember()) {
-
-                    console.log("loading participants info");
-                    this.participants = null;
-                    this.axios.get("/participant/"+this.project._id).then(res=>{
-                        if(res.data) {
-                            this.participants = res.data.rows||{}; 
-                        }
-                        this.loading = false;
-                        this.$nextTick(this.rememberHeights);
-                    }, err=>{
-                        this.$nextTick(this.rememberHeights);
-                        this.loading = false;
-                        console.error(err);
-                    });
-                } else {
-                    this.$nextTick(this.rememberHeights);
-                    this.loading = false;
-                }
-                */
             }, err=>{
                 this.loading = false;
                 console.error(err);
@@ -784,19 +761,6 @@ export default {
                 this.$router.replace("/project/"+project_id+"/process/"+instance._id);
             });
         },
-
-        /*
-        editParticipants(subject) {
-            this.$root.$emit("participants.edit", {
-                project: this.project,
-                subject,
-                data: this.participants[subject],
-                cb: data=>{
-                    Vue.set(this.participants, subject, data);
-                },
-            });
-        },
-        */
     },
 }
 </script>
@@ -969,15 +933,5 @@ font-size: 90%;
 .subject-column {
 min-height: 35px;
 }
-/*
-.participants-edit {
-opacity: 0;
-}
-.subjects:hover .participants-edit {
-opacity: 0.5;
-cursor: pointer;
-background-color: #eee;
-}
-*/
 </style>
 

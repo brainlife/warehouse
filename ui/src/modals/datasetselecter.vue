@@ -284,6 +284,7 @@ export default {
             this.$http.get('dataset/distinct', { params: {
                 find: JSON.stringify({
                     project: this.project,
+                    removed: false,
                 }),
                 distinct: 'meta.subject',
             }}).then(res=>{
