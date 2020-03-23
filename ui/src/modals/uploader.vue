@@ -1,5 +1,5 @@
 <template>
-<b-modal :no-close-on-backdrop='true' title="Upload Dataset" ref="modal" id="uploader" size="lg">
+<b-modal :no-close-on-backdrop='true' title="Upload Data-Object" ref="modal" id="uploader" size="lg">
     <div v-if="mode == 'upload'">
         <b-form-group horizontal label="Data Type" v-if="datatypes">
             <v-select v-model="datatype" placeholder="Search Datatype" label="name" :options="Object.values(datatypes)" :selectable="option => option.validator">
@@ -19,9 +19,10 @@
             </div>
             
             <div v-if="tasks.upload && tasks.upload.resource_id">
-                <b-form-group horizontal v-if="datatype" v-for="file in files" :key="file.id" :label="file.id+(file.ext?'('+file.ext+')':'')+(file.required?' *':'')">
+                <b-form-group horizontal v-if="datatype" v-for="file in files" :key="file.id" :label="file.id+(file.ext?' ('+file.ext+')':'')+(file.required?' *':'')" :description="file.desc">
                     <div v-if="!file.uploaded && !file.progress">
                         <input type="file" @change="filechange(file, $event)" :accept="file.ext">
+                        <editor v-if="file.meta && sidecar" v-model="sidecar" @init="editorInit" lang="json" height="150" style="margin-top: 10px;"/>
                     </div>
 
                     <div v-if="!file.uploaded && file.progress">
@@ -38,7 +39,13 @@
                         <small>({{file.size|filesize}})</small>
                         <div class="button" @click="clearfile(file)" style="float: right;"><icon name="trash"/></div>
                     </div>
+    
                 </b-form-group>
+                <!--
+                <b-form-group label="Sidecar/Metadata .json (optional)">
+                    <input type="file" @change="filechange({}, $event)" accept="json">
+                </b-form-group>
+                -->
             </div>
 
             <b-form-group horizontal label="Subject *">
@@ -58,13 +65,13 @@
                 <small>Datatype tags add context to the datatype. It can not be changed once archived.</small>
             </b-form-group>
 
-            <b-form-group horizontal label="Dataset Tags" v-if="available_tags">
+            <b-form-group horizontal label="Data-Object Tags" v-if="available_tags">
                 <tageditor v-model="tags" :options="available_tags" placeholder="(optional)"/>
-                <small>Dataset tags is used to help organize datasets and make searching easier. It can be edited by users anytime.</small>
+                <small>Data-object tags is used to help organize data-objects and make searching easier. It can be edited by users anytime.</small>
             </b-form-group>
 
         </div><!--datatype_id set -->
-        <small>To bulk upload your datasets, you can use <a href="https://github.com/brain-life/cli" target="_blank">Brainlife CLI</a></small>
+        <small>To bulk upload your data-objects, you can use <a href="https://github.com/brain-life/cli" target="_blank">Brainlife CLI</a></small>
     </div><!--meta-->
 
     <div v-if="mode == 'validate' && tasks.validation">
@@ -89,13 +96,10 @@
     <div slot="modal-footer">
         <b-form-group v-if="mode == 'upload'">
             <b-button @click="cancel">Cancel</b-button>
-            <b-button variant="primary" @click="validate()" :disabled="!can_validate()">Next</b-button>
+            <b-button variant="primary" @click="validate()" :disabled="!isValid()">Next</b-button>
         </b-form-group>
         <b-form-group v-if="mode == 'validate'">
             <b-button @click="mode = 'upload'">Back</b-button>
-            <!--
-            <b-button variant="primary" @click="finalize()" :disabled="!can_archive()"><icon name="archive"/> Archive</b-button>
-            -->
         </b-form-group>
     </div>
 </b-modal>
@@ -116,8 +120,11 @@ import datatypetag from '@/components/datatypetag'
 export default {
     components: { 
         pageheader, 
-        task, tageditor, product,
+        task, 
+        tageditor, 
+        product,
         datatypetag,
+        editor: require('vue2-ace-editor'),
     },
     data () {
         return {
@@ -135,6 +142,7 @@ export default {
                 subject: "",
                 session: "",
             },
+            sidecar: "",
 
             tasks: {
                 upload: null, //task where I can upload to
@@ -154,7 +162,6 @@ export default {
     },
 
     mounted() {
-        console.log("loading all datatypes");
         this.$http.get('datatype', {params: {
             sort: 'name', 
             find: JSON.stringify({validator: {$exists: true}}),
@@ -181,20 +188,20 @@ export default {
 
     computed: {
         files() {
-            if(!this.datatype) return null;
-            return this.datatype.files;
-        },
 
-        /*
-        datatypeSelectOptions() {
-            return Object.values(this.datatypes).map(dt=>{
-                console.dir(dt);
-                return Object.assign({
-                    label: dt.name+" / "+dt.desc,
-                }, dt);
-            });
+            //all datatype can add metadata via sidecar.json
+            let sidecar = {
+                id: "sidecar",
+                ext: "json",
+                filename: "sidecar.json",
+                desc: "Optional metadata .json",
+                required: false,
+                meta: true,
+            };
+
+            if(!this.datatype) return null;
+            return [...this.datatype.files, sidecar];
         },
-        */
     },
 
     methods: {
@@ -205,6 +212,7 @@ export default {
             if(this.datatype) this.datatype.files.forEach(this.clearfile);
             this.datatype = null;
             this.desc = "";
+            this.sidecar = "";
             this.tasks.upload = null;
             this.tasks.validation = null;
         },
@@ -212,7 +220,28 @@ export default {
         filechange(file, e) {
             var files = e.target.files || e.dataTransfer.files;
             if(!files.length) return;
-            this.upload(file, files[0]); //only upload first one
+
+            if(file.meta) {
+                //sidecar file doesn't get uploaded - it's passed as meta config
+                const reader = new FileReader()
+                reader.onerror = err=>{
+                    this.$notify({ type: 'error', text: 'Invalid file' });
+                }
+                reader.readAsText(files[0]) 
+                reader.onload = event => {
+                    try {
+                        this.sidecar = null;
+                        let meta = JSON.parse(event.target.result);
+                        this.sidecar = JSON.stringify(meta, null, 4);
+                    } catch (err) {
+                        this.$notify({ type: 'error', text: 'Invalid json file' });
+                        e.target.value = null;
+                    }
+                }
+            } else {
+                //normal file
+                this.upload(file, files[0]); //only upload first one
+            }
         },
 
         create_instance() {
@@ -294,7 +323,7 @@ export default {
             });
         },
 
-        can_validate() {
+        isValid() {
             let valid = true;
             if(!this.project) return false;
             if(!this.datatype) return false;
@@ -302,6 +331,15 @@ export default {
             this.files.forEach(file=>{
                 if(file.required && !file.uploaded) valid = false;
             });
+
+            if(this.sidecar) {
+                try {
+                    let _sidecar = JSON.parse(this.sidecar);
+                } catch (err) {
+                    valid = false;
+                }
+            }
+
             return valid;
         },
  
@@ -312,6 +350,7 @@ export default {
             file.size = f.size;
             file.type = f.type;
             file.progress = {};
+
 
             //axios has onUploadProgress cb.. I think I can switch to $http (see easybids)
             var xhr = new XMLHttpRequest();
@@ -344,6 +383,10 @@ export default {
         validate() {
             this.mode = "validate";
             this.tasks.validation = null;
+
+            //apply sidecar to meta
+            let _sidecar = JSON.parse(this.sidecar);
+            Object.assign(this.meta, _sidecar);
 
             //remove null meta
             let clean_meta = {};
@@ -404,14 +447,6 @@ export default {
         change_datatype() {
             if(!this.datatype) return;
 
-            /*
-            this.meta = {};
-            //need to reset all meta properties to be reactive
-            this.datatype.meta.forEach(meta=>{
-                Vue.set(this.meta, meta.id, "");
-            });
-            */
-
             this.prep_upload();
 
             //load available dataset tags
@@ -430,6 +465,11 @@ export default {
                 this.available_dt_tags = res.data;
             });            
         },
+        editorInit(editor) {
+            require('brace/mode/json')
+            editor.container.style.lineHeight = 1.25;
+            editor.renderer.updateFontSize();
+        }
     },
 }
 </script>
@@ -443,7 +483,7 @@ label.meta-field-name {
     text-transform: uppercase;
 }
 pre {
-line-height: 130%;
+    line-height: 130%;
 }
 </style>
 
