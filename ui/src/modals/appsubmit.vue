@@ -497,15 +497,15 @@ export default {
                     }
 
                     //handle tag passthrough
-					var tags = [];
+                    var tags = [];
                     if(output.datatype_tags_pass) {
                         this.form.inputs[output.datatype_tags_pass].forEach(ps=>{
                             let dataset = download_task.config._outputs.find(out=>out.dataset_id == ps.dataset.id);
-							if(dataset.datatype_tags) tags = tags.concat(dataset.datatype_tags);
+                            if(dataset.datatype_tags) tags = tags.concat(dataset.datatype_tags);
                         }); 
                     }
-					//.. and add app specified output tags at the end
-					if(output.datatype_tags) tags = tags.concat(output.datatype_tags); 
+                    //.. and add app specified output tags at the end
+                    if(output.datatype_tags) tags = tags.concat(output.datatype_tags); 
                     output_req.datatype_tags = lib.uniq(tags);
 
                     config._outputs.push(output_req);

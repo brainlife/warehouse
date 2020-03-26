@@ -29,15 +29,18 @@ function canedit(user, rec, canwrite_project_ids) {
     return false;
 }
 
-//same code in ui/modals/dataset.js
+//same code in ui::/src/modals/dataset.js
 function isimporttask(task) {
     return ( 
+        /*
         //deprecated.. but for provenance sake, we need to keep them
         task.service == "soichih/sca-product-raw" || 
         task.service == "soichih/sca-service-noop" ||
 
         task.service == "brainlife/app-stage" || 
         task.service == "brainlife/app-noop" ||
+        */
+        (task.deps_config.length == 0 && tasks.deps.length == 0) ||
         ~task.service.indexOf("brainlife/validator-") ||
         ~task.service.indexOf("brain-life/validator-")
     );

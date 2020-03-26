@@ -223,86 +223,98 @@ function handle_task(task, cb) {
         //submit output validators
         next=>{
             //this is experimental
-            if(!config.debug) return next(); 
+            //if(!config.debug) return next(); 
 
-            if(task.status == "finished" && task.config && task.config._outputs) {
+            if(task.status != "finished" || !task.config || !task.config._outputs ||  
+                //don't run on staging tasks
+                task.deps_config.length == 0 || 
+                //don't run on validator task output!
+                task.name == "__dtv") {
+                return next();
+            } 
 
-                //don't run validator on validator output..
-                if(task.service.includes("/validator-")) return next();
+            //handle validator submission
+            async.eachSeries(task.config._outputs, async (output)=>{
 
-                logger.info("handling task outputs - validator");
-                async.eachSeries(task.config._outputs, async (output)=>{
+                let datatype = await db.Datatypes.findById(output.datatype);
+                if(!datatype.validator) return next(); //no validator for this datatype..
+                
+                //see if we already submitted validator for this output
+                //task can be resubmitted, and if it does, amaretti will
+                //automatically rerun it
+                //TODO - even if it's failed?
+                let find = {
+                    "name": "__dtv",
+                    "deps_config.task": task._id,
+                    "config.output.id": output.id,
 
-                    //just validate anat/t1w for now
-                    if(output.datatype != "58c33bcee13a50849b25879a") return;
+                    instance_id: task.instance_id,
+                
+                    service: datatype.validator, //"brain-life/validator-neuro-anat", 
+                    service_branch: datatype.validator_branch, //"master",
+                };
 
-                    //let's validate the app that uses subdir output
-                    //if(!output.subdir) return;
-
-                    //see if we already submitted validator for this output
-                    let find = {
-                        "name": "__dtv",
-                        "deps_config.task": task._id,
-                        "config.output.id": output.id,
-                        instance_id: task.instance_id,
-                    
-                        //TODO - query from datatype id
-                        service: "brain-life/validator-neuro-anat", 
-                        service_branch: "master",
-                    };
-
-                    let subdirs;
-                    if(output.subdir) {
-                        //find['deps_config.subdir'] = [output.subdir];
-                        subdirs = [output.subdir];
+                let subdirs;
+                if(output.subdir) {
+                    //find['deps_config.subdir'] = [output.subdir];
+                    subdirs = [output.subdir];
+                }
+                let tasks = await rp.get({
+                    url: config.amaretti.api+"/task?find="+JSON.stringify(find)+"&limit=1",
+                    json: true,
+                    headers: {
+                        authorization: "Bearer "+config.warehouse.jwt,
                     }
-                    let tasks = await rp.get({
-                        url: config.amaretti.api+"/task?find="+JSON.stringify(find)+"&limit=1",
-                        json: true,
-                        headers: {
-                            authorization: "Bearer "+config.warehouse.jwt,
-                        }
-                    });
-
-                    console.log("--------------------------------------", tasks.tasks.length);
-                    console.dir(tasks.tasks);
-                    if(tasks.tasks.length) {
-                        console.log("validator already submitted");
-                        return;
-                    }
-
-                    //only archiver group user can run dtv apps on wrangler
-                    //so I need to add group access temporarily
-                    let user_jwt = await common.issue_archiver_jwt(task.user_id);
-                    
-                    //submit datatype validator - if not yet submitted
-                    let remove_date = new Date();
-                    remove_date.setDate(remove_date.getDate()+7); //remove in 7 days(?)
-                    let dtv_task = await rp.post({
-                        url: config.amaretti.api+"/task",
-                        json: true,
-                        body: Object.assign(find, {
-                            deps_config: [ {task: task._id, subdirs} ],
-                            config: {
-                                //_tid: task.config._tid,
-                                output,
-                            },
-                            max_runtime: 1000*3600, //1 hour should be enough for most..
-                            remove_date,
-                            //preferred_resource_id: storage_config.resource_id,
-                        }),
-                        headers: {
-                            //authorization: "Bearer "+config.warehouse.jwt,
-                            authorization: "Bearer "+user_jwt,
-                        }
-                    });
-                    console.log("submitted new task");
-                    console.dir(dtv_task);
-                }, err=>{
-                    if(err) return next(err);
-                    next();
                 });
-            } else next();
+
+                if(tasks.tasks.length) {
+                    console.log("validator already submitted");
+                    return;
+                }
+                
+                //submit datatype validator - if not yet submitted
+                let remove_date = new Date();
+                remove_date.setDate(remove_date.getDate()+7); //remove in 7 days(?)
+                let dtv_task = await rp.post({
+                    url: config.amaretti.api+"/task",
+                    json: true,
+                    body: Object.assign(find, {
+                        deps_config: [ {task: task._id, subdirs} ],
+                        config: {
+                            output,
+                            
+                            //used to rerun validation if task is rerun
+                            //finish_date: task.finish_date, 
+                        },
+                        max_runtime: 1000*3600, //1 hour should be enough for most..
+                        remove_date,
+
+                        //we want to run on the same resource that task has run on
+                        follow_task_id: task._id,
+                    }),
+                    headers: {
+                        //authorization: "Bearer "+user_jwt,
+
+                        //use warehouse as submitter so we can run validator on as follow up
+                        authorization: "Bearer "+config.warehouse.jwt,
+                    }
+                });
+                console.log("submitted new validator------------------------------");
+                console.dir(dtv_task);
+            }, err=>{
+                if(err) return next(err);
+                next();
+            });
+        },
+        
+        //handle validator output
+        next=>{
+            if(task.status != "finished" || task.name != "__dtv" || !task.follow_task_id) {
+                return next();
+            }
+
+            //TODO
+            next();
         },
         
         //submit output archivers

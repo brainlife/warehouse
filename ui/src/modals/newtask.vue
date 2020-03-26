@@ -483,7 +483,7 @@ export default {
 
         //Similar code alert...
         //modals/newtask.vue::submit()
-        //modals/appsubmit.vuew::submit()
+        //modals/appsubmit.vue::submit()
         //(bin)/rule_handler.js
         //cli
         submit(evt) {

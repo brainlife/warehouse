@@ -143,9 +143,9 @@
                             </ul>
                         </div>
                         
-                        <div v-if="get_dtv_task(task, output)">
-                            Validation Status: {{get_dtv_task(task, output).status}}
-                        </div>
+                        <dtv v-if="get_latest_dtv_task(task, output)" 
+                            :task="get_latest_dtv_task(task, output)"/>
+
                     </div>
                     <product :product="task.product"/>
                     <div v-if="task.config._outputs.length == 0 && !task.product" style="padding: 10px; opacity: 0.5">No output</div>
@@ -231,6 +231,7 @@ import mute from '@/components/mute' //deprecate?
 import datatypetag from '@/components/datatypetag'
 import product from '@/components/product'
 import VueMarkdown from 'vue-markdown'
+import dtv from '@/components/dtv'
 
 import appcache from '@/mixins/appcache'
 
@@ -255,6 +256,7 @@ export default {
         datatypetag, appname, statustag,
         product, 
         VueMarkdown,
+        dtv,
         //editor: require('vue2-ace-editor'),
     },
 
@@ -385,16 +387,28 @@ export default {
 
     methods: {
         set_dtv_task(dtv_task) {
-            let task_id = dtv_task.deps_config[0].task; 
+            if(!this.tasks) return;
+            let task_id = dtv_task.follow_task_id;
             let output_id = dtv_task.config.output.id;
             let task = this.tasks.find(task=>task._id == task_id);
-            //let output = task.config._outputs.find(output=>output.id == output_id);
-            if(!this.dtv_tasks[task_id]) Vue.set(this.dtv_tasks, task_id, {});
-            if(!this.dtv_tasks[task_id][output_id]) Vue.set(this.dtv_tasks[task_id], output_id, dtv_task);
+            if(!this.dtv_tasks[task_id]) {
+                Vue.set(this.dtv_tasks, task_id, {});
+            }
+            if(!this.dtv_tasks[task_id][output_id]) {
+                Vue.set(this.dtv_tasks[task_id], output_id, {});
+            }
+            Vue.set(this.dtv_tasks[task_id][output_id], dtv_task._id, dtv_task);
         },
-        get_dtv_task(task, output) {
+
+        get_latest_dtv_task(task, output) {
             if(!this.dtv_tasks[task._id]) return null;
-            return this.dtv_tasks[task._id][output.id]; 
+            let tasks = this.dtv_tasks[task._id][output.id];
+            let latest = null;
+            for(let task_id in tasks) {
+                let dtv = tasks[task_id];
+                if(latest == null || latest.create_date < dtv.create_date) latest = dtv;
+            }   
+            return latest;
         },
 
         updatedesc() {
@@ -502,6 +516,7 @@ export default {
                     case "wf.task":
                         var task = event.msg;
                         if(task.name == "__dtv") {
+                            console.log(task._id, task.status);
                             this.set_dtv_task(task);
                         } else if(task.config._tid) {
                             //ui task
@@ -572,7 +587,7 @@ export default {
 
                 //sort dtv tasks into corresponding task
                 this.dtv_tasks = {};
-                res.data.tasks.filter(task=>(task.name == '__dtv')).forEach(this.set_dtv_task);
+                res.data.tasks.filter(task=>(task.name == '__dtv')).map(this.set_dtv_task);
 
                 //load show/hide status
                 this.tasks.forEach(task=>{
