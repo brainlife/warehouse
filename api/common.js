@@ -69,12 +69,13 @@ exports.validate_projects = function(user, project_ids, cb) {
         //iterate each ids to see if user has access
         var err = null;
         project_ids.forEach(id=>{
-            if(!~canwrite_project_ids.indexOf(id)) err = "you don't have write access to project:"+id;
+            if(!~canwrite_project_ids.indexOf(id)) err = "you("+user+") don't have write access to project:"+id;
         });
         cb(err);
     });
 }
 
+//copy exists in amaretti/ common.js
 exports.escape_dot = function(obj) {
     if(typeof obj == "object") {
         for(let key in obj) {
@@ -109,6 +110,8 @@ function register_dataset(task, output, product, cb) {
             //only store the most important things
             task: {
                 _id: task._id,
+                follow_task_id: task.follow_task_id, //for _dtv
+
                 name: task.name,
                 config: task.config,
                 service: task.service,
@@ -210,7 +213,22 @@ exports.archive_task_outputs = async function(user_id, task, outputs, cb) {
     if(!Array.isArray(outputs)) {
         return cb("archive_task_outputs/outputs is not array "+JSON.stringify(outputs, null, 4));
     }
-    let products = exports.split_product(task.product||{}, outputs);
+
+    let task_products = await rp.get({
+        url: config.amaretti.api+"/task/product/", json: true,
+        qs: {
+            ids: [task._id],
+        },
+        headers: { authorization: "Bearer "+config.warehouse.jwt, },
+    });
+    let task_product;// = task.product; //fallback on deprecated info
+    if(task_products.length == 1) {
+        task_product = task_products[0].product;
+    } else {
+        //fallback on the old task.product - in case user is still running old jobs
+        task_product = task.product;
+    }
+    let products = exports.split_product(task_product, outputs);
 
     //get all project ids set by user
     let project_ids = [];

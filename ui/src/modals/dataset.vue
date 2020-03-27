@@ -143,6 +143,7 @@
                                         </span> 
                                         <span v-if="(dataset.status == 'failed' || dataset.status == 'storing')">
                                             <task :task="dataset.archive_task" v-if="dataset.archive_task"/>
+                                            <span v-else class="text-muted"><icon name="cog" spin/> {{dataset.status_msg}}</span>
                                         </span> 
                                         <span v-if="!dataset.status">
                                             Status is unknown
@@ -351,7 +352,7 @@ export default {
                 task.service == "brainlife/app-stage" || 
                 task.service == "brainlife/app-noop" ||
                 */
-                (task.deps_config.length == 0 && task.deps.length == 0) || 
+                ((task.deps_config && task.deps_config.length == 0) && task.deps.length == 0) || 
                 ~task.service.indexOf("brainlife/validator-") ||
                 ~task.service.indexOf("brain-life/validator-")
             );

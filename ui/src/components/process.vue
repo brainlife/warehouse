@@ -78,16 +78,29 @@
                             <div class="button" v-if="output.dataset_id" @click="open_dataset(output.dataset_id)" title="Show Data-object Detail">
                                 <icon name="cubes"/>
                             </div>
-                            <div class="button" v-if="!output.dataset_id" v-b-toggle="task._id+'.'+output.id" title="Show OUtput Detail">
+                            <div class="button" v-if="!output.dataset_id" v-b-toggle="task._id+'.'+output.id" title="Show Metadata">
                                <icon name="cube"/>
                             </div>
-                            <div v-if="task.status == 'finished'" style="display: inline-block;">
-                                <div class="button" title="View" @click="set_viewsel_options(task, output)">
-                                    <icon name="eye"/>
+
+                            <!--if validator exists, use that to arhicve-->
+                            <div v-if="output.dtv_task" style="display: inline;">
+                                <div v-if="output.dtv_task.status == 'finished'" style="display: inline-block;">
+                                    <div class="button" title="View" @click="set_viewsel_options(output.dtv_task, output.dtv_task.config._outputs[0])">
+                                        <icon name="eye"/>
+                                    </div>
+                                    <div class="button" @click="download(output.dtv_task, output.dtv_task.config._outputs[0])" title="Download"><icon name="download"/></div>
+                                    <div class="button" title="Archive" @click="open_archiver(output.dtv_task, output.dtv_task.config._outputs[0])"><icon name="archive"/></div>
                                 </div>
-                                <div class="button" @click="download(task, output)" title="Download"><icon name="download"/></div>
-                                <div class="button" title="Archive" @click="open_archiver(task, output)"><icon name="archive"/></div>
-                                
+                            </div>
+                            <div v-else style="display: inline;"> 
+                                <!--if not, user the main task-->
+                                <div v-if="task.status == 'finished'" style="display: inline-block;">
+                                    <div class="button" title="View" @click="set_viewsel_options(task, output)">
+                                        <icon name="eye"/>
+                                    </div>
+                                    <div class="button" @click="download(task, output)" title="Download"><icon name="download"/></div>
+                                    <div class="button" title="Archive" @click="open_archiver(task, output)"><icon name="archive"/></div>
+                                </div>
                             </div>
                         </div>
 
@@ -110,14 +123,15 @@
                         </span>
                         <small class="ioid" v-if="task.app">({{compose_desc(task.app.outputs, output.id)}})</small>
 
-                        <!--
-                        <editor @init="editorInit" lang="json" height="200">{{output.meta}}</editor>
-                        -->
-                    
                         <b-collapse :id="task._id+'.'+output.id" style="margin-top: 8px; margin-right: 20px;">
                             <div class="output-subtitle">Metadata</div>
                             <pre style="max-height: 300px; background-color: #eee;">{{JSON.stringify(output.meta, null, 4)}}</pre>
                         </b-collapse>
+
+                        <div class="validator" v-if="output.dtv_task">
+                            <div class="output-subtitle">Validation</div>
+                            <dtv :task="output.dtv_task"/>
+                        </div>
 
                         <div v-if="findarchived(task, output).length > 0" class="archived-datasets">
                             <div class="output-subtitle">Archived Datasets</div>
@@ -139,15 +153,21 @@
                                     </small> 
                                     <span v-else-if="dataset.status == 'stored'"></span>
                                     <span v-else><statustag :status="dataset.status"/></span>
+                                    <small>{{dataset._id}}</small>
                                 </li>
                             </ul>
                         </div>
-                        
-                        <dtv v-if="get_latest_dtv_task(task, output)" 
-                            :task="get_latest_dtv_task(task, output)"/>
-
                     </div>
+
+                    <!-- 
+                        Task level (native) product
+                        We will be replacing this soon with product from validator..
+                        But we still want to let App generates their own product.
+                        We will be merging product from the App and validator before
+                        storing them on datasetproduct collection
+                    -->
                     <product :product="task.product"/>
+
                     <div v-if="task.config._outputs.length == 0 && !task.product" style="padding: 10px; opacity: 0.5">No output</div>
                 </div>
             </task>
@@ -193,14 +213,6 @@
         <br>
         <br>
         <br>
-        <!--
-        <div v-if="config.debug">
-            <p v-for="task in tasks" :key="task._id">
-                {{task}}
-            </p>
-            {{dtv_tasks}}
-        </div>
-        -->
     </div>
 
     <div class="new-action" :style="{left: splitter_pos+'px'}">
@@ -264,7 +276,7 @@ export default {
         return {
             tasks: null,
 
-            dtv_tasks: {},
+            //dtv_tasks: {},
 
             editing_taskdesc: {},
 
@@ -388,8 +400,11 @@ export default {
     methods: {
         set_dtv_task(dtv_task) {
             if(!this.tasks) return;
+            if(!dtv_task.config._outputs) return; //for dev
+            if(!dtv_task.follow_task_id) return; //for dev
+/*
             let task_id = dtv_task.follow_task_id;
-            let output_id = dtv_task.config.output.id;
+            let output_id = dtv_task.config._outputs[0].id;
             let task = this.tasks.find(task=>task._id == task_id);
             if(!this.dtv_tasks[task_id]) {
                 Vue.set(this.dtv_tasks, task_id, {});
@@ -398,8 +413,16 @@ export default {
                 Vue.set(this.dtv_tasks[task_id], output_id, {});
             }
             Vue.set(this.dtv_tasks[task_id][output_id], dtv_task._id, dtv_task);
+*/
+            let task = this.tasks.find(task=>task._id == dtv_task.follow_task_id);
+            if(!task) return; //for dev?
+            let output_id = dtv_task.config._outputs[0].id;
+            let output = task.config._outputs.find(out=>out.id == output_id);
+            Vue.set(output, 'dtv_task', dtv_task);
+            //Vue.set(output, 'dtv_task_output', dtv_task.config._outputs[0]);
         },
 
+        /*
         get_latest_dtv_task(task, output) {
             if(!this.dtv_tasks[task._id]) return null;
             let tasks = this.dtv_tasks[task._id][output.id];
@@ -410,6 +433,7 @@ export default {
             }   
             return latest;
         },
+        */
 
         updatedesc() {
             this.$emit("updatedesc", this.desc);
@@ -516,8 +540,10 @@ export default {
                     case "wf.task":
                         var task = event.msg;
                         if(task.name == "__dtv") {
-                            console.log(task._id, task.status);
                             this.set_dtv_task(task);
+                            if(task.status == "finished") {
+                                this.loadProduct([task]);
+                            }
                         } else if(task.config._tid) {
                             //ui task
                             var t = this.tasks.find(t=>t._id == task._id);
@@ -531,6 +557,7 @@ export default {
                                     this.$forceUpdate();
                                 });
                                 this.tasks.push(task); 
+                                this.loadProduct([task]);
                                 Vue.nextTick(()=>{
                                     this.scrollto(task._id);
                                 });
@@ -541,7 +568,10 @@ export default {
                                     var type = null;
                                     switch(task.status) {
                                     case "failed": type = "error"; break;
-                                    case "finished": type = "success"; break;
+                                    case "finished": 
+                                        this.loadProduct([task]);
+                                        type = "success"; 
+                                        break;
                                     case "stopped": type = "warn"; break;
                                     default: 
                                         type = "";
@@ -576,12 +606,15 @@ export default {
                 find: JSON.stringify({
                     instance_id: this.instance._id,
                     status: {$ne: "removed"},
-                    //'config._tid': {$exists: true}, //use _tid to know that it's meant for process view
                 }),
-                limit: 1000, //should be enough.. for now
+                limit: 1000, //should be enough.. for now?
                 sort: 'create_date',
+                select: '-product', //task.product is deprecated (use taskproduct collection instead)
             }})
             .then(res=>{
+                //load product separately.. TODO - maybe I should implement a batch product loader?
+                this.loadProduct(res.data.tasks);
+
                 //find "ui" tasks
                 this.tasks = res.data.tasks.filter(task=>Boolean(task.config._tid));
 
@@ -624,11 +657,21 @@ export default {
             });
         },
 
+        loadProduct(tasks) {
+            let ids = tasks.map(task=>task._id);
+            this.$http.get(Vue.config.wf_api+'/task/product/', {params: {ids}}).then(res=>{
+                res.data.forEach(rec=>{
+                    let task = tasks.find(t=>t._id == rec.task_id);
+                    Vue.set(task, 'product', rec.product);
+                });
+            });
+        },
+
         findarchived(task, output) {
             return this.archived.filter(dataset=>{
                 if(dataset.removed) return false;
                 if(!dataset.prov) return false;
-                if(dataset.prov.task_id != task._id) return false;
+                if(dataset.prov.task._id != task._id && dataset.prov.task.follow_task_id != task._id) return false;
                 if(dataset.prov.output_id != output.id) return false;
                 return true;
             });
@@ -799,6 +842,12 @@ text-overflow: ellipsis;
 border-left: 3px solid #ddd;
 padding-left: 8px;
 margin: 3px;
+}
+.validator {
+border-left: 3px solid #ddd;
+padding-left: 8px;
+margin: 3px;
+margin-top: 8px;
 }
 .output-subtitle {
 color: #aaa;

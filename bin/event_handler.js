@@ -217,13 +217,14 @@ function handle_task(task, cb) {
         }
     }
 
+    let task_product = task.product; //fallback for old task (task.product is deprecated)
+
     //handle event
     async.series([
 
         //submit output validators
         next=>{
-            //this is experimental
-            //if(!config.debug) return next(); 
+            //if(!config.debug) return next(); //this is experimental
 
             if(task.status != "finished" || !task.config || !task.config._outputs ||  
                 //don't run on staging tasks
@@ -233,11 +234,13 @@ function handle_task(task, cb) {
                 return next();
             } 
 
+            //let products = common.split_product(task.product, task.config._outputs);
+
             //handle validator submission
             async.eachSeries(task.config._outputs, async (output)=>{
 
                 let datatype = await db.Datatypes.findById(output.datatype);
-                if(!datatype.validator) return next(); //no validator for this datatype..
+                if(!datatype.validator) return; //no validator for this datatype..
                 
                 //see if we already submitted validator for this output
                 //task can be resubmitted, and if it does, amaretti will
@@ -246,7 +249,7 @@ function handle_task(task, cb) {
                 let find = {
                     "name": "__dtv",
                     "deps_config.task": task._id,
-                    "config.output.id": output.id,
+                    "config._outputs.id": output.id,
 
                     instance_id: task.instance_id,
                 
@@ -271,6 +274,31 @@ function handle_task(task, cb) {
                     console.log("validator already submitted");
                     return;
                 }
+
+                let validator_config = {
+                    _app: task.config._app,
+                    _outputs: [Object.assign({}, output, {
+                        subdir: "output", //validator should always output under "output"
+                    })],
+
+                    //I decided to handle this at the loading time
+                    //pass the followed task's product to validator so it can analyze / merge it!
+                    //product: products[output.id],
+                    //product: "../"+task._id, //let validator find it by itself
+                };
+                datatype.files.forEach(file=>{
+                    if(output.subdir) {
+                        validator_config[file.id] = "../"+task._id+"/"+output.subdir+"/"+file.filename;
+                    } else {
+                        //deprecated output uses file mapping
+                        if(output.files && output.files[file.id]) {
+                            validator_config[file.id] = "../"+task._id+"/"+output.files[file.id];
+                        } else {
+                            //use default path
+                            validator_config[file.id] = "../"+task._id+"/"+file.filename;
+                        }
+                    }
+                });
                 
                 //submit datatype validator - if not yet submitted
                 let remove_date = new Date();
@@ -280,17 +308,18 @@ function handle_task(task, cb) {
                     json: true,
                     body: Object.assign(find, {
                         deps_config: [ {task: task._id, subdirs} ],
-                        config: {
-                            output,
-                            
-                            //used to rerun validation if task is rerun
-                            //finish_date: task.finish_date, 
-                        },
+                        config: validator_config,
                         max_runtime: 1000*3600, //1 hour should be enough for most..
                         remove_date,
 
                         //we want to run on the same resource that task has run on
                         follow_task_id: task._id,
+
+                        //we need to submit with admin jwt so we can set follow_task_id, 
+                        //but the task itself needs to be owned by the user so that user
+                        //can archive output
+                        user_id: task.user_id, 
+                        //gids: task.gids, 
                     }),
                     headers: {
                         //authorization: "Bearer "+user_jwt,
@@ -313,20 +342,51 @@ function handle_task(task, cb) {
                 return next();
             }
 
-            //TODO
+            //TODO transfer secondary content to a dedicated storage (TBD..)
+            //also.. product is stored in taskproduct collection.. copy it somewhere else?
+
             next();
         },
+
+        //load task product
+        next=>{
+            rp.get({
+                url: config.amaretti.api+"/task/product", json: true,
+                qs: {
+                    ids: [task._id],
+                },
+                headers: {
+                    authorization: "Bearer "+config.warehouse.jwt,
+                }
+            }).then(res=>{
+                if(res.data && res.data.length == 1) {
+                    task_product = res.data[0].product;
+                }
+                next();
+            }).catch(err=>{
+                next(err);
+            });
+       },
         
         //submit output archivers
         next=>{
             if(task.status == "finished" && task.config && task.config._outputs) {
+
+                if(task.name == "__dtv" && task_product.errors.length > 0) {
+                    console.log("validator reports error .. skipping archive");
+                    return next();
+                }
+
                 logger.info("handling task outputs - archiver");
                 let outputs = [];
 
                 //check to make sure that the output is not already registered
-                async.eachSeries(task.config._outputs, (output, next_output)=>{
-                    db.Datasets.findOne({
-                        "prov.task_id": task._id,
+                async.eachSeries(task.config._outputs, async (output)=>{
+                    let datatype = await db.Datatypes.findById(output.datatype);
+                    if(task.name != "__dtv" && datatype.validator) return; //validator will handle archiving
+
+                    let _dataset = await db.Datasets.findOne({
+                        "prov.task._id": task._id,
                         "prov.output_id": output.id,
                         //ignore failed and removed ones
                         $or: [
@@ -335,11 +395,14 @@ function handle_task(task, cb) {
                             //or.. removed while being stored (maybe got stuck storing?)
                             { removed: true, status: {$nin: ["storing", "failed"]} }, 
                         ]
-                    }).exec((err,_dataset)=>{
-                        if(!_dataset) outputs.push(output);
-                        else logger.info("already archived or removed by user. output_id:"+output.id+" dataset_id:"+_dataset._id.toString());
-                        next_output(err);
                     });
+                    if(_dataset) {
+                        logger.info("already archived or removed by user. output_id:"+output.id+" dataset_id:"+_dataset._id.toString());
+                        return;
+                    } 
+
+                    outputs.push(output);
+
                 }, err=>{
                     if(err) return next(err);
 
@@ -365,8 +428,8 @@ function handle_task(task, cb) {
                         _set.status = "stored";
                         if(dataset_config.storage) _set.storage = dataset_config.storage;
                         if(dataset_config.storage_config) _set.storage_config = dataset_config.storage_config; //might not be set
-                        if(task.product) { //app-archive didn't create task.product before
-                            let dataset_product = task.product[dataset_config.dataset._id];
+                        if(task_product) { //app-archive didn't create task.product before
+                            let dataset_product = task_product[dataset_config.dataset._id];
                             if(dataset_product) _set.size = dataset_product.size;
                         }
                         break;

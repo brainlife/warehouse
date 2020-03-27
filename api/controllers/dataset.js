@@ -40,7 +40,7 @@ function isimporttask(task) {
         task.service == "brainlife/app-stage" || 
         task.service == "brainlife/app-noop" ||
         */
-        (task.deps_config.length == 0 && tasks.deps.length == 0) ||
+        (task.deps_config.length == 0 && task.deps.length == 0) ||
         ~task.service.indexOf("brainlife/validator-") ||
         ~task.service.indexOf("brain-life/validator-")
     );
@@ -674,7 +674,9 @@ function generate_prov(origin_dataset_id, cb) {
             return cb();
         }
 
-        load_task(dataset.prov.task._id, (err, task)=>{
+        //skip validation task by starting at follow_task_id if it's set
+        let task_id = dataset.prov.task.follow_task_id || dataset.prov.task._id;
+        load_task(task_id, (err, task)=>{
             if(err) return cb(err);
             if(!task.service) task.service = "unknown"; //only happens for dev/test? (TODO.. maybe I should cb()?)
             if(isimporttask(task)) {
@@ -688,7 +690,7 @@ function generate_prov(origin_dataset_id, cb) {
             } else {
                 //should be a normal task..
                 add_node(Object.assign({
-                    id: "task."+task._id, 
+                    id: "task."+task_id, 
                     label: compose_label(task),
                 }, taskInfo(task)));
 
@@ -702,7 +704,7 @@ function generate_prov(origin_dataset_id, cb) {
                 }
                 edges.push({
                     to,
-                    from: "task."+task._id,
+                    from: "task."+task_id,
                     arrows: "to",
                     label: edge_label,
                     _archived_dataset_id: archived_dataset_id,

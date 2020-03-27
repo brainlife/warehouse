@@ -75,15 +75,22 @@
     </div><!--meta-->
 
     <div v-if="mode == 'validate' && tasks.validation">
-        <task :task="tasks.validation"/>
-        <div v-if="tasks.validation.status == 'failed' && tasks.validation.product">
-            <b-alert :show="tasks.validation.product.errors.length > 0" variant="danger" v-for="(error, idx) in tasks.validation.product.errors" :key="idx">
+        <task :task="tasks.validation" v-if="tasks.validation.status != 'finished'"/>
+
+        <!-- 
+            TODO - We can only abort archive if validation finishes and it has an error 
+            We might want to give user option to proceed with warning?
+        -->
+        <div v-if="tasks.validation.status == 'finished' && tasks.validation.product && tasks.validation.product.errors.length > 0">
+            <b-alert show variant="danger" v-for="(error, idx) in tasks.validation.product.errors" :key="idx">
                 {{error}}
             </b-alert>
+            <!--
             <b-alert :show="tasks.validation.product.warnings.length > 0" variant="warning" v-for="(warning, idx) in tasks.validation.product.warning" :key="idx">
                 {{warning}}
             </b-alert>
             <product :product="tasks.validation.product"/>
+            -->
 
             <!--show info-->
             <b-form-group horizontal v-for="(v, k) in tasks.validation.product" :key="k" 
@@ -385,8 +392,10 @@ export default {
             this.tasks.validation = null;
 
             //apply sidecar to meta
-            let _sidecar = JSON.parse(this.sidecar);
-            Object.assign(this.meta, _sidecar);
+            if(this.sidecar) {
+                let _sidecar = JSON.parse(this.sidecar);
+                Object.assign(this.meta, _sidecar);
+            }
 
             //remove null meta
             let clean_meta = {};
@@ -419,7 +428,7 @@ export default {
 
             this.$http.post(Vue.config.wf_api+'/task', {
                 instance_id: this.instance._id,
-                name: "validation",
+                name: "__dtv", //this disables __dtv submission on output from this
                 service: this.datatype.validator,
                 service_branch: this.datatype.validator_branch,
                 config,
