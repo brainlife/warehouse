@@ -197,6 +197,35 @@
                             </b-row>
                             <br>
                         </div><!--resource_considered-->
+        
+                        <div class="box">
+                            <b-row>
+                                <b-col>
+                                    <span class="form-header">Maintaners</span>
+                                    <p style="height: 30px;"><small class="text-muted">List of users who currently maintains this App.</small></p>
+                                    <p v-for="c in app.admins" :key="c._id">
+                                        <contact :id="c"/>
+                                    </p>
+                                    <br>
+                                </b-col>
+                                <b-col>
+                                    <div v-if="app.contributors.length > 0">
+                                        <span class="form-header">Contributors</span>
+                                        <p style="height: 30px;"><small class="text-muted">List of code contributors.({{app.github}}).</small></p>
+                                        <p v-for="dev in app.contributors" :key="dev._id">
+                                            <contact :fullname="dev.name" :email="dev.email"/>
+                                        </p>
+                                        <br>
+                                    </div>
+                                </b-col>
+                            </b-row>
+                        </div>
+
+                        <div v-if="readme" class="box">
+                            <p style="float: right;"><small class="text-muted">From github repo / README.md</small></p>
+                            <span class="form-header">README</span><br>
+                            <vue-markdown :source="readme" class="readme"></vue-markdown>
+                        </div>
 
                         <div v-if="tasks.length > 0" class="box">
                             <span class="form-header">Recent Jobs</span>
@@ -237,35 +266,7 @@
                                 </tr>
                             </table>
                         </div>
-        
-                        <div class="box">
-                            <b-row>
-                                <b-col>
-                                    <span class="form-header">Maintaners</span>
-                                    <p style="height: 30px;"><small class="text-muted">List of users who currently maintains this App.</small></p>
-                                    <p v-for="c in app.admins" :key="c._id">
-                                        <contact :id="c"/>
-                                    </p>
-                                    <br>
-                                </b-col>
-                                <b-col>
-                                    <div v-if="app.contributors.length > 0">
-                                        <span class="form-header">Contributors</span>
-                                        <p style="height: 30px;"><small class="text-muted">List of code contributors.({{app.github}}).</small></p>
-                                        <p v-for="dev in app.contributors" :key="dev._id">
-                                            <contact :fullname="dev.name" :email="dev.email"/>
-                                        </p>
-                                        <br>
-                                    </div>
-                                </b-col>
-                            </b-row>
-                        </div>
 
-                        <div v-if="readme" class="box">
-                            <p style="float: right;"><small class="text-muted">From github repo / README.md</small></p>
-                            <span class="form-header">README</span><br>
-                            <vue-markdown :source="readme" class="readme"></vue-markdown>
-                        </div>
                         <vue-disqus shortname="brain-life" :identifier="app._id"/>
                     </b-col>
 

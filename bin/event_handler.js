@@ -330,10 +330,7 @@ function handle_task(task, cb) {
                 });
                 console.log("submitted new validator------------------------------");
                 console.dir(dtv_task);
-            }, err=>{
-                if(err) return next(err);
-                next();
-            });
+            }, next);
         },
         
         //handle validator output
@@ -348,23 +345,26 @@ function handle_task(task, cb) {
             next();
         },
 
-        //load task product
+        //load task product for finished task
         next=>{
+            if(task.status != "finished") return next();
+
+            console.log("loading product for ", task._id, task.name);
             rp.get({
                 url: config.amaretti.api+"/task/product", json: true,
                 qs: {
                     ids: [task._id],
                 },
-                headers: {
-                    authorization: "Bearer "+config.warehouse.jwt,
+                headers: { authorization: "Bearer "+config.warehouse.jwt, }
+            }).then(data=>{
+                if(data.length == 1) {
+                    task_product = data[0].product;
                 }
-            }).then(res=>{
-                if(res.data && res.data.length == 1) {
-                    task_product = res.data[0].product;
-                }
+                /* else {
+                    console.debug("no product found.........");
+                    //console.dir(data);
+                }*/
                 next();
-            }).catch(err=>{
-                next(err);
             });
        },
         
@@ -372,6 +372,12 @@ function handle_task(task, cb) {
         next=>{
             if(task.status == "finished" && task.config && task.config._outputs) {
 
+                /*
+                if(task.name == "__dtv" && !task_product) {
+                    console.error("__dtv should have task_product... but it doesn't");
+                    return next();
+                }
+                */
                 if(task.name == "__dtv" && task_product.errors.length > 0) {
                     console.log("validator reports error .. skipping archive");
                     return next();
