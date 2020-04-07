@@ -286,7 +286,8 @@ function connect_wrangler(cb) {
 
     conn.connect({
         username: "brlife",
-        host: "149.165.156.63",
+        host: "149.165.156.63", //wrangler
+        host: "149.165.169.130", //wrangler2
         privateKey: fs.readFileSync(__dirname+'/brlife.id_rsa'),
         //passphrase: "somepass",  //what's the point?
         keepaliveInterval: 10*1000, //default 0 (disabled)
@@ -302,6 +303,41 @@ function get_wrangler_archive_path(dataset) {
     console.log(_path);
     return _path;
 }
+
+/*
+exports.secondary_output = {
+    upload: cb=>{
+        connect_wrangler((err, conn)=>{
+            conn
+            cb(err, conn);
+        });
+    },
+    download: cb=>{
+        connect_wrangler((err, conn, sftp)=>{
+            if (err) {
+                conn.end();
+                return cb(err);
+            }
+            let path = get_wrangler_archive_path(dataset);
+            let filename = path.split("/").pop();
+            console.debug(["loading...", path, filename]);
+            conn.exec("cat "+path, (err, stream)=>{
+                stream.on('error', err=>{
+                    console.error("stream failed but train has already left the station", err);
+                });
+                stream.on('close', code=>{
+                    conn.end();
+                });
+                //I believe listening to stream is required for close event to fire..?
+                stream.stderr.on('data', data=>{
+                    console.error(data.toString());
+                });
+                cb(err, stream, filename);
+            });
+        });
+    },
+}
+*/
 
 exports.storage_systems.wrangler = {
     need_backup: true, //need_backup if it's our storage (not openneuro)

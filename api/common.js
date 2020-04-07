@@ -221,7 +221,7 @@ exports.archive_task_outputs = async function(user_id, task, outputs, cb) {
         },
         headers: { authorization: "Bearer "+config.warehouse.jwt, },
     });
-    let task_product;// = task.product; //fallback on deprecated info
+    let task_product;
     if(task_products.length == 1) {
         task_product = task_products[0].product;
     } else {
@@ -293,7 +293,7 @@ exports.archive_task_outputs = async function(user_id, task, outputs, cb) {
 
                 //submit app-archive!
                 let remove_date = new Date();
-                remove_date.setDate(remove_date.getDate()+7); //remove in 7 days(?)
+                remove_date.setDate(remove_date.getDate()+1); //remove in 1 day
                 if(noSubdirs) subdirs = undefined;
                 let archive_task = await rp.post({
                     url: config.amaretti.api+"/task",
@@ -301,12 +301,15 @@ exports.archive_task_outputs = async function(user_id, task, outputs, cb) {
                     body: {
                         deps_config: [ {task: task._id, subdirs } ],
                         service: "brainlife/app-archive",
+                        service_branch: "1.0",
                         instance_id: task.instance_id,
                         config: {
                             datasets,
                         },
                         max_runtime: 1000*3600, //1 hour should be enough for most..
                         remove_date,
+
+                        //for slate?
                         preferred_resource_id: storage_config.resource_id,
                     },
                     headers: {
@@ -399,6 +402,7 @@ exports.load_github_detail = function(service_name, cb) {
         });
     });
 }
+
 exports.compose_app_datacite_metadata = function(app) {
     //publication year
     let year = app.create_date.getFullYear();
@@ -918,4 +922,88 @@ exports.ismember = (user, rec)=>{
     }
     return false;
 }
+
+exports.users_general = async ()=>{
+    console.log("loading users");
+    let users = await rp.get({
+        url: config.auth.api+"/profile/list", json: true,
+        qs: {
+            find: JSON.stringify({
+                active: true,
+                "profile.private.notification.newsletter_general": true,
+            }),
+            limit: 3000,
+        },
+        headers: { authorization: "Bearer "+config.warehouse.jwt },
+    });
+    return users.profiles;
+}
+
+exports.list_users = async ()=>{
+    let year_ago = new Date();
+    year_ago.setDate(year_ago.getDate() - 365);
+
+    let week_ago = new Date();
+    week_ago.setDate(year_ago.getDate() - 7);
+
+    let users = await rp.get({
+        url: config.auth.api+"/profile/list", json: true,
+        qs: {
+            find: JSON.stringify({
+                active: true,
+            }),
+            limit: 3000,
+        },
+        headers: { authorization: "Bearer "+config.warehouse.jwt },
+    });
+    let lists = {
+        active: [],
+        inactive: [],
+        recent: [],
+    }
+    users.profiles.forEach(user=>{
+        if(!user) return;
+
+        if(user.times && (
+            new Date(user.times.github_login) > year_ago ||
+            new Date(user.times.google_login) > year_ago ||
+            new Date(user.times.local_login) > year_ago ||
+            new Date(user.times.orcid_login) > year_ago)) {
+            lists.active.push(user);
+        } else {
+            lists.inactive.push(user);
+        }
+
+        if(user.times && new Date(user.times.register) > week_ago) lists.recent.push(user);
+    });
+    return lists;
+}
+
+
+/*
+exports.all_users = async ()=>{
+    let year_ago = new Date();
+    year_ago.setDate(year_ago.getDate() - 365);
+    let users = await rp.get({
+        url: config.auth.api+"/profile/list", json: true,
+        qs: {
+            find: JSON.stringify({
+                active: true,
+                "$or": [
+                    { "times.github_login": {$gt: year_ago} },
+                    { "times.google_login": {$gt: year_ago} },
+                    { "times.local_login": {$gt: year_ago} },
+                    { "times.orcid_login": {$gt: year_ago} },
+                ]
+            }),
+            limit: 3000,
+        },
+        headers: { authorization: "Bearer "+config.warehouse.jwt },
+    });
+
+    return users.profiles;
+}
+*/
+
+
 

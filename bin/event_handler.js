@@ -8,6 +8,7 @@ const request = require('request-promise-native'); //TODO switch to rp
 const rp = require('request-promise-native');
 const redis = require('redis');
 const fs = require('fs');
+const child_process = require('child_process');
 
 const config = require('../api/config');
 const logger = winston.createLogger(config.logger.winston);
@@ -333,18 +334,6 @@ function handle_task(task, cb) {
             }, next);
         },
         
-        //handle validator output
-        next=>{
-            if(task.status != "finished" || task.name != "__dtv" || !task.follow_task_id) {
-                return next();
-            }
-
-            //TODO transfer secondary content to a dedicated storage (TBD..)
-            //also.. product is stored in taskproduct collection.. copy it somewhere else?
-
-            next();
-        },
-
         //load task product for finished task
         next=>{
             if(task.status != "finished") return next();
@@ -366,7 +355,7 @@ function handle_task(task, cb) {
                 }*/
                 next();
             });
-       },
+        },
         
         //submit output archivers
         next=>{
@@ -416,6 +405,58 @@ function handle_task(task, cb) {
                     common.archive_task_outputs(task.user_id, task, outputs, next);
                 });
             } else next();
+        },
+        
+        //handle secondary output from validator
+        async next=>{
+            if(task.status != "finished" || task.name != "__dtv" || !task.follow_task_id) {
+                //not validator
+                return;
+            }
+
+            //see if we already submitted secondary archiver
+            console.log("checking to see if we already submitted app-archive-secondary");
+            let find = {
+                service: "brainlife/app-archive-secondary",
+                instance_id: task.instance_id,
+                "deps_config.task": task._id,
+            }
+
+            let tasks = await rp.get({
+                url: config.amaretti.api+"/task?find="+JSON.stringify(find)+"&limit=1",
+                json: true,
+                headers: {
+                    authorization: "Bearer "+config.warehouse.jwt,
+                }
+            });
+            if(tasks.tasks.length) {
+                console.log("app-secondary already submitted");
+                return;
+            }
+
+            let user_jwt = await common.issue_archiver_jwt(task.user_id);
+
+            //submit archiver with just secondary deps
+            console.log("submitting secondary output archiver");
+            let remove_date = new Date();
+            remove_date.setDate(remove_date.getDate()+1); //remove in 1 day
+            let newtask = rp.post({
+                url: config.amaretti.api+"/task", json: true,
+                body: Object.assign(find, {
+                    deps_config: [ {task: task._id, subdirs: ["secondary"]} ],
+                    config: {
+                        validator_task: task,
+                    },
+                    remove_date,
+                    //user_id: task.user_id, 
+                }),
+                headers: {
+                    //authorization: "Bearer "+config.warehouse.jwt,
+                    authorization: "Bearer "+user_jwt,
+                }
+            });
+            console.log("submitted! "+newtask._id);
+            //console.log(JSON.stringify(newtask, null, 4));
         },
 
         //report archive status back to user through dataset_config

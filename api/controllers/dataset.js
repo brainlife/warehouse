@@ -119,7 +119,7 @@ router.get('/', jwt({secret: config.express.pubkey, credentialsRequired: false})
         .select(req.query.select)
         .limit(+limit)
         .skip(+skip)
-        .sort(req.query.sort || '_id')
+        .sort(req.query.sort)
 		.lean()
 		.exec((err, datasets)=>{
             if(err) return next(err);
@@ -584,11 +584,23 @@ This boutique descriptor that can be used to run the workflow used to generate t
     });
 });
 
+let datatypes_cache = {};
+mongoose.connection.once('open', ()=>{
+    console.log("caching datatypes.. ");
+    //TODO - invalidate eventually? or listen to update events?
+    db.Datatypes.find({})
+    .exec((err, _datatypes)=>{
+        if(err) return cb(err);
+        _datatypes.forEach(_datatype=>{
+            datatypes_cache[_datatype._id.toString()] = _datatype;
+        });
+    });
+});
+
 //TODO - I should split the algorithms to 2 parts
 //first part to generate a full provenance graph which might be too verbose - noisy but a complete picture (no defer)
 //second part to simplify the graph so that users can make sense of it (it could even be done at the UI side)
 function generate_prov(origin_dataset_id, cb) {
-    let datatypes = {};
     let nodes = [];
     let edges = [];
     let this_dataset;
@@ -622,7 +634,7 @@ function generate_prov(origin_dataset_id, cb) {
     function compose_dataset_label(dataset) {
         //datatype should never be missing.. but it happened during testing
         let datatype_name = dataset.datatype;
-        let datatype = datatypes[dataset.datatype.toString()];
+        let datatype = datatypes_cache[dataset.datatype.toString()];
         if(datatype) datatype_name = datatype.name;
         if(dataset.datatype_tags) datatype_name += " "+dataset.datatype_tags.join(":")
         
@@ -694,7 +706,7 @@ function generate_prov(origin_dataset_id, cb) {
                     label: compose_label(task),
                 }, taskInfo(task)));
 
-                let edge_label = datatypes[dataset.datatype].name+" "+dataset.datatype_tags.join(",");
+                let edge_label = datatypes_cache[dataset.datatype].name+" "+dataset.datatype_tags.join(",");
                 let archived_dataset_id = null;
                 if(defer) {
                     let label_parts = defer.node.label.split("\n");
@@ -743,8 +755,6 @@ function generate_prov(origin_dataset_id, cb) {
             let label = "";
             //if(to.indexOf("dataset.") === 0) label += "copy"; //I don't think we need to show "copy".. it's obvsious?
             if(input_name) label += " ("+input_name+")";
-            //console.log(".............to..................");
-            //console.dir(to);
 
             let defer = {
                 node: {
@@ -787,7 +797,7 @@ function generate_prov(origin_dataset_id, cb) {
                     load_stage("task."+task._id, input_name, input.dataset_id||input._id||input.subdir, next_dep);
                 } else {
                     //task2task
-                    let datatype = datatypes[input.datatype];
+                    let datatype = datatypes_cache[input.datatype];
                     if(!datatype) datatype = {name: "unknown "+input.datatype};
                     add_node(Object.assign({
                         id: "task."+input.task_id,
@@ -809,39 +819,30 @@ function generate_prov(origin_dataset_id, cb) {
         let ex = nodes.find(node=>{return (node.id == newnode.id);});
         if(!ex) nodes.push(newnode);
     }
-
-    //TODO cache datatype?
-    db.Datatypes.find({})
-    .exec((err, _datatypes)=>{
+   
+    //start by loading *this dataset*
+    db.Datasets
+    .findOne({ _id: origin_dataset_id })
+    .populate('prov.app')
+    .exec((err, dataset)=>{
         if(err) return cb(err);
-        _datatypes.forEach(_datatype=>{
-            datatypes[_datatype._id.toString()] = _datatype;
+        if(!dataset) return cb("no such dataset");
+        this_dataset = dataset;
+        nodes.push({
+            id: "dataset."+dataset._id, 
+            _datatype: dataset.datatype,
+            _prov: dataset.prov,
+            _user_id: dataset.user_id,
         });
-        
-        //start by loading *this dataset*
-        db.Datasets
-        .findOne({ _id: origin_dataset_id })
-        .populate('prov.app')
-        .exec((err, dataset)=>{
-            if(err) return cb(err);
-            if(!dataset) return cb("no such dataset");
-            this_dataset = dataset;
-            nodes.push({
-                id: "dataset."+dataset._id, 
-                _datatype: dataset.datatype,
-                _prov: dataset.prov,
-                _user_id: dataset.user_id,
+        load_dataset_prov(dataset, null, err=>{
+            //order nodes by id to make them ordered chronologically - which prevents violating DAG
+            nodes.sort((a,b)=>{
+                if(a._finish_date < b._finish_date) return 1;
+                if(a._finish_date > b._finish_date) return -1;
+                return 0;
             });
-            load_dataset_prov(dataset, null, err=>{
-                //order nodes by id to make them ordered chronologically - which prevents violating DAG
-                nodes.sort((a,b)=>{
-                    if(a._finish_date < b._finish_date) return 1;
-                    if(a._finish_date > b._finish_date) return -1;
-                    return 0;
-                });
-                cb(err, nodes, edges);
-            });
-        })
+            cb(err, nodes, edges);
+        });
     });
 }
 
@@ -1045,6 +1046,7 @@ router.post('/stage', jwt({secret: config.express.pubkey}), (req, res, next)=>{
                     name : "Staging",
                     //desc : "archiving",
                     service : "brainlife/app-stage",
+                    service_branch: "1.1",
                     instance_id : req.body.instance_id,
                     preferred_resource_id: config.archive.storage_config.resource_id,
                     config: {

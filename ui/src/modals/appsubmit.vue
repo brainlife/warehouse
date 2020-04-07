@@ -226,7 +226,7 @@ export default {
             
             this.$http.get('dataset', { params: {
                 find: JSON.stringify(find_raw),
-                sort: "project meta.subject meta.session -create_date",
+                sort: "meta.subject meta.session -create_date",
                 populate: "datatype",
                 datatype_tags: input.datatype_tags,
                 limit: 300, //100 too small for bold500
@@ -269,6 +269,7 @@ export default {
             });
         },
 
+        /*
         // wait a bit (unless interrupted by more keystrokes), then calls fetch_datasets
         debounce_fetch_datasets(input, ps) {
             let debounce;
@@ -286,6 +287,7 @@ export default {
                 }, 200);
             }
         },
+        */
 
         generate_config(download_task_id) {
             var config = Object.assign({}, this.app.config);

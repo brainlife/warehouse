@@ -8,49 +8,37 @@ const nodemailer = require("nodemailer");
 
 const config = require('../api/config');
 const db = require('../api/models');
-const mongoose = require('mongoose');
+const common = require('../api/common');
+
+//subject: "brainlife.io Newsletter - March 2020",
+//subject: "New Microsoft fellowship to advance brainlife.io, segmentation tool added to platform, and more",
+const subject = "brainlife.io resources for our community during the pandemic";
+const rootdir = "newsletters/covid19";
 
 //retrieve list of users who should receive general newsletter
-exports.users_general = async ()=>{
-    console.log("loading users");
-    let users = await rp.get({
-        url: config.auth.api+"/profile/list", json: true,
-        qs: {
-            find: JSON.stringify({
-                active: true,
-                "profile.private.notification.newsletter_general": true,
-            }),
-            limit: 3000,
-        },
-        headers: { authorization: "Bearer "+config.warehouse.jwt },
-    });
-
-    return users.profiles;
-}
 
 exports.send_mail = async ()=>{
-    let users = await exports.users_general();
+    let users = await common.users_general();
 
     //for safety..
     //users = users.slice(0, 1); //limit
 
     //override with debug 
-    /*
     users = [
     //    {fullname: "Brainlife.io", email: "brlife@iu.edu"},
         {fullname: "Stephanie McGavin", email: "smcgavin@iu.edu"},
-        //{fullname: "Franco Pestilli", email: "franpest@iu.edu"},
-        {fullname: "Soichi Hayashi (IU-1)", email: "hayashis@iu.edu"},
-        //{fullname: "Soichi Hayashi", email: "soichih@gmail.com"},
+        {fullname: "Franco Pestilli", email: "franpest@iu.edu"},
+        {fullname: "Soichi Hayashi", email: "soichih@gmail.com"},
+
+        //{fullname: "Soichi Hayashi (IU-1)", email: "hayashis@iu.edu"},
     ];
-    */
 
     let message = {
-        //subject: "brainlife.io Newsletter - March 2020",
-        subject: "New Microsoft fellowship to advance brainlife.io, segmentation tool added to platform, and more",
+        subject,
+
         from: config.mail.from,
         text: "Please open this newsletter with html enabled email client!",
-        html: fs.readFileSync(__dirname+'/newsletters/march2020/index.html', "utf8"),
+        html: fs.readFileSync(__dirname+'/'+rootdir+'/index.html', "utf8"),
         list: {
             help: 'brlife@iu.edu?subject=newsletter-help',
             unsubscribe: {
@@ -72,11 +60,13 @@ exports.send_mail = async ()=>{
             },
 
             //newsletter specific images
+            /*
             {
                 filename: 'classifyber.png',
                 path: __dirname+'/newsletters/march2020/img/classifyber.png',
                 cid: 'img@classifyber.png' //same cid value as in the html img src
             },
+            */
         ],
     };
     //console.dir(message);
@@ -105,20 +95,4 @@ exports.send_mail = async ()=>{
     });
 }
 
-
-//test
-/*
-let users = [
-//    {fullname: "Brainlife.io", email: "brlife@iu.edu"},
-//    {fullname: "Soichi Hayashi", email: "soichih@gmail.com"},
-    {fullname: "Soichi Hayashi (IU)", email: "hayashis@iu.edu"},
-    {fullname: "Stephanie McGavin", email: "smcgavin@iu.edu"},
-//    {fullname: "Soichi Hayashi (IU-1)", email: "hayashis+1@iu.edu"},
-];
-*/
-/*
-exports.send_mail(users, err=>{
-    if(err) throw err;
-});
-*/
 exports.send_mail();

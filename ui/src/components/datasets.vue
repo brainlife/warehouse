@@ -759,6 +759,8 @@ export default {
             }).then(res=>{
                 this.clear_selected();
                 this.$router.replace("/project/"+project_id+"/process/"+instance._id);
+            }).catch(err=>{
+                this.$notify({type: "error", text: err.toString()})
             });
         },
     },

@@ -2,23 +2,21 @@
 <div class="resource" v-if="resource_obj" @click="open" :class="{'resource-inactive': !resource_obj.active}" :title="resource_obj.config.desc">
     <small style="float: right; opacity: 0.3; z-index: 1; position: relative; top: px; right: 10px;">24h</small>
     <div style="padding: 10px 15px;">
-        <div style="opacity: 0.7; display: inline-block;">
-            <!--
-                <b-badge variant="light" v-if="!resource_obj.active" title="This resource is manually disabled by the resource owner, or status has been non-OK for long time.">Inactive</b-badge>
-            -->
+        <div style="display: inline-block;">
+
+            <span :title="resource_obj.status">
+                <icon v-if="resource_obj.status == 'ok'" name="check-circle" style="color: #28a745;"/>
+                <icon v-else name="exclamation-circle" style="color: #dc3545"/>
+            </span>
+
             <b-badge v-if="!resource.gids || resource.gids.length == 0" variant="secondary" title="Private resource that's not shared with anyone."><icon name="lock" scale="0.8"/></b-badge>
+
             <span>{{resource_obj.name}}</span><br>
         </div>
 
         <div>
-            <b-badge v-if="resource_obj.status == 'ok'" variant="success">
-                <icon name="check-circle" scale="0.6"/> OK
-            </b-badge>
-            <b-badge v-if="resource_obj.status != 'ok'" variant="danger" style="text-transform: uppercase;">
-                <icon name="exclamation-circle" scale="0.6"/> {{resource_obj.status}}
-            </b-badge>
             <span>
-                <small style="opacity: 0.5; text-transform: uppercase;">running</small>
+                <small style="opacity: 0.7; text-transform: uppercase;">running</small>
                 <b style="font-size: 125%;">{{running}}</b>
             </span>
             <span style="opacity: 0.7">
@@ -32,7 +30,7 @@
             <stop offset="20%" style="stop-color:#2693ff;stop-opacity:0.2" />
             <stop offset="60%" style="stop-color:#00f;stop-opacity:0.0" />
         </linearGradient>
-        <path :d="usage_path" fill="url(#grad1)" stroke="rgba(26,93,255,0.7)" stroke-width="2"/>
+        <path :d="usage_path" fill="url(#grad1)" stroke="rgba(26,93,255,0.7)" stroke-width="1"/>
     </svg>
 </div>
 </template>
@@ -90,7 +88,7 @@ export default {
                 t = t / range_time * 200; 
                 let v = point[1];
                 
-                if(Vue.config.debug) v += Math.random()*4;
+                //if(Vue.config.debug) v += Math.random()*4;
                 
                 v = 90 - v / this.resource_obj.config.maxtask * 75; //don't let it touch the top of the graph
                 points.push([t,v]);

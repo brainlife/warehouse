@@ -72,7 +72,7 @@
                         <icon name="folder" style="opacity: 0.4;"/>&nbsp;&nbsp;{{selected.stats.datasets.size|filesize}}
                         <small>Total</small> <br>
                     </b-badge>
-                    <b-badge pill class="bigpill" v-if="selected.stats.rules && selected.stats.rules.active > 0" title="Number of pipeline rules configured for this project">
+                    <b-badge pill class="bigpill" v-if="selected.stats && selected.stats.rules && selected.stats.rules.active > 0" title="Number of pipeline rules configured for this project">
                         <icon name="robot" style="opacity: 0.4;"/>&nbsp;&nbsp;{{selected.stats.rules.active}}
                         <small>Active Pipeline Rules</small>
                     </b-badge>
@@ -100,7 +100,6 @@
             <div style="float: right; width: 280px; padding: 20px; position: sticky; top: 140px;" v-if="selected.stats">
                 <span class="form-header">Datatypes</span>
                 <p><small>This project contains the following datatypes</small></p>
-
                 <!--datatype was deprecated by datatype_details-->
                 <p v-if="!selected.stats.datasets.datatype_details">
                     <span v-for="datatype_id in selected.stats.datasets.datatypes" :key="datatype_id">
@@ -179,17 +178,9 @@
                     <vue-markdown v-if="selected.readme" :source="selected.readme" class="readme"></vue-markdown>
                 </div>
 
-                <div class="box" v-if="participants">
+                <div class="box" v-if="participants && Object.keys(participants).length > 0">
                     <span class="form-header">Participants Info</span>     
-                    <!--
-                    <div v-if="participants_editing">
-                        <editor v-model="participants_editing" @init="editorInit" lang="json" height="500"/>
-                        <div style="background-color: #ccc; padding: 8px 10px; text-align: right;">
-                            <b-btn @click="participants_editing = null" size="sm">Cancel</b-btn>
-                            <b-btn @click="saveParticipants()" variant="primary" size="sm">Save</b-btn>
-                        </div>
-                    </div>
-                    -->
+                    <p><small>participants info provides information for each subject and can be used for the group analysis.</small></p>             
                     <participants :rows="participants" :columns="participants_columns" style="max-height: 500px; overflow: auto;"/>
                 </div>
 

@@ -248,8 +248,9 @@
                                         <b-badge>{{task.service_branch}}</b-badge>
                                     </td>
                                     <td>
-                                        <span class="status-color" :class="task.status" style="padding: 3px 5px;">
-                                            <statusicon :status="task.status" /> <span style="text-transform: uppercase;" >{{task.status}}</span>
+                                        <span class="status-color" :class="task.status" style="padding: 3px" :title="task.status">
+                                            <statusicon :status="task.status" /> 
+                                            <!--<span style="text-transform: uppercase;" >{{task.status}}</span>-->
                                         </span>
                                         <small>{{task.status_msg}}</small>
                                         <small style="font-size: 70%">{{task._id}}</small>

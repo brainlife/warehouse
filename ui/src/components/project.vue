@@ -7,16 +7,22 @@
                 <projectaccess :access="project.access"/>
                 <div style="float: right; font-size: 90%; opacity: 0.9;" v-if="project.stats.datasets && project.stats.datasets.subject_count">
                     {{project.stats.datasets.subject_count}} <span style="opacity: 0.5;">sub</span>
+
                     <span style="opacity: 0.2;">|</span>
+
                     {{project.stats.datasets.count}} <span style="opacity: 0.5;">objs</span>
                     <div v-if="project.stats.datasets.size" style="display: inline-block; opacity: 0.5;">
                         <span>
                             ({{project.stats.datasets.size | filesize}})
                         </span>
                     </div>
+
+                    <span style="opacity: 0.2;">|</span>
+
+                    <icon name="id-badge" scale="0.7" style="opacity: 0.6"/> {{project.group_id}}
                 </div>
                 <span class="title">
-                    {{project.name}}
+                    {{project.name}} 
                 </span>
                 <div class="desc">{{project.desc||'no description'}}</div>
             </div>

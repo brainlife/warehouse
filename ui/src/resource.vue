@@ -32,54 +32,6 @@
             <br>
             <b-container>
                 <div class="card">
-                    <span class="form-header">Recent Jobs</span>
-                    <br>
-                    <vue-plotly v-if="usage_data" :data="usage_data" :layout="usage_layout" style="background-color: #f6f6f6; margin: 0 -20px;"/>
-                    <br>
-
-                    <table class="table table-sm">
-                        <thead>
-                            <tr>
-                                <th>Group</th>
-                                <th>Status</th>
-                                <th>Submitter</th>
-                                <th>Date</th>
-                            </tr>
-                        </thead>
-                        <tr v-for="task in tasks" :key="task._id">
-                            <td style="width: 70px">
-                                <small><icon name="shield-alt"/> {{task._group_id}}</small><br>
-                            </td>
-                            <td>
-                                <span class="status-color" :class="task.status" style="padding: 3px 5px;">
-                                    <statusicon :status="task.status" /> <span style="text-transform: uppercase;" >{{task.status}}</span>
-                                </span>
-                                {{task.service}} <b-badge>{{task.service_branch}}</b-badge><br>
-                                <small>{{task.status_msg}}</small>
-                                <small style="font-size: 70%">{{task._id}}</small>
-                            </td>
-                            <td>
-                                <contact :id="task.user_id" size="small"/>
-                            </td>
-                            <td>
-                                <small v-if="task.status == 'requested'"><time>Requested <timeago :datetime="task.request_date" :auto-update="1"/></time></small>
-                                <small v-else-if="task.status == 'running'"><time>Started <timeago :datetime="task.start_date" :auto-update="1"/></time></small>
-                                <small v-else-if="task.status == 'finished'"><time>Finished <timeago :datetime="task.finish_date" :auto-update="1"/></time></small>
-                                <small v-else-if="task.status == 'failed'"><time>Failed <timeago :datetime="task.fail_date" :auto-update="1"/></time></small>
-                            </td>
-                        </tr>
-                    </table>
-                    <p style="opacity: 0.7; font-size: 80%;">Only showing up to 30 most recent jobs</p>
-                    <!--
-                    <p style="opacity: 0.7;" v-if="tasks.length ==0">No tasks running on this resource.</p>
-                    <span class="form-header">Job History</span>
-                    -->
-
-    
-
-                </div>
-
-                <div class="card">
                     <span class="form-header">Apps</span>
                     <small>The following services are enabled to run on this resource</small>
                     <br>
@@ -107,155 +59,189 @@
                 </div>
 
                 <div class="card">
-                <b-row v-if="projects">
-                    <b-col cols="2">
-                        <span class="form-header">Projects</span>
-                    </b-col>
-                    <b-col>
-                        <p>
-                            <small>This resource has been used to analyze datasets on the following projects (only showing >10 hours of usage)</small>
-                        </p>
-                        <div class="">
-                            <b-row style="margin-bottom: 8px; opacity: 0.7;">
-                                <b-col cols="6">Project Name</b-col>
-                                <b-col>Admin </b-col>
-                                <b-col>Total Walltime</b-col>
-                            </b-row>
-
-                            <div v-for="project in resource.stats.projects" :key="project._id">
-                                <b-row v-if="projects[project._id] && project.total_walltime > 3600*1000*10" style="border-top: 1px solid #eee; padding: 2px 0px">
-                                    <b-col cols="6">
-                                        <b>{{projects[project._id].name}}</b><br>
-                                        <small>{{projects[project._id].desc}}</small>
-                                    </b-col>
-                                    <b-col>
-                                        <small><contact v-for="id in projects[project._id].admins" size="small" :key="id" :id="id"/></small>
-                                    </b-col>
-                                    <b-col>
-                                        {{(project.total_walltime/(1000*60*60)).toFixed(1)}} hours <small>({{project.count}} jobs)</small>
-                                    </b-col>
-                                </b-row>
-                            </div>
-                        </div>
-                    </b-col>
-                </b-row>
-                </div><!--card-->
- 
-                <!--
-                <b-row v-if="groups && groups.length > 0">
-                    <b-col cols="2">
-                        <span class="form-header">Groups</span>
-                    </b-col>
-                    <b-col>
-                        <p>
-                            <small>The member of the following group has access to this resource.</small>
-                        </p>
-                        <div v-for="group in groups" :key="group._id" class="">
-                            <p>
-                                <icon name="users"/> {{group.name}}
-                                <small>{{group.desc}}</small>
+                    <b-row>
+                        <b-col cols="2">
+                            <span class="form-header">Login Host</span>
+                        </b-col>
+                        <b-col>
+                            <p class="">
+                                <pre>{{resource.config.username}}@{{resource.config.hostname}}</pre>
                             </p>
-                            <contact v-for="c in group.admins" :key="c._id" :fullname="c.fullname" :email="c.email"/>
-                            <contact v-for="c in group.members" :key="c._id" :fullname="c.fullname" :email="c.email"/>
-                        </div>
-                        <br>
-                    </b-col>
-                </b-row>
-                -->
+                        </b-col>
+                    </b-row>
+
+                    <b-row>
+                        <b-col cols="2">
+                            <span class="form-header">Workdir</span>
+                        </b-col>
+                        <b-col>
+                            <p class="">
+                                <pre>{{resource.config.workdir}}</pre>
+                            </p>
+                        </b-col>
+                    </b-row>
+
+                    <b-row v-if="resource.config.io_hostname">
+                        <b-col cols="2">
+                            <span class="form-header">IO Hostname</span>
+                        </b-col>
+                        <b-col>
+                            <p>
+                                <pre class="">{{resource.config.io_hostname}}</pre> 
+                                <small>Optional hostname used to transfer data in and out of this resource</small>
+                            </p>
+                        </b-col>
+                    </b-row>
+                    <b-row>
+                        <b-col cols="2">
+                            <span class="form-header">Owner</span>
+                        </b-col>
+                        <b-col>
+                            <p>
+                                <contact :id="resource.user_id"/>
+                            </p>
+                        </b-col>
+                    </b-row>
+
+                    <b-row v-if="resource.gids && resource.gids.length > 0">
+                        <b-col cols="2">
+                            <span class="form-header">Groups</span>
+                        </b-col>
+                        <b-col>
+                            <div class="">
+                                <tags :tags="resource.gids"/><br>
+                            </div>
+                            <p>
+                                <small>Group ID that this resource is shared with</small>
+                            </p>
+                        </b-col>
+                    </b-row>
+
+                    <b-row>
+                        <b-col cols="2">
+                            <span class="form-header">Max Task</span>
+                        </b-col>
+                        <b-col>
+                            <p style="opacity: 0.6;">
+                               Up to <b>{{resource.config.maxtask}}</b> concurrent tasks will be submitted on this resource
+                            </p>
+                        </b-col>
+                    </b-row>
+                    <b-row v-if="resource.envs && Object.keys(resource.envs).length > 0">
+                        <b-col cols="2">
+                            <span class="form-header">ENVs</span>
+                        </b-col>
+                        <b-col>
+                            <p class="">
+                                <pre>{{resource.envs}}</pre>
+                            </p>
+                        </b-col>
+                    </b-row>
+
+                    <b-row v-if="resource.citation">
+                        <b-col cols="2">
+                            <span class="form-header">Citation</span>
+                        </b-col>
+                        <b-col>
+                            <p class="" style="opacity: 0.8;">
+                                <i>{{resource.citation}}</i>
+                            </p>
+                        </b-col>
+                    </b-row>
+                </div><!--card-->
 
                 <div class="card">
-                <b-row>
-                    <b-col cols="2">
-                        <span class="form-header">Login Host</span>
-                    </b-col>
-                    <b-col>
-                        <p class="">
-                            <pre>{{resource.config.username}}@{{resource.config.hostname}}</pre>
-                        </p>
-                    </b-col>
-                </b-row>
+                    <span class="form-header">Recent Jobs</span>
+                    <br>
+                    <vue-plotly v-if="usage_data" :data="usage_data" :layout="usage_layout" style="background-color: #f6f6f6; margin: 0 -20px;"/>
+                    <br>
 
-                <b-row>
-                    <b-col cols="2">
-                        <span class="form-header">Workdir</span>
-                    </b-col>
-                    <b-col>
-                        <p class="">
-                            <pre>{{resource.config.workdir}}</pre>
-                        </p>
-                    </b-col>
-                </b-row>
+                    <table class="table table-sm">
+                        <thead>
+                            <tr>
+                                <th>Group</th>
+                                <th>Status</th>
+                                <th>Submitter</th>
+                                <th>Date</th>
+                            </tr>
+                        </thead>
+                        <tr v-for="task in tasks" :key="task._id">
+                            <td style="width: 70px">
+                                <small><icon name="id-badge"/> {{task._group_id}}</small><br>
+                            </td>
+                            <td>
+                                <span class="status-color" :class="task.status" style="padding: 3px;" :title="task.status">
+                                    <statusicon :status="task.status" /> 
+                                    <!--<span style="text-transform: uppercase;" >{{task.status}}</span>-->
+                                </span>
+                                {{task.service}} <b-badge>{{task.service_branch}}</b-badge><br>
+                                <small>{{task.status_msg}}</small>
+                                <small style="font-size: 70%">{{task._id}}</small>
+                            </td>
+                            <td>
+                                <contact :id="task.user_id" size="small"/>
+                            </td>
+                            <td>
+                                <small>
+                                    <time>Requested <timeago :datetime="task.request_date" :auto-update="1"/></time>
+                                </small>
+                            </td>
+                            <td>
+                                <small v-if="task.status == 'requested'">
+                                    <time v-if="task.start_date">Started <timeago :datetime="task.start_date" :auto-update="1"/></time>
+                                </small>
+                                <small v-else-if="task.status == 'running'"><time>Started <timeago :datetime="task.start_date" :auto-update="1"/></time></small>
+                                <small v-else-if="task.status == 'running_sync'"><time>Started <timeago :datetime="task.start_date" :auto-update="1"/></time></small>
+                                <small v-else-if="task.status == 'finished'"><time>Finished <timeago :datetime="task.finish_date" :auto-update="1"/></time></small>
+                                <small v-else-if="task.status == 'failed'"><time>Failed <timeago :datetime="task.fail_date" :auto-update="1"/></time></small>
+                            </td>
+                        </tr>
+                    </table>
+                    <p style="opacity: 0.7; font-size: 80%;">Only showing up to 30 most recent jobs</p>
+                    <!--
+                    <p style="opacity: 0.7;" v-if="tasks.length ==0">No tasks running on this resource.</p>
+                    <span class="form-header">Job History</span>
+                    -->
 
-                <b-row v-if="resource.config.io_hostname">
-                    <b-col cols="2">
-                        <span class="form-header">IO Hostname</span>
-                    </b-col>
-                    <b-col>
-                        <p>
-                            <pre class="">{{resource.config.io_hostname}}</pre> 
-                            <small>Optional hostname used to transfer data in and out of this resource</small>
-                        </p>
-                    </b-col>
-                </b-row>
-                <b-row>
-                    <b-col cols="2">
-                        <span class="form-header">Owner</span>
-                    </b-col>
-                    <b-col>
-                        <p>
-                            <contact :id="resource.user_id"/>
-                        </p>
-                    </b-col>
-                </b-row>
+               </div><!--card / recentjobs-->
 
-                <b-row v-if="resource.gids && resource.gids.length > 0">
-                    <b-col cols="2">
-                        <span class="form-header">Groups</span>
-                    </b-col>
-                    <b-col>
-                        <div class="">
-                            <tags :tags="resource.gids"/><br>
-                        </div>
-                        <p>
-                            <small>Group ID that this resource is shared with</small>
-                        </p>
-                    </b-col>
-                </b-row>
+               <div class="card">
+                    <b-row v-if="projects">
+                        <b-col cols="2">
+                            <span class="form-header">Projects</span>
+                        </b-col>
+                        <b-col>
+                            <p>
+                                <small>This resource has been used to analyze datasets on the following projects (only showing >10 hours of usage)</small>
+                            </p>
+                            <div class="">
+                                <b-row style="margin-bottom: 8px; opacity: 0.7;">
+                                    <b-col cols="6">Project Name</b-col>
+                                    <b-col>Admin </b-col>
+                                    <b-col>Total Walltime</b-col>
+                                </b-row>
 
-                <b-row>
-                    <b-col cols="2">
-                        <span class="form-header">Max Task</span>
-                    </b-col>
-                    <b-col>
-                        <p style="opacity: 0.6;">
-                           Up to <b>{{resource.config.maxtask}}</b> concurrent tasks will be submitted on this resource
-                        </p>
-                    </b-col>
-                </b-row>
-                <b-row v-if="resource.envs && Object.keys(resource.envs).length > 0">
-                    <b-col cols="2">
-                        <span class="form-header">ENVs</span>
-                    </b-col>
-                    <b-col>
-                        <p class="">
-                            <pre>{{resource.envs}}</pre>
-                        </p>
-                    </b-col>
-                </b-row>
-
-                <b-row v-if="resource.citation">
-                    <b-col cols="2">
-                        <span class="form-header">Citation</span>
-                    </b-col>
-                    <b-col>
-                        <p class="" style="opacity: 0.8;">
-                            <i>{{resource.citation}}</i>
-                        </p>
-                    </b-col>
-                </b-row>
+                                <div v-for="project in resource.stats.projects" :key="project._id">
+                                    <b-row v-if="projects[project._id] && project.total_walltime > 3600*1000*10" style="border-top: 1px solid #eee; padding: 2px 0px">
+                                        <b-col cols="6">
+                                            <b>{{projects[project._id].name}}</b><br>
+                                            <small>{{projects[project._id].desc}}</small>
+                                        </b-col>
+                                        <b-col>
+                                            <small><contact v-for="id in projects[project._id].admins" size="small" :key="id" :id="id"/></small>
+                                        </b-col>
+                                        <b-col>
+                                            {{(project.total_walltime/(1000*60*60)).toFixed(1)}} hours <small>({{project.count}} jobs)</small>
+                                        </b-col>
+                                    </b-row>
+                                </div>
+                            </div>
+                        </b-col>
+                    </b-row>
                 </div><!--card-->
 
-                <hr>
+
+               <hr>
                 <p style="opacity: 0.7;">
                     <icon name="calendar"/> Created on {{new Date(resource.create_date).toLocaleDateString()}}
                 </p>

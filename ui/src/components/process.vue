@@ -129,7 +129,7 @@
                         </b-collapse>
 
                         <div class="validator" v-if="output.dtv_task">
-                            <div class="output-subtitle">Validation</div>
+                            <div class="output-subtitle">{{output.dtv_task.service}} <small>{{output.dtv_task._id}}</small></div>
                             <dtv :task="output.dtv_task"/>
                         </div>
 
@@ -157,7 +157,7 @@
                                 </li>
                             </ul>
                         </div>
-                    </div>
+                    </div><!--output-->
 
                     <!-- 
                         Task level (native) product
@@ -167,9 +167,8 @@
                         storing them on datasetproduct collection
                     -->
                     <product :product="task.product"/>
-
                     <div v-if="task.config._outputs.length == 0 && !task.product" style="padding: 10px; opacity: 0.5">No output</div>
-                </div>
+                </div><!--outputs-->
             </task>
 
             <!--task summary (hidden detail)-->
@@ -275,8 +274,6 @@ export default {
     data() {
         return {
             tasks: null,
-
-            //dtv_tasks: {},
 
             editing_taskdesc: {},
 
@@ -402,38 +399,12 @@ export default {
             if(!this.tasks) return;
             if(!dtv_task.config._outputs) return; //for dev
             if(!dtv_task.follow_task_id) return; //for dev
-/*
-            let task_id = dtv_task.follow_task_id;
-            let output_id = dtv_task.config._outputs[0].id;
-            let task = this.tasks.find(task=>task._id == task_id);
-            if(!this.dtv_tasks[task_id]) {
-                Vue.set(this.dtv_tasks, task_id, {});
-            }
-            if(!this.dtv_tasks[task_id][output_id]) {
-                Vue.set(this.dtv_tasks[task_id], output_id, {});
-            }
-            Vue.set(this.dtv_tasks[task_id][output_id], dtv_task._id, dtv_task);
-*/
             let task = this.tasks.find(task=>task._id == dtv_task.follow_task_id);
             if(!task) return; //for dev?
             let output_id = dtv_task.config._outputs[0].id;
             let output = task.config._outputs.find(out=>out.id == output_id);
             Vue.set(output, 'dtv_task', dtv_task);
-            //Vue.set(output, 'dtv_task_output', dtv_task.config._outputs[0]);
         },
-
-        /*
-        get_latest_dtv_task(task, output) {
-            if(!this.dtv_tasks[task._id]) return null;
-            let tasks = this.dtv_tasks[task._id][output.id];
-            let latest = null;
-            for(let task_id in tasks) {
-                let dtv = tasks[task_id];
-                if(latest == null || latest.create_date < dtv.create_date) latest = dtv;
-            }   
-            return latest;
-        },
-        */
 
         updatedesc() {
             this.$emit("updatedesc", this.desc);
@@ -569,7 +540,7 @@ export default {
                                     switch(task.status) {
                                     case "failed": type = "error"; break;
                                     case "finished": 
-                                        this.loadProduct([task]);
+                                        this.loadProduct([t]);
                                         type = "success"; 
                                         break;
                                     case "stopped": type = "warn"; break;
@@ -578,7 +549,10 @@ export default {
                                     }
                                     this.$notify({type, text});
                                 }
-                                for(var k in task) t[k] = task[k]; //apply updates
+                                for(var k in task) {
+                                    if(k == "config") continue; //config should not change, and we are storing dtv_task under config._outputs.. so I don't want it get overwritten
+                                    t[k] = task[k]; //apply updates
+                                }
                             }
                         }
                         break;

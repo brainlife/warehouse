@@ -105,7 +105,7 @@
             </div>
             -->
 
-            <div v-if="task.service!='soichih/sca-product-raw'&&task.service!='brainlife/app-stage'">
+            <div v-if="task.service != 'soichih/sca-product-raw' && task.service != 'brainlife/app-stage'">
                 <taskconfig :task="task" style="padding: 10px;"/>
             </div>
 
