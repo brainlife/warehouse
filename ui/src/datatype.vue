@@ -59,11 +59,10 @@
                         </b-col>
                     </b-row>
 
-                    <p v-if="adhoc_datatype_tags.length > 0" style="">
-                        <small style="opacity: 0.7">The following adhoc datatype tags are used for some datasets.</small>
+                    <p v-if="adhoc_datatype_tags.length > 0">
+                        <small style="opacity: 0.7">The following adhoc(not officially recognized) datatype tags are used for some datasets.</small><br>
+                        <span v-for="tag in adhoc_datatype_tags" :key="tag" style="background-color: #ddd; padding: 2px 5px; margin-right: 4px; margin-bottom: 4px; display: inline-block; opacity: 0.5;">{{tag}}</span>
                     </p>
-                    <span v-for="tag in adhoc_datatype_tags" :key="tag" style="background-color: #ddd; padding: 2px 5px; margin-right: 3px; display: inline-block; opacity: 0.5;">{{tag}}</span>
-                    <br>
                 </div>
 
                 <div v-if="sample_datasets.length > 0" class="box">
@@ -421,15 +420,11 @@ transition: box-shadow 0.5s;
 .datatype-card:hover {
 box-shadow: 2px 2px 8px rgba(0,0,0,0.3);
 }
-/*
 .card-img {
-heightkj
+height: 150px;
 }
-
 .card-text {
-height: 70px
 }
-*/
 .sample-dataset {
 background-color: white;
 border-bottom: 1px solid #ddd;

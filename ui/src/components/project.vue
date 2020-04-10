@@ -27,24 +27,24 @@
                 <div class="desc">{{project.desc||'no description'}}</div>
             </div>
         </b-col>
-        <b-col md="1" v-if="config.user">
-            <div class="contacts">
-                <contact v-for="c in contacts" :key="c._id" :id="c" size="tiny" style="margin-left: -6px; margin-bottom: -4px"/>
-            </div>
-        </b-col>
-        <b-col md="2">
+        <b-col md="3">
             <div class="datatypes" v-if="project.stats && project.stats.datasets" style="display: inline-block;">
                 <datatypetag v-for="datatype in project.stats.datasets.datatypes_detail" :key="datatype._id" :datatype="datatype.type" style="font-size: 85%; margin-right: 2px"/>
             </div>
         </b-col>
         <b-col md="1">
-            <b-badge pill class="bigpill">
+            <b-badge pill class="bigpill" :title="'Project Create Date '+project.create_date">
                 <icon name="calendar" style="opacity: 0.4;"/>&nbsp;&nbsp;&nbsp;{{new Date(project.create_date).toLocaleDateString()}}
             </b-badge>
         </b-col>
-        <b-col md="2" style="font-size: 85%; margin-top: 2px;">
+        <b-col md="1" style="font-size: 85%; margin-top: 2px;">
             <stateprogress v-if="project.stats && project.stats.instances && !project.openneuro" 
                 :states="project.stats.instances" height="15px"/>
+        </b-col>
+        <b-col md="1" v-if="config.user">
+            <div class="contacts">
+                <contact v-for="c in contacts" :key="c._id" :id="c" size="tiny" style="margin-left: -6px; margin-bottom: -4px"/>
+            </div>
         </b-col>
     </b-row>
 </div>

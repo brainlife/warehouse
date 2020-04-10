@@ -3,8 +3,8 @@
     <div v-for="alert in alerts">
         <b-alert v-if="alert.type == 'error'" variant="danger" show>{{alert.msg}}</b-alert>
         <b-alert v-else-if="alert.type == 'info'" variant="secondary" show>{{alert.msg}}</b-alert>
+        <b-alert v-else-if="alert.type == 'warning'" variant="dark" show>{{alert.msg}}</b-alert>
         <b-alert v-else-if="alert.type == 'danger'" variant="danger" show>{{alert.msg}}</b-alert>
-        <b-alert v-else-if="alert.type == 'warning'" variant="warning" show>{{alert.msg}}</b-alert>
         <b-alert v-else-if="alert.type == 'success'" variant="success" show>{{alert.msg}}</b-alert>
         <div v-else>
             <b-alert show variant="danger">Unknown brainlife product type</b-alert>

@@ -10,6 +10,7 @@
                         inspiration
                         https://dataverse.harvard.edu/dataset.xhtml?persistentId=doi:10.7910/DVN/24301
                         https://searchworks.stanford.edu/view/rt034xr8593
+                        https://chemrxiv.org/articles/Repurposing_Therapeutics_for_the_Wuhan_Coronavirus_nCov-2019_Supercomputer-Based_Docking_to_the_Viral_S_Protein_and_Human_ACE2_Interface/11871402/3
                 -->
                 <b-row>
                     <b-col cols="10" style="background-color: white;"><!--hide avatar when screen is narrow-->
@@ -20,10 +21,6 @@
                         
                         <b-tabs class="brainlife-tab" v-model="tab_index">
                             <b-tab title="Detail"/>
-                            <!--
-                            <b-tab title="Datasets"/>
-                            <b-tab title="Apps"/>
-                            -->
                             <b-tab v-for="release in pub.releases" :key="release._id">
                                 <template slot="title"><!--<icon name="file" scale="0.9"/>--> Release {{release.name}}</template>
                             </b-tab>
@@ -133,48 +130,6 @@
                                 <i>{{resource_citation.citation}}</i>
                             </p>
                         </div>
-
-                        <!--
-                        <b-row>
-                            <b-col cols="2">
-                                <span class="form-header">Social</span>
-                            </b-col>
-                            <b-col>
-                                <p><small class="text-muted">You can share this publication via ..</small></p>
-                                <social-sharing :url="social_url" :title="pub.name" :description="pub.desc"
-                                      hashtags="brainlife,openscience"
-                                      twitter-user="brainlifeio" inline-template>
-                                    <b-row class="social-buttons">
-                                        <b-col> 
-                                            <network network="email"> <icon name="envelope"/> Email </network> <br>
-                                            <network network="twitter"> <icon name="brands/twitter"/> Twitter </network><br>
-                                            <network network="facebook"> <icon name="brands/facebook"/> Facebook </network><br>
-                                        </b-col>
-                                        <b-col> 
-                                            <network network="googleplus"> <icon name="brands/google-plus"/> Google + </network> <br>
-                                            <network network="linkedin"> <icon name="brands/linkedin"/> LinkedIn </network><br>
-                                            <network network="pinterest"> <icon name="brands/pinterest"/> Pinterest </network><br>
-                                        </b-col>
-                                        <b-col>
-                                            <network network="reddit"> <icon name="brands/reddit"/> Reddit </network><br>
-                                            <network network="skype"> <icon name="brands/skype"/> Skype </network><br>
-                                            <network network="weibo"> <icon name="brands/weibo"/> Weibo </network> <br>
-                                        </b-col>
-                                    </b-row>
-                                </social-sharing>
-                                <br>
-                            </b-col>
-                            <b-col cols="3">
-                                <b-card>
-                                    <div class='altmetric-embed' 
-                                        data-badge-type='medium-donut' 
-                                        data-badge-details="right" 
-                                        data-hide-no-mentions="false" 
-                                        :data-doi="pub.doi||config.debug_doi"></div>
-                                </b-card>
-                            </b-col>
-                        </b-row>
-                        -->
 
                         <hr>
                         <vue-disqus shortname="brain-life" :identifier="pub._id"/>

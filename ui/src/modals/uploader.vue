@@ -60,15 +60,18 @@
                 <b-form-textarea v-model="desc" :rows="4" placeholder="(optional)"></b-form-textarea>
             </b-form-group>
 
-            <b-form-group horizontal label="Datatype Tags" v-if="available_dt_tags">
-                <tageditor v-model="datatype_tags" :options="available_dt_tags" placeholder="(optional)"/>
-                <small>Datatype tags add context to the datatype. It can not be changed once archived.</small>
-            </b-form-group>
-
             <b-form-group horizontal label="Data-Object Tags" v-if="available_tags">
                 <tageditor v-model="tags" :options="available_tags" placeholder="(optional)"/>
                 <small>Data-object tags is used to help organize data-objects and make searching easier. It can be edited by users anytime.</small>
             </b-form-group>
+
+            <div style="background-color: #eee; margin: 5px -15px; padding: 10px 15px">
+                <b-form-group horizontal label="Datatype Tags" v-if="available_dt_tags">
+                    <tageditor v-model="datatype_tags" :options="available_dt_tags" placeholder="(optional)"/>
+                    <small>Datatype tags add context to the datatype. Datatype Tags must be specific for each datatype. 
+                        Please consult the datatype detail page before setting any datatype tags.</small>
+                </b-form-group>
+            </div>
 
         </div><!--datatype_id set -->
         <small>To bulk upload your data-objects, you can use <a href="https://github.com/brain-life/cli" target="_blank">Brainlife CLI</a></small>

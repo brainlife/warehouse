@@ -143,10 +143,10 @@
                         <b-row>
                             <b-col>
                                 <div v-if="!archive.enable">
-                                    <b-form-checkbox v-model="archive.enable">Archive all output datasets when finished</b-form-checkbox>
+                                    <b-form-checkbox v-model="archive.enable">Archive all output when finished</b-form-checkbox>
                                 </div>
                                 <b-card v-if="archive.enable" style="margin-bottom: 10px;">
-                                    <b-form-checkbox v-model="archive.enable">Archive all output datasets when finished</b-form-checkbox>
+                                    <b-form-checkbox v-model="archive.enable">Archive all output when finished</b-form-checkbox>
                                     <p>
                                         <b>Dataset Description</b>
                                         <b-form-textarea placeholder="Optional" v-model="archive.desc" :rows="2"/>
@@ -154,7 +154,7 @@
                                     <p>
                                         <b>Dataset Tags</b>
                                         <tageditor placeholder="Optional" v-model="tags" :options="alltags"/>
-                                        <small style="opacity: 0.8">Description / tags will be applied to all output datasets</small>
+                                        <small style="opacity: 0.8">Description / tags will be applied to all output</small>
                                     </p>
                                 </b-card>
                             </b-col>

@@ -124,7 +124,7 @@ function handle_bids(key, bids, cb) {
 
         //TODO if we update bids_walker, then I need to invalidate commit_id for all dldatasets so that data will be 
         //re-registered (should I store the branlife npm package version number?)
-        let commit_id = child_process.execSync("git rev-parse HEAD", {cwd: key.path, encoding: "utf8"});
+        let commit_id = child_process.execSync("git rev-parse HEAD", {cwd: key.path, encoding: "utf8"}).trim();
         /* //let's disable this for now.. we need to update records quite often
         if(dldataset.commit_id == commit_id) {
             console.log("same commit_id.. skipping this dataset");

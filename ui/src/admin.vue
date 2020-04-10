@@ -1,18 +1,25 @@
 <template>
-<div>
-    <pageheader/>
-    <div class="ui pusher">
-        <div class="page-content">
-		<div class="margin20">
-            <b-alert show>todo</b-alert>
+<div class="admin">
+    <div class="page-header">
+        <h4>Administration</h4>
+    </div>
 
-            <!--
-            <h3>Services Running</h3>
-            <pre>{{service_running}}</pre>
-            -->
+    <b-tabs class="brainlife-tab">
+        <b-tab title="Task"> 
+            <br>
+            <b-form inline>
+                <b-input-group prepent="Task ID">
+                    <b-form-input v-model="task_id" placeholder="Task ID"/>
+                </b-input-group>
+                <b-btn @click="loadTask()">Open</b-btn>
+            </b-form>
+            <br>
 
+            <task v-if="task" :task="task"/>
+        </b-tab>
+        <b-tab title="Switch User"> 
+            <br>
             <p>
-                <h3>su</h3>
                 <v-select 
                     @search="get_sulist" 
                     @input="su" 
@@ -21,44 +28,38 @@
             </p>
 
             <p>
-                <b-button @click="refresh">Refresh Token</b-button>
+                <b-button @click="refresh">Update Token</b-button>
             </p>
-        </div><!--magin20-->
-        </div><!--page-content-->
-    </div>
+        </b-tab>
+    </b-tabs>
 </div>
 </template>
 
 <script>
 import Vue from 'vue'
-import pageheader from '@/components/pageheader'
+
+import task from '@/components/task'
+
+import ReconnectingWebSocket from 'reconnectingwebsocket'
 
 export default {
-    components: { pageheader },
+    components: { task },
     data () {
         return {
             //service_running: [],
             su_options: [],
             config: Vue.config,
+
+            task_id: "",
+            task: null,
+
+            ws: null,
         }
     },
-    mounted() {
-        //load counts of apps currently running
-        /*
-        this.$http.get(Vue.config.wf_api+'/admin/services/running')
-        .then(res=>{
-            this.service_running = res.data;
-        });
-        */
 
-        /*
-        //load counts of resource currently running
-        this.$http.get(Vue.config.wf_api+'/admin/resources/running')
-        .then(res=>{
-            this.resource_running = res.data;
-        });
-        */
+    mounted() {
     },
+
     methods: {
         get_sulist(search, loading) {
             loading(true);
@@ -87,15 +88,61 @@ export default {
 
         refresh() {
             this.$http.post(Vue.config.auth_api+'/refresh').then(res=>{
-                console.log(res.data.jwt);
                 localStorage.setItem("jwt", res.data.jwt);
                 this.$notify("refreshed");
             });
-            
+        },
+
+        loadTask() {
+            var url = Vue.config.event_ws+"/subscribe?jwt="+Vue.config.jwt;
+            if(this.ws) this.ws.close();
+            this.ws = new ReconnectingWebSocket(url, null, {/*debug: Vue.config.debug,*/ reconnectInterval: 3000});
+            this.ws.onopen = (e)=>{
+                console.log("connection opened");
+
+                //load task detail
+                this.$http.get(Vue.config.wf_api+'/task/'+this.task_id)
+                .then(res=>{
+                    this.task = res.data;
+
+                    //also subscribe to updates
+                    this.ws.send(JSON.stringify({bind: {
+                        ex: "wf.task",
+                        key: this.task.instance_id+"."+this.task._id,
+                    }}));
+
+                }).catch(err=>{
+                    alert(err);
+                });
+
+                this.ws.onmessage = (json)=>{
+                    let event = JSON.parse(json.data);
+                    console.log("task updated", event);
+                    this.task = event.msg;
+                }
+
+            }
+
         },
     },
 }
 </script>
 
 <style scoped>
+.page-header {
+height: 50px;
+padding: 10px;
+}
+.admin {
+margin-left: 40px;
+margin-top: 50px;
+overflow: auto;
+height: 100%;
+}
+.brainlife-tab {
+padding-top: 0;
+}
+.container {
+overflow: auto;
+}
 </style>
