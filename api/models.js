@@ -365,7 +365,8 @@ datasetSchema.pre('save', function(next) {
 
 datasetSchema.index({'$**': 'text'}) //make all text fields searchable
 datasetSchema.index({project: 1, 'prov.task.instance_id': 1, removed: 1, 'meta.subject': 1, 'meta.session': 1, create_date: -1}); //is this deprecated by project/remove/subject/session/-create_ate?
-datasetSchema.index({ "project": 1, "removed": 1, "meta.subject": 1, "meta.session": 1, "create_date": -1}); //for dataset search by the archive view
+//datasetSchema.index({project: 1, removed: 1, "meta.subject": 1, "meta.session": 1, "create_date": -1}); //for dataset search by the archive view
+datasetSchema.index({project: 1, datatype: 1, removed: 1, status: 1, "meta.subject": 1, "meta.session": 1, create_date: -1});
 datasetSchema.index({project: 1, update_date: 1, removed: 1}); //rule to query the lastest dataset touched
 datasetSchema.index({'prov.task_id': 1, 'prov.output_id': 1, removed: 1, status: 1}); //for event_handler
 datasetSchema.index({datatype: 1, removed: 1}); //for searching projects that provides distinct datatypes
@@ -378,6 +379,7 @@ datasetSchema.index({'meta.subject': 1, 'meta.session': 1, create_date: -1});
 datasetSchema.index({project: 1, removed: 1, "meta.subject": 1, datatype: 1, size: 1})
 datasetSchema.index({removed: 1, project: 1, publications: 1, size: 1});
 datasetSchema.index({publications: 1, "meta.subject": 1, datatype: 1, size: 1});
+datasetSchema.index({"prov.task._id": 1, "prov.output_id": 1, removed: 1, status: 1}); //event handler -archiver
 
 exports.Datasets = mongoose.model('Datasets', datasetSchema);
 

@@ -410,7 +410,6 @@ function handle_task(task, cb) {
         //handle secondary output from validator
         async next=>{
             if(task.status != "finished" || task.name != "__dtv" || !task.follow_task_id) {
-                //not validator
                 return;
             }
 
@@ -548,11 +547,13 @@ function handle_instance(instance, cb) {
         //number of instance events for each resource
         inc_count("instance.user."+instance.user_id+"."+instance.status); 
         //number of instance events for each project
-        if(instance.group_id) inc_count("instance.group."+instance.group_id+"."+instance.status); 
-        debounce("update_project_stats."+instance.group_id, async ()=>{
-            let project = await db.Projects.findOne({group_id: instance.group_id});
-            common.update_project_stats(project);
-        }, 1000); 
+        if(instance.group_id) {
+            inc_count("instance.group."+instance.group_id+"."+instance.status); 
+            debounce("update_project_stats."+instance.group_id, async ()=>{
+                let project = await db.Projects.findOne({group_id: instance.group_id});
+                common.update_project_stats(project);
+            }, 1000); 
+        }
     }
     cb();
 }

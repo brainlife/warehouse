@@ -355,19 +355,15 @@ export default {
     
         //same code in api/controllers/dataset.js
         isimporttask(task) {
-            return ( 
-                /*
-                //deprecated.. but for provenance sake, we need to keep them
-                task.service == "soichih/sca-product-raw" || 
-                task.service == "soichih/sca-service-noop" ||
+            if(~task.service.indexOf("brainlife/validator-")) return true;
+            if(~task.service.indexOf("brain-life/validator-")) return true;
 
-                task.service == "brainlife/app-stage" || 
-                task.service == "brainlife/app-noop" ||
-                */
-                ((task.deps_config && task.deps_config.length == 0) && task.deps.length == 0) || 
-                ~task.service.indexOf("brainlife/validator-") ||
-                ~task.service.indexOf("brain-life/validator-")
-            );
+            //if no input, then must be import
+            if(!task.deps && !task.deps_config) return true;
+            if((task.deps && task.deps.length == 0) &&
+                (task.deps_config && task.deps_config.length == 0)) return true;
+
+            return false;
         },
 
         update_dataset(elem) {

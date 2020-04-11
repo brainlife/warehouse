@@ -31,20 +31,25 @@ function canedit(user, rec, canwrite_project_ids) {
 
 //same code in ui::/src/modals/dataset.js
 function isimporttask(task) {
-    return ( 
-        /*
-        //deprecated.. but for provenance sake, we need to keep them
-        task.service == "soichih/sca-product-raw" || 
-        task.service == "soichih/sca-service-noop" ||
+    if(~task.service.indexOf("brainlife/validator-")) return true;
+    if(~task.service.indexOf("brain-life/validator-")) return true;
 
-        task.service == "brainlife/app-stage" || 
-        task.service == "brainlife/app-noop" ||
-        */
-        (task.deps_config.length == 0 && task.deps.length == 0) ||
+    //if no input, then must be import
+    if(!task.deps && !task.deps_config) return true;
+    if((task.deps && task.deps.length == 0) &&
+        (task.deps_config && task.deps_config.length == 0)) return true;
+
+    return false;
+
+    /*
+    return ( 
+    (task.deps_config.length == 0 && task.deps.length == 0) ||
         ~task.service.indexOf("brainlife/validator-") ||
         ~task.service.indexOf("brain-life/validator-")
     );
+    */
 }
+
 
 function construct_dataset_query(query, canread_project_ids) {
     var ands = [];
@@ -110,10 +115,6 @@ router.get('/', jwt({secret: config.express.pubkey, credentialsRequired: false})
         if(err) return next(err);
         let query = construct_dataset_query(req.query, canread_project_ids);
 
-        //console.timeLog("api");
-        console.log("querying datasets");
-        console.dir(query);
-
         db.Datasets.find(query)
         .populate(populate)
         .select(req.query.select)
@@ -128,9 +129,6 @@ router.get('/', jwt({secret: config.express.pubkey, credentialsRequired: false})
             datasets.forEach(rec=>{
                 rec._canedit = canedit(req.user, rec, canwrite_project_ids);
             });
-
-            //console.timeLog("api");
-            //console.log("aggregating count/size");
 
             //count and get total size
             cast_mongoid(query);
@@ -263,7 +261,6 @@ router.get('/prov/:id', (req, res, next)=>{
  */
 router.get('/product/:id', jwt({secret: config.express.pubkey}),  (req, res, next)=>{
     let id = req.params.id;
-    console.log("looking for dataset", id);
     common.getprojects(req.user, function(err, canread_project_ids, canwrite_project_ids) {
         if(err) return next(err);
         db.Datasets.findById(id, (err, dataset)=>{
@@ -918,7 +915,6 @@ router.post('/', jwt({secret: config.express.pubkey}), (req, res, cb)=>{
             logger.debug("submitting archive task");
             common.archive_task_outputs(req.user.sub.toString(), task, [output], (err, datasets, archive_task)=>{
                 if(err) return next(err);
-                //console.log(JSON.stringify(task, null, 4));
                 res.json(datasets[0].dataset); //there should be only 1 dataset being archived via this API, so return [0]
             });
         },
@@ -976,9 +972,6 @@ router.post('/stage', jwt({secret: config.express.pubkey}), (req, res, next)=>{
                         }
                         return true;
                     });
-                    //console.log("accepted datasets");
-                    //console.dir(datasets);
-
                     if(unique_dataset_ids.length != datasets.length) {
                         return cb("you don't have access to all requested datasets or not stored yet");
                     }
@@ -989,7 +982,6 @@ router.post('/stage', jwt({secret: config.express.pubkey}), (req, res, next)=>{
         },
 
         cb=>{
-            //console.log("incrementing download counter");
             async.forEach(datasets, async dataset=>{
                 inc_download_count(dataset);
                 await dataset.save();
@@ -999,7 +991,6 @@ router.post('/stage', jwt({secret: config.express.pubkey}), (req, res, next)=>{
         //TODO - shouldn't we check for user agreement?
 
         cb=>{
-            //console.log("querying for the next tid");
             request.get({
                 url: config.amaretti.api+'/task', 
                 json: true,
@@ -1026,7 +1017,7 @@ router.post('/stage', jwt({secret: config.express.pubkey}), (req, res, next)=>{
 
         //submit!
         async cb=>{
-            console.log("issuing archiver jwt - that can run task on archiving resource");
+            //console.log("issuing archiver jwt - that can run task on archiving resource");
             let jwt = await common.issue_archiver_jwt(req.user.sub);
 
             /*
