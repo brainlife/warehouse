@@ -235,8 +235,6 @@ function handle_task(task, cb) {
                 return next();
             } 
 
-            //let products = common.split_product(task.product, task.config._outputs);
-
             //handle validator submission
             async.eachSeries(task.config._outputs, async (output)=>{
 
@@ -349,10 +347,6 @@ function handle_task(task, cb) {
                 if(data.length == 1) {
                     task_product = data[0].product;
                 }
-                /* else {
-                    console.debug("no product found.........");
-                    //console.dir(data);
-                }*/
                 next();
             });
         },
@@ -378,10 +372,13 @@ function handle_task(task, cb) {
                 //check to make sure that the output is not already registered
                 async.eachSeries(task.config._outputs, async (output)=>{
                     let datatype = await db.Datatypes.findById(output.datatype);
-                    if(task.name != "__dtv" && datatype.validator) return; //validator will handle archiving
+                    if(task.name != "__dtv" && datatype.validator) {
+                        //validator will handle archiving
+                        return; 
+                    }
 
                     let _dataset = await db.Datasets.findOne({
-                        "prov.task._id": task._id,
+                        "prov.task._id": {$in: [task._id, task.follow_task_id]},
                         "prov.output_id": output.id,
                         //ignore failed and removed ones
                         $or: [

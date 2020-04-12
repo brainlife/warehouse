@@ -140,6 +140,12 @@ function register_dataset(task, output, product, cb) {
         db.DatasetProducts.create({
             dataset_id: _dataset._id,
             product: exports.escape_dot(product),
+
+            //I think we always query datasets first, then load product as necessary
+            //if so, the I don't think we need to store service/branch - just look up from dataset?
+            //service: task.service,
+            //service_branch: task.service_branch,
+
         }, (err, _dataset_product)=>{
             if(!err) exports.publish("dataset.create."+task.user_id+"."+output.archive.project+"."+_dataset._id, {});
             cb(err, _dataset);

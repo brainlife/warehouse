@@ -388,6 +388,10 @@ exports.Datasets = mongoose.model('Datasets', datasetSchema);
 var datasetProductSchema = mongoose.Schema({
     dataset_id: {type: mongoose.Schema.Types.ObjectId, ref: 'Datasets', index: true, unique: true},
     product: mongoose.Schema.Types.Mixed,
+
+    //maybe not needed if we always query dataset first?
+    //service: String, 
+    //service_branch: String,  
 });
 exports.DatasetProducts = mongoose.model('DatasetProducts', datasetProductSchema);
 
