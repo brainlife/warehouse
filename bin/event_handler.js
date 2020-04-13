@@ -361,6 +361,8 @@ function handle_task(task, cb) {
                     return next();
                 }
                 */
+                console.log("--------------------");
+                console.dir(task_product);
                 if(task.name == "__dtv" && task_product.errors.length > 0) {
                     console.log("validator reports error .. skipping archive");
                     return next();
