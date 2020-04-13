@@ -1,5 +1,5 @@
 <template>
-<b-modal :no-close-on-backdrop='true' title="Upload Data-Object" ref="modal" id="uploader" size="lg">
+<b-modal :no-close-on-backdrop='true' title="Upload Data" ref="modal" id="uploader" size="lg">
     <div v-if="mode == 'upload'">
         <b-form-group horizontal label="Data Type" v-if="datatypes">
             <v-select v-model="datatype" placeholder="Search Datatype" label="name" :options="Object.values(datatypes)" :selectable="option => option.validator">
@@ -78,7 +78,10 @@
     </div><!--meta-->
 
     <div v-if="mode == 'validate' && tasks.validation">
-        <task :task="tasks.validation" v-if="tasks.validation.status != 'finished'"/>
+
+        <h4 v-if="tasks.validation.status == 'finished'">Registering Data...  <icon name="cog" spin/></h4>
+
+        <task :task="tasks.validation"/> <!-- v-if="tasks.validation.status != 'finished'"/>-->
 
         <!-- 
             TODO - We can only abort archive if validation finishes and it has an error 
@@ -88,12 +91,6 @@
             <b-alert show variant="danger" v-for="(error, idx) in tasks.validation.product.errors" :key="idx">
                 {{error}}
             </b-alert>
-            <!--
-            <b-alert :show="tasks.validation.product.warnings.length > 0" variant="warning" v-for="(warning, idx) in tasks.validation.product.warning" :key="idx">
-                {{warning}}
-            </b-alert>
-            <product :product="tasks.validation.product"/>
-            -->
 
             <!--show info-->
             <b-form-group horizontal v-for="(v, k) in tasks.validation.product" :key="k" 

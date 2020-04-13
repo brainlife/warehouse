@@ -383,8 +383,10 @@ function handle_task(task, cb) {
                         return; 
                     }
 
+                    let task_ids = [task._id];
+                    if(task.follow_task_id) task_ids.push(task.follow_task_id);
                     let _dataset = await db.Datasets.findOne({
-                        "prov.task._id": {$in: [task._id, task.follow_task_id]},
+                        "prov.task._id": {$in: task_ids},
                         "prov.output_id": output.id,
                         //ignore failed and removed ones
                         $or: [
