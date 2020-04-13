@@ -366,7 +366,7 @@ function handle_task(task, cb) {
                         console.log("_dtv didn't generate product.. maybe parse error? - skip archive")
                         return next();
                     }
-                    if(task_product.errors.length > 0)) {
+                    if(task_product.errors.length > 0) {
                         console.log("validator reports error .. skipping archive");
                         return next();
                     }
