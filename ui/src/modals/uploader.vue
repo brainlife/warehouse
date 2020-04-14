@@ -11,14 +11,8 @@
         </b-form-group>
 
         <div v-if="datatype">
-            <div v-if="tasks.upload && !tasks.upload.resource_id">
-                <b-form-group horizontal>
-                    <p cass="text-muted">Preparing for file upload...  <icon name="cog" spin/></p>
-                    <pre v-if="config.debug">{{tasks.upload}}</pre>
-                </b-form-group>
-            </div>
-            
-            <div v-if="tasks.upload && tasks.upload.resource_id">
+           
+            <div v-if="tasks.upload && tasks.upload.resource_id && tasks.upload.status == 'finished'">
                 <b-form-group horizontal v-if="datatype" v-for="file in files" :key="file.id" :label="file.id+(file.ext?' ('+file.ext+')':'')+(file.required?' *':'')" :description="file.desc">
                     <div v-if="!file.uploaded && !file.progress">
                         <input type="file" @change="filechange(file, $event)" :accept="file.ext">
@@ -41,13 +35,14 @@
                     </div>
     
                 </b-form-group>
-                <!--
-                <b-form-group label="Sidecar/Metadata .json (optional)">
-                    <input type="file" @change="filechange({}, $event)" accept="json">
-                </b-form-group>
-                -->
             </div>
-
+            <div v-else>
+                <b-form-group horizontal>
+                    <p cass="text-muted">Preparing for file upload...  <icon name="cog" spin/></p>
+                    <pre v-if="config.debug">{{tasks.upload}}</pre>
+                </b-form-group>
+            </div>
+ 
             <b-form-group horizontal label="Subject *">
                 <b-input type="text" v-model="meta['subject']" required/>
             </b-form-group>
@@ -156,7 +151,7 @@ export default {
                 validation: null, //task entry for validation
             },
 
-            mode: null,
+            mode: 'upload',
             validator_resource: null,
             
             datatypes: null, //registered datatypes (keyed by datatype_id)
@@ -182,7 +177,7 @@ export default {
         this.$root.$on("uploader.option", (opt)=>{
             this.reset();
             this.project = opt.project;
-            if(!this.instance) this.create_instance();
+            this.findOrCreateInstance();
         });
     },
 
@@ -213,7 +208,7 @@ export default {
 
     methods: {
         reset() {
-            this.mode = "upload";
+            this.mode = 'upload';
             this.project = null;
             this.meta = {};
             if(this.datatype) this.datatype.files.forEach(this.clearfile);
@@ -251,56 +246,76 @@ export default {
             }
         },
 
-        create_instance() {
-            this.$http.post(Vue.config.wf_api+'/instance', {
-                name: "_upload",
-            }).then(res=>{
-                this.instance = res.data;
-
-                //lastly, subscribe to the whole instance task events
-                var url = Vue.config.event_ws+"/subscribe?jwt="+Vue.config.jwt;
-                this.ws = new ReconnectingWebSocket(url, null, {debug: Vue.config.debug, reconnectInterval: 3000});
-                this.ws.onopen = (e)=>{
-                    console.log("websocket opened binding to wf.task", this.instance._id+".#");
-                    this.ws.send(JSON.stringify({
-                      bind: {
-                        ex: "wf.task",
-                        key: this.instance._id+".#",
-                      }
-                    }));
+        findOrCreateInstance() {
+            let name = "upload."+this.project.group_id;
+            this.$http.get(Vue.config.wf_api+'/instance?find='+JSON.stringify({ name })).then(res=>{
+                if(res.data.instances.length > 0) { 
+                    console.log("reusing instance");
+                    console.dir(res.data);
+                    this.instance = res.data.instances[0];
+                    this.subscribeInstance();
+                    return;
                 }
-                this.ws.onmessage = (json)=>{
-                    var event = JSON.parse(json.data);
-                    if(event.error) {
-                        console.error(event.error);
-                        return;
-                    }
-                    var task = event.msg;
-                    if(!task) return;
-                    if(this.tasks.upload && task._id == this.tasks.upload._id) {
-                        this.tasks.upload = task;
-                    }
-                    if(this.tasks.validation && task._id == this.tasks.validation._id) {
-                        this.tasks.validation = task;
-                    }
 
-                    if(task.service == "brainlife/app-archive") {
-                        let archive = task.deps_config.find(t=>t.task == this.tasks.validation._id);
-                        if(archive) {
-                            this.$refs.modal.hide();
-                            this.$router.push("/project/"+this.project._id+"/dataset/"+task.config.datasets[0].dataset._id);
-
-                            //TODO need to reload so that new subject group will show up on dataset paage..
-                            //it will be nice if I can just force dataset reload (just use event?)
-                            document.location.reload(); 
-
-                            this.reset();
-                        }
-                    }
-                }
-            }).catch(err=>{
-                console.error(err);
+                console.log("creating new instance");
+                this.$http.post(Vue.config.wf_api+'/instance', {
+                    name,
+                    group_id: this.project.group_id,
+                }).then(res=>{
+                    console.dir(res.data);
+                    this.instance = res.data;
+                    this.subscribeInstance();
+                }).catch(err=>{
+                    console.error(err);
+                });
             });
+        },
+
+        subscribeInstance() {
+            //lastly, subscribe to the whole instance task events
+            var url = Vue.config.event_ws+"/subscribe?jwt="+Vue.config.jwt;
+            this.ws = new ReconnectingWebSocket(url, null, {debug: Vue.config.debug, reconnectInterval: 3000});
+            this.ws.onopen = (e)=>{
+                console.log("websocket opened binding to wf.task", this.instance._id+".#");
+                this.ws.send(JSON.stringify({
+                  bind: {
+                    ex: "wf.task",
+                    key: this.instance._id+".#",
+                  }
+                }));
+            }
+            this.ws.onmessage = (json)=>{
+                var event = JSON.parse(json.data);
+                if(event.error) {
+                    console.error(event.error);
+                    return;
+                }
+                var task = event.msg;
+                if(!task) return;
+                if(this.tasks.upload && task._id == this.tasks.upload._id) {
+                    this.tasks.upload = task;
+                    if(task.status == "finished") {
+                        console.log("upload noop finished", this.mode);
+                    }
+                }
+                if(this.tasks.validation && task._id == this.tasks.validation._id) {
+                    this.tasks.validation = task;
+                }
+
+                if(this.tasks.validation && task.service == "brainlife/app-archive") {
+                    let archive = task.deps_config.find(t=>t.task == this.tasks.validation._id);
+                    if(archive) {
+                        this.$refs.modal.hide();
+                        this.$router.push("/project/"+this.project._id+"/dataset/"+task.config.datasets[0].dataset._id);
+
+                        //TODO need to reload so that new subject group will show up on dataset paage..
+                        //it will be nice if I can just force dataset reload (just use event?)
+                        document.location.reload(); 
+
+                        this.reset();
+                    }
+                }
+            }
         },
 
         prep_upload() {
@@ -322,7 +337,7 @@ export default {
                     preferred_resource_id: this.validator_resource, 
                 });
             }).then(res=>{
-                console.log("upload task submitted");
+                console.log("upload task submitted - waiting for it to finish before proceeding with upload");
                 this.tasks.upload = res.data.task;
                 this.mode = "upload"; 
             }).catch(err=>{

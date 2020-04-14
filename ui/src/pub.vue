@@ -136,6 +136,13 @@
 
                     </b-col>
                     <b-col cols="2">
+                        <p>
+                            <h3 class="brainlife-logo">brainlife.io</h3>
+                            <!--
+                            <img src="@/assets/images/logo.png" width="80px"/>
+                            -->
+                        </p>
+
                         <doibadge :doi="pub.doi" style="margin-bottom: 20px;"/>
                         <p>
                             <b-badge pill class="bigpill">
@@ -143,16 +150,13 @@
                             </b-badge>
                         </p>
                         <p>
-                            <span class="form-header">Topics</span>
+                            <div class='altmetric-embed' data-badge-type='donut' data-badge-details="right" data-hide-no-mentions="false" :data-doi="pub.doi||config.debug_doi"/>
                         </p>
+                        <p> <span class="form-header">Topics</span> </p>
                         <p style="line-height: 190%;">
                             <b-badge v-for="topic in pub.tags" :key="topic" class="topic">{{topic}}</b-badge>
                         </p>
-                        <div class='altmetric-embed' 
-                            data-badge-type='medium-donut' 
-                            data-badge-details="right" 
-                            data-hide-no-mentions="false" 
-                            :data-doi="pub.doi||config.debug_doi"></div>
+
                     </b-col>
                 </b-row>
 
@@ -626,6 +630,14 @@ position: absolute;
 left: -30px;
 z-index: 1;
 opacity: 0.6;
+}
+.brainlife-logo {
+font-family: "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
+font-size: 19pt;
+font-weight: bold;
+background: linear-gradient(to right, #2693ff, #159957);
+-webkit-background-clip: text;
+-webkit-text-fill-color: transparent;
 }
 </style>
 

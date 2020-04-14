@@ -15,7 +15,6 @@
 
     <div ref="process" class="process" :style="{left: splitter_pos+'px'}">
         <p class="loading" v-if="loading"><icon name="cog" scale="1.25" spin/> Loading...</p>
-
         <b-alert variant="secondary" :show="!loading && tasks && tasks.length == 0">Please stage datasets by clicking "Stage Data" button below.</b-alert>
         <div class="task-area" v-if="!loading && tasks" v-for="task in tasks" :key="task._id" :id="task._id">
             <div v-if="!task.show" class="task-id" @click="toggle_task(task)">
@@ -53,9 +52,9 @@
                             <datatypetag :datatype="datatypes[input.datatype]" :tags="input.datatype_tags" :clickable="false"/>
                             <span style="opacity: 0.5;">
                                 <small v-for="(tag,idx) in input.tags" :key="idx"> | {{tag}} </small>
-                                <statusicon v-if="find_task(input.task_id).status != 'finished'" :status="find_task(input.task_id).status"/>
                                 <icon style="margin: 0 5px" name="arrow-left" scale="0.8"/> 
                                 <b>t.{{find_task(input.task_id).config._tid}}</b>
+                                <statusicon v-if="find_task(input.task_id).status != 'finished'" :status="find_task(input.task_id).status"/>
                                 {{find_task(input.task_id).name}}
                             </span>
                         </div>

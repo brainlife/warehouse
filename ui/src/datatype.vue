@@ -19,12 +19,6 @@
             </div>
             <br>
             <b-container>
-                <div v-if="datatype.readme" class="box">
-                    <span class="form-header">README</span>
-                    <p v-if="!datatype.readme" style="opacity: 0.7">No README</p>
-                    <vue-markdown v-else :source="datatype.readme" class="readme"/>
-                </div>
-
                 <div class="box">
                     <span class="form-header">Files/Dirs</span>
                     <p><small style="opacity: 0.7">The following files/dirs are expected to be part of this datatype</small></p>
@@ -44,6 +38,12 @@
                             </b-col>
                         </b-row>
                     </div>
+                </div>
+
+                <div v-if="datatype.readme" class="box">
+                    <span class="form-header">README</span>
+                    <p v-if="!datatype.readme" style="opacity: 0.7">No README</p>
+                    <vue-markdown v-else :source="datatype.readme" class="readme"/>
                 </div>
 
                 <div class="box">
