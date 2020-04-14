@@ -190,7 +190,7 @@ function health_check() {
 }
 
 function handle_task(task, cb) {
-    logger.debug("%s task:%s %s %s %s", (task._status_changed?"+++":"---"), task._id, task.service, task.status, task.status_msg);
+    console.debug((task._status_changed?"+++":"---"), task._id, task.name, task.service, task.status, task.status_msg);
 
     //handle counters
     inc_count("health.tasks");
@@ -246,7 +246,7 @@ function handle_task(task, cb) {
                 //automatically rerun it
                 //TODO - even if it's failed?
                 let find = {
-                    "name": "__dtv",
+                    name: "__dtv",
                     "deps_config.task": task._id,
                     "config._outputs.id": output.id,
 
@@ -414,7 +414,7 @@ function handle_task(task, cb) {
         
         //handle secondary output from validator
         async next=>{
-            if(task.status != "finished" || task.name != "__dtv" || !task.follow_task_id) {
+            if(task.status != "finished" || task.name != "__dtv"/* || !task.follow_task_id*/) {
                 return;
             }
 

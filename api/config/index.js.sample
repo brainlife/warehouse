@@ -835,8 +835,16 @@ exports.storage_systems["datalad"] = {
 
             //do datalad get first
             async.each(dataset.storage_config.files, (file, next_file)=>{
+                //move first dir path to cwd so datalad will find the dataset
+                let cwd = datalad_root;
+                let src_tokens = file.src.split("/")
+                for(let i = 0;i < 2; ++i) {
+                    cwd += "/"+src_tokens.shift();
+                }
+                let src_sub = src_tokens.join("/");
+
                 console.debug("datalad get "+file.src);
-                conn.exec("cd "+datalad_root+" && datalad get "+file.src, (err, stream)=>{
+                conn.exec("cd "+cwd+" && datalad get "+src_sub, (err, stream)=>{
                     if(err) return next_file(err);
                     stream.on('error', err=>{
                         console.error(err);
