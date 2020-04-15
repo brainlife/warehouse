@@ -28,6 +28,10 @@ export default {
             if(this.uiconfig.files && this.uiconfig.files.t2) path += this.uiconfig.files.t2;
             path += "t2.nii.gz"; 
             break;
+        case "neuro/anat/flair":
+            if(this.uiconfig.files && this.uiconfig.files.flair) path += this.uiconfig.files.flair;
+            path += "flair.nii.gz"; 
+            break;
         case "neuro/mask":
             if(this.uiconfig.files && this.uiconfig.files.mask) path += this.uiconfig.files.mask;
             path += "mask.nii.gz"; 

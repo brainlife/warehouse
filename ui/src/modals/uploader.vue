@@ -117,9 +117,11 @@ import task from '@/components/task'
 import tageditor from '@/components/tageditor'
 import product from '@/components/product'
 import datatypetag from '@/components/datatypetag'
+//import datatypecache from '@/mixins/datatypecache'
 
 //singleton instance to handle upload request
 export default {
+    //mixins: [ datatypecache ],
     components: { 
         pageheader, 
         task, 
