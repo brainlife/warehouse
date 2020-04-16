@@ -12,8 +12,8 @@ const common = require('../api/common');
 
 //subject: "brainlife.io Newsletter - March 2020",
 //subject: "New Microsoft fellowship to advance brainlife.io, segmentation tool added to platform, and more",
-const subject = "brainlife.io resources for our community during the pandemic";
-const rootdir = "newsletters/covid19";
+const subject = "test > user survey letter";
+const rootdir = "newsletters/usersurvey";
 
 //retrieve list of users who should receive general newsletter
 
@@ -27,8 +27,8 @@ exports.send_mail = async ()=>{
     users = [
     //    {fullname: "Brainlife.io", email: "brlife@iu.edu"},
         {fullname: "Stephanie McGavin", email: "smcgavin@iu.edu"},
-        {fullname: "Franco Pestilli", email: "franpest@iu.edu"},
         {fullname: "Soichi Hayashi", email: "soichih@gmail.com"},
+        {fullname: "Franco Pestilli", email: "franpest@iu.edu"},
 
         //{fullname: "Soichi Hayashi (IU-1)", email: "hayashis@iu.edu"},
     ];

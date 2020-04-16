@@ -71,7 +71,6 @@ export default {
 <style scoped>
 .pubcard {
 transition: background-color 0.3s, box-shadow 0.3s;
-font-size: 90%;
 clear: both;
 padding: 0 10px;
 }

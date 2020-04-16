@@ -577,6 +577,7 @@ function handle_rule(rule, cb) {
                     qs: {
                         find: JSON.stringify({
                             "instance_id": instance._id,
+                            "name": {$ne: "__dtv"}, //don't use __dtv tasks
                             //need to include removed ones for correrct tid
                         }),
                         limit: 1000, //big enough right?

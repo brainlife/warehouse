@@ -214,7 +214,7 @@ export default {
             datatype_options: [ 
                 "58c33bcee13a50849b25879a", //t1
                 "594c0325fa1d2e5a1f0beda5", //t2
-                //"5d9cf81c0eed545f51bf75df", //flair
+                "5d9cf81c0eed545f51bf75df", //flair
                 "58c33c5fe13a50849b25879b", //dwi
                 "59b685a08e5d38b0b331ddc5", //func
                 "5c390505f9109beac42b00df", //fmap

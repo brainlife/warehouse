@@ -353,10 +353,9 @@ opacity: 0.35;
 }
 
 .readme {
-font-size: 95%;
+line-height: 175%;
 }
-div.readme p, p.text {
-}
+
 .readme img {
 max-width: 100%;
 }

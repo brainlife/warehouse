@@ -7,7 +7,7 @@
     <b-tabs class="brainlife-tab">
         <b-tab title="Task"> 
             <br>
-            <b-form inline>
+            <b-form inline style="margin: 0 15px;">
                 <b-input-group prepent="Task ID">
                     <b-form-input v-model="task_id" placeholder="Task ID"/>
                 </b-input-group>
@@ -19,17 +19,19 @@
         </b-tab>
         <b-tab title="Switch User"> 
             <br>
-            <p>
-                <v-select 
-                    @search="get_sulist" 
-                    @input="su" 
-                    :debounce="250" 
-                    :options="su_options" placeholder="search user to become" label="fullname"/>
-            </p>
+            <div style="margin: 0 15px">
+                <p>
+                    <v-select 
+                        @search="get_sulist" 
+                        @input="su" 
+                        :debounce="250" 
+                        :options="su_options" placeholder="search user to become" label="fullname"/>
+                </p>
 
-            <p>
-                <b-button @click="refresh">Update Token</b-button>
-            </p>
+                <p>
+                    <b-button @click="refresh">Update Token</b-button>
+                </p>
+            </div>
         </b-tab>
     </b-tabs>
 </div>
@@ -136,13 +138,22 @@ padding: 10px;
 .admin {
 margin-left: 40px;
 margin-top: 50px;
-overflow: auto;
-height: 100%;
 }
 .brainlife-tab {
 padding-top: 0;
-}
-.container {
 overflow: auto;
+}
+.tab-content {
+position: fixed;
+top: 50px;
+bottom: 0;
+}
+.tab-content > .tab-pane {
+overflow: auto;
+position: absolute;
+top: 90px;
+left: 40px;
+right: 0;
+bottom: 0;
 }
 </style>
