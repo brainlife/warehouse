@@ -91,7 +91,7 @@ router.get('/log/:ruleid', jwt({secret: config.express.pubkey}), (req, res, next
 
 function check_access(req, rule, cb) {
     //TODO - make sure user has access to req.body.app?
-    console.log(JSON.stringify(rule, null, 4));
+    //console.log(JSON.stringify(rule, null, 4));
     
     //check user has access to the project
     common.getprojects(req.user, function(err, canread_project_ids, canwrite_project_ids) {
@@ -201,7 +201,7 @@ router.put('/:id', jwt({secret: config.express.pubkey}), (req, res, next)=>{
             rule.update_date = new Date();
             rule.save((err, _rule)=>{
                 if(err) return next(err);
-                common.publish("rule.update."+req.user.sub+"."+req.body.project+"."+rule._id, _rule)
+                common.publish("rule.update."+req.user.sub+"."+rule.project+"."+rule._id, _rule)
                 res.json(_rule); 
             });
         });
@@ -231,13 +231,14 @@ router.put('/deactivate/:id', jwt({secret: config.express.pubkey}), function(req
             rule.active = false;
             rule.save(function(err) {
                 if(err) return next(err);
+                common.publish("rule.update."+req.user.sub+"."+rule.project+"."+rule._id, rule)
                 //res.json({status: "ok"});
                 //I need to wait for the rule_handler to finish its cycle before I start removing tasks..
                 //for now, I am going to give 5 seconds 
                 //TODO - maybe I should wait for event from rule_handler?
                 logger.debug("waiting for rule handler to finish processing for the current round");
                 common.wait_for_event("warehouse.rule", "done", (err, message)=>{
-                    logger.debug(JSON.stringify(message, null, 4));
+                    //logger.debug(JSON.stringify(message, null, 4));
                     request.get({ url: config.amaretti.api+"/task", json: true, headers: { authorization: req.headers.authorization },
                         qs: {
                             find: JSON.stringify({
@@ -289,6 +290,7 @@ router.delete('/:id', jwt({secret: config.express.pubkey}), function(req, res, n
             rule.removed = true;
             rule.save(function(err) {
                 if(err) return next(err);
+                common.publish("rule.update."+req.user.sub+"."+rule.project+"."+rule._id, rule)
                 res.json({status: "ok"});
             }); 
         });

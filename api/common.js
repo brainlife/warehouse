@@ -888,6 +888,8 @@ exports.update_rule_stats = function(rule_id, cb) {
         });
         db.Rules.findOneAndUpdate({_id: rule_id}, {$set: {"stats.tasks": stats}}, {new: true}, (err, rule)=>{
             if(cb) cb(err, rule);
+            let sub = "warehouse";
+            exports.publish("rule.update."+sub+"."+rule.project+"."+rule._id, rule)
         });
     });
 }

@@ -238,7 +238,7 @@ export default {
             this.ws.send(JSON.stringify({
                 bind: {
                     ex: "warehouse",
-                    key: "rule.update.*."+this.project._id+".#",
+                    key: "rule.*.*."+this.project._id+".#",
                 }
             }));
         }
@@ -246,13 +246,12 @@ export default {
         this.ws.onmessage=(json)=>{
             var event = JSON.parse(json.data);
             if(!event.dinfo) return; //??
+            console.dir(event);
             if(event.dinfo.routingKey.startsWith("rule.update.")) {
                 let newrule = event.msg;
-                //console.log("appcahe", newrule.app)
-                if(newrule.app._id) alert("feeding app that's already populated");
+                //if(newrule.app._id) alert("feeding app that's already populated");
                 this.appcache(newrule.app, {populate_datatype: false}, (err, app)=>{
                     newrule.app = app;
-                    //console.dir(app);
                     let rule = this.rules.find(rule=>rule._id == newrule._id);
                     if(rule) {
                         //update existing rule
@@ -260,9 +259,20 @@ export default {
                             rule[key] = newrule[key]; 
                         }
                     } else {
-                        //new rule!
-                        this.rules.push(newrule);
+                        console.error("odd.. couldn't find the rule that we just received update");
                     }
+
+                    //incase we might loaded a new rule with new app..
+                    this.load_referenced(err=>{
+                        if(err) console.error(err);
+                    });
+                });
+            }
+            if(event.dinfo.routingKey.startsWith("rule.create.")) {
+                let newrule = event.msg;
+                this.appcache(newrule.app, {populate_datatype: false}, (err, app)=>{
+                    newrule.app = app;
+                    this.rules.push(newrule);
 
                     //incase we might loaded a new rule with new app..
                     this.load_referenced(err=>{

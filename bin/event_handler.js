@@ -106,6 +106,7 @@ function subscribe() {
             });
         },
         
+        /*
         next=>{
             //TODO - why can't I use warehouse queue for this?
             acon.queue('warehouse.rule', {durable: true, autoDelete: false}, q=>{
@@ -113,8 +114,9 @@ function subscribe() {
                 q.subscribe({ack: true}, (rule, head, dinfo, ack)=>{
                     let exchange = dinfo.exchange;
                     let keys = dinfo.routingKey.split(".");
-                    let project_id = keys[2];
-                    let rule_id = keys[3];
+                    let sub = keys[2];
+                    let project_id = keys[3];
+                    let rule_id = keys[4];
 
                     debounce("update_project_stats.p_"+project_id, async ()=>{
                         let project = await db.Projects.findOne({_id: project_id});
@@ -126,6 +128,7 @@ function subscribe() {
                 next();
             });
         },
+        */
 
         next=>{
             acon.queue('auth', {durable: true, autoDelete: false}, q=>{

@@ -165,10 +165,6 @@ function handle_rule(rule, cb) {
         next=>{
             logger.info("handling project:"+rule.project.name+" rule:"+rule.name+" "+rule._id.toString());
             //I can't use save() as it will unpopulate app I need to make separee mongo call
-            /*
-            rule.handle_date = new Date();
-            rule.save(next);
-            */
             db.Rules.findOneAndUpdate({_id: rule._id}, {$set: {handle_date: new Date()}}).exec(next);
         },
 
@@ -404,7 +400,6 @@ function handle_rule(rule, cb) {
     ], err=>{
         if(err) return cb(err);
         rlogger.debug("done processing rule");
-        //common.update_rule_stats(rule._id, cb);
         cb();
     });
 
