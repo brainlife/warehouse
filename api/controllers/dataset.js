@@ -642,7 +642,11 @@ function generate_prov(origin_dataset_id, cb) {
             //some project records were removed... and now it's possible to have null project
             label += "(removed project) / ";
         }
-        label += dataset.meta.subject + "\n";
+        label += dataset.meta.subject;
+        if(dataset.meta.session) label += " / "+dataset.meta.session;
+        if(dataset.meta.run) label += " / "+dataset.meta.run;
+        label += "\n";
+
         label += datatype_name + "\n";
         label += dataset.tags.join(" ");
         return label.trim(); 
