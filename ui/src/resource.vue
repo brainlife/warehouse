@@ -205,41 +205,34 @@
 
                </div><!--card / recentjobs-->
 
-               <div class="card">
-                    <b-row v-if="projects">
-                        <b-col cols="2">
-                            <span class="form-header">Projects</span>
-                        </b-col>
-                        <b-col>
-                            <p>
-                                <small>This resource has been used to analyze datasets on the following projects (only showing >10 hours of usage)</small>
-                            </p>
-                            <div class="">
-                                <b-row style="margin-bottom: 8px; opacity: 0.7;">
-                                    <b-col cols="6">Project Name</b-col>
-                                    <b-col>Admin </b-col>
-                                    <b-col>Total Walltime</b-col>
-                                </b-row>
+               <div class="card" v-if="projects">
+                    <span class="form-header">Projects</span>
+                    <p>
+                        <small>This resource has been used to analyze datasets on the following projects (only showing >10 hours of usage)</small>
+                    </p>
+                    <div class="">
+                        <b-row style="margin-bottom: 8px; opacity: 0.7;">
+                            <b-col cols="6">Project Name</b-col>
+                            <b-col>Admin </b-col>
+                            <b-col>Total Walltime</b-col>
+                        </b-row>
 
-                                <div v-for="project in resource.stats.projects" :key="project._id">
-                                    <b-row v-if="projects[project._id] && project.total_walltime > 3600*1000*10" style="border-top: 1px solid #eee; padding: 2px 0px">
-                                        <b-col cols="6">
-                                            <b>{{projects[project._id].name}}</b><br>
-                                            <small>{{projects[project._id].desc}}</small>
-                                        </b-col>
-                                        <b-col>
-                                            <small><contact v-for="id in projects[project._id].admins" size="small" :key="id" :id="id"/></small>
-                                        </b-col>
-                                        <b-col>
-                                            {{(project.total_walltime/(1000*60*60)).toFixed(1)}} hours <small>({{project.count}} jobs)</small>
-                                        </b-col>
-                                    </b-row>
-                                </div>
-                            </div>
-                        </b-col>
-                    </b-row>
+                        <div v-for="project in resource.stats.projects" :key="project._id">
+                            <b-row v-if="projects[project._id] && project.total_walltime > 3600*1000*10" style="border-top: 1px solid #eee; padding: 2px 0px">
+                                <b-col cols="6">
+                                    <b>{{projects[project._id].name}}</b><br>
+                                    <small>{{projects[project._id].desc}}</small>
+                                </b-col>
+                                <b-col>
+                                    <small><contact v-for="id in projects[project._id].admins" size="small" :key="id" :id="id"/></small>
+                                </b-col>
+                                <b-col>
+                                    {{(project.total_walltime/(1000*60*60)).toFixed(1)}} hours <small>({{project.count}} jobs)</small>
+                                </b-col>
+                            </b-row>
+                        </div>
+                    </div>
                 </div><!--card-->
-
 
                <hr>
                 <p style="opacity: 0.7;">

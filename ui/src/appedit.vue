@@ -234,8 +234,8 @@ Normally, the App description is automatically pulled from github repo descripti
                                         <br><small class="text-muted">Value will be fixed to the default value and user can not change it</small></b-form-checkbox>
                                     </b-form-group>
                                     <b-form-group>
-                                        <b-form-checkbox v-model="param.optional">Optional Configuration<br>
-                                        <small class="text-muted">Check this if user should be able to submit your app without this parameter set</small></b-form-checkbox>
+                                        <b-form-checkbox v-model="param.optional">Optional Input<br>
+                                        <small class="text-muted">Check this if user should be able to submit your app without this input data</small></b-form-checkbox>
                                     </b-form-group>
                                     <b-form-group v-if="param.optional || param.default !== ''">
                                         <b-form-checkbox v-model="param.advanced">Advanced Option<br>

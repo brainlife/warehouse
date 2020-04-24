@@ -4,31 +4,89 @@
         https://dribbble.com/shots/1262299-Spear/attachments/172826
     -->
     <div class="page-content">
-        <h5>New Members</h5>
-        <small>The following members joined brainlife recently (in the last 60 days). Please say hi!</small>
-        <br>
-        <b-card-group columns>
-            <b-card v-for="user in recent_users" :key="user.sub" no-body style="padding: 5px;">
-                <img :src="avatar_url(user, 50)" style="float: left; padding-right: 15px;">
-                <p>
-                    <b>{{user.fullname}}</b><br>
-                    <span v-if="user._profile">{{user._profile.institution}}</span>
-                    <small v-if="user.email" >{{user.email}}</small>
-                </p>
-                <div slot="footer" v-if="user._profile && user._profile.bio">
-                    <small v-if="" class="text-muted">{{user._profile.bio}}</small>
-                </div>
-            </b-card>
-        </b-card-group>
-        <br clear="both">
-        <small style="float: right; margin-top: 10px;">{{recent_users.length}} users</small>
-        <hr>
+        <div class="card" v-if="recent_tasks">
+            <div class="card-title">
+                <h5>My Recent Tasks</h5>
+                <small>Status of the recently submitted jobs that you have access to</small>
+            </div>
+            <div class="card-body">
+                <table class="table table-sm table-hover">
+                    <thead style="opacity: 0.6; background-color: #f0f0f0;">
+                        <tr>
+                            <th style="padding-left: 10px;"><icon name="shield-alt"/> Project</th>
+                            <th>Service/branch</th>
+                            <th>Status</th>
+                            <th>Submitter</th>
+                            <th width="150px">Date</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    <tr v-for="task in recent_tasks" :key="task._id" @click="opentask(task)">
+                        <td style="padding-left: 10px;">
+                            <span style="font-size: 80%" v-if="projects[task._group_id]">{{projects[task._group_id].name}}</span>
+                            <span v-else>(unknown project)</span>
+                            <small>{{task._group_id}}</small>
+                        </td>
+                        <td>
+                            {{task.service}}
+                            <b-badge variant="light">{{task.service_branch}}</b-badge>
+                        </td>
+                        <td>
+                            <span class="status-color" :class="task.status" style="padding: 3px" :title="task.status">
+                                <statusicon :status="task.status" /> 
+                                <!--<span style="text-transform: uppercase;" >{{task.status}}</span>-->
+                            </span>
+                            <small>{{task.status_msg}}</small>
+                            <small style="font-size: 70%">{{task._id}}</small>
+                        </td>
+                        <td>
+                            <contact :id="task.user_id" size="small"/>
+                        </td>
+                        <td>
+                            <small v-if="task.status == 'requested'"><time>Requested <timeago :datetime="task.request_date" :auto-update="1"/></time></small>
+                            <small v-else-if="task.status == 'running'"><time>Started <timeago :datetime="task.start_date" :auto-update="1"/></time></small>
+                            <small v-else-if="task.status == 'finished'"><time>Finished <timeago :datetime="task.finish_date" :auto-update="1"/></time></small>
+                            <small v-else-if="task.status == 'failed'"><time>Failed <timeago :datetime="task.fail_date" :auto-update="1"/></time></small>
+                            <!--
+                            <small v-else-if="task.status == 'removed'"><time>Removed <timeago :datetime="task.remove_date" :auto-update="1"/></time></small>
+                            -->
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
 
-        <!--
-        <h5>Resources</h5>
-        <small>This graph shows number of jobs executed on resources that you have access to</small>
-        <div ref="resource_vis"/>
-        -->
+        <div class="card" v-if="recent_users">
+            <div class="card-title">
+                <small style="float: right; margin-top: 10px;">{{recent_users.length}} users</small>
+                <h5>New Members</h5>
+                <small>Please say hi to the following new members who recently joined brainlife (in the last 30 days)</small>
+            </div>
+            <div class="card-body" style="padding: 15px; padding-right: 30px;">
+                <b-card-group columns>
+                    <b-card v-for="user in recent_users" :key="user.sub" no-body style="border: none; box-shadow: 1px 1px 3px #0002;">
+                        <img :src="avatar_url(user, 50)" style="float: left; padding-right: 15px;">
+                        <p>
+                            <b>{{user.fullname}}</b><br>
+                            <small v-if="user.email" >{{user.email}}</small><br>
+                            <span v-if="user._profile">{{user._profile.institution}}</span><br>
+                        </p>
+                        <div slot="footer" v-if="user._profile && user._profile.bio">
+                            <small style="opacity: 0.8">{{user._profile.bio}}</small>
+                            <b-badge pill class="bigpill">
+                                <icon name="calendar" style="opacity: 0.4;"/>&nbsp;&nbsp;&nbsp;<small>Registerd</small>&nbsp;&nbsp;{{new Date(user.times.register).toLocaleDateString()}}
+                            </b-badge>
+                        </div>
+                    </b-card>
+                </b-card-group>
+                <!--
+                <h5>Resources</h5>
+                <small>This graph shows number of jobs executed on resources that you have access to</small>
+                <div ref="resource_vis"/>
+                -->
+            </div>
+        </div>
     </div><!--page-content-->
 </div>
 </template>
@@ -57,10 +115,12 @@ export default {
 
     data () {
         return {
-            recent_users: [],
-            //resources: null,
-            config: Vue.config,
+            recent_users: null,
+            recent_tasks: null,
+    
+            projects: {}, //group_id to project lookup
 
+            config: Vue.config,
         }
     },
 
@@ -77,29 +137,44 @@ export default {
         }).catch(console.error);
         */
 
-        /*
-        //load recent users
-        let recent = new Date();
-        recent.setMonth(recent.getMonth()-2); 
-        let where = {
-            "times.register": {$gt: formatDateForMongo(recent)},
-            email_confirmed: true,
-        };
-        */
-
-        let days = 60;
+        let days = 30;
         if(Vue.config.debug) days = 360;
         this.$http.get(Vue.config.auth_api+"/profile/recreg/"+days).then(res=>{
             this.recent_users = res.data.users;
         
             //load public profiles for each users
             this.recent_users.forEach(u=>{
-                this.authprofilecache(u.sub, (err, profile)=>{
-                    //Vue.set(this.recent_users, '_profile', profile);
-                    Vue.set(u, '_profile', profile);
+                this.authprofilecache(u.sub, (err, user)=>{
+                    Vue.set(u, '_profile', user.profile.public);
                 });
             });
         }).catch(console.error);
+
+        //let recent_date = new Date();
+        //recent_date.setDate(recent_date.getDate()-30);
+        let find = JSON.stringify({
+            //request_date: {$gt: recent_date },
+            status: {$nin: ["removed", "stopped"]}, 
+            service: {$nin: ["brainlife/app-stage"]},
+            "config._tid": {$exists: true},
+        });
+        let select = "user_id status status_msg _group_id service service_branch instance_id start_date finish_date fail_date update_date request_date remove_date config._tid";
+        this.$http.get(Vue.config.amaretti_api+"/task", {params: {find, select, limit: 25, sort: '-request_date'}}).then(res=>{
+            let recent_tasks = res.data.tasks;
+
+            //resolve project name/id for _group_id
+            let gids = recent_tasks.map(task=>task._group_id);
+            let project_find = JSON.stringify({
+                group_id: {$in: gids},
+            });
+            this.$http.get("/project", {params: {find: project_find, select: 'name group_id'}}).then(res=>{
+                this.projects = {};
+                res.data.projects.forEach(project=>{
+                    this.projects[project.group_id] = project;
+                });
+                this.recent_tasks = recent_tasks;
+            });
+        });
     },
 
     methods: {
@@ -143,6 +218,11 @@ export default {
                 //end: max_time,
             });
         },
+
+        opentask(task) {
+            let project = this.projects[task._group_id];
+            this.$router.push("/project/"+project._id+"/process/"+task.instance_id+"#"+task._id)
+        },
     },
 }
 </script>
@@ -160,11 +240,27 @@ border-top: 1px solid #eee;
 margin: 3px; 
 padding: 3px;
 margin-bottom: 10px;
-/*
-display: inline-block;
-width: 40%;
-float: left;
-position: relative;
-*/
+}
+.card {
+border: none;
+margin: 10px;
+border-radius: 5px;
+box-shadow: 1px 1px 2px #0002;
+}
+small {
+    opacity: 0.5;
+}
+.card-title {
+    padding: 15px;
+    border-bottom: 1px solid #eee;
+    margin-bottom: 0;
+}
+.card-title h5 {
+    font-size: 12pt;
+    opacity: 0.5;
+    text-transform: uppercase;
+}
+.card-body {
+    padding: 0;
 }
 </style>

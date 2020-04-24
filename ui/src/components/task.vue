@@ -85,7 +85,7 @@
                         <time v-if="task.status == 'removed'"><timeago :datetime="task.remove_date" :auto-update="60"/></time>
                     </small>
                 </h4>
-                <i style="font-size: 95%;">{{task.status_msg.trim()||'empty status message'}}</i>
+                <i class="status-msg">{{task.status_msg.trim()||'empty status message'}}</i>
             </div>
         </div><!--status-card-->
     </div><!--sticky top-->
@@ -415,5 +415,9 @@ transition: width 10s;
 }
 .status-color .button {
 color: white;
+}
+.status-msg {
+font-size: 95%;
+white-space: pre;
 }
 </style>

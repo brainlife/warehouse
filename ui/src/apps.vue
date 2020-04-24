@@ -49,6 +49,7 @@
                     <app :app="app" height="220px" class="app-card"/>
                 </div>
                 <br clear="both">
+                <small style="padding: 10px; color: white">Showing recently registered Apps. Apps that use <b>master</b> branch are hidden.</small>
             </div>
 
             <div v-for="tag in sorted_tags" :id="tag" style="position: relative;" :key="tag" :ref="'category-'+tag">
@@ -238,8 +239,11 @@ export default {
                     //find most recently created apps as *new apps*
                     let apps = res.data.apps.filter(a=>{
                         //only find apps that has non-0 success rate
-                        if(a.stats && a.stats.success_rate > 0) return true;
-                        return false;
+                        if(!a.stats || a.stats.success_rate == 0) return false;
+
+                        //only find apps that has non empty branch
+                        if(!a.github_branch || a.github_branch == "master") return false;
+                        return true;
                     });
                     apps.sort((a,b)=>new Date(b.create_date) - new Date(a.create_date));
                     this.app_groups._new = apps.slice(0, 6);

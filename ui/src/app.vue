@@ -233,19 +233,16 @@
                             <table class="table table-sm">
                                 <thead>
                                     <tr>
-                                        <th>Group</th>
                                         <th>Branch</th>
                                         <th>Status</th>
+                                        <th><icon name="shield-alt"/></th>
                                         <th>Submitter</th>
                                         <th width="150px">Date</th>
                                     </tr>
                                 </thead>
                                 <tr v-for="task in tasks" :key="task._id">
-                                    <td style="width: 70px">
-                                        <small><icon name="shield-alt"/> {{task._group_id}}</small>
-                                    </td>
                                     <td>
-                                        <b-badge>{{task.service_branch}}</b-badge>
+                                        <b-badge variant="light">{{task.service_branch}}</b-badge>
                                     </td>
                                     <td>
                                         <span class="status-color" :class="task.status" style="padding: 3px" :title="task.status">
@@ -254,6 +251,9 @@
                                         </span>
                                         <small>{{task.status_msg}}</small>
                                         <small style="font-size: 70%">{{task._id}}</small>
+                                    </td>
+                                    <td>
+                                        <small>{{task._group_id}}</small>
                                     </td>
                                     <td>
                                         <contact :id="task.user_id" size="small"/>

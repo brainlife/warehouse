@@ -130,6 +130,9 @@ html,body {
 code.hljs {
     font-size: 85%;
 }
+.table {
+color: inherit;
+}
 table.info {
     width: 100%;
     border-spacing: 1px;
