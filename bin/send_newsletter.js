@@ -12,8 +12,11 @@ const common = require('../api/common');
 
 //subject: "brainlife.io Newsletter - March 2020",
 //subject: "New Microsoft fellowship to advance brainlife.io, segmentation tool added to platform, and more",
-const subject = "brainlife.io user survey: Tell us how to improve the platform";
-const rootdir = "newsletters/usersurvey";
+//const subject = "brainlife.io user survey: Tell us how to improve the platform";
+//const rootdir = "newsletters/usersurvey";
+
+const subject = "brainlife.io newsletters - April 2020 (test 2)"
+const rootdir = "newsletters/april2020";
 
 //retrieve list of users who should receive general newsletter
 

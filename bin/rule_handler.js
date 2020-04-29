@@ -143,7 +143,7 @@ function handle_rule(rule, cb) {
                 }
             }                
 
-            console.log("looking for the last dataset update date for rule:"+rule._id);
+            //console.log("looking for the last dataset update date for rule:"+rule._id);
             db.Datasets.findOne({
                 project: { $in: projects }, 
                 update_date: { $exists: true } , 

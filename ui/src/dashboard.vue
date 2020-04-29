@@ -4,10 +4,10 @@
         https://dribbble.com/shots/1262299-Spear/attachments/172826
     -->
     <div class="page-content">
-        <div class="card" v-if="recent_tasks">
+        <div class="card">
             <div class="card-title">
                 <h5>My Recent Tasks</h5>
-                <small>Status of the recently submitted jobs that you have access to</small>
+                <small>Status of the recently submitted jobs that you have access to.</small>
             </div>
             <div class="card-body">
                 <table class="table table-sm table-hover">
@@ -20,7 +20,10 @@
                             <th width="150px">Date</th>
                         </tr>
                     </thead>
-                    <tbody>
+                    <tbody v-if="!recent_tasks">
+                        <span class="loading">Loading...</span>
+                    </tbody>
+                    <tbody v-if="recent_tasks">
                     <tr v-for="task in recent_tasks" :key="task._id" @click="opentask(task)">
                         <td style="padding-left: 10px;">
                             <span style="font-size: 80%" v-if="projects[task._group_id]">{{projects[task._group_id].name}}</span>
@@ -119,24 +122,23 @@ export default {
             recent_tasks: null,
     
             projects: {}, //group_id to project lookup
+            reloader: null,
 
             config: Vue.config,
         }
     },
 
-    mounted() {
-        /*
-        console.log("loading resources");
-        let find = JSON.stringify({
-            status: {$ne: "removed"},
-            active: true,
-        });
-        this.$http.get(Vue.config.amaretti_api+'/resource', {params: {find}}).then(res=>{
-            this.resources = res.data.resources;
-            this.update_resource_vis();
-        }).catch(console.error);
-        */
+    destroyed() {
+        clearInterval(this.reloader); 
+    },
 
+
+    mounted() {
+
+        setInterval(this.reload, 1000*30);
+        this.reload();
+
+        //load other minor things..
         let days = 30;
         if(Vue.config.debug) days = 360;
         this.$http.get(Vue.config.auth_api+"/profile/recreg/"+days).then(res=>{
@@ -150,31 +152,7 @@ export default {
             });
         }).catch(console.error);
 
-        //let recent_date = new Date();
-        //recent_date.setDate(recent_date.getDate()-30);
-        let find = JSON.stringify({
-            //request_date: {$gt: recent_date },
-            status: {$nin: ["removed", "stopped"]}, 
-            service: {$nin: ["brainlife/app-stage"]},
-            "config._tid": {$exists: true},
-        });
-        let select = "user_id status status_msg _group_id service service_branch instance_id start_date finish_date fail_date update_date request_date remove_date config._tid";
-        this.$http.get(Vue.config.amaretti_api+"/task", {params: {find, select, limit: 25, sort: '-request_date'}}).then(res=>{
-            let recent_tasks = res.data.tasks;
 
-            //resolve project name/id for _group_id
-            let gids = recent_tasks.map(task=>task._group_id);
-            let project_find = JSON.stringify({
-                group_id: {$in: gids},
-            });
-            this.$http.get("/project", {params: {find: project_find, select: 'name group_id'}}).then(res=>{
-                this.projects = {};
-                res.data.projects.forEach(project=>{
-                    this.projects[project.group_id] = project;
-                });
-                this.recent_tasks = recent_tasks;
-            });
-        });
     },
 
     methods: {
@@ -223,6 +201,36 @@ export default {
             let project = this.projects[task._group_id];
             this.$router.push("/project/"+project._id+"/process/"+task.instance_id+"#"+task._id)
         },
+
+        reload() {
+            console.log("reloading data");
+
+            //let recent_date = new Date();
+            //recent_date.setDate(recent_date.getDate()-30);
+            let find = JSON.stringify({
+                //request_date: {$gt: recent_date },
+                status: {$nin: ["removed", "stopped"]}, 
+                service: {$nin: ["brainlife/app-stage"]},
+                "config._tid": {$exists: true},
+            });
+            let select = "user_id status status_msg _group_id service service_branch instance_id start_date finish_date fail_date update_date request_date remove_date config._tid";
+            this.$http.get(Vue.config.amaretti_api+"/task", {params: {find, select, limit: 25, sort: '-request_date'}}).then(res=>{
+                let recent_tasks = res.data.tasks;
+
+                //resolve project name/id for _group_id
+                let gids = recent_tasks.map(task=>task._group_id);
+                let project_find = JSON.stringify({
+                    group_id: {$in: gids},
+                });
+                this.$http.get("/project", {params: {find: project_find, select: 'name group_id'}}).then(res=>{
+                    this.projects = {};
+                    res.data.projects.forEach(project=>{
+                        this.projects[project.group_id] = project;
+                    });
+                    this.recent_tasks = recent_tasks;
+                });
+            });
+        },
     },
 }
 </script>
@@ -262,5 +270,11 @@ small {
 }
 .card-body {
     padding: 0;
+}
+.loading {
+display: inline-block;
+margin: 20px;
+opacity: 0.5;
+font-size: 150%;
 }
 </style>

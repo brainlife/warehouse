@@ -5,7 +5,7 @@
             <v-select v-model="datatype" placeholder="Search Datatype" label="name" :options="Object.values(datatypes)" :selectable="option => option.validator">
                 <template v-slot:option="option">
                     <datatypetag :datatype="option" :clickable="false"/><br>
-                    <small>{{ option.desc}}</small>
+                    <small style="white-space: normal;">{{option.desc}}</small>
                 </template>
             </v-select>
         </b-form-group>
@@ -168,7 +168,19 @@ export default {
     mounted() {
         this.$http.get('datatype', {params: {
             sort: 'name', 
-            find: JSON.stringify({validator: {$exists: true}}),
+
+            //load all datatype that has validator assigned
+            //find: JSON.stringify({validator: {$exists: true}}),
+
+            //let's specify which datatype to allow upload (until we can handle directory upload
+            //we also need to make sure to register those datatypes in brainlife.io resource
+            find: JSON.stringify({_id: {$in: [
+                "58c33bcee13a50849b25879a", //t1
+                "594c0325fa1d2e5a1f0beda5", //t2
+                "5d9cf81c0eed545f51bf75df", //flair
+                "58c33c5fe13a50849b25879b", //dwi
+                "59b685a08e5d38b0b331ddc5", //task
+            ]}}),
         }}).then(res=>{
             this.datatypes = {};
             res.data.datatypes.forEach((type)=>{

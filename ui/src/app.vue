@@ -155,7 +155,7 @@
                             <br>
                         </div>
 
-                        <div v-if="resources_considered" class="box">
+                        <div v-if="resources_considered" class="box" style="padding: 20px">
                             <span class="form-header">Computing Resources</span>
                             <b-alert show variant="secondary" v-if="resources_considered.length == 0" style="margin-bottom: 10px;">
                                 This App is not registered to run on any resource that you have access to. 
@@ -198,7 +198,7 @@
                             <br>
                         </div><!--resource_considered-->
         
-                        <div class="box">
+                        <div class="box" style="padding: 20px">
                             <b-row>
                                 <b-col>
                                     <span class="form-header">Maintaners</span>
@@ -221,19 +221,21 @@
                             </b-row>
                         </div>
 
-                        <div v-if="readme" class="box">
+                        <div v-if="readme" class="box" style="padding: 20px">
                             <p style="float: right;"><small class="text-muted">From github repo / README.md</small></p>
                             <span class="form-header">README</span><br>
                             <vue-markdown :source="readme" class="readme"></vue-markdown>
                         </div>
 
                         <div v-if="tasks.length > 0" class="box">
-                            <span class="form-header">Recent Jobs</span>
-                            <p style="opacity: 0.7; font-size: 80%;">Only showing up to 30 most recent jobs</p>
+                            <div style="padding: 20px; padding-bottom: 0;">
+                                <span class="form-header">Recent Jobs</span>
+                                <p style="opacity: 0.7; font-size: 80%;">Only showing up to 30 most recent jobs</p>
+                            </div>
                             <table class="table table-sm">
-                                <thead>
+                                <thead style="background-color: #eee; font-size: 80%;">
                                     <tr>
-                                        <th>Branch</th>
+                                        <th style="padding-left: 20px;">Branch</th>
                                         <th>Status</th>
                                         <th><icon name="shield-alt"/></th>
                                         <th>Submitter</th>
@@ -241,7 +243,7 @@
                                     </tr>
                                 </thead>
                                 <tr v-for="task in tasks" :key="task._id">
-                                    <td>
+                                    <td style="padding-left: 20px;">
                                         <b-badge variant="light">{{task.service_branch}}</b-badge>
                                     </td>
                                     <td>
@@ -660,7 +662,6 @@ float: right;
 }
 .box {
 background-color: white;
-padding: 20px;
 margin-bottom: 20px;
 margin-left: -20px;
 }

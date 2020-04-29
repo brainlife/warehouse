@@ -32,33 +32,38 @@
             <br>
             <b-container>
                 <div class="card">
-                    <span class="form-header">Apps</span>
-                    <small>The following services are enabled to run on this resource</small>
-                    <br>
+                    <div style="padding: 20px">
+                        <span class="form-header">Apps</span>
+                        <small>The following services are enabled to run on this resource</small>
+                    </div>
                     <table class="table table-sm">
-                        <tr>
-                            <th>Github repos <small>(priority score)</small></th>
-                            <th>Total Requests <small style="float: right">success rate</small></th>
-                        </tr>
-                        <tr v-for="service in resource.config.services" :key="service.name">
-                            <td>
-                                {{service.name}}
-                                <small>({{service.score}})</small>
-                            </td>
-                            <td>
-                                <div v-if="resource.stats && resource.stats.services && resource.stats.services[service.name]">
-                                    <span>{{resource.stats.services[service.name].running}}</span>
-                                    <!--
-                                    <stateprogress :states="{'finished': resource.stats.services[service.name].finished, 'failed': resource.stats.services[service.name].failed}" style="margin-right: 125px;"/>
-                                    -->
-                                    <small style="float: right;">{{success_rate(service.name)}}</small>
-                                </div>
-                            </td>
-                        </tr>
+                        <thead>
+                            <tr style="background-color: #eee;">
+                                <th style="padding-left: 20px">Github repos <small>(priority score)</small></th>
+                                <th style="padding-right: 20px;">Total Requests <small style="float: right">success rate</small></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr v-for="service in resource.config.services" :key="service.name">
+                                <td style="padding-left: 20px">
+                                    {{service.name}}
+                                    <small>({{service.score}})</small>
+                                </td>
+                                <td style="padding-right: 20px;">
+                                    <div v-if="resource.stats && resource.stats.services && resource.stats.services[service.name]">
+                                        <span>{{resource.stats.services[service.name].running}}</span>
+                                        <!--
+                                        <stateprogress :states="{'finished': resource.stats.services[service.name].finished, 'failed': resource.stats.services[service.name].failed}" style="margin-right: 125px;"/>
+                                        -->
+                                        <small style="float: right;">{{success_rate(service.name)}}</small>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
                     </table>
                 </div>
 
-                <div class="card">
+                <div class="card" style="padding: 20px">
                     <b-row>
                         <b-col cols="2">
                             <span class="form-header">Login Host</span>
@@ -151,22 +156,22 @@
                 </div><!--card-->
 
                 <div class="card">
-                    <span class="form-header">Recent Jobs</span>
-                    <br>
-                    <vue-plotly v-if="usage_data" :data="usage_data" :layout="usage_layout" style="background-color: #f6f6f6; margin: 0 -20px;"/>
-                    <br>
-
+                    <div style="padding: 20px">
+                        <span class="form-header">Recent Jobs</span>
+                    </div>
+                    <vue-plotly v-if="usage_data" :data="usage_data" :layout="usage_layout" style="background-color: #f6f6f6;"/>
                     <table class="table table-sm">
                         <thead>
-                            <tr>
-                                <th>Group</th>
+                            <tr style="background-color: #eee;">
+                                <th style="padding-left: 20px;">Group</th>
                                 <th>Status</th>
                                 <th>Submitter</th>
                                 <th>Date</th>
+                                <th></th>
                             </tr>
                         </thead>
                         <tr v-for="task in tasks" :key="task._id">
-                            <td style="width: 70px">
+                            <td style="width: 70px; padding-left: 20px;">
                                 <small><icon name="id-badge"/> {{task._group_id}}</small><br>
                             </td>
                             <td>
@@ -197,21 +202,17 @@
                             </td>
                         </tr>
                     </table>
-                    <p style="opacity: 0.7; font-size: 80%;">Only showing up to 30 most recent jobs</p>
-                    <!--
-                    <p style="opacity: 0.7;" v-if="tasks.length ==0">No tasks running on this resource.</p>
-                    <span class="form-header">Job History</span>
-                    -->
+                    <p style="padding-left: 20px; opacity: 0.7; font-size: 80%;">Only showing up to 30 most recent jobs</p>
 
                </div><!--card / recentjobs-->
 
-               <div class="card" v-if="projects">
+               <div class="card" v-if="projects" style="padding: 20px">
                     <span class="form-header">Projects</span>
                     <p>
                         <small>This resource has been used to analyze datasets on the following projects (only showing >10 hours of usage)</small>
                     </p>
-                    <div class="">
-                        <b-row style="margin-bottom: 8px; opacity: 0.7;">
+                    <div>
+                        <b-row style="margin-bottom: 8px; opacity: 0.7; background-color: #eee; padding: 5px;">
                             <b-col cols="6">Project Name</b-col>
                             <b-col>Admin </b-col>
                             <b-col>Total Walltime</b-col>
@@ -425,7 +426,7 @@ export default {
 <style scoped>
 .page-content {
 top: 0px;
-background-color: #eee;
+background-color: #f9f9f9;
 }
 .page-content h2 {
 margin-bottom: 0px;
@@ -490,7 +491,6 @@ opacity: 0.6;
 }
 .card {
     margin-bottom: 20px;
-    padding: 20px;
     border: none;
 }
 .table th {
