@@ -15,7 +15,7 @@ const common = require('../api/common');
 //const subject = "brainlife.io user survey: Tell us how to improve the platform";
 //const rootdir = "newsletters/usersurvey";
 
-const subject = "brainlife.io newsletters - April 2020 (test 2)"
+const subject = "brainlife.io newsletters - April 2020 (test 3)"
 const rootdir = "newsletters/april2020";
 
 //retrieve list of users who should receive general newsletter
@@ -31,7 +31,7 @@ exports.send_mail = async ()=>{
     //    {fullname: "Brainlife.io", email: "brlife@iu.edu"},
         {fullname: "Stephanie McGavin", email: "smcgavin@iu.edu"},
         {fullname: "Soichi Hayashi", email: "soichih@gmail.com"},
-        {fullname: "Franco Pestilli", email: "franpest@iu.edu"},
+        //{fullname: "Franco Pestilli", email: "franpest@iu.edu"},
 
         //{fullname: "Soichi Hayashi (IU-1)", email: "hayashis@iu.edu"},
     ];

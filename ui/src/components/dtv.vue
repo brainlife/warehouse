@@ -14,8 +14,8 @@
     </div>
 
     <div v-if="task.status == 'finished'">
-        <b-alert show v-if="!task.product" variant="danger">No product (all validator should have product.. odd)</b-alert>
-        <div v-else>
+        <!--<b-alert show v-if="!task.product" variant="danger">No product (all validator should have product.. odd)</b-alert>-->
+        <div>
             <b-alert show v-for="(error, idx) in task.product.errors" :key="idx" variant="danger"><b>Error</b> {{error}}</b-alert>
             <b-alert show v-for="(warning, idx) in task.product.warnings" :key="idx" variant="warning"><b>Warning</b> {{warning}}</b-alert>
             <span v-if="task.product.errors.length == 0 && task.product.warnings.length == 0"><icon name="check" scale="0.8"/> No issues</span>

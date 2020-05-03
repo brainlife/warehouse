@@ -789,7 +789,7 @@ exports.update_dataset_stats = async function(project_id, cb) {
 
 exports.update_project_stats = async function(project, cb) {
     try {
-        logger.debug("getting instance status counts from amaretti for group_id:%s", project.group_id);
+        //logger.debug("getting instance status counts from amaretti for group_id:%s", project.group_id);
         let counts = await rp.get({
             url: config.amaretti.api+"/instance/count", json: true,
             qs: {
@@ -861,7 +861,7 @@ exports.update_project_stats = async function(project, cb) {
             "stats.instances": instance_counts,
         }}, {new: true});
 
-        logger.debug("all done for updating project stats");
+        //logger.debug("all done for updating project stats");
         if(cb) cb(null, newproject);
 
     } catch (err) {

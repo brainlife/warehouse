@@ -90,6 +90,15 @@
                                     <div class="button" @click="download(output.dtv_task, output.dtv_task.config._outputs[0])" title="Download"><icon name="download"/></div>
                                     <div class="button" title="Archive" @click="open_archiver(output.dtv_task, output.dtv_task.config._outputs[0])"><icon name="archive"/></div>
                                 </div>
+
+                                <!--if dtv fails, then let user archive from the original-->
+                                <div v-if="output.dtv_task.status == 'failed'" style="display: inline-block;">
+                                    <div class="button" title="View" @click="set_viewsel_options(task, output)">
+                                        <icon name="eye"/>
+                                    </div>
+                                    <div class="button" @click="download(task, output)" title="Download"><icon name="download"/></div>
+                                    <div class="button" title="Archive" @click="open_archiver(task, output)"><icon name="archive"/></div>
+                                </div>
                             </div>
                             <div v-else style="display: inline;"> 
                                 <!--if not, user the main task-->

@@ -290,14 +290,14 @@ function handle_task(task, cb) {
                 };
                 datatype.files.forEach(file=>{
                     if(output.subdir) {
-                        validator_config[file.id] = "../"+task._id+"/"+output.subdir+"/"+file.filename||file.dirname;
+                        validator_config[file.id] = "../"+task._id+"/"+output.subdir+"/"+(file.filename||file.dirname);
                     } else {
                         //deprecated output uses file mapping
                         if(output.files && output.files[file.id]) {
                             validator_config[file.id] = "../"+task._id+"/"+output.files[file.id];
                         } else {
                             //use default path
-                            validator_config[file.id] = "../"+task._id+"/"+file.filename||file.dirname;
+                            validator_config[file.id] = "../"+task._id+"/"+(file.filename||file.dirname);
                         }
                     }
                 });

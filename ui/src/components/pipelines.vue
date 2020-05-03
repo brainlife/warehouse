@@ -529,6 +529,11 @@ export default {
 
         remove(rule) {
             if(rule.active) return alert("Please stop the rule before removing it");
+            if(rule.stats && Object.keys(rule.stats.tasks).length > 0) {
+                console.dir(Object.keys(rule.stats.tasks));
+                return alert("Please wait until all jobs are removed before removing it.");
+            }
+
             if(confirm("Do you really want to remove this rule?")) {
                 this.$http.delete('rule/'+rule._id)
                 .then(res=>{

@@ -39,6 +39,7 @@ exports.init = (cb)=>{
         logger.debug("connecting to mongo");
         mongoose.connect(config.mongodb, {
             useNewUrlParser: true,
+            useUnifiedTopology: true,
             
             //TODO - isn't auto_reconnect set by default?
             //auto_reconnect: true, 
