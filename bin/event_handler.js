@@ -311,7 +311,7 @@ function handle_task(task, cb) {
                     body: Object.assign(find, {
                         deps_config: [ {task: task._id, subdirs} ],
                         config: validator_config,
-                        max_runtime: 1000*3600, //1 hour should be enough for most..
+                        //max_runtime: 1000*3600, //1 hour should be enough for most..(nope.. it could be queued for a lone time)
                         remove_date,
 
                         //we want to run on the same resource that task has run on

@@ -83,7 +83,9 @@
 
                             <!--if validator exists, use that to arhicve-->
                             <div v-if="output.dtv_task" style="display: inline;">
-                                <div v-if="output.dtv_task.status == 'finished'" style="display: inline-block;">
+                                <div v-if="output.dtv_task.status == 'finished'"
+                                    style="display: inline-block;">
+
                                     <div class="button" title="View" @click="set_viewsel_options(output.dtv_task, output.dtv_task.config._outputs[0])">
                                         <icon name="eye"/>
                                     </div>
@@ -92,7 +94,7 @@
                                 </div>
 
                                 <!--if dtv fails, then let user archive from the original-->
-                                <div v-if="output.dtv_task.status == 'failed'" style="display: inline-block;">
+                                <div v-if="output.dtv_task.status == 'failed' || output.dtv_task.status == 'stopped'" style="display: inline-block;">
                                     <div class="button" title="View" @click="set_viewsel_options(task, output)">
                                         <icon name="eye"/>
                                     </div>
@@ -139,6 +141,7 @@
                         <div class="validator" v-if="output.dtv_task">
                             <div class="output-subtitle">{{output.dtv_task.service}} <small>{{output.dtv_task._id}}</small></div>
                             <dtv :task="output.dtv_task"/>
+                            <task :task="output.dtv_task" v-if="output.dtv_task.status != 'finished'"/>
                         </div>
 
                         <div v-if="findarchived(task, output).length > 0" class="archived-datasets">
