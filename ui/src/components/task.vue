@@ -3,7 +3,16 @@
     <div class="task-header">
         <slot name="header">
             <!--default content.. normally client should override this slot-->
-            <h4 style="background-color: white; padding: 7px; margin-bottom: 0px;"><icon name="paper-plane"></icon> {{task.name||task.service}}</h4>
+            <h4 style="background-color: white; padding: 7px; margin-bottom: 0px;">
+                <span v-if="task.name && task.name == '__dtv'">
+                    <icon name="vial"/>
+                    Validation <small>{{task.service}}</small>
+                </span>
+                <span v-else>
+                    <icon name="paper-plane"/>
+                    {{task.name||task.service}}
+                </span>
+            </h4>
         </slot>
 
         <!--status indicator-->

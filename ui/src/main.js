@@ -26,6 +26,7 @@ import Notifications from 'vue-notification' //override element-ui ugly $notify.
 import 'vue-awesome/icons/robot.js'
 import 'vue-awesome/icons/book.js'
 import 'vue-awesome/icons/paper-plane.js'
+import 'vue-awesome/icons/vial.js'
 import 'vue-awesome/icons/search.js'
 import 'vue-awesome/icons/th.js'
 import 'vue-awesome/icons/list.js'
