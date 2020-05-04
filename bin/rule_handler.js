@@ -299,8 +299,8 @@ function handle_rule(rule, cb) {
                 let tags = rule.output_tags[output.id];
                 if(tags && tags.length > 0) query.tags = { $all: tags };
 
-                console.log("finding output-------------------");
-                console.log(JSON.stringify(query, null, 4));
+                //console.log("finding output-------------------");
+                //console.log(JSON.stringify(query, null, 4));
                 db.Datasets.find(query)
                 .select('meta') 
                 .lean()

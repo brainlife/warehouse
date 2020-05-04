@@ -39,7 +39,7 @@
             <div v-else>
                 <b-form-group horizontal>
                     <p cass="text-muted">Preparing for file upload...  <icon name="cog" spin/></p>
-                    <pre v-if="config.debug">{{tasks.upload}}</pre>
+                    <!--<pre v-if="config.debug">{{tasks.upload}}</pre>-->
                 </b-form-group>
             </div>
  
@@ -74,15 +74,17 @@
 
     <div v-if="mode == 'validate' && tasks.validation">
 
-        <h4 v-if="tasks.validation.status == 'finished'">Registering Data...  <icon name="cog" spin/></h4>
-
-        <task :task="tasks.validation"/> <!-- v-if="tasks.validation.status != 'finished'"/>-->
+        <h5 v-if="tasks.validation.status == 'finished' 
+            && tasks.validation.product 
+            && tasks.validation.product.errors.length == 0">Registering Data...  <icon name="cog" spin/></h5>
+        <task :task="tasks.validation" v-if="tasks.validation.status != 'finished'"/>
 
         <!-- 
             TODO - We can only abort archive if validation finishes and it has an error 
             We might want to give user option to proceed with warning?
         -->
         <div v-if="tasks.validation.status == 'finished' && tasks.validation.product && tasks.validation.product.errors.length > 0">
+            <h5>Errors</h5>
             <b-alert show variant="danger" v-for="(error, idx) in tasks.validation.product.errors" :key="idx">
                 {{error}}
             </b-alert>
@@ -314,6 +316,13 @@ export default {
                 }
                 if(this.tasks.validation && task._id == this.tasks.validation._id) {
                     this.tasks.validation = task;
+
+                    //load product.json
+                    if(task.status == "finished") { 
+                        this.$http.get(Vue.config.amaretti_api+'/task/product', {params: {ids: [task._id]}}).then(res=>{
+                            Vue.set(this.tasks.validation, 'product', res.data[0].product);
+                        });
+                    }
                 }
 
                 if(this.tasks.validation && task.service == "brainlife/app-archive") {
