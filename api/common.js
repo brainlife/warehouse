@@ -9,7 +9,7 @@ const fs = require('fs');
 const async = require('async');
 const redis = require('redis');
 const xmlescape = require('xml-escape');
-const amqp = require("amqp");
+const amqp = require("amqp"); //switch to amqplib?
 
 const config = require('./config');
 const logger = winston.createLogger(config.logger.winston);
@@ -683,6 +683,7 @@ exports.sensu_name = function(name) {
 
 let amqp_conn;
 let connect_amqp = new Promise((resolve, reject)=>{
+    console.log("creating connection to amqp server");
     amqp_conn = amqp.createConnection(config.event.amqp, {reconnectBackoffTime: 1000*10});
     amqp_conn.once("ready", ()=>{
         resolve(amqp_conn);

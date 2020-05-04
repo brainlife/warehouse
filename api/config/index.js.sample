@@ -121,7 +121,11 @@ exports.archive = {
 //for event handler
 exports.event = {
     amqp: {
-        url: "amqp://warehouse:gobrain@localhost:5672/brainlife"
+        url: "amqp://warehouse:gobrain@localhost:5672/brainlife",
+
+        //collected by cron
+        //docker exec rabbitmq rabbitmqctl list_queues --formatter=json -p brainlife > rabbitmq.queues.json
+        queues: "/tmp/rabbitmq.queues.json",
     },
 }
 

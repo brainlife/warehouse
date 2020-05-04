@@ -1,6 +1,6 @@
 const winston = require('winston');
 const async = require('async');
-
+const fs = require('fs');
 const config = require('./config');
 const logger = winston.createLogger(config.logger.winston);
 const db = require('./models');
@@ -23,7 +23,7 @@ exports.health_check = function() {
 	}
 
     //check for storage system status
-    async.forEachOf(config.storage_systems, function(system, system_id, next) {
+    async.forEachOf(config.storage_systems, (system, system_id, next)=>{
         logger.debug("testing storage", system_id);
         var system = config.storage_systems[system_id];
         system.test(err=>{
@@ -38,6 +38,31 @@ exports.health_check = function() {
             next();
         }); //, 10*000)); //8 not enough for js often
     }, err=>{
+
+        /*
+        //check queue sizes
+        common.get_amqp_connection((err, conn)=>{
+            console.log("passively querying warehouse.instance queue -----------------");
+            conn.queue('event.task', {passive: true}, q=>{
+                console.log(q);
+            });
+        });
+        */
+
+        //check amqp queue size (from rabbitmqctl output - needs to be fed via cron or something)
+        if(config.event.amqp.queues) {
+            const queues = JSON.parse(fs.readFileSync(config.event.amqp.queues));
+            const queuestat = fs.statSync(config.event.amqp.queues);
+            report.messages.push("amqp queue json date:"+queuestat.mtime);
+            queues.forEach(queue=>{
+                if(queue.messages > 100) {
+                    report.status = "failed";
+                    report.messages.push("rabbitmq queue: "+queue.name+" is too big.. size:"+queue.messages);
+                }
+            });
+        }
+
+        //publish report
 		common.redis.set("health.warehouse.api."+(process.env.NODE_APP_INSTANCE||'0'), JSON.stringify(report));
     });
 }

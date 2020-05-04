@@ -103,7 +103,7 @@ export default {
         }
     },
 
-    created: function() {
+    mounted() {
         if(this.appid) this.load_app();
         if(this.app) this.app_ = this.app;
     },

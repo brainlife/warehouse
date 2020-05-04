@@ -16,21 +16,10 @@ const db = require('../api/models');
 const common = require('../api/common');
 
 // TODO  Look for failed tasks and report to the user/dev?
-
 var acon, rcon;
 
 logger.info("connected to mongo");
 db.init(err=>{
-    
-    //init and start 
-    /*
-    acon = amqp.createConnection(config.event.amqp, {reconnectBackoffTime: 1000*10});
-    acon.on('error', logger.error);
-    acon.on('ready', ()=>{
-        logger.info("connected to amqp");
-        subscribe();
-    });
-    */
     common.get_amqp_connection((err, conn)=>{
         acon = conn;
         logger.info("connected to amqp");

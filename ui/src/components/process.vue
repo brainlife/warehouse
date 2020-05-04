@@ -139,9 +139,8 @@
                         </b-collapse>
 
                         <div class="validator" v-if="output.dtv_task">
-                            <div class="output-subtitle">{{output.dtv_task.service}} <small>{{output.dtv_task._id}}</small></div>
+                            <!--<div class="output-subtitle">{{output.dtv_task.service}} <small>{{output.dtv_task._id}}</small></div>-->
                             <dtv :task="output.dtv_task"/>
-                            <task :task="output.dtv_task" v-if="output.dtv_task.status != 'finished'"/>
                         </div>
 
                         <div v-if="findarchived(task, output).length > 0" class="archived-datasets">
