@@ -51,15 +51,19 @@ exports.health_check = function() {
 
         //check amqp queue size (from rabbitmqctl output - needs to be fed via cron or something)
         if(config.event.amqp.queues) {
-            const queues = JSON.parse(fs.readFileSync(config.event.amqp.queues));
-            const queuestat = fs.statSync(config.event.amqp.queues);
-            report.messages.push("amqp queue json date:"+queuestat.mtime);
-            queues.forEach(queue=>{
-                if(queue.messages > 100) {
-                    report.status = "failed";
-                    report.messages.push("rabbitmq queue: "+queue.name+" is too big.. size:"+queue.messages);
-                }
-            });
+            try {
+                const queuestat = fs.statSync(config.event.amqp.queues);
+                const queues = JSON.parse(fs.readFileSync(config.event.amqp.queues));
+                report.messages.push("amqp queue json date:"+queuestat.mtime);
+                queues.forEach(queue=>{
+                    if(queue.messages > 100) {
+                        report.status = "failed";
+                        report.messages.push("rabbitmq queue: "+queue.name+" is too big.. size:"+queue.messages);
+                    }
+                });
+            } catch {
+                //ignore.. maybe non warehouse-api trying to access it
+            }
         }
 
         //publish report
