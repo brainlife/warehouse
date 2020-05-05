@@ -25,12 +25,14 @@
 import Vue from 'vue'
 import statusicon from '@/components/statusicon'
 import product from '@/components/product'
+import task from '@/components/task'
 
 export default {
     props: ['task'],
     components: {
         statusicon, 
-        product
+        product,
+        task,
     }
 }
 </script>

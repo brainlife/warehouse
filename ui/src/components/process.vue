@@ -2,7 +2,7 @@
 <div v-if="projects && instance" style="position: relative;">
     <div v-if="!loading" ref="process-header" class="process-header" :style="{left: splitter_pos+'px'}">
         <div class="instance-action">
-            <div @click.stop="remove()" class="button">
+            <div @click.stop="remove()" class="button" title="Remove this process">
                 <icon name="trash"/>
             </div>
         </div>
