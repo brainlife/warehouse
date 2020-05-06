@@ -31,9 +31,12 @@
         </div>
         <br>
 
-        <div style="position: fixed; bottom: 0px;">
-            <div class="button" style="margin: 5px; color: gray;" @click="go('/appsgraph')">
+        <div style="position: fixed; bottom: 0px; margin-left: 5px;">
+            <div class="button" style="color: gray;" @click="go('/appsgraph')">
                 <icon name="code-branch"/>
+            </div>
+            <div class="button" style="color: gray;" @click="go('/apptest')">
+                <icon name="vial"/>
             </div>
         </div>
 

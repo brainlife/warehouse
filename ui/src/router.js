@@ -5,10 +5,12 @@ import Router from 'vue-router'
 import dashboard from '@/dashboard'
 import view from '@/view'
 import novnc from '@/novnc'
+
 import apps from '@/apps'
 import appsgraph from '@/appsgraph'
 import app from '@/app'
 import appedit from '@/appedit'
+import apptest from '@/apptest'
 
 import projects from '@/projects'
 import project from '@/project'
@@ -60,6 +62,10 @@ export default new Router({
         {path: '/appsgraph', component: appsgraph, meta: {
             public: true, 
             sidemenu: "app"
+        }},
+
+        {path: '/apptest', component: apptest, meta: {
+            sidemenu: "app",
         }},
 
         {path: '/app/:id', component: app, meta: {
