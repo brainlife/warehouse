@@ -205,7 +205,10 @@ function handle_task(task, cb) {
         if(task.config && task.config._rule) {
             logger.debug("rule task status changed");
             debounce("update_rule_stats."+task.config._rule.id, ()=>{
-                common.update_rule_stats(task.config._rule.id);
+                common.update_rule_stats(task.config._rule.id, err=>{
+                    if(err) console.error(err);
+                    //continue?
+                });
             }, 1000); 
         }
     }

@@ -39,19 +39,10 @@ exports.health_check = function() {
         }); //, 10*000)); //8 not enough for js often
     }, err=>{
 
-        /*
-        //check queue sizes
-        common.get_amqp_connection((err, conn)=>{
-            console.log("passively querying warehouse.instance queue -----------------");
-            conn.queue('event.task', {passive: true}, q=>{
-                console.log(q);
-            });
-        });
-        */
-
         //check amqp queue size (from rabbitmqctl output - needs to be fed via cron or something)
         if(config.event.amqp.queues) {
             try {
+                console.log("checking amqp queue size");
                 const queuestat = fs.statSync(config.event.amqp.queues);
                 const queues = JSON.parse(fs.readFileSync(config.event.amqp.queues));
                 report.messages.push("amqp queue json date:"+queuestat.mtime);
@@ -61,7 +52,7 @@ exports.health_check = function() {
                         report.messages.push("rabbitmq queue: "+queue.name+" is too big.. size:"+queue.messages);
                     }
                 });
-            } catch {
+            } catch(err) {
                 //ignore.. maybe non warehouse-api trying to access it
             }
         }

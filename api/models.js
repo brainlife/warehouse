@@ -711,6 +711,9 @@ var dlDatasetSchema = mongoose.Schema({
         datatypes: mongoose.Schema.Types.Mixed,
     },
     import_count: { type: Number, default: 0}, //number of time this dataset was imported
+
+    //openneuro dataset can be removed.. if that happens, we need to flag it
+    removed: { type: Boolean, default: false },
 });
 dlDatasetSchema.index({path: 1, name: 1}, {unique: true}); 
 dlDatasetSchema.index({'$**': 'text'}) //make all text fields searchable

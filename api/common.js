@@ -882,6 +882,7 @@ exports.update_rule_stats = function(rule_id, cb) {
         headers: { authorization: "Bearer "+config.warehouse.jwt, },
     }, (err, _res, body)=>{
         if(err) return cb(err);
+        if(!body.tasks) return cb(body);
         let stats = {}
         body.tasks.forEach(task=>{
             if(stats[task.status] === undefined) stats[task.status] = 0;

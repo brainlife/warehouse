@@ -2,9 +2,33 @@ define({ "api": [
   {
     "group": "App",
     "type": "delete",
+    "url": "/app/github/:org/:name",
+    "title": "Query github information (tab, branches)",
+    "description": "<p>Mark the application as removed (redundant with put?)</p>",
+    "header": {
+      "fields": {
+        "Header": [
+          {
+            "group": "Header",
+            "type": "String",
+            "optional": false,
+            "field": "authorization",
+            "description": "<p>A valid JWT token &quot;Bearer: xxxxx&quot;</p>"
+          }
+        ]
+      }
+    },
+    "version": "0.0.0",
+    "filename": "api/controllers/app.js",
+    "groupTitle": "App",
+    "name": "DeleteAppGithubOrgName"
+  },
+  {
+    "group": "App",
+    "type": "delete",
     "url": "/app/:id",
     "title": "Remove registered app (only by the user registered it)",
-    "description": "<p>Mark the application as removed</p>",
+    "description": "<p>Mark the application as removed (redundant with put?)</p>",
     "header": {
       "fields": {
         "Header": [
@@ -110,6 +134,63 @@ define({ "api": [
   },
   {
     "group": "App",
+    "type": "get",
+    "url": "/app/:id",
+    "title": "Get App",
+    "description": "<p>Get App detail (no AC as long as a valid App ID is given - requires login)</p>",
+    "parameter": {
+      "fields": {
+        "Parameter": [
+          {
+            "group": "Parameter",
+            "type": "String",
+            "optional": true,
+            "field": "select",
+            "description": "<p>Fields to load - multiple fields can be entered with %20 as delimiter</p>"
+          },
+          {
+            "group": "Parameter",
+            "type": "String",
+            "optional": true,
+            "field": "populate",
+            "description": "<p>Relational fields to populate</p>"
+          }
+        ]
+      }
+    },
+    "header": {
+      "fields": {
+        "Header": [
+          {
+            "group": "Header",
+            "type": "String",
+            "optional": true,
+            "field": "authorization",
+            "description": "<p>A valid JWT token &quot;Bearer: xxxxx&quot;</p>"
+          }
+        ]
+      }
+    },
+    "success": {
+      "fields": {
+        "Success 200": [
+          {
+            "group": "Success 200",
+            "type": "Object",
+            "optional": false,
+            "field": "App",
+            "description": "<p>detail</p>"
+          }
+        ]
+      }
+    },
+    "version": "0.0.0",
+    "filename": "api/controllers/app.js",
+    "groupTitle": "App",
+    "name": "GetAppId"
+  },
+  {
+    "group": "App",
     "type": "post",
     "url": "/app",
     "title": "Post App",
@@ -189,6 +270,13 @@ define({ "api": [
           },
           {
             "group": "Parameter",
+            "type": "String",
+            "optional": true,
+            "field": "deprecated_by",
+            "description": "<p>App ID that this App was deprecated by</p>"
+          },
+          {
+            "group": "Parameter",
             "type": "Object",
             "optional": true,
             "field": "config",
@@ -241,56 +329,6 @@ define({ "api": [
     "filename": "api/controllers/app.js",
     "groupTitle": "App",
     "name": "PostApp"
-  },
-  {
-    "group": "App",
-    "type": "post",
-    "url": "/app/:id/rate",
-    "title": "Rate app",
-    "description": "<p>Rate app in 1-5 scale with given app id</p>",
-    "parameter": {
-      "fields": {
-        "Parameter": [
-          {
-            "group": "Parameter",
-            "type": "Number",
-            "optional": false,
-            "field": "rate",
-            "description": "<p>1-5</p>"
-          }
-        ]
-      }
-    },
-    "header": {
-      "fields": {
-        "Header": [
-          {
-            "group": "Header",
-            "type": "String",
-            "optional": false,
-            "field": "authorization",
-            "description": "<p>A valid JWT token &quot;Bearer: xxxxx&quot;</p>"
-          }
-        ]
-      }
-    },
-    "success": {
-      "fields": {
-        "Success 200": [
-          {
-            "group": "Success 200",
-            "type": "Number",
-            "optional": false,
-            "field": "Aggregated",
-            "description": "<p>rating of the app after this update</p>"
-          }
-        ]
-      }
-    },
-    "version": "0.0.0",
-    "filename": "api/controllers/app.js",
-    "groupTitle": "App",
-    "name": "PostAppIdRate"
   },
   {
     "group": "App",
@@ -366,6 +404,20 @@ define({ "api": [
           },
           {
             "group": "Parameter",
+            "type": "String",
+            "optional": true,
+            "field": "deprecated_by",
+            "description": "<p>App ID that this App was deprecated by</p>"
+          },
+          {
+            "group": "Parameter",
+            "type": "Boolean",
+            "optional": true,
+            "field": "removed",
+            "description": "<p>Set it to true if this App is removed</p>"
+          },
+          {
+            "group": "Parameter",
             "type": "String[]",
             "optional": true,
             "field": "admins",
@@ -406,11 +458,224 @@ define({ "api": [
     "name": "PutAppId"
   },
   {
+    "group": "Datalad",
+    "type": "get",
+    "url": "/datalad/datasets",
+    "title": "",
+    "description": "<p>Query Datalad Datasets</p>",
+    "parameter": {
+      "fields": {
+        "Parameter": [
+          {
+            "group": "Parameter",
+            "type": "Object",
+            "optional": true,
+            "field": "find",
+            "description": "<p>Optional Mongo find query - defaults to {}</p>"
+          },
+          {
+            "group": "Parameter",
+            "type": "Object",
+            "optional": true,
+            "field": "sort",
+            "description": "<p>Optional Mongo sort object - defaults to {}</p>"
+          },
+          {
+            "group": "Parameter",
+            "type": "String",
+            "optional": true,
+            "field": "select",
+            "description": "<p>Fields to load - multiple fields can be entered with %20 as delimiter</p>"
+          },
+          {
+            "group": "Parameter",
+            "type": "Number",
+            "optional": true,
+            "field": "limit",
+            "description": "<p>Optional Maximum number of records to return - defaults to 0(no limit)</p>"
+          },
+          {
+            "group": "Parameter",
+            "type": "Number",
+            "optional": true,
+            "field": "skip",
+            "description": "<p>Optional Record offset for pagination</p>"
+          }
+        ]
+      }
+    },
+    "header": {
+      "fields": {
+        "Header": [
+          {
+            "group": "Header",
+            "type": "String",
+            "optional": false,
+            "field": "authorization",
+            "description": "<p>A valid JWT token &quot;Bearer: xxxxx&quot;</p>"
+          }
+        ]
+      }
+    },
+    "success": {
+      "fields": {
+        "Success 200": [
+          {
+            "group": "Success 200",
+            "type": "Object",
+            "optional": false,
+            "field": "List",
+            "description": "<p>of projects (maybe limited / skipped) and total count</p>"
+          }
+        ]
+      }
+    },
+    "version": "0.0.0",
+    "filename": "api/controllers/datalad.js",
+    "groupTitle": "Datalad",
+    "name": "GetDataladDatasets"
+  },
+  {
+    "group": "Datalad",
+    "type": "get",
+    "url": "/datalad/import/:dataset_id",
+    "title": "",
+    "description": "<p>Import dataset</p>",
+    "parameter": {
+      "fields": {
+        "Parameter": [
+          {
+            "group": "Parameter",
+            "type": "String",
+            "optional": false,
+            "field": "project",
+            "description": "<p>Project ID to import dataset</p>"
+          },
+          {
+            "group": "Parameter",
+            "type": "String[]",
+            "optional": false,
+            "field": "datatypes",
+            "description": "<p>Datatype IDs to import</p>"
+          }
+        ]
+      }
+    },
+    "header": {
+      "fields": {
+        "Header": [
+          {
+            "group": "Header",
+            "type": "String",
+            "optional": false,
+            "field": "authorization",
+            "description": "<p>A valid JWT token &quot;Bearer: xxxxx&quot;</p>"
+          }
+        ]
+      }
+    },
+    "version": "0.0.0",
+    "filename": "api/controllers/datalad.js",
+    "groupTitle": "Datalad",
+    "name": "GetDataladImportDataset_id"
+  },
+  {
+    "group": "Datalad",
+    "type": "get",
+    "url": "/datalad/items",
+    "title": "",
+    "description": "<p>Query Datalad items(brainlife dataobjects)</p>",
+    "parameter": {
+      "fields": {
+        "Parameter": [
+          {
+            "group": "Parameter",
+            "type": "Object",
+            "optional": true,
+            "field": "find",
+            "description": "<p>Optional Mongo find query - defaults to {}</p>"
+          },
+          {
+            "group": "Parameter",
+            "type": "Object",
+            "optional": true,
+            "field": "sort",
+            "description": "<p>Optional Mongo sort object - defaults to {}</p>"
+          },
+          {
+            "group": "Parameter",
+            "type": "String",
+            "optional": true,
+            "field": "select",
+            "description": "<p>Fields to load - multiple fields can be entered with %20 as delimiter</p>"
+          },
+          {
+            "group": "Parameter",
+            "type": "Number",
+            "optional": true,
+            "field": "limit",
+            "description": "<p>Optional Maximum number of records to return - defaults to 0(no limit)</p>"
+          },
+          {
+            "group": "Parameter",
+            "type": "Number",
+            "optional": true,
+            "field": "skip",
+            "description": "<p>Optional Record offset for pagination</p>"
+          }
+        ]
+      }
+    },
+    "header": {
+      "fields": {
+        "Header": [
+          {
+            "group": "Header",
+            "type": "String",
+            "optional": false,
+            "field": "authorization",
+            "description": "<p>A valid JWT token &quot;Bearer: xxxxx&quot;</p>"
+          }
+        ]
+      }
+    },
+    "success": {
+      "fields": {
+        "Success 200": [
+          {
+            "group": "Success 200",
+            "type": "Object",
+            "optional": false,
+            "field": "List",
+            "description": "<p>of projects (maybe limited / skipped) and total count</p>"
+          }
+        ]
+      }
+    },
+    "version": "0.0.0",
+    "filename": "api/controllers/datalad.js",
+    "groupTitle": "Datalad",
+    "name": "GetDataladItems"
+  },
+  {
     "group": "Dataset",
     "type": "delete",
-    "url": "/dataset/:id",
-    "title": "Hide dataset from dataset results (DEPRECATED USE (post)/delete)",
+    "url": "/dataset/:id?",
+    "title": "Hide dataset from dataset results",
     "description": "<p>Logically remove dataset by setting &quot;removed&quot; to true</p>",
+    "parameter": {
+      "fields": {
+        "Parameter": [
+          {
+            "group": "Parameter",
+            "type": "Integer[]",
+            "optional": true,
+            "field": "ids",
+            "description": "<p>List of dataset IDs to remove (ids or url param should be set)</p>"
+          }
+        ]
+      }
+    },
     "header": {
       "fields": {
         "Header": [
@@ -428,17 +693,6 @@ define({ "api": [
     "filename": "api/controllers/dataset.js",
     "groupTitle": "Dataset",
     "name": "DeleteDatasetId"
-  },
-  {
-    "group": "Dataset",
-    "type": "get",
-    "url": "/app/bibtex/:id",
-    "title": "Download BibTex JSON for BrainLife Application",
-    "description": "<p>Output BibTex JSON content for specified application ID</p>",
-    "version": "0.0.0",
-    "filename": "api/controllers/app.js",
-    "groupTitle": "Dataset",
-    "name": "GetAppBibtexId"
   },
   {
     "group": "Dataset",
@@ -475,7 +729,7 @@ define({ "api": [
             "type": "String[]",
             "optional": true,
             "field": "datatype_tags",
-            "description": "<p>List of datatype tags to filter (you can use exclusion tags also)</p>"
+            "description": "<p>(Deprecate) List of datatype tags to filter (you can use exclusion tags also). as this is not too difficult to construct</p>"
           },
           {
             "group": "Parameter",
@@ -493,10 +747,17 @@ define({ "api": [
           },
           {
             "group": "Parameter",
+            "type": "Boolean",
+            "optional": true,
+            "field": "single",
+            "description": "<p>Return a single dataset content without wrapping in datasets:[] with counts, etc..</p>"
+          },
+          {
+            "group": "Parameter",
             "type": "String",
             "optional": true,
             "field": "populate",
-            "description": "<p>Fields to populate - default to &quot;project datatype&quot;</p>"
+            "description": "<p>Fields to populate</p>"
           }
         ]
       }
@@ -531,6 +792,17 @@ define({ "api": [
     "filename": "api/controllers/dataset.js",
     "groupTitle": "Dataset",
     "name": "GetDataset"
+  },
+  {
+    "group": "Dataset",
+    "type": "get",
+    "url": "/dataset/boutique/:id",
+    "title": "Generate boutique package",
+    "description": "<p>Generate .tar containing boutique descriptor, and run.sh</p>",
+    "version": "0.0.0",
+    "filename": "api/controllers/dataset.js",
+    "groupTitle": "Dataset",
+    "name": "GetDatasetBoutiqueId"
   },
   {
     "group": "Dataset",
@@ -702,13 +974,34 @@ define({ "api": [
   {
     "group": "Dataset",
     "type": "get",
+    "url": "/dataset/product/:id",
+    "title": "Download dataobject product",
+    "version": "0.0.0",
+    "filename": "api/controllers/dataset.js",
+    "groupTitle": "Dataset",
+    "name": "GetDatasetProductId"
+  },
+  {
+    "group": "Dataset",
+    "type": "get",
     "url": "/dataset/prov/:id",
-    "title": "Get provenance",
-    "description": "<p>Get provenance graph info</p>",
+    "title": "Get provenance (edges/nodes)",
+    "description": "<p>Get provenance graph info (Public API)</p>",
     "version": "0.0.0",
     "filename": "api/controllers/dataset.js",
     "groupTitle": "Dataset",
     "name": "GetDatasetProvId"
+  },
+  {
+    "group": "Dataset",
+    "type": "get",
+    "url": "/dataset/provscript/:id",
+    "title": "Get provenance (.tar.gz)",
+    "description": "<p>Get provenance scripts</p>",
+    "version": "0.0.0",
+    "filename": "api/controllers/dataset.js",
+    "groupTitle": "Dataset",
+    "name": "GetDatasetProvscriptId"
   },
   {
     "group": "Dataset",
@@ -742,13 +1035,6 @@ define({ "api": [
           },
           {
             "group": "Parameter",
-            "type": "String",
-            "optional": true,
-            "field": "subdir",
-            "description": "<p>Subdirectory where all files are actually stored under the task output</p>"
-          },
-          {
-            "group": "Parameter",
             "type": "Object",
             "optional": true,
             "field": "meta",
@@ -766,14 +1052,7 @@ define({ "api": [
             "type": "String",
             "optional": true,
             "field": "desc",
-            "description": "<p>Description for this crate</p>"
-          },
-          {
-            "group": "Parameter",
-            "type": "Boolean",
-            "optional": false,
-            "field": "await",
-            "description": "<p>Wait for dataset to be fully achived before returning (default true)</p>"
+            "description": "<p>Description for archived dataset</p>"
           }
         ]
       }
@@ -812,17 +1091,25 @@ define({ "api": [
   {
     "group": "Dataset",
     "type": "post",
-    "url": "/dataset/delete",
-    "title": "Remove (hide) dataset from dataset results (async)",
+    "url": "/dataset/copy",
+    "title": "Copy datasets",
+    "description": "<p>Copy specified datasets to another project by creating new dataset records</p>",
     "parameter": {
       "fields": {
         "Parameter": [
           {
             "group": "Parameter",
+            "type": "String",
+            "optional": false,
+            "field": "project",
+            "description": "<p>Project ID to copy datasets to</p>"
+          },
+          {
+            "group": "Parameter",
             "type": "String[]",
             "optional": false,
-            "field": "id",
-            "description": "<p>Dataset ID to remove (could be an array)</p>"
+            "field": "dataset_ids",
+            "description": "<p>Dataset IDs to  copy</p>"
           }
         ]
       }
@@ -843,14 +1130,14 @@ define({ "api": [
     "version": "0.0.0",
     "filename": "api/controllers/dataset.js",
     "groupTitle": "Dataset",
-    "name": "PostDatasetDelete"
+    "name": "PostDatasetCopy"
   },
   {
     "group": "Dataset",
     "type": "post",
     "url": "/dataset/ds/:id",
     "title": "Generate dataset download script",
-    "description": "<p>Generate shell script that can download specified set of datasets. It g</p>",
+    "description": "<p>Generate shell script that can download specified set of datasets.</p>",
     "parameter": {
       "fields": {
         "Parameter": [
@@ -863,10 +1150,24 @@ define({ "api": [
           },
           {
             "group": "Parameter",
+            "type": "Number",
+            "optional": true,
+            "field": "limit",
+            "description": "<p>Maximum number of records to return - defaults to 100</p>"
+          },
+          {
+            "group": "Parameter",
+            "type": "Number",
+            "optional": true,
+            "field": "skip",
+            "description": "<p>Record offset for pagination (default to 0)</p>"
+          },
+          {
+            "group": "Parameter",
             "type": "String[]",
             "optional": true,
             "field": "datatype_tags",
-            "description": "<p>List of datatype tags to filter (you can use exclusion tags also)</p>"
+            "description": "<p>(deprecated) List of datatype tags to filter (you can use exclusion tags also)</p>"
           }
         ]
       }
@@ -891,56 +1192,6 @@ define({ "api": [
   },
   {
     "group": "Dataset",
-    "type": "post",
-    "url": "/dataset/token",
-    "title": "Generate dataset access token",
-    "description": "<p>Issues warehouse jwt token that grants access to specified dataset IDs that user has access to</p>",
-    "parameter": {
-      "fields": {
-        "Parameter": [
-          {
-            "group": "Parameter",
-            "type": "String[]",
-            "optional": false,
-            "field": "ids",
-            "description": "<p>List of dataset IDs to grant access</p>"
-          }
-        ]
-      }
-    },
-    "header": {
-      "fields": {
-        "Header": [
-          {
-            "group": "Header",
-            "type": "String",
-            "optional": false,
-            "field": "authorization",
-            "description": "<p>A valid JWT token &quot;Bearer: xxxxx&quot;</p>"
-          }
-        ]
-      }
-    },
-    "success": {
-      "fields": {
-        "Success 200": [
-          {
-            "group": "Success 200",
-            "type": "Object",
-            "optional": false,
-            "field": "Object",
-            "description": "<p>containing jwt: key</p>"
-          }
-        ]
-      }
-    },
-    "version": "0.0.0",
-    "filename": "api/controllers/dataset.js",
-    "groupTitle": "Dataset",
-    "name": "PostDatasetToken"
-  },
-  {
-    "group": "Dataset",
     "type": "put",
     "url": "/dataset/:id",
     "title": "Update Dataset",
@@ -961,6 +1212,13 @@ define({ "api": [
             "optional": true,
             "field": "tags",
             "description": "<p>List of tags to classify this dataset</p>"
+          },
+          {
+            "group": "Parameter",
+            "type": "String[]",
+            "optional": true,
+            "field": "datatype_tags",
+            "description": "<p>List of datatype_tags</p>"
           },
           {
             "group": "Parameter",
@@ -1009,6 +1267,63 @@ define({ "api": [
     "filename": "api/controllers/dataset.js",
     "groupTitle": "Dataset",
     "name": "PutDatasetId"
+  },
+  {
+    "group": "Dataset",
+    "type": "put",
+    "url": "/dataset/stage",
+    "title": "Stage datasets",
+    "description": "<p>Stage datasets on specified instance</p>",
+    "parameter": {
+      "fields": {
+        "Parameter": [
+          {
+            "group": "Parameter",
+            "type": "String",
+            "optional": false,
+            "field": "instance_id",
+            "description": "<p>Instance to stage the datasets</p>"
+          },
+          {
+            "group": "Parameter",
+            "type": "String[]",
+            "optional": false,
+            "field": "dataset_ids",
+            "description": "<p>Dataset IDs to stage</p>"
+          }
+        ]
+      }
+    },
+    "header": {
+      "fields": {
+        "Header": [
+          {
+            "group": "Header",
+            "type": "String",
+            "optional": false,
+            "field": "authorization",
+            "description": "<p>A valid JWT token &quot;Bearer: xxxxx&quot;</p>"
+          }
+        ]
+      }
+    },
+    "success": {
+      "fields": {
+        "Success 200": [
+          {
+            "group": "Success 200",
+            "type": "Object",
+            "optional": false,
+            "field": "Submitted",
+            "description": "<p>brainlife/stage task</p>"
+          }
+        ]
+      }
+    },
+    "version": "0.0.0",
+    "filename": "api/controllers/dataset.js",
+    "groupTitle": "Dataset",
+    "name": "PutDatasetStage"
   },
   {
     "group": "Datatype",
@@ -1087,6 +1402,266 @@ define({ "api": [
     "filename": "api/controllers/datatype.js",
     "groupTitle": "Datatype",
     "name": "GetDatatype"
+  },
+  {
+    "group": "Datatype",
+    "type": "post",
+    "url": "/datatype",
+    "title": "Post Datatype",
+    "description": "<p>Register new datatype</p>",
+    "parameter": {
+      "fields": {
+        "Parameter": [
+          {
+            "group": "Parameter",
+            "type": "String",
+            "optional": false,
+            "field": "name",
+            "description": "<p>Name of datatype (neuro/anat/t1w, etc..)</p>"
+          },
+          {
+            "group": "Parameter",
+            "type": "String",
+            "optional": false,
+            "field": "desc",
+            "description": "<p>Description for this datatype</p>"
+          },
+          {
+            "group": "Parameter",
+            "type": "String",
+            "optional": true,
+            "field": "readme",
+            "description": "<p>Markdown content describing this datatype</p>"
+          },
+          {
+            "group": "Parameter",
+            "type": "String[]",
+            "optional": false,
+            "field": "admins",
+            "description": "<p>Admins who can update this datatype</p>"
+          }
+        ]
+      }
+    },
+    "header": {
+      "fields": {
+        "Header": [
+          {
+            "group": "Header",
+            "type": "String",
+            "optional": false,
+            "field": "authorization",
+            "description": "<p>A valid JWT token &quot;Bearer: xxxxx&quot;</p>"
+          }
+        ]
+      }
+    },
+    "success": {
+      "fields": {
+        "Success 200": [
+          {
+            "group": "Success 200",
+            "type": "Object",
+            "optional": false,
+            "field": "Datatype",
+            "description": "<p>registered</p>"
+          }
+        ]
+      }
+    },
+    "version": "0.0.0",
+    "filename": "api/controllers/datatype.js",
+    "groupTitle": "Datatype",
+    "name": "PostDatatype"
+  },
+  {
+    "group": "Datatype",
+    "type": "put",
+    "url": "/datatype/:id",
+    "title": "",
+    "description": "<p>Update datatype</p>",
+    "parameter": {
+      "fields": {
+        "Parameter": [
+          {
+            "group": "Parameter",
+            "type": "String",
+            "optional": false,
+            "field": "name",
+            "description": "<p>Name of datatype (neuro/anat/t1w, etc..)</p>"
+          },
+          {
+            "group": "Parameter",
+            "type": "String",
+            "optional": false,
+            "field": "desc",
+            "description": "<p>Description for this datatype</p>"
+          },
+          {
+            "group": "Parameter",
+            "type": "String",
+            "optional": true,
+            "field": "readme",
+            "description": "<p>Markdown content describing this datatype</p>"
+          },
+          {
+            "group": "Parameter",
+            "type": "String[]",
+            "optional": false,
+            "field": "admins",
+            "description": "<p>List of admins (auth sub) who can update this datatype</p>"
+          }
+        ]
+      }
+    },
+    "header": {
+      "fields": {
+        "Header": [
+          {
+            "group": "Header",
+            "type": "String",
+            "optional": false,
+            "field": "authorization",
+            "description": "<p>A valid JWT token &quot;Bearer: xxxxx&quot;</p>"
+          }
+        ]
+      }
+    },
+    "success": {
+      "fields": {
+        "Success 200": [
+          {
+            "group": "Success 200",
+            "type": "Object",
+            "optional": false,
+            "field": "Datatype",
+            "description": "<p>updated</p>"
+          }
+        ]
+      }
+    },
+    "version": "0.0.0",
+    "filename": "api/controllers/datatype.js",
+    "groupTitle": "Datatype",
+    "name": "PutDatatypeId"
+  },
+  {
+    "group": "Participant",
+    "type": "get",
+    "url": "/participant/:projectid",
+    "title": "Load participants data",
+    "header": {
+      "fields": {
+        "Header": [
+          {
+            "group": "Header",
+            "type": "String",
+            "optional": false,
+            "field": "authorization",
+            "description": "<p>A valid JWT token &quot;Bearer: xxxxx&quot;</p>"
+          }
+        ]
+      }
+    },
+    "success": {
+      "fields": {
+        "Success 200": [
+          {
+            "group": "Success 200",
+            "type": "Object",
+            "optional": false,
+            "field": "Content",
+            "description": "<p>of participants record</p>"
+          }
+        ]
+      }
+    },
+    "version": "0.0.0",
+    "filename": "api/controllers/participant.js",
+    "groupTitle": "Participant",
+    "name": "GetParticipantProjectid"
+  },
+  {
+    "group": "Participant",
+    "type": "patch",
+    "url": "/participant/:projectid/:subject",
+    "title": "Update participants data",
+    "header": {
+      "fields": {
+        "Header": [
+          {
+            "group": "Header",
+            "type": "String",
+            "optional": false,
+            "field": "authorization",
+            "description": "<p>A valid JWT token &quot;Bearer: xxxxx&quot;</p>"
+          }
+        ]
+      }
+    },
+    "success": {
+      "fields": {
+        "Success 200": [
+          {
+            "group": "Success 200",
+            "type": "Object",
+            "optional": false,
+            "field": "Content",
+            "description": "<p>of participants record</p>"
+          }
+        ]
+      }
+    },
+    "version": "0.0.0",
+    "filename": "api/controllers/participant.js",
+    "groupTitle": "Participant",
+    "name": "PatchParticipantProjectidSubject"
+  },
+  {
+    "group": "Participant",
+    "type": "post",
+    "url": "/participant/:projectid",
+    "title": "Create new participant info",
+    "header": {
+      "fields": {
+        "Header": [
+          {
+            "group": "Header",
+            "type": "String",
+            "optional": false,
+            "field": "authorization",
+            "description": "<p>A valid JWT token &quot;Bearer: xxxxx&quot;</p>"
+          }
+        ]
+      }
+    },
+    "version": "0.0.0",
+    "filename": "api/controllers/participant.js",
+    "groupTitle": "Participant",
+    "name": "PostParticipantProjectid"
+  },
+  {
+    "group": "Participant",
+    "type": "put",
+    "url": "/participant/:projectid",
+    "title": "Replace participants info",
+    "header": {
+      "fields": {
+        "Header": [
+          {
+            "group": "Header",
+            "type": "String",
+            "optional": false,
+            "field": "authorization",
+            "description": "<p>A valid JWT token &quot;Bearer: xxxxx&quot;</p>"
+          }
+        ]
+      }
+    },
+    "version": "0.0.0",
+    "filename": "api/controllers/participant.js",
+    "groupTitle": "Participant",
+    "name": "PutParticipantProjectid"
   },
   {
     "group": "Pipeline_Rules",
@@ -1267,8 +1842,29 @@ define({ "api": [
             "group": "Parameter",
             "type": "String",
             "optional": false,
+            "field": "branch",
+            "description": "<p>Application branch to use</p>"
+          },
+          {
+            "group": "Parameter",
+            "type": "Boolean",
+            "optional": false,
+            "field": "active",
+            "description": "<p>Active flag</p>"
+          },
+          {
+            "group": "Parameter",
+            "type": "String",
+            "optional": false,
             "field": "subject_match",
-            "description": "<p>Subject Match</p>"
+            "description": "<p>Subject match</p>"
+          },
+          {
+            "group": "Parameter",
+            "type": "String",
+            "optional": false,
+            "field": "session_match",
+            "description": "<p>Session match</p>"
           },
           {
             "group": "Parameter",
@@ -1310,6 +1906,30 @@ define({ "api": [
     "filename": "api/controllers/rule.js",
     "groupTitle": "Pipeline_Rules",
     "name": "PostRulePubid"
+  },
+  {
+    "group": "Pipeline_Rules",
+    "type": "put",
+    "url": "/rule/:id/deactivate",
+    "title": "Deactivate the rule",
+    "description": "<p>Removed all running/requested tasks</p>",
+    "header": {
+      "fields": {
+        "Header": [
+          {
+            "group": "Header",
+            "type": "String",
+            "optional": false,
+            "field": "authorization",
+            "description": "<p>A valid JWT token &quot;Bearer: xxxxx&quot;</p>"
+          }
+        ]
+      }
+    },
+    "version": "0.0.0",
+    "filename": "api/controllers/rule.js",
+    "groupTitle": "Pipeline_Rules",
+    "name": "PutRuleIdDeactivate"
   },
   {
     "group": "Pipeline_Rules",
@@ -1371,6 +1991,13 @@ define({ "api": [
           },
           {
             "group": "Parameter",
+            "type": "String",
+            "optional": false,
+            "field": "branch",
+            "description": "<p>Application branch to use</p>"
+          },
+          {
+            "group": "Parameter",
             "type": "Object",
             "optional": false,
             "field": "extra_datatype_tags",
@@ -1381,7 +2008,14 @@ define({ "api": [
             "type": "String",
             "optional": false,
             "field": "subject_match",
-            "description": "<p>Subject Match</p>"
+            "description": "<p>Subject match</p>"
+          },
+          {
+            "group": "Parameter",
+            "type": "String",
+            "optional": false,
+            "field": "session_match",
+            "description": "<p>Session match</p>"
           },
           {
             "group": "Parameter",
@@ -2151,5 +2785,41 @@ define({ "api": [
     "filename": "api/controllers/pub.js",
     "groupTitle": "Publications",
     "name": "PutPubPubid"
+  },
+  {
+    "group": "Secondary",
+    "type": "get",
+    "url": "/secondary/tree/:group_id/:task_id/:output_id/:path",
+    "title": "Download secondary content",
+    "header": {
+      "fields": {
+        "Header": [
+          {
+            "group": "Header",
+            "type": "String",
+            "optional": false,
+            "field": "authorization",
+            "description": "<p>A valid JWT token &quot;Bearer: xxxxx&quot;</p>"
+          }
+        ]
+      }
+    },
+    "success": {
+      "fields": {
+        "Success 200": [
+          {
+            "group": "Success 200",
+            "type": "Object",
+            "optional": false,
+            "field": "Directory",
+            "description": "<p>structure of secondary content</p>"
+          }
+        ]
+      }
+    },
+    "version": "0.0.0",
+    "filename": "api/controllers/secondary.js",
+    "groupTitle": "Secondary",
+    "name": "GetSecondaryTreeGroup_idTask_idOutput_idPath"
   }
 ] });
