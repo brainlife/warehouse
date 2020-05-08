@@ -571,8 +571,10 @@ function handle_rule(rule, cb) {
                     headers: { authorization: "Bearer "+jwt },
                     qs: {
                         find: JSON.stringify({
-                            "instance_id": instance._id,
-                            "name": {$ne: "__dtv"}, //don't use __dtv tasks
+                            instance_id: instance._id,
+                            //"name": {$ne: "__dtv"}, //don't use __dtv tasks
+                            service: { $not: { $regex: "^brainlife/validator-"} }, //don't use validator task output
+                            
                             //need to include removed ones for correrct tid
                         }),
                         limit: 1000, //big enough right?

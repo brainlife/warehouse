@@ -520,7 +520,7 @@ export default {
                     switch(event.dinfo.exchange) {
                     case "wf.task":
                         var task = event.msg;
-                        if(task.name == "__dtv") {
+                        if(task.service.startsWith("brainlife/validator-")) {
                             this.set_dtv_task(task);
                             if(task.status == "finished") {
                                 this.loadProduct([task]);
@@ -604,7 +604,7 @@ export default {
 
                 //sort dtv tasks into corresponding task
                 this.dtv_tasks = {};
-                res.data.tasks.filter(task=>(task.name == '__dtv')).map(this.set_dtv_task);
+                res.data.tasks.filter(task=>task.service.startsWith('brainlife/validator-')).map(this.set_dtv_task);
 
                 //load show/hide status
                 this.tasks.forEach(task=>{

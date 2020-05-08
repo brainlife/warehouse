@@ -341,8 +341,8 @@ Normally, the App description is automatically pulled from github repo descripti
                             </b-col>
                         </b-row>
 
-                        <span class="text-muted">Description (optional)</span>
-                        <b-form-textarea v-model="input.desc" placeholder="Describe what this input dataset is used for" :rows="3" :max-rows="6"/>
+                        <span class="text-muted">Description</span>
+                        <b-form-textarea v-model="input.desc" placeholder="Describe how this input dataset is used in this App." :rows="3" :max-rows="6"/>
 
                         <div v-if="input.datatype">
                             <br><b>File Mapping</b><br>
@@ -417,8 +417,8 @@ Normally, the App description is automatically pulled from github repo descripti
                                 <b-form-input type="text" v-model="output.id" required />
                             </b-col>
                             <b-col cols="7">
-                                <span class="text-muted">Description (optional)</span>
-                                <b-form-textarea v-model="output.desc" placeholder="Describe what this output dataset can be used for" :rows="2" :max-rows="6"/>
+                                <span class="text-muted">Description</span>
+                                <b-form-textarea v-model="output.desc" placeholder="Describe what this output is what what user do with it." :rows="2" :max-rows="6"/>
                             </b-col>
                         </b-row>
                         <br>
@@ -446,8 +446,8 @@ Normally, the App description is automatically pulled from github repo descripti
                             </b-col>
                         </b-row>
                         <br>
-                        <b-form-checkbox v-model="output.archive">Archive this output by default. <small>Uncheck this if this output is rarely used / archived.</small></b-form-checkbox>
-                        <b-form-checkbox v-model="output.output_on_root">(DEPRECATED) ignore output directory. Output files will be stored on the root of workdir.</b-form-checkbox>
+                        <b-form-checkbox v-model="output.archive">Archive this output by default. <small>Uncheck this if this output is rarely used / archived to reduce the size of archive.</small></b-form-checkbox>
+                        <b-form-checkbox v-model="output.output_on_root" v-if="output.output_on_root">(DEPRECATED) ignore output directory. Output files will be stored on the root of workdir.</b-form-checkbox>
                         <div v-if="output.output_on_root">
                             <div class="text-muted" style="margin-top: 3px;">Datatype File Mapping <small>Optional override of file/direcory name to avoid more than 1 output to collide.</small></div>
                             <b-form-textarea v-model="output._files" :rows="3" :placeholder="default_outmap(output.datatype)"></b-form-textarea>
@@ -471,8 +471,6 @@ Normally, the App description is automatically pulled from github repo descripti
                     :options="search_apps" 
                     @search="search_app" 
                     placeholder="Please enter App name to search">
-
-                    <!--<template slot="no-options">please enter App name / desc to search (2)</template>-->
                     <template slot="option" slot-scope="app">
                         <app :app="app" :compact="true" :clickable="false"/>
                     </template>
@@ -605,6 +603,9 @@ export default {
                         this.convert_config_to_ui();
                         this.ready = true;
                     } else {
+
+                        //instruct searchapp mixin not to include myself
+                        this.search_apps_ignore = [this.$route.params.id];
 
                         //finally time to load app to edit
                         this.$http.get('app/'+this.$route.params.id, {params: {

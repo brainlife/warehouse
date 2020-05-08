@@ -466,7 +466,7 @@ export default {
 
             this.$http.post(Vue.config.wf_api+'/task', {
                 instance_id: this.instance._id,
-                name: "__dtv", //this disables __dtv submission on output from this
+                name: "Upload", 
                 service: this.datatype.validator,
                 service_branch: this.datatype.validator_branch,
                 config,

@@ -3,17 +3,15 @@
     <div v-if="task.status == 'finished'">
         <b style="opacity: 0.5;">Validator</b>
         <small>({{task.service}} / {{task._id}})</small>
-        <!--
-        <span v-if="task.status == 'failed'">
-            <statusicon :status="task.status" scale="0.8"/>
-            Failed to validate! {{task.status_msg}}
-            <small>{{task._id}}</small>
+        <span v-if="task.product && task.product.errors.length == 0 && task.product.warnings.length == 0">
+            <icon name="check" scale="0.8"/> Found no issues
         </span>
-        -->
-        <b-alert show v-for="(error, idx) in task.product.errors" :key="idx" variant="danger"><b>Error</b> {{error}}</b-alert>
-        <b-alert show v-for="(warning, idx) in task.product.warnings" :key="idx" variant="warning"><b>Warning</b> {{warning}}</b-alert>
-        <span v-if="task.product.errors.length == 0 && task.product.warnings.length == 0"><icon name="check" scale="0.8"/> Found no issues</span>
-        <product :product="task.product"/>
+
+        <div v-if="task.product">
+            <b-alert show v-for="(error, idx) in task.product.errors" :key="idx" variant="danger"><b>Error</b> {{error}}</b-alert>
+            <b-alert show v-for="(warning, idx) in task.product.warnings" :key="idx" variant="warning"><b>Warning</b> {{warning}}</b-alert>
+            <product :product="task.product"/>
+        </div>
     </div>
     <div v-else>
         <task :task="task"/>

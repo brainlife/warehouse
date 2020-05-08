@@ -648,7 +648,9 @@ export default {
                 this.dataset.size = dataset.size;
                 this.dataset.status = dataset.status;
                 this.dataset.storage = dataset.storage;
-                this.dataset.desc = dataset.desc;
+                if(!this.dataset._meta_dirty) this.dataset.meta = dataset.meta;
+                if(!this.dataset._tags_dirty) this.dataset.tags = dataset.tags;
+                if(!this.dataset._desc_dirty) this.dataset.desc = dataset.desc;
                 this.dataset.stats = dataset.stats;
                 this.dataset.archive_task_id = dataset.archive_task_id;
                 if(this.dataset.status == "storing") {

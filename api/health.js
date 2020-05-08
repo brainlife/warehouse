@@ -58,7 +58,7 @@ exports.health_check = function() {
         }
 
         //publish report
-		common.redis.set("health.warehouse.api."+(process.env.NODE_APP_INSTANCE||'0'), JSON.stringify(report));
+		common.redis.set("health.warehouse.api."+process.pid, JSON.stringify(report));
     });
 }
 

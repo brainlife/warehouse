@@ -94,31 +94,7 @@ function subscribe() {
                 next();
             });
         },
-        
-        /*
-        next=>{
-            //TODO - why can't I use warehouse queue for this?
-            acon.queue('warehouse.rule', {durable: true, autoDelete: false}, q=>{
-                q.bind('warehouse', 'rule.update.#');
-                q.subscribe({ack: true}, (rule, head, dinfo, ack)=>{
-                    let exchange = dinfo.exchange;
-                    let keys = dinfo.routingKey.split(".");
-                    let sub = keys[2];
-                    let project_id = keys[3];
-                    let rule_id = keys[4];
-
-                    debounce("update_project_stats.p_"+project_id, async ()=>{
-                        let project = await db.Projects.findOne({_id: project_id});
-                        common.update_project_stats(project);
-                    }, 1000); 
-
-                    q.shift();
-                });
-                next();
-            });
-        },
-        */
-
+       
         next=>{
             acon.queue('auth', {durable: true, autoDelete: false}, q=>{
                 q.bind('auth', 'user.create.*');
@@ -146,6 +122,11 @@ let counts = {};
 function inc_count(path) {
     if(counts[path] === undefined) counts[path] = 0;
     counts[path]++;
+}
+
+function isValidationTask(task) {
+    if(task.service.startsWith("brainlife/validator-")) return true;
+    return false;
 }
 
 function emit_counts() {
@@ -178,7 +159,7 @@ function health_check() {
         report.messages.push("task event counts is low");
     }
 
-    rcon.set("health.warehouse.event."+(process.env.NODE_APP_INSTANCE||'0'), JSON.stringify(report));
+    rcon.set("health.warehouse.event."+process.pid, JSON.stringify(report));
 }
 
 function handle_task(task, cb) {
@@ -220,13 +201,12 @@ function handle_task(task, cb) {
 
         //submit output validators
         next=>{
-            //if(!config.debug) return next(); //this is experimental
-
             if(task.status != "finished" || !task.config || !task.config._outputs ||  
                 //don't run on staging tasks
                 task.deps_config.length == 0 || 
                 //don't run on validator task output!
-                task.name == "__dtv") {
+                isValidationTask(task)
+            ) {
                 return next();
             } 
 
@@ -241,14 +221,14 @@ function handle_task(task, cb) {
                 //automatically rerun it
                 //TODO - even if it's failed?
                 let find = {
-                    name: "__dtv",
+                    //service: { $regex: "^brainlife/validator-" },
                     "deps_config.task": task._id,
                     "config._outputs.id": output.id,
 
                     instance_id: task.instance_id,
                 
-                    service: datatype.validator, //"brain-life/validator-neuro-anat", 
-                    service_branch: datatype.validator_branch, //"master",
+                    service: datatype.validator, 
+                    service_branch: datatype.validator_branch, 
                 };
 
                 let subdirs;
@@ -301,6 +281,10 @@ function handle_task(task, cb) {
                     url: config.amaretti.api+"/task",
                     json: true,
                     body: Object.assign(find, {
+                        //use the parent task's name for validation task name as it's used by 
+                        //ui to show the task name used to generate the dataobject
+                        name: task.name+"(v)", 
+
                         deps_config: [ {task: task._id, subdirs} ],
                         config: validator_config,
                         //max_runtime: 1000*3600, //1 hour should be enough for most..(nope.. it could be queued for a lone time)
@@ -349,16 +333,9 @@ function handle_task(task, cb) {
         //submit output archivers
         next=>{
             if(task.status == "finished" && task.config && task.config._outputs) {
-
-                /*
-                if(task.name == "__dtv" && !task_product) {
-                    console.error("__dtv should have task_product... but it doesn't");
-                    return next();
-                }
-                */
-                if(task.name == "__dtv") {
+                if(isValidationTask(task)) {
                     if(!task_product) {
-                        console.log("_dtv didn't generate product.. maybe parse error? - skip archive")
+                        console.log("validation service didn't generate product.. maybe parse error? - skip archive")
                         return next();
                     }
                     if(task_product.errors.length > 0) {
@@ -373,7 +350,7 @@ function handle_task(task, cb) {
                 //check to make sure that the output is not already registered
                 async.eachSeries(task.config._outputs, async (output)=>{
                     let datatype = await db.Datatypes.findById(output.datatype);
-                    if(task.name != "__dtv" && datatype.validator) {
+                    if(!isValidationTask(task) && datatype.validator) {
                         //validator will handle archiving
                         return; 
                     }
@@ -409,7 +386,7 @@ function handle_task(task, cb) {
         
         //handle secondary output from validator
         async next=>{
-            if(task.status != "finished" || task.name != "__dtv"/* || !task.follow_task_id*/) {
+            if(task.status != "finished" || !isValidationTask(task)) {
                 return;
             }
 

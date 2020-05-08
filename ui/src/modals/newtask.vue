@@ -148,13 +148,13 @@
                                 <b-card v-if="archive.enable" style="margin-bottom: 10px;">
                                     <b-form-checkbox v-model="archive.enable">Archive all output when finished</b-form-checkbox>
                                     <p>
-                                        <b>Dataset Description</b>
-                                        <b-form-textarea placeholder="Optional" v-model="archive.desc" :rows="2"/>
+                                        <b>Description (optional)</b>
+                                        <b-form-textarea placeholder="Description for archived data" v-model="archive.desc" :rows="2"/>
                                     </p>
                                     <p>
-                                        <b>Dataset Tags</b>
-                                        <tageditor placeholder="Optional" v-model="tags" :options="alltags"/>
-                                        <small style="opacity: 0.8">Description / tags will be applied to all output</small>
+                                        <b>Tags (optional)</b>
+                                        <tageditor placeholder="Tags to set for archived data" v-model="tags" :options="alltags"/>
+                                        <small style="opacity: 0.8">* Description / tags will be applied to all output</small>
                                     </p>
                                 </b-card>
                             </b-col>
@@ -570,21 +570,18 @@ export default {
             });
             this.config._outputs = _outputs;
 
-            //ship it!
+            //now ship it!
             let task = {
-                //instance_id: this.instance._id, //should be set by the client
                 name: this.app.name,
                 desc: this.desc,
                 service: this.app.github, 
                 service_branch: this.app.github_branch, 
                 config: this.config,
-                //deps: this.deps,
                 deps_config: this.deps_config,
                 retry: this.app.retry,
             };
             if (this.advanced.resource) task.preferred_resource_id = this.advanced.resource;
             if (this.advanced.branch) task.service_branch = this.advanced.branch;
-            
             this.$root.$emit("newtask.submit", task);
         },
 
