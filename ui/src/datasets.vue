@@ -313,7 +313,7 @@ export default {
             this.loading_datasets = true;
             this.datasets = [];
 
-            let find = {};
+            let find = { removed: false };
             if(this.query) {
                 find["$text"] = {$search: this.query};
             }

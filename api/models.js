@@ -2,11 +2,11 @@
 //contrib
 const amqp = require("amqp");
 const mongoose = require("mongoose");
-const winston = require("winston");
+//const winston = require("winston");
 
 //mine
 const config = require("./config");
-const logger = winston.createLogger(config.logger.winston);
+//const logger = winston.createLogger(config.logger.winston);
 const common = require("./common"); //circular?
 
 mongoose.set("debug", config.mongoose_debug);
@@ -32,11 +32,11 @@ function init_amqp(cb) {
 }
 
 exports.init = (cb)=>{
-    logger.debug("connecting to amqp");
+    console.debug("connecting to amqp");
     init_amqp(err=>{
         if(err) return cb(err);
 
-        logger.debug("connecting to mongo");
+        console.debug("connecting to mongo");
         mongoose.connect(config.mongodb, {
             useNewUrlParser: true,
             useUnifiedTopology: true,
@@ -46,7 +46,7 @@ exports.init = (cb)=>{
             //reconnectTries: Number.MAX_VALUE
         }, err=>{
             if(err) return cb(err);
-            logger.info("connected to mongo");
+            console.log("connected to mongo");
             cb();
         });
     });
