@@ -55,7 +55,7 @@ function health_check() {
         report.messages.push("no rules handled");
     }
 
-    rcon.set("health.warehouse.rule."+(process.env.NODE_APP_INSTANCE||'0'), JSON.stringify(report));
+    rcon.set("health.warehouse.rule."+process.pid, JSON.stringify(report));
     _counts.rules = 0;
 }
 
@@ -581,6 +581,9 @@ function handle_rule(rule, cb) {
                     },
                 }, (err, res, body)=>{
                     if(err) return next(err);
+                    if(!body.tasks) {
+                        return next(body);
+                    }
                     body.tasks.forEach(task=>{
                         tasks[task._id] = task;
                     });
