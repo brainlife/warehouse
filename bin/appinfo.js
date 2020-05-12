@@ -32,7 +32,7 @@ var report = {
 
 function health_check() {
     report.date = new Date();
-    rcon.set("health.warehouse.appinfo."+process.pid, JSON.stringify(report));
+    rcon.set("health.warehouse.appinfo."+process.env.HOSTNAME+"-"+process.pid, JSON.stringify(report));
 }
 
 function run() {

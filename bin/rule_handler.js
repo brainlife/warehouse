@@ -55,7 +55,7 @@ function health_check() {
         report.messages.push("no rules handled");
     }
 
-    rcon.set("health.warehouse.rule."+process.pid, JSON.stringify(report));
+    rcon.set("health.warehouse.rule."+process.env.HOSTNAME+"-"+process.pid, JSON.stringify(report));
     _counts.rules = 0;
 }
 

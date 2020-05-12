@@ -159,7 +159,7 @@ function health_check() {
         report.messages.push("task event counts is low");
     }
 
-    rcon.set("health.warehouse.event."+process.pid, JSON.stringify(report));
+    rcon.set("health.warehouse.event."+process.env.HOSTNAME+"-"+process.pid, JSON.stringify(report));
 }
 
 function handle_task(task, cb) {
