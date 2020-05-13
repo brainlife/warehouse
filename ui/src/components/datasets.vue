@@ -185,6 +185,7 @@ export default {
             loading: false,
 
             last_groups: {},
+            last_meta: null,
 
             selected: {}, //grouped by datatype_id, then array of datasets also keyed by dataset id
             last_dataset_checked: null,
@@ -338,8 +339,6 @@ export default {
                 find: JSON.stringify({$and: this.get_mongo_query()}),
                 distinct: 'meta.subject'
             }}).then(res=>{
-                //console.log("loaded distinct subjects");
-                //console.dir(res);
                 this.total_subjects = res.data.length;
             }).catch(res=>{
                 this.$notify({type: 'error', text: res.data.message || JSON.stringify(res.data)});
@@ -400,17 +399,11 @@ export default {
                 this.load();
             }
 
-            //let datasets = document.getElementsByClassName("dataset");
-            //console.dir(datasets);
-            //console.log(scroll_top, client_height);
-
             //hide page that's not in the view
             //TODO - now that we do subject level visibility check, we might not need to check for page visibility..
-            //console.log("............");
             this.page_info.forEach(page=>{
                 if(page.bottom+1000 < scroll_top || page.top-1000 > scroll_top+client_height) page.visible = false;
                 else page.visible = true;
-                //console.log(page.visible);
             });
 
             this.update_subject_visibility();
@@ -451,7 +444,7 @@ export default {
 			var finds = [
                 {removed: false},
                 {project: this.project._id},
-            ] 
+            ];
 
             if(this.query) {
                 let ands = [];
@@ -487,7 +480,6 @@ export default {
                 });
                 finds.push({$and: ands});
             }
-            //console.dir(finds);
             return finds;
         },
 
@@ -507,10 +499,17 @@ export default {
             if(loaded === this.total_datasets) return;
 
             this.loading = true;
+            let query = this.get_mongo_query();
+            //add "skip" statements. The actual mongo skip is too slow
+            if(this.last_meta) {
+                if(this.last_meta.subject) query.push({"meta.subject": {$gte: this.last_meta.subject}});
+                if(this.last_meta.session) query.push({"meta.session": {$gte: this.last_meta.session}});
+            }
+
             this.$http.get('dataset', {
                 params: {
-                    find: JSON.stringify({$and: this.get_mongo_query()}),
-                    skip: loaded,
+                    find: JSON.stringify({$and: query}),
+                    //skip: loaded,
                     limit: 250,  //needs to be bigger than the largest dataset per subject (bigger == slower for vue to render)
                     sort: 'meta.subject meta.session -create_date',
                     select: 'create_date datatype datatype_tags prov.task.name desc size tags meta.subject meta.session meta.run status removed project',
@@ -521,30 +520,31 @@ export default {
                 this.loading = false;
                 this.total_datasets = res.data.count;
                 this.total_size = res.data.size;
-                var groups = this.last_groups; //start with the last subject group from previous load
-
-                var last_subject = null;
+                let groups = this.last_groups; //start with the last subject group from previous load
+                let last_group = null;
                 res.data.datasets.forEach((dataset, idx)=>{
-                    dataset.checked = this.selected[dataset._id];
-                    var group = "nosub"; //not all datasets has subject tag
-                    if(dataset.meta && dataset.meta.subject) group = dataset.meta.subject; 
-                    if(dataset.meta && dataset.meta.session) group += " / " + dataset.meta.session;
-                    last_subject = group;
+                    dataset.checked = this.selected[dataset._id]; //TODO - what is this?
+                    var group = "nosub"; //not all datasets has subject tag(TODO - should be required?)
+                    if(dataset.meta) { //TODO all dataset should have meta.. (make it so!)
+                        this.last_meta = dataset.meta;
+                        if(dataset.meta.subject) group = dataset.meta.subject; 
+                        if(dataset.meta.session) group += " / " + dataset.meta.session;
+                    }
+                    last_group = group;
                     if(!groups[group]) Vue.set(groups, group, []);
                     groups[group]._subject = dataset.meta.subject; //to help with displaying meta data for this subject
-                    groups[group].push(dataset);
+                    let duplicate = groups[group].find(d=>d._id == dataset._id);
+                    if(!duplicate) groups[group].push(dataset);
                 });
 
                 this.last_groups = {};
                 loaded += res.data.datasets.length;
                 if(this.total_datasets != loaded) {
                     //don't add last subject group - in case we might have more datasets for that key in the next page - so that we can join them together
-                    this.last_groups[last_subject] = groups[last_subject];
-                    delete groups[last_subject];
+                    this.last_groups[last_group] = groups[last_group];
+                    delete groups[last_group];
                 }
-
                 Vue.set(this.pages, this.pages.length, groups);
-
                 this.$nextTick(this.rememberHeights);
                 this.loading = false;
             }, err=>{
