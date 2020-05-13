@@ -50,29 +50,37 @@ function isimporttask(task) {
     */
 }
 
-
-function construct_dataset_query(query, canread_project_ids) {
-    var ands = [];
-    if(query.find) ands.push(query.find);
-
-    //handle datatype_tags
-    //TODO DEPRECATE! - I should use {$all: []} and {$nin: []}?
-    if(query.datatype_tags) {
-        query.datatype_tags.forEach(tag=>{ 
+function construct_dataset_query(body/*, project_ids*/) {
+    let query = Object.assign({}, body.find);
+    
+    //handle datatype_tags query
+    //TODO - deprecate this? let client take care of this themselves?
+    if(body.datatype_tags) {
+        query.datatype_Tags = {};
+        let all = [];
+        let nin = [];
+        body.datatype_tags.forEach(tag=>{ 
             if(tag[0] == "!") {
-                ands.push({datatype_tags: {$ne: tag.substring(1)}});
+                nin.push(tag.substring(1));
             } else {
-                ands.push({datatype_tags: tag});
+                all.push(tag);
             }
         });
+        if(all.length > 0) query.datatype_tags["$all"] = all;
+        if(nin.length > 0) query.datatype_tags["$nin"] = nin;
     }
     
+    /*
     //put things together
     ands.push({$or: [
         {project: {$in: canread_project_ids}},
         {publications: {$gt:[]}}, //allow access for published dataset
     ]});
-    return { $and: ands };
+    */
+    console.log("-----------------------------------------");
+    console.dir(body);
+    console.dir(query);
+    return query;
 }
 
 /**
@@ -113,8 +121,7 @@ router.get('/', jwt({secret: config.express.pubkey, credentialsRequired: false})
 
     common.getprojects(req.user, (err, canread_project_ids, canwrite_project_ids)=>{
         if(err) return next(err);
-        let query = construct_dataset_query(req.query, canread_project_ids);
-
+        let query = construct_dataset_query(req.query/*, canread_project_ids*/);
         db.Datasets.find(query)
         .populate(populate)
         .select(req.query.select)
@@ -124,6 +131,13 @@ router.get('/', jwt({secret: config.express.pubkey, credentialsRequired: false})
 		.lean()
 		.exec((err, datasets)=>{
             if(err) return next(err);
+            
+            //check project access
+            let canread_project_ids_str = canread_project_ids.map(id=>id.toString());
+            datasets = datasets.filter(d=>{
+                if(d.publications && d.publications.length > 0) return true; //published datasets can be ready by anyone
+                return canread_project_ids_str.includes(d.project._id.toString());
+            });
 
             //set _canedit flags
             datasets.forEach(rec=>{
@@ -1465,7 +1479,8 @@ router.delete('/:id?', jwt({secret: config.express.pubkey}), function(req, res, 
 
 /**
  * @apiGroup Dataset
- * @api {post} /dataset/ds/:id  Generate dataset download script
+ * @api {post} /dataset/downscript 
+ *                              Generate dataset download script
  * @apiDescription              Generate shell script that can download specified set of datasets.
  *
  * @apiParam {Object} [find]    Optional Mongo query to perform (you need to JSON.stringify)
@@ -1481,7 +1496,7 @@ router.post('/downscript', jwt({secret: config.express.pubkey, credentialsRequir
     let limit = req.query.limit||100; //this means if user set it to "0", no limit (it's string)
     common.getprojects(req.user, (err, canread_project_ids, canwrite_project_ids)=>{
         if(err) return next(err);
-        db.Datasets.find(construct_dataset_query(req.body, canread_project_ids))
+        db.Datasets.find(construct_dataset_query(req.body/*, canread_project_ids*/))
         .populate('datatype project', 'name desc admins members bids') //mixed in with datatype/project model fields...
         .skip(+skip)
         .limit(+limit)
@@ -1496,6 +1511,13 @@ set +e #stop the script if anything fails
 
 `;
             if(req.headers.authorization) script += "auth=\"Authorization: "+req.headers.authorization+"\"\n"
+
+            //check project access
+            let canread_project_ids_str = canread_project_ids.map(id=>id.toString());
+            datasets = datasets.filter(d=>{
+                if(d.publications && d.publications.length > 0) return true; //published datasets can be ready by anyone
+                return canread_project_ids_str.includes(d.project._id.toString());
+            });
             
             //find unique projects
             let projects = {};

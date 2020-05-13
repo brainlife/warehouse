@@ -208,13 +208,12 @@ export default {
             //let recent_date = new Date();
             //recent_date.setDate(recent_date.getDate()-30);
             let find = JSON.stringify({
-                //request_date: {$gt: recent_date },
                 status: {$nin: ["removed", "stopped"]}, 
                 service: {$nin: ["brainlife/app-stage"]},
                 "config._tid": {$exists: true},
             });
             let select = "user_id status status_msg _group_id service service_branch instance_id start_date finish_date fail_date update_date request_date remove_date config._tid";
-            this.$http.get(Vue.config.amaretti_api+"/task", {params: {find, select, limit: 25, sort: '-request_date'}}).then(res=>{
+            this.$http.get(Vue.config.amaretti_api+"/task", {params: {find, select, limit: 25, sort: '-create_date'}}).then(res=>{
                 let recent_tasks = res.data.tasks;
 
                 //resolve project name/id for _group_id
