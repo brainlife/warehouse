@@ -385,24 +385,48 @@ export default {
                     node.shape = "box"; //all box..
                     if(node.id.indexOf("task.") === 0) {
                         node.color = "#fff"; 
-                        //node.color = "rgba(255,255,255, 0.5)";
                         node.font = {size: 11};
-                        node.mass = 1+0.2*node.label.trim().split("\n").length;
+                        //node.mass = 1+0.2*node.label.trim().split("\n").length;
+                        node.labelHighlightBold = false;
                     }
                     if(node.id.indexOf("dataset.") === 0) {
                         node.color = "#159957";
                         node.font = {size: 12, color: "#fff"};
-                        //node.y = 0;
                     }
                     if(node.id == "dataset."+this.dataset._id) {
                         node.label = "This Data-Object";
                         node.color = "#2693ff";
-                        //node.color = "rgba(255,0,0,0.5)";
                         node.y = 2000;
                         node.margin = 10;
                         node.font = {color: "#fff"};
                     }
-                    node.title = node.id;
+                    //node.title = node.id;
+                    //node.title = JSON.stringify(node._app_config, null, 4);
+
+                    //construct tooltip
+                    let tooltip = "";
+                    if(node._config) {
+                        let recs = [];
+                        for(let key in node._config) {
+                            let value = node._config[key];
+                            if(typeof value == "string" && value.startsWith("../")) continue;
+                            let rec = "";
+                            rec += "<tr><td><pre>"+key+"</pre></td>";
+                            if(node._config_default && node._config_default[key] !== undefined && node._config_default[key] == value) {
+                                rec+= "<td>"+value+"</td>"
+                            } else {
+                                rec+= "<td><b>"+value+"</b> (default: "+node._config_default[key]+")</td>"
+                            }
+                            rec += "</tr>";
+                            recs.push(rec);
+                        }
+                        if(recs.length > 0) {
+                            tooltip += "<table class='table table-sm'>";
+                            tooltip += recs.join("\n");
+                            tooltip += "</table>";
+                        }
+                    }
+                    node.title = tooltip+"<small>"+node.id+"</small>";
                 });
                 
                 this.prov.edges.forEach(edge=>{
@@ -423,12 +447,9 @@ export default {
                 if(this.prov.edges.length) {
                     Vue.nextTick(()=>{
                         var gph = new vis.Network(this.$refs.vis, res.data, {
-                            
                             layout: {
                                 randomSeed: 0,
                             },
-                            
-                            //physics:{barnesHut:{/*gravitationalConstant:-3500, springConstant: 0.01, avoidOverlap: 0.02*/}},
                             physics:{
                                 //enabled: true, //default true
                                 barnesHut:{
@@ -436,14 +457,12 @@ export default {
                                     //springLength: 150,
                                     //avoidOverlap: 0.2,
                                     //damping: 0.3,
-                                    gravitationalConstant: -4000,
+                                    gravitationalConstant: -3000,
                                 }
                             },
-
                             nodes: {
                                 shadow: {
                                     enabled: true,
-
                                     //make it less pronounced than default
                                     size: 3,
                                     x: 1,
@@ -455,11 +474,9 @@ export default {
                         });
                         gph.on("doubleClick", e=>{
                             /*e.edges, e.event, e.nodes. e.pointer*/
-                            console.log("double click", e);
                             e.nodes.forEach(node=>{
                                 if(node.startsWith("dataset.")) {
                                     let dataset_id = node.substring(8);
-
                                     //for archive/datasets page
                                     if(this.$route.path.includes(this.dataset._id)) {
                                         //this should trigger reload
@@ -470,7 +487,6 @@ export default {
                                 }
                                 if(node.startsWith("task.")) {
                                     let fullnode = this.prov.nodes.find(n=>n.id == node);
-                                    //console.dir(fullnode);
                                     if(fullnode._app) this.$router.replace("/app/"+fullnode._app);
                                 }
                             });

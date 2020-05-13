@@ -327,6 +327,9 @@ function handle_task(task, cb) {
                     task_product = data[0].product;
                 }
                 next();
+            }).catch(err=>{
+                console.error("failed to load product for "+task._id); //TODO should I retry? how?
+                next();
             });
         },
         
@@ -416,7 +419,7 @@ function handle_task(task, cb) {
             console.log("submitting secondary output archiver");
             let remove_date = new Date();
             remove_date.setDate(remove_date.getDate()+1); //remove in 1 day
-            let newtask = rp.post({
+            let newtask = await rp.post({
                 url: config.amaretti.api+"/task", json: true,
                 body: Object.assign(find, {
                     deps_config: [ {task: task._id, subdirs: ["secondary"]} ],

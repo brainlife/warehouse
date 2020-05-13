@@ -77,9 +77,6 @@ function construct_dataset_query(body/*, project_ids*/) {
         {publications: {$gt:[]}}, //allow access for published dataset
     ]});
     */
-    console.log("-----------------------------------------");
-    console.dir(body);
-    console.dir(query);
     return query;
 }
 
@@ -624,21 +621,39 @@ function generate_prov(origin_dataset_id, cb) {
             json: true,
         }, (err, _res, task)=>{
             if(err) return cb(err);
-            cb(null, task);
+            if(!task.config || !task.config._app) return cb(null, task); //no _app set.. can't load app info
+            db.Apps.findById(task.config._app, 'config', (err, app)=>{
+                if(err) return cb(err);
+                task._app_config = app.config;
+                cb(null, task);
+            });
         });
     }
 
     function compose_label(task) {
         let label = task.service; //task.name is sometime like "brainlife.process"..
         if(task.service_branch) label += "("+task.service_branch+")";
+        /*
         label+="\n"; //task.name is sometime like "brainlife.process"..
         for(let id in task.config) {
-            if(id[0] == "_") continue;
+            if(id[0] == "_") continue; //ignore hidden config
             let v = task.config[id];
-            let vs = v?v.toString():'(null)';
-            //TODO - better way to grab only the non-dataset inputs?
-            if(vs.indexOf("..") != 0) label += id+":"+vs+"\n";
+            if(v) {
+                v = v.toString(); //TODO in case it's number?
+                if(v.startsWith("../")) continue; //TODO - better way to grab only the non-dataset inputs?
+            }
+
+            //hide default config
+            if(task._app_config && task._app_config[id] && task._app_config[id].default == v) {
+                //console.log(id+" is default");
+                continue;//hide default
+            } 
+
+            label += id+":"+(v?v:'(null)')+"\n";
         }
+        */
+        //console.dir(task.config);
+        //console.dir(task._app_config);
         return label;
     }
     
@@ -667,23 +682,44 @@ function generate_prov(origin_dataset_id, cb) {
     }
 
     //remove all keys that starts with _
-    function filterConfig(config) {
+    function filterConfig(task) {
         let _config = {};
-        for(let key in config) {
+        for(let key in task.config) {
             if(key.startsWith("_")) continue;
-            _config[key] = config[key];
+            _config[key] = task.config[key];
+
+            /*
+            //inject config spec
+            if(task._app_config && task._app_config[key]) {
+                _config[key].spec = task._app_config[key];
+            }
+            */
+        }
+        return _config;
+    }
+
+    function filterDefaultConfig(task) {
+        if(!task._app_config) return null;
+        let _config = {};
+        for(let key in task._app_config) {
+            let config = task._app_config[key];
+            console.dir(key, config);
+            if(config.type == "input") continue; 
+            _config[key] = config.default;
         }
         return _config;
     }
 
     function taskInfo(task) {
-        return {
+        let info = {
             _app: (task.config?task.config._app:null),
             _service: task.service,
             _commit_id : (task.commit_id||"master"),
-            _config: filterConfig(task.config),
+            _config: filterConfig(task),
+            _config_default: filterDefaultConfig(task),
             _finish_date: task.finish_date,
-        };
+        }
+        return info;
     }
 
     let datasets_analyzed = [];
@@ -720,6 +756,7 @@ function generate_prov(origin_dataset_id, cb) {
                     id: "task."+task_id, 
                     label: compose_label(task),
                 }, taskInfo(task)));
+
 
                 let edge_label = datatypes_cache[dataset.datatype].name+" "+dataset.datatype_tags.join(",");
                 let archived_dataset_id = null;
@@ -801,12 +838,14 @@ function generate_prov(origin_dataset_id, cb) {
             if(!input.task_id) return next_dep(); //old task didn't have this set?
             load_task(input.task_id, (err, dep_task)=>{
                 if(err) return next_dep(err);
+
+                //console.dir(input.task_id);
                 
                 //process uses app-stage to load input datasets
                 //instead of showing that, let's *skip* this node back to datasets that it loaded
                 //and load their tasks
                 if( dep_task.service == "soichih/sca-product-raw" ||  //for prevenance
-                    dep_task.service == "brainlife/app-stage") { 
+                    dep_task.service == "brainlife/app-stage" ) { 
                     let input_name = null;
                     if(task.config._inputs.length > 1) input_name = input.id;
                     load_stage("task."+task._id, input_name, input.dataset_id||input._id||input.subdir, next_dep);
@@ -1262,7 +1301,7 @@ common.get_amqp_connection((err, conn)=>{
         q.bind("auth", "user.update.*", ()=>{ //no err..
             q.subscribe((message, header, deliveryInfo, messageObject)=>{
                 let sub = deliveryInfo.routingKey.split(".")[2];
-                console.debug("user.update event", sub);
+                //console.debug("user.update event", sub);
                 cache[sub] = message.profile.private.agreements;
             });
         });
