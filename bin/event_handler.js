@@ -558,7 +558,10 @@ function handle_auth_event(msg, head, dinfo, cb) {
         let sub = keys[2];
         let email = msg.email;
         let fullname = msg.fullname;
-        if(config.slack) invite_slack_user(email, fullname);
+        if(config.slack) {
+            invite_slack_user(email, fullname);
+            post_newusers(msg);
+        }
     }
     cb();
 }
@@ -572,6 +575,33 @@ function invite_slack_user(email, real_name) {
         uri: "https://brainlife.slack.com/api/users.admin.invite",
         form:{
             token: config.slack.token, email, real_name, resend: true, //channels: "general,apps",
+        },  
+    }).then(res=>{
+        console.dir(res);
+    }); 
+
+}
+
+function post_newusers(msg) {
+    //https://api.slack.com/methods/chat.postMessage
+    logger.debug("posting new user info to slack channel");
+    request({
+        method: "POST",
+        uri: "https://brainlife.slack.com/api/chat.postMessage",
+        form:{
+            token: config.slack.token, 
+            channel: "newusers", 
+            //text: "new user registration\n"+JSON.stringify(msg, null, 4), 
+            text: `new user registration. sub:${msg.sub}
+fullname: ${msg.fullname}
+email: ${msg.email}
+ip address: ${msg.headers["x-real-ip"]}
+user-agent: ${msg.headers["user-agent"]}
+public profile: 
+${JSON.stringify(msg._profile.public, null, 4)}
+private profile: 
+${JSON.stringify(msg._profile.private, null, 4)}
+            `,
         },  
     }).then(res=>{
         console.dir(res);

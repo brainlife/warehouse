@@ -68,7 +68,7 @@ function run(sftp, cb) {
                 removed: false,
                 status: "stored",
                 backup_date: {$exists: false},
-                publications: {$exists: true, $ne: []},
+                publications: {$gt: []},
                 storage: {$in: storages}, 
             })
             .sort('create_date') //oldest first (give published datasets precedencde)

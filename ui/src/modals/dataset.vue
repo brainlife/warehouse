@@ -406,6 +406,7 @@ export default {
                     //construct tooltip
                     let tooltip = "";
                     if(node._config) {
+                        node.label += "\n";
                         let recs = [];
                         for(let key in node._config) {
                             let value = node._config[key];
@@ -416,6 +417,7 @@ export default {
                                 rec+= "<td>"+value+"</td>"
                             } else {
                                 rec+= "<td><b>"+value+"</b> (default: "+node._config_default[key]+")</td>"
+                                node.label += key+":"+value+"\n";
                             }
                             rec += "</tr>";
                             recs.push(rec);
@@ -424,6 +426,7 @@ export default {
                             tooltip += "<table class='table table-sm'>";
                             tooltip += recs.join("\n");
                             tooltip += "</table>";
+                            //console.dir(tooltip);
                         }
                     }
                     node.title = tooltip+"<small>"+node.id+"</small>";
@@ -501,10 +504,10 @@ export default {
                         });
 
                         gph.on("showPopup", e=>{
-                            console.log("popup!", e);
+                            //console.log("popup!", e);
                         });
                         gph.on("hoverNode", e=>{
-                            console.log("hovernode!", e);
+                            //console.log("hovernode!", e);
                         });
                     });
                 }
