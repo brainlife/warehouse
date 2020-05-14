@@ -329,6 +329,7 @@ export default {
             this.pages = [];
             this.page_info = [];
             this.last_groups = {};
+            this.last_meta = null;
             this.total_datasets = null;
             this.total_size = null;
             this.total_subjects = null;
@@ -502,8 +503,13 @@ export default {
             let query = this.get_mongo_query();
             //add "skip" statements. The actual mongo skip is too slow
             if(this.last_meta) {
-                if(this.last_meta.subject) query.push({"meta.subject": {$gte: this.last_meta.subject}});
-                if(this.last_meta.session) query.push({"meta.session": {$gte: this.last_meta.session}});
+                let or = [];
+                if(this.last_meta.subject) or.push({"meta.subject": {$gt: this.last_meta.subject}});
+                if(this.last_meta.session) or.push({
+                    "meta.subject": this.last_meta.subject,
+                    "meta.session": {$gte: this.last_meta.session}
+                });
+                query.push({$or: or});
             }
 
             this.$http.get('dataset', {
@@ -518,8 +524,10 @@ export default {
             })
             .then(res=>{
                 this.loading = false;
-                this.total_datasets = res.data.count;
-                this.total_size = res.data.size;
+                if(this.last_meta == null)  {
+                    this.total_datasets = res.data.count;
+                    this.total_size = res.data.size;
+                }
                 let groups = this.last_groups; //start with the last subject group from previous load
                 let last_group = null;
                 res.data.datasets.forEach((dataset, idx)=>{
@@ -534,11 +542,15 @@ export default {
                     if(!groups[group]) Vue.set(groups, group, []);
                     groups[group]._subject = dataset.meta.subject; //to help with displaying meta data for this subject
                     let duplicate = groups[group].find(d=>d._id == dataset._id);
-                    if(!duplicate) groups[group].push(dataset);
+                    if(!duplicate) {
+                        groups[group].push(dataset);
+                        loaded++;
+                    }
                 });
 
                 this.last_groups = {};
-                loaded += res.data.datasets.length;
+                //loaded += res.data.datasets.length;
+                console.log("loaded", loaded);
                 if(this.total_datasets != loaded) {
                     //don't add last subject group - in case we might have more datasets for that key in the next page - so that we can join them together
                     this.last_groups[last_group] = groups[last_group];

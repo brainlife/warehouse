@@ -1,12 +1,9 @@
 
-//contrib
 const amqp = require("amqp");
 const mongoose = require("mongoose");
-//const winston = require("winston");
 
-//mine
+
 const config = require("./config");
-//const logger = winston.createLogger(config.logger.winston);
 const common = require("./common"); //circular?
 
 mongoose.set("debug", config.mongoose_debug);
@@ -51,6 +48,19 @@ exports.init = (cb)=>{
         });
     });
 }
+
+/*
+const mongojs = require('mongojs');
+const MongoSlowQueryChecker = require('mongo-slow-queries');
+exports.list_slowqueries = (cb)=>{
+    let db = mongojs(config.mongodb);
+    let slowQueries = new MongoSlowQueryChecker({ db, queryThreshold: 3 });
+    slowQueries.get((err, queries)=>{
+        db.close();
+        cb(err, queries);
+    });
+}
+*/
 
 exports.disconnect = function(cb) {
     mongoose.disconnect(cb);
