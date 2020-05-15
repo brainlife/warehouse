@@ -4,19 +4,24 @@
     <table width="100%">
         <tr v-for="(v,k) in taskconfig" :key="k" class="config-row" :class="{ default: is_default(k) }">
             <th>{{k}}</th>
-            <td v-if="v === null">
-                <pre class="text-muted" style="margin-bottom: 0">null</pre>
+
+            <!--value-->
+            <td>
+                <pre v-if="v === null" class="text-muted" style="margin-bottom: 0;">null</pre>
+                <span v-else-if="v === ''">(empty)</span>
+                <pre v-else-if="typeof v == 'object'" style="margin-bottom: 0;">{{JSON.stringify(v, null, 4)}}</pre>
+                <pre v-else style="white-space: pre-wrap; margin-bottom: 0;">{{v}}</pre>
             </td>
-            <td v-else-if="v === ''">(empty)</td>
-            <td v-else-if="typeof v == 'object'">
-                <!-- <pre v-highlightjs style="margin-bottom: 0px;"><code class="json hljs">{{v}}</code></pre> -->
-                <pre style="margin-bottom: 0px;">{{JSON.stringify(v, null, 4)}}</pre>
+
+            <!--default-->
+            <td>
+                <span v-if="!is_default(k)">(default: {{get_default(k)}})</span>
             </td>
-            <td v-else width="30%"><pre style="white-space: pre-wrap;">{{v}}</pre></td>
             
+            <!--desc-->
             <td style="font-size: 85%;" width="50%" v-if="appconfig[k]" :title="appconfig[k].desc" v-b-tooltip.hover>
                 <div style="white-space: pre-line; overflow: hidden; text-overflow: ellipsis; height: 15px;">
-                    <span style="opacity: 0.7;">default: {{get_default(k)}}</span> {{appconfig[k].desc}} 
+                    <!--<span style="opacity: 0.7;">default: {{get_default(k)}}</span>-->{{appconfig[k].desc}} 
                 </div>
             </td>
         </tr>

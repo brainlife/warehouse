@@ -56,7 +56,6 @@ function construct_dataset_query(body/*, project_ids*/) {
     //handle datatype_tags query
     //TODO - deprecate this? let client take care of this themselves?
     if(body.datatype_tags) {
-        query.datatype_Tags = {};
         let all = [];
         let nin = [];
         body.datatype_tags.forEach(tag=>{ 
@@ -66,6 +65,7 @@ function construct_dataset_query(body/*, project_ids*/) {
                 all.push(tag);
             }
         });
+        query.datatype_tags = {};
         if(all.length > 0) query.datatype_tags["$all"] = all;
         if(nin.length > 0) query.datatype_tags["$nin"] = nin;
     }
