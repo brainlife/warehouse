@@ -589,7 +589,7 @@ export default {
             this.$http.get(Vue.config.wf_api+'/task', {params: {
                 find: JSON.stringify({
                     instance_id: this.instance._id,
-                    status: {$ne: "removed"},
+                    //status: {$ne: "removed"}, //need to load validator that's removed
                 }),
                 limit: 1000, //should be enough.. for now?
                 sort: 'create_date',
@@ -600,11 +600,13 @@ export default {
                 this.loadProduct(res.data.tasks);
 
                 //find "ui" tasks
-                this.tasks = res.data.tasks.filter(task=>Boolean(task.config._tid));
+                this.tasks = res.data.tasks.filter(task=>Boolean(task.config._tid) && task.status != 'removed');
 
                 //sort dtv tasks into corresponding task
                 this.dtv_tasks = {};
                 res.data.tasks.filter(task=>task.service.startsWith('brainlife/validator-')).map(this.set_dtv_task);
+                console.log("dtv tasks");
+                console.dir(this.dtv_tasks);
 
                 //load show/hide status
                 this.tasks.forEach(task=>{

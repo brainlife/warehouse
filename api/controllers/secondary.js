@@ -18,12 +18,14 @@ const common = require('../common');
  * @apiSuccess {Object}     Directory structure of secondary content
  */
 router.get('/:group_id/:task_id/:output_id/:path', jwt({secret: config.express.pubkey}), (req, res, next)=>{
-    const group_id = req.params.group_id;
+    const group_id = parseInt(req.params.group_id);
     const task_id = req.params.task_id;
     const output_id = req.params.output_id;
 
-    if(!~req.user.gids.indexOf(group_id)) return next("you don't have access to this group");
+    if(!req.user.gids.includes(group_id)) return next("you don't have access to this group:"+group_id);
 
+    //access control
+    console.log(task_id);
     axios.get(config.amaretti.api+"/task/"+task_id).then(res=>{
         res.json(res.data); 
     }).catch(err=>{

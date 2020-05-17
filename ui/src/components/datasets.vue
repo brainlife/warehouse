@@ -57,8 +57,7 @@
                                 <b-col cols="3" class="truncate">
                                     <input :disabled="dataset.removed" type="checkbox" v-model="dataset.checked" 
                                         @click.stop="check(dataset, $event)" class="dataset-checker">
-                                    <datatypetag :datatype="datatypes[dataset.datatype]" :clickable="false" :tags="dataset.datatype_tags" 
-                                        style="margin-top: 1px;"/>
+                                    <datatypetag :datatype="datatypes[dataset.datatype]" :clickable="false" :tags="dataset.datatype_tags"/>
                                 </b-col>
                                 <b-col cols="3" class="truncate">
                                     <icon v-if="dataset.status == 'storing'" name="cog" :spin="true" style="color: #2693ff;" scale="0.8"/>
@@ -276,15 +275,6 @@ export default {
 
         let subid = this.$route.params.subid;
         if(subid) this.$root.$emit('dataset.view', {id: subid, back: './'});
-
-        if(Vue.config.debug) {
-            document.addEventListener('keydown', (event) => {
-                const keyName = event.key;
-                if(keyName == 'z') {
-                    this.$root.$emit('dsimport.open', {});
-                }
-            });
-        }
     },
 
     destroyed() {
@@ -900,11 +890,12 @@ padding: 5px 0px;
 }
 .dataset-checker {
     float: left;
-    margin:3px;
+    margin: 1px 3px;
     margin-right: 5px;
     opacity: 0.25;
     transition: opacity 0.3s;
-    transform: scale(1.5);
+    height: 16px;
+    width: 16px;
 }
 .dataset:hover .dataset-checker,
 .dataset.selected .dataset-checker {

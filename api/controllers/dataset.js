@@ -1353,13 +1353,6 @@ router.get('/download/:id', jwt({
     var id = req.params.id;
 
     logger.debug("download requested for %s", id);
-    /*
-    if(config.debug) {
-        logger.debug("Authoriziation token given");
-        console.dir(req.headers);
-        console.dir(req.user);
-    }
-    */
     if(!req.user) logger.warn("no auth request");
     db.Datasets.findById(id).populate('datatype').exec(function(err, dataset) {
         if(err) return next(err);
@@ -1370,12 +1363,6 @@ router.get('/download/:id', jwt({
         }
         if(!dataset.storage) return next("dataset:"+dataset._id+" doesn't have storage field set");
 
-        /*
-        let sub = "guest";
-        if(req.user) sub = req.user.sub;
-        common.publish("dataset.download."+sub+"."+dataset.project+"."+dataset._id, {headers: req.headers});
-        */
-        
         //app-stage can access any dataset
         if(req.user && req.user.scopes.warehouse && ~req.user.scopes.warehouse.indexOf('stage')) {
             return stream_dataset(dataset, req, res, next);
@@ -1434,9 +1421,7 @@ router.get('/download/:id', jwt({
             },
 
         ], err=>{
-            //logger.debug(err);
             if(err) return res.status(403).json({err});
-            //logger.debug("streaming..");
             stream_dataset(dataset, req, res, next);
         });
     });

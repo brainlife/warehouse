@@ -13,7 +13,9 @@
         <div v-if="datatype">
            
             <div v-if="tasks.upload && tasks.upload.resource_id && tasks.upload.status == 'finished'">
-                <b-form-group horizontal v-if="datatype" v-for="file in files" :key="file.id" :label="file.id+(file.ext?' ('+file.ext+')':'')+(file.required?' *':'')" :description="file.desc">
+                <b-form-group horizontal v-if="datatype" v-for="file in files" :key="file.id" :class="{'gray-background': file.meta}">
+                    <legend class="col-form-label pt-0" style="margin: 0; padding: 0">{{file.id+(file.ext?' ('+file.ext+')':'')+(file.required?' *':'')}}</legend>
+                    <small>{{file.desc}}</small>
                     <div v-if="!file.uploaded && !file.progress">
                         <input type="file" @change="filechange(file, $event)" :accept="file.ext">
                         <editor v-if="file.meta && sidecar" v-model="sidecar" @init="editorInit" lang="json" height="150" style="margin-top: 10px;"/>
@@ -60,7 +62,7 @@
                 <small>Data-object tags is used to help organize data-objects and make searching easier. It can be edited by users anytime.</small>
             </b-form-group>
 
-            <div style="background-color: #eee; margin: 5px -15px; padding: 10px 15px">
+            <div class="gray-background">
                 <b-form-group horizontal label="Datatype Tags" v-if="available_dt_tags">
                     <tageditor v-model="datatype_tags" :options="available_dt_tags" placeholder="(optional)"/>
                     <small>Datatype tags add context to the datatype. Datatype Tags must be specific for each datatype. 
@@ -531,6 +533,11 @@ label.meta-field-name {
 }
 pre {
     line-height: 130%;
+}
+.gray-background {
+    background-color: #eee; 
+    margin: 5px -15px; 
+    padding: 10px 15px;
 }
 </style>
 

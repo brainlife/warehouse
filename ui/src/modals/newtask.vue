@@ -52,8 +52,6 @@
                 <small>* If you cannot find the App you are looking for, please check the required inputs for the App and make sure you have staged/generated all required data-objects with those datatypes.</small>
             </div>
 
-
-
         </div> 
 
         <br clear="both">

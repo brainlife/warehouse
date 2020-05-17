@@ -89,7 +89,7 @@ export default {
 
     watch: {
         task: function(v) {
-            console.log('todo.. task update detected by filebroser - need to refresh content');
+            this.load();
         }
     },
 
@@ -155,6 +155,7 @@ export default {
         load() {
             var url = Vue.config.wf_api+'/task/ls/'+this.task._id;
             if(this.path) url += '?p='+encodeURIComponent(this.path);
+            console.log(url);
             this.$http.get(url).then(res=>{
                 this.files = res.data.files.sort((a, b)=>{
                     if(a.attrs.mtime == b.attrs.mtime) {
@@ -163,8 +164,15 @@ export default {
                     return a.attrs.mtime - b.attrs.mtime;
                 });
             }).catch(err=>{
-                console.dir(err);
-                this.error = err.message || err.statusText || err.toString();
+                if(err.response) {
+                    let res = err.response;
+                    this.error = res.data.message || res.statusText;
+                } else if(err.request) {
+                    this.error = "request made but no response";
+                } else {
+                    //something went wrong while preparing request
+                    this.error = err.toString();
+                }
                 this.files = [];
             })
         },
