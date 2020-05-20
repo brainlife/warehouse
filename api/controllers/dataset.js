@@ -1435,7 +1435,7 @@ router.get('/download/:id', jwt({
  */
 router.get('/download/safe/:id', jwt({
     secret: config.warehouse.public_key,
-    credentialsRequired: false,
+    credentialsRequired: false, //TODO why?
     getToken: function(req) { 
         //load token from req.headers as well as query.at
         if(req.query.at) return req.query.at; 

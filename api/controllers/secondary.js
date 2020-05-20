@@ -22,7 +22,7 @@ const common = require('../common');
 router.get('/:task_id/*', jwt({
     //similar to dataset/download
     secret: config.express.pubkey,
-    credentialsRequired: false,
+    //credentialsRequired: false,
     getToken: function(req) { 
         //load token from req.headers as well as query.at
         if(req.query.at) return req.query.at; 
@@ -36,9 +36,8 @@ router.get('/:task_id/*', jwt({
     const task_id = req.params.task_id;
     const p = req.query.p || req.params[0];
 
-    axios.get(config.amaretti.api+"/task/"+task_id, {
-        headers: { Authorization: "Bearer "+req.user.jwt||req.query.at }
-    }).then(taskres=>{
+    //{ headers: { Authorization: "Bearer "+req.user.jwt||req.query.at } }
+    axios.get(config.amaretti.api+"/task/"+task_id).then(taskres=>{
         if(taskres.status != 200) return next("failed to load task "+task_id);
         const task = taskres.data;
         const gids = req.user.gids||[];
