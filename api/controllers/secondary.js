@@ -36,7 +36,9 @@ router.get('/:task_id/*', jwt({
     const task_id = req.params.task_id;
     const p = req.query.p || req.params[0];
 
-    axios.get(config.amaretti.api+"/task/"+task_id).then(taskres=>{
+    axios.get(config.amaretti.api+"/task/"+task_id, {
+        headers: { Authorization: "Bearer "+req.user.jwt||req.query.at }
+    }).then(taskres=>{
         if(taskres.status != 200) return next("failed to load task "+task_id);
         const task = taskres.data;
         const gids = req.user.gids||[];

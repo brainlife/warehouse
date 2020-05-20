@@ -29,6 +29,12 @@
         <!--rois-->
         <secondaryRois v-else-if="output.datatype == '5be9ea0315a8683a39a1ebd9'" 
             :task="task" :output="output" :product="product"/>
+        <!--wmc-->
+        <secondaryWmc v-else-if="output.datatype == '5cc1d64c44947d8aea6b2d8b'" 
+            :task="task" :output="output" :product="product"/>
+        <!--freesurfer-->
+        <secondaryFreesurfer v-else-if="output.datatype == '58cb22c8e13a50849b25882e'" 
+            :task="task" :output="output" :product="product"/>
 
         <div v-else>
             <b-alert show variant="secondary">
@@ -65,6 +71,8 @@ export default {
         'secondaryFunc': ()=> import('@/secondary/func'),
         'secondaryTck': ()=> import('@/secondary/tck'),
         'secondaryRois': ()=> import('@/secondary/rois'),
+        'secondaryWmc': ()=> import('@/secondary/wmc'),
+        'secondaryFreesurfer': ()=> import('@/secondary/freesurfer'),
     },
     watch: {
         task() {
