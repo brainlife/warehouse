@@ -184,6 +184,7 @@ export default {
                 "5d9cf81c0eed545f51bf75df", //flair
                 "58c33c5fe13a50849b25879b", //dwi
                 "59b685a08e5d38b0b331ddc5", //task
+                "5ebe0bbbb969982124072325", //task
             ]}}),
         }}).then(res=>{
             this.datatypes = {};

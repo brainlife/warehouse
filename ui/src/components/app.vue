@@ -1,8 +1,8 @@
 <template>
 <div v-if="app_" class="appcard" :class="{'compact': compact, 'clickable': clickable, 'deprecated': app_.deprecated_by}" @click="click">
     <div v-if="compact">
-        <appavatar :app="app_" style="float: left; margin-right: 10px;" :width="80" :height="80"/>
-        <div style="max-height: 75px; overflow: hidden;">
+        <appavatar :app="app_" style="position: absolute; right: 0; margin-left: 10px;" :width="80" :height="80"/>
+        <div style="max-height: 75px; margin-left: 10px; overflow: hidden;">
             <h4 class="name">
                 <icon v-if="app_.projects && app_.projects.length > 0" scale="0.9" name="lock" title="not working.." class="text-secondary"/>
                 <icon v-if="app_.deprecated_by" scale="0.9" name="regular/calendar-times" title="deprecated" class="text-secondary"/>

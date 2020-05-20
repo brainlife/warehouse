@@ -12,6 +12,9 @@ let root = "/mnt/datalad";
 if(config.debug) root = "/mnt/scratch/datalad-test";
 else process.chdir(root)
 
+//https://github.com/OpenNeuroOrg/openneuro/issues/1608
+let bad_datasets = [ "ds000030", "ds000113", "ds000217", "ds000221", "ds001417", "ds002236" ];
+
 console.log("connecting to db");
 db.init(async err=>{
     if(err) throw err;
@@ -29,7 +32,7 @@ db.init(async err=>{
             console.log(query);
             axios({url: "https://openneuro.org/crn/graphql", method: 'post', data: {query}}).then(res=>{
                 if(res.errors) return next_dataset(res.errors);
-                if(res.data.data.dataset && res.data.data.dataset.public) {
+                if(res.data.data.dataset && res.data.data.dataset.public && !bad_datasets.includes(dataset_id)) {
                     console.log("still good");
                     console.dir(res.data.data.dataset);
                     dataset.removed = false;

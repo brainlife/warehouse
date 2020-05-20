@@ -29,7 +29,7 @@ exports.health_check = function() {
         system.test(err=>{
             if(err) {
                 logger.error("storage system:"+system_id+" failing "+err);
-				report.status = "failed";
+                if(system_id != "dcwan/hcp") report.status = "failed"; //ignore dcwan issue..
 				report.messages.push(system_id+" "+err);
 				report.storages[system_id] = "failed";
 			} else {

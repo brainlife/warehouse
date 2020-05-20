@@ -583,29 +583,36 @@ function invite_slack_user(email, real_name) {
 }
 
 function post_newusers(msg) {
-    //https://api.slack.com/methods/chat.postMessage
-    logger.debug("posting new user info to slack channel");
+    if(!config.slack) return;
     request({
-        method: "POST",
-        uri: "https://brainlife.slack.com/api/chat.postMessage",
-        form:{
-            token: config.slack.token, 
-            channel: "newusers", 
-            //text: "new user registration\n"+JSON.stringify(msg, null, 4), 
-            text: `new user registration. sub:${msg.sub}
+        method: "GET",
+        uri: "http://api.ipstack.com/"+msg.headers["x-real-ip"]+"?access_key="+config.ipstack.token,
+    }).then(iostackRes=>{
+        //https://api.slack.com/methods/chat.postMessage
+        logger.debug("posting new user info to slack channel");
+        request({
+            method: "POST",
+            uri: "https://brainlife.slack.com/api/chat.postMessage",
+            form:{
+                token: config.slack.token, 
+                channel: config.slack.newuser,
+                //text: "new user registration\n"+JSON.stringify(msg, null, 4), 
+                text: `new user registration. sub:${msg.sub}
 fullname: ${msg.fullname}
 email: ${msg.email}
-ip address: ${msg.headers["x-real-ip"]}
-user-agent: ${msg.headers["user-agent"]}
 public profile: 
 ${JSON.stringify(msg._profile.public, null, 4)}
 private profile: 
 ${JSON.stringify(msg._profile.private, null, 4)}
-            `,
-        },  
-    }).then(res=>{
-        console.dir(res);
-    }); 
+user-agent: ${msg.headers["user-agent"]}
+ipstack: 
+${iostackRes}
+                `,
+            },  
+        }).then(res=>{
+            console.dir(res);
+        }); 
+    });
 }
 
 

@@ -1232,16 +1232,6 @@ function stream_dataset(dataset, req, res, next) {
                 readstream.end(); 
             });
 
-            //TODO - "end" seems to work on both jetstream and ssh(dcwan), but is it truely universal? 
-            //or do we need to switch to use Promise like upload?
-            //readstream.on('end', ()=>{
-
-            /* not getting called?
-            res.on('error', err=>{
-                logger.error(err);
-            });
-            */
-
             res.on('finish', ()=>{
                 logger.debug("done piping.. meter count:%s dataset.size %d", m.bytes, dataset.size);
                 if(!dataset.size) {

@@ -1,6 +1,4 @@
-
 import Vue from 'vue'
-
 import cache from '@/mixins/cache'
 
 export default {
@@ -21,10 +19,7 @@ export default {
                 if(opt.populate_datatype) params["populate"] = "inputs.datatype outputs.datatype";
                 return this.$http.get('app/'+id, {params});
             }, (err, res)=>{
-                if(err) {
-                    console.error("failed to cache app", id);
-                    return cb(err);
-                }
+                if(err) return cb(err);
                 cb(null, res.data);
             });
         },  

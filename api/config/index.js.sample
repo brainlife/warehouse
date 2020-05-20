@@ -38,12 +38,18 @@ exports.github = {
 //more information can be found here https://github.com/outsideris/slack-invite-automation
 exports.slack = {
     token: fs.readFileSync(__dirname+"/slack.token", "ascii").trim(),
+    //useruser: "newusers", //channel to announce newuser registration
+    newuser: "dev", //channel to announce newuser registration
 }
 
 exports.amaretti = {
     api: "https://dev1.soichi.us/api/amaretti",
 }
 exports.wf = exports.amaretti; //deprecated (use amaretti)
+
+exports.ipstack = {
+    token: fs.readFileSync(__dirname+"/ipstack.token", "ascii").trim(),
+}
 
 /*
 exports.profile = {
@@ -183,8 +189,8 @@ exports.storage_systems.jetstream = {
             filename = dataset.storage_config.filename;
         }
 
-        console.log(contname);
-        console.log(filename);
+        //console.log(contname);
+        //console.log(filename);
         js_storage.getFile(contname, filename, (err,_stats)=>{
             if(err) return cb(err);
             console.dir(_stats);
@@ -298,48 +304,12 @@ function connect_wrangler(cb) {
 }
 
 function get_wrangler_archive_path(dataset) {
-    //let _path = "/home/04040/hayashis/data/dev-archive/";
     let _path = "/mnt/wrangler/dev-archive/";
     _path += dataset.project+"/";
     _path += dataset._id+".tar";
     console.log(_path);
     return _path;
 }
-
-/*
-exports.secondary_output = {
-    upload: cb=>{
-        connect_wrangler((err, conn)=>{
-            conn
-            cb(err, conn);
-        });
-    },
-    download: cb=>{
-        connect_wrangler((err, conn, sftp)=>{
-            if (err) {
-                conn.end();
-                return cb(err);
-            }
-            let path = get_wrangler_archive_path(dataset);
-            let filename = path.split("/").pop();
-            console.debug(["loading...", path, filename]);
-            conn.exec("cat "+path, (err, stream)=>{
-                stream.on('error', err=>{
-                    console.error("stream failed but train has already left the station", err);
-                });
-                stream.on('close', code=>{
-                    conn.end();
-                });
-                //I believe listening to stream is required for close event to fire..?
-                stream.stderr.on('data', data=>{
-                    console.error(data.toString());
-                });
-                cb(err, stream, filename);
-            });
-        });
-    },
-}
-*/
 
 exports.storage_systems.wrangler = {
     need_backup: true, //need_backup if it's our storage (not openneuro)

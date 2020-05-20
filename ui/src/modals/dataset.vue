@@ -105,6 +105,17 @@
                                 </b-col>
                             </b-row>
 
+                            <b-row v-if="dataset.prov && dataset.prov.task">
+                                <b-col cols="3">
+                                    <span class="form-header">Secondary</span>
+                                    <p><small class="text-muted">Secondary output from the validator service ({{dataset.prov.task.service}})</small></p>
+                                </b-col>
+                                <b-col>
+                                    <secondary :task="dataset.prov.task" :output="findOutputConfig()" :product="product"/>
+                                    <br>
+                                </b-col>
+                            </b-row>
+
                             <b-row>
                                 <b-col cols="3"><span class="form-header">Datatype</span></b-col>
                                 <b-col>
@@ -264,6 +275,7 @@ import pubcard from '@/components/pubcard'
 import tageditor from '@/components/tageditor'
 import taskconfig from '@/components/taskconfig'
 import product from '@/components/product'
+import secondary from '@/components/secondary'
 
 import agreementMixin from '@/mixins/agreement'
 
@@ -279,10 +291,19 @@ export default {
 
     components: { 
         contact, 
-        app, tags, datatype, 
-        pageheader, appavatar,
-        datatypetag, task, pubcard, 
-        tageditor, taskconfig, product, task,
+        app, 
+        tags, 
+        datatype, 
+        pageheader, 
+        appavatar,
+        datatypetag, 
+        task, 
+        pubcard, 
+        tageditor, 
+        taskconfig, 
+        product, 
+        secondary, 
+        task,
 
         editor: require('vue2-ace-editor'),
     },
@@ -901,7 +922,11 @@ export default {
             editor.container.style.lineHeight = 1.25;
             editor.renderer.updateFontSize();
             if(!this.dataset._canedit) editor.setReadOnly(true);
-        }
+        },
+
+        findOutputConfig() {
+            return this.dataset.prov.task.config._outputs.find(o=>o.id == this.dataset.prov.output_id);
+        },
     }
 }
 

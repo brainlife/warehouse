@@ -22,7 +22,6 @@
                 t.{{task.config._tid}}
             </div>
 
-
             <!--full detail-->
             <task :task="task" class="task" v-if="task.show">
                 <!--header-->
@@ -140,7 +139,7 @@
 
                         <div class="validator" v-if="output.dtv_task">
                             <!--<div class="output-subtitle">{{output.dtv_task.service}} <small>{{output.dtv_task._id}}</small></div>-->
-                            <dtv :task="output.dtv_task"/>
+                            <dtv :task="output.dtv_task" :output="output" :product="task.product"/>
                         </div>
 
                         <div v-if="findarchived(task, output).length > 0" class="archived-datasets">
@@ -278,7 +277,6 @@ export default {
         product, 
         VueMarkdown,
         dtv,
-        //editor: require('vue2-ace-editor'),
     },
 
     data() {
@@ -605,8 +603,6 @@ export default {
                 //sort dtv tasks into corresponding task
                 this.dtv_tasks = {};
                 res.data.tasks.filter(task=>task.service.startsWith('brainlife/validator-')).map(this.set_dtv_task);
-                console.log("dtv tasks");
-                console.dir(this.dtv_tasks);
 
                 //load show/hide status
                 this.tasks.forEach(task=>{
@@ -622,6 +618,7 @@ export default {
                 //load app detail
                 this.tasks.forEach(task=>{
                     if(task.config._app) this.appcache(task.config._app, (err, app)=>{
+                        if(err) return console.error(err);
                         task.app = app;
                     });
                 });
@@ -860,12 +857,13 @@ color: #2693ff;
 }
 .task-id {
 cursor: pointer;
-color: gray;
-margin: 5px 10px;
+color: #666;
+margin: 5px 8px;
 font-weight: bold;
 float: right;
 position: relative;
 z-index: 1;
+text-shadow: 1px 1px 3px white;
 }
 .task-id:hover {
 color: black;

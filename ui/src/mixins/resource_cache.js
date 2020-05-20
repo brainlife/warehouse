@@ -14,8 +14,8 @@ export default {
                     find: JSON.stringify({_id: id}),
                 }});
             }, (err, res)=>{
-                let resource = res.data.resources[0];
-                cb(null, resource);
+                if(err) return cb(err);
+                cb(null, res.data.resources[0]);
             });
         },  
     }

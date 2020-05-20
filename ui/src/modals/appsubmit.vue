@@ -89,6 +89,7 @@
         <advanced :app='app' v-model='form.advanced'>
             <configform :spec="app.config" v-model="form.config" :advanced="true"/>
         </advanced>
+        <br>
 
     </div><!--submit-form-->
     <div class="form-action">
