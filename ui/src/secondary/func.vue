@@ -3,15 +3,15 @@
     <small>mid slices of bold.nii.gz (volume 0)</small>
     <b-row>
         <b-col>
-            <b>x</b><br>
+            <b>Sagittal</b><br>
             <img :src="config.api+'/secondary/'+task._id+'/'+output.id+'/secondary/x.png?at='+config.jwt"/>
         </b-col>
         <b-col>
-            <b>y</b><br>
+            <b>Coronal</b><br>
             <img :src="config.api+'/secondary/'+task._id+'/'+output.id+'/secondary/y.png?at='+config.jwt"/>
         </b-col>
         <b-col>
-            <b>z</b><br>
+            <b>Axial</b><br>
             <img :src="config.api+'/secondary/'+task._id+'/'+output.id+'/secondary/z.png?at='+config.jwt"/>
         </b-col>
     </b-row>

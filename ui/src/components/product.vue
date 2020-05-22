@@ -15,7 +15,7 @@
     <b-tabs class="brainlife-tab" v-model="tab" v-if="shouldShowTab">
         <b-tab v-for="(p, $idx) in plots" :title="p.name||$idx" :key="$idx">
             <p v-if="p.desc" style="background-color: white; padding: 5px 10px; margin: 0;"><small>{{p.desc}}</small></p>
-            <vue-plotly v-if="tab == $idx" :data="p.data" :layout="p.layout" :options="p.options" ref="plotrefs" :autoResize="true" :watchShallow="true"/>
+            <vue-plotly v-if="tab == $idx && p.data" :data="p.data" :layout="p.layout" :options="p.options" ref="plotrefs" :autoResize="true" :watchShallow="true"/>
         </b-tab>
         <b-tab title="product.json" v-if="others">
             <editor v-model="others" @init="editorInit" lang="json"></editor>

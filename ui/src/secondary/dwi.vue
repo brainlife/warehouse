@@ -2,15 +2,15 @@
 <div>
     <p>
         <small>
-            The following images show the difference between volumes at and orthogonal to specified bvecs.
-            On dwi, the high voxel intensity means the movement of the water molecules is more restricted.
-            This results in seeing more features that are orthogonal to the direction of bvecs. 
+            The bvecs flipping is a common source of problem for dwi data analysis. 
+            The following images show if the dwi image has correct bvecs orientations by comparing volumes with 
+            orthogonal bvecs orientations.
+            For dwi data, the high voxel intensity indicates more restricted movement of the water molecules.
             If the bvecs and dwi images are correctly oriented (no flipping of bvecs, incorrect voxel layout, etc..)
-            then those oppositing dwi should show features (in red) that are orthogonal to the bvecs direction. 
-            For example, the top left image with bvecs direction of (1,1,0) should have more features (in red) that are
-            pointing toward top right corner of the image, as bvec of (1,1,0) points toward top left corner of the image.
-            The high quality dwi image should have more discernible features, and inconclusive flip evidences suggests 
-            image quality issue.
+            you should see more white matter features (in red) that are orthogonal to the direction of bvecs.
+            For example, the top left image with bvecs direction of (-1,1,0) should have more features (in red) that are
+            pointing toward top left corner of the image, as bvec points toward top right corner of the image.
+            The inconclusive directionality might suggests a poor image quality.
         </small>
     </p>
     <b-row>

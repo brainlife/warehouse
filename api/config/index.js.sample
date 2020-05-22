@@ -50,6 +50,10 @@ exports.wf = exports.amaretti; //deprecated (use amaretti)
 exports.ipstack = {
     token: fs.readFileSync(__dirname+"/ipstack.token", "ascii").trim(),
 }
+exports.mailchimp = {
+    api_key: fs.readFileSync(__dirname+"/mailchimp.key", "ascii").trim(),
+    newsletter_list: "8d07cef694", //list ID to subscribe newusers to
+}
 
 /*
 exports.profile = {

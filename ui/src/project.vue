@@ -234,6 +234,11 @@
         <pipelines :project="selected" v-else/>
     </div>
 
+    <div v-if="tabs[tab].id == 'groupanalysis'" style="margin-left: 40px; margin-top: 95px">
+        <b-alert show variant="secondary" v-if="!(ismember()||isadmin())">Only the admins or members of this project can access group analysis page. Please contact the project admin to give you access.</b-alert>
+        <groupAnalysis :project="selected" v-else/>
+    </div>
+
     <div v-if="tabs[tab].id == 'pub'" style="margin-left: 40px; margin-top: 95px">
         <b-alert show variant="secondary" v-if="!(ismember()||isadmin())">Only the admins or members of this project can access publications. Please contact the project admin to give you access.</b-alert>
         <publications :project="selected" v-else/>
@@ -278,6 +283,7 @@ let ps;
 
 export default {
     components: { 
+        //TODO - use inline import..
         projectaccess, 
         pageheader,     
         contact, 
@@ -292,6 +298,8 @@ export default {
         agreements, 
         datatypetag, 
         participants,
+
+        'groupAnalysis': ()=> import('@/components/groupanalysis'),
 
         noprocess, 
         resource, 
@@ -369,6 +377,7 @@ export default {
         this.tabs.push({id: "process", label: "Processes"});
         if(Vue.config.user) {
             this.tabs.push({id: "pipeline", label: "Pipelines"});
+            if(Vue.config.debug) this.tabs.push({id: "groupanalysis", label: "Group Analysis"});
             this.tabs.push({id: "pub", label: "Publications"});
         }
 

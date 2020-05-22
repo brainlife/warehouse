@@ -18,8 +18,7 @@
         <b-alert variant="secondary" :show="!loading && tasks && tasks.length == 0">Please stage datasets by clicking "Stage Data" button below.</b-alert>
         <div class="task-area" v-if="!loading && tasks" v-for="task in tasks" :key="task._id" :id="task._id">
             <div v-if="!task.show" class="task-id" @click="toggle_task(task)">
-                <icon name="caret-right"/>
-                t.{{task.config._tid}}
+                <b-badge variant="light"><icon name="caret-right"/> t.{{task.config._tid}}</b-badge>
             </div>
 
             <!--full detail-->
@@ -28,8 +27,7 @@
                 <div slot="header" style="background-color: white;">
                     <!--task-id and toggler-->
                     <div :title="task._id" class="task-id" @click="toggle_task(task)">
-                        <icon name="caret-down" v-if="task.show"/>
-                        t.{{task.config._tid}}
+                        <b-badge variant="light"><icon name="caret-down" v-if="task.show"/> t.{{task.config._tid}}</b-badge>
                     </div>
 
                     <div v-if="task.app && task.show">
@@ -79,37 +77,12 @@
                             <div class="button" v-if="!output.dataset_id" v-b-toggle="task._id+'.'+output.id" title="Show Metadata">
                                <icon name="cube"/>
                             </div>
-
-                            <!--if validator exists, use that to arhicve-->
-                            <div v-if="output.dtv_task" style="display: inline;">
-                                <div v-if="output.dtv_task.status == 'finished'"
-                                    style="display: inline-block;">
-
-                                    <div class="button" title="View" @click="set_viewsel_options(output.dtv_task, output.dtv_task.config._outputs[0])">
-                                        <icon name="eye"/>
-                                    </div>
-                                    <div class="button" @click="download(output.dtv_task, output.dtv_task.config._outputs[0])" title="Download"><icon name="download"/></div>
-                                    <div class="button" title="Archive" @click="open_archiver(output.dtv_task, output.dtv_task.config._outputs[0])"><icon name="archive"/></div>
+                            <div v-if="task.status == 'finished'" style="display: inline-block;">
+                                <div class="button" title="View" @click="set_viewsel_options(task, output)">
+                                    <icon name="eye"/>
                                 </div>
-
-                                <!--if dtv fails, then let user archive from the original-->
-                                <div v-if="output.dtv_task.status == 'failed' || output.dtv_task.status == 'stopped'" style="display: inline-block;">
-                                    <div class="button" title="View" @click="set_viewsel_options(task, output)">
-                                        <icon name="eye"/>
-                                    </div>
-                                    <div class="button" @click="download(task, output)" title="Download"><icon name="download"/></div>
-                                    <div class="button" title="Archive" @click="open_archiver(task, output)"><icon name="archive"/></div>
-                                </div>
-                            </div>
-                            <div v-else style="display: inline;"> 
-                                <!--if not, user the main task-->
-                                <div v-if="task.status == 'finished'" style="display: inline-block;">
-                                    <div class="button" title="View" @click="set_viewsel_options(task, output)">
-                                        <icon name="eye"/>
-                                    </div>
-                                    <div class="button" @click="download(task, output)" title="Download"><icon name="download"/></div>
-                                    <div class="button" title="Archive" @click="open_archiver(task, output)"><icon name="archive"/></div>
-                                </div>
+                                <div class="button" @click="download(task, output)" title="Download"><icon name="download"/></div>
+                                <div class="button" title="Archive" @click="open_archiver(task, output)"><icon name="archive"/></div>
                             </div>
                         </div>
 
@@ -532,7 +505,8 @@ export default {
                                 task.show = true;
                                 if(task.config._app) this.appcache(task.config._app, (err, app)=>{
                                     if(err) return console.error(err);
-                                    task.app = app;
+                                    //task.app = app;
+                                    Vue.set(task, 'app', app); //see if this cures the missing app info bug
                                     this.$forceUpdate();
                                 });
                                 this.tasks.push(task); 
@@ -619,7 +593,8 @@ export default {
                 this.tasks.forEach(task=>{
                     if(task.config._app) this.appcache(task.config._app, (err, app)=>{
                         if(err) return console.error(err);
-                        task.app = app;
+                        //task.app = app;
+                        Vue.set(task, 'app', app); //see if this cures the missing app info bug
                     });
                 });
 
@@ -858,7 +833,7 @@ color: #2693ff;
 .task-id {
 cursor: pointer;
 color: #666;
-margin: 5px 8px;
+margin: 3px 5px;
 font-weight: bold;
 float: right;
 position: relative;

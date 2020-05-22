@@ -189,7 +189,7 @@
                                     </p>
                                 </b-col>
                             </b-row>
-                            <b-row>
+                            <b-row v-if="dataset.download_count">
                                 <b-col cols="3"><span class="form-header">Download Count</span></b-col>
                                 <b-col>
                                     <p><b>{{dataset.download_count}}</b> times</p>

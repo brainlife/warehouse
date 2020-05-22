@@ -23,8 +23,8 @@
             </div>
             <div style="margin-left: 45px; margin-right: 5px; padding-bottom: 4px; position: relative;">
                 <div style="float: right;">
-                    <div class="button" style="opacity: 0.7" :id="'popover'+task.config._tid" @click="openinfo">
-                        <icon name="info"/>
+                    <div class="button" :id="'popover'+task.config._tid" @click="openinfo">
+                        <icon name="chart-area"/>
                     </div>
                     <b-popover :target="'popover'+task.config._tid" triggers="hover">
                         <template slot="title"><span class="text-muted"><small>ID</small> {{task._id}}</span></template>

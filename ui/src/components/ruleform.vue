@@ -38,6 +38,11 @@
             <b-form-group label="Configuration" horizontal>
                 <b-card>
                     <configform :spec="rule.app.config" v-model="rule.config"/>
+                    <div v-if="hasAdvancedOptions()">
+                        <hr>
+                        <p><b>Advanced Options</b></p>
+                        <configform :spec="rule.app.config" v-model="rule.config" :advanced="true"/>
+                    </div>
                 </b-card>
             </b-form-group>
 
@@ -306,6 +311,15 @@ export default {
     },
     
     methods: {
+        hasAdvancedOptions() {
+            if(!this.rule.app) return;
+            let has = false;
+            for(let key in this.rule.app.config) {
+                let c = this.rule.app.config[key];
+                if(c.advanced) has = true;
+            }
+            return has;
+        },
 
         query_matching_datasets() {
             if(!this.rule.app) return;

@@ -4,7 +4,8 @@ const amqp = require('amqp');
 const winston = require('winston');
 const mongoose = require('mongoose');
 const async = require('async');
-const request = require('request-promise-native'); //TODO switch to rp
+const request = require('request-promise-native'); //TODO switch to axios
+const axios = require('axios'); 
 const rp = require('request-promise-native');
 const redis = require('redis');
 const fs = require('fs');
@@ -560,6 +561,7 @@ function handle_auth_event(msg, head, dinfo, cb) {
         let fullname = msg.fullname;
         if(config.slack) {
             invite_slack_user(email, fullname);
+            subscribe_newsletter(email, fullname);
             post_newusers(msg);
         }
     }
@@ -569,7 +571,7 @@ function handle_auth_event(msg, head, dinfo, cb) {
 function invite_slack_user(email, real_name) {
     //https://github.com/ErikKalkoken/slackApiDoc/blob/master/users.admin.invite.md
     //TODO - I can't get first_name / last_name to work
-    logger.debug("sending slack invite to "+email);
+    console.debug("sending slack invite to "+email);
     request({
         method: "POST",
         uri: "https://brainlife.slack.com/api/users.admin.invite",
@@ -579,7 +581,31 @@ function invite_slack_user(email, real_name) {
     }).then(res=>{
         console.dir(res);
     }); 
+}
 
+function subscribe_newsletter(email, real_name) {
+    let name = real_name.split(" ");
+    //https://mailchimp.com/developer/reference/lists/list-members/#post_/lists/-list_id-/members
+    axios.post("https://us12.api.mailchimp.com/3.0/lists/"+config.mailchimp.newsletter_list+"/members", {
+        status: "subscribed",
+        //tags,
+        //vip: (counts>100?true:false),
+        email_address: email,
+        merge_fields: {
+            FNAME: name.shift(),
+            LNAME: name.join(" "),
+        } 
+    }, 
+    {
+        auth: {
+            username: "anystring",
+            password: config.mailchimp.api_key,
+        }
+    }).then(res=>{
+        console.dir(res.data);
+    }).catch(err=>{
+        console.dir(err.response.data);
+    });
 }
 
 function post_newusers(msg) {
@@ -606,7 +632,7 @@ private profile:
 ${JSON.stringify(msg._profile.private, null, 4)}
 user-agent: ${msg.headers["user-agent"]}
 ipstack: 
-${iostackRes}
+${JSON.stringify(iostackRes, null, 4)}
                 `,
             },  
         }).then(res=>{
