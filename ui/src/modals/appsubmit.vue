@@ -522,7 +522,7 @@ export default {
                     service_branch: this.app.github_branch,
                     config,
                     deps_config: [ {task: download_task._id} ],
-                    retry: this.app.retry,
+                    //retry: this.app.retry,
                 };
                 if (this.form.advanced.resource) submissionParams.preferred_resource_id = this.form.advanced.resource;
                 if (this.form.advanced.branch) submissionParams.service_branch = this.form.advanced.branch;

@@ -19,7 +19,7 @@ function getParticipants(req, project, cb) {
             //maybe first time accessed? let's create new record
             participants = new db.Participants({
                 project,
-                rows: {},
+                subjects: {},
                 //columns: {},
             });
             common.publish("participant.create."+req.user.sub+"."+project._id, participants);
@@ -53,8 +53,8 @@ router.get('/:projectid', jwt({secret: config.express.pubkey}), (req, res, next)
                 console.log("generating participants.columns");
                 //generate columns list
                 participants.columns = {};
-                for(let subject in participants.rows) {
-                    let row = participants.rows[subject];
+                for(let subject in participants.subjects) {
+                    let row = participants.subjects[subject];
                     for(let k in row) {
                         let v = row[k]; //use this to analyze?
                         if(!participants.columns[k]) participants.columns[k] = {
@@ -74,38 +74,6 @@ router.get('/:projectid', jwt({secret: config.express.pubkey}), (req, res, next)
 
 /**
  * @apiGroup Participant
- * @api {post} /participant/:projectid
- *                              Create new participant info
- *
- * @apiHeader {String} authorization 
- *                              A valid JWT token "Bearer: xxxxx"
- */
-/* use put()
-router.post('/:projectid', jwt({secret: config.express.pubkey}), (req, res, next)=>{
-    //access control
-    db.Projects.findById(req.params.projectid, (err, project)=>{
-        if(err) return next(err);
-        if(!project) return res.status(404).end();
-        if(!common.isadmin(req.user, project) && !common.ismember(req.user, project)) 
-            return res.status(401).end("you are not an administartor nor member of this project");
-
-        //TODO - validate format?
-        let participants = new db.Participants({
-            project,
-            rows: req.body.rows,
-            columns: req.body.columns,
-        });
-        participants.save(err=>{
-            if(err) return next(err);
-            common.publish("participant.create."+req.user.sub+"."+project._id, req.body);
-            res.json({status: "success"});
-        });
-    });
-});
-*/
-
-/**
- * @apiGroup Participant
  * @api {put} /participant/:projectid
  *                              Replace participants info
  *
@@ -122,7 +90,7 @@ router.put('/:projectid', jwt({secret: config.express.pubkey}), (req, res, next)
 
         let set = { 
             project,
-            rows: req.body.rows,
+            subjects: req.body.subjects,
             columns: req.body.columns,
         };
         db.Participants.updateOne({project}, {$set: set}, {new: true, upsert: true}, (err, participants)=>{
@@ -150,7 +118,7 @@ router.patch('/:projectid/:subject', jwt({secret: config.express.pubkey}), (req,
         if(!common.isadmin(req.user, project) && !common.ismember(req.user, project)) 
             return res.status(401).end("you are not an administartor nor member of this project");
 
-        let set = { ["rows."+req.params.subject]: req.body }; //TODO is this safe?
+        let set = { ["subjects."+req.params.subject]: req.body }; //TODO is this safe?
         db.Participants.updateOne({project}, {$set: set}, (err, participants)=>{
             if(err) return next(err);
             common.publish("participant.patch."+req.user.sub+"."+project._id+"."+req.params.subject, req.body);

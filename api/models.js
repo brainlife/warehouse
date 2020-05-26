@@ -222,8 +222,11 @@ var participantsSchema = mongoose.Schema({
     //        "Units" : "HH:mm"
     //    }
 
-    //from participants.tsv (keyed by subject)
+    //deprecated - use subjects once we no longer need it
     rows: mongoose.Schema.Types.Mixed, 
+
+    //from participants.tsv (keyed by subject)
+    subjects: mongoose.Schema.Types.Mixed, 
     //like..
     //"11" : {
     //    "gender" : "M",

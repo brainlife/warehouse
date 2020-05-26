@@ -106,17 +106,22 @@
                         <small class="ioid" v-if="task.app">({{compose_desc(task.app.outputs, output.id)}})</small>
 
                         <b-collapse :id="task._id+'.'+output.id" style="margin-top: 8px; margin-right: 20px;">
-                            <div class="output-subtitle">Metadata</div>
+                            <div class="subtitle">Metadata</div>
                             <pre style="max-height: 300px; background-color: #eee;">{{JSON.stringify(output.meta, null, 4)}}</pre>
                         </b-collapse>
 
-                        <div class="validator" v-if="output.dtv_task">
-                            <!--<div class="output-subtitle">{{output.dtv_task.service}} <small>{{output.dtv_task._id}}</small></div>-->
+                        <div class="subinfo" v-if="output.dtv_task">
+                            <!--<div class="subtitle">{{output.dtv_task.service}} <small>{{output.dtv_task._id}}</small></div>-->
                             <dtv :task="output.dtv_task" :output="output" :product="task.product"/>
                         </div>
+                        <div class="subinfo" v-if="output.secondary_task">
+                            <div class="subtitle">Seconary Output Archiver</div>
+                            <statusicon :status="output.secondary_task.status"/>
+                            <small>{{output.secondary_task.status_msg}} ({{output.secondary_task._id}})</small>
+                        </div>
 
-                        <div v-if="findarchived(task, output).length > 0" class="archived-datasets">
-                            <div class="output-subtitle">Archived Datasets</div>
+                        <div class="subinfo" v-if="findarchived(task, output).length > 0">
+                            <div class="subtitle">Archived Primary Output</div>
                             <ul class="archived">
                                 <li v-for="dataset in findarchived(task, output)" :key="dataset._id" @click="open_dataset(dataset._id)" class="clickable">
                                     <timeago class="text-muted" style="float: right" :datetime="dataset.create_date" :auto-update="10"/>
@@ -135,7 +140,7 @@
                                     </small> 
                                     <span v-else-if="dataset.status == 'stored'"></span>
                                     <span v-else><statustag :status="dataset.status"/></span>
-                                    <small>{{dataset._id}}</small>
+                                    <small>({{dataset._id}})</small>
                                 </li>
                             </ul>
                         </div>
@@ -387,6 +392,15 @@ export default {
             Vue.set(output, 'dtv_task', dtv_task);
         },
 
+        set_secondary_task(secondary_task) {
+            if(!this.tasks) return;
+            let dtv_task = secondary_task.config.validator_task;
+            let task = this.tasks.find(task=>task._id == dtv_task.follow_task_id);
+            let output_id = dtv_task.config._outputs[0].id;
+            let output = task.config._outputs.find(out=>out.id == output_id);
+            Vue.set(output, 'secondary_task', secondary_task);
+        },
+
         updatedesc() {
             this.$emit("updatedesc", this.desc);
         },
@@ -496,6 +510,8 @@ export default {
                             if(task.status == "finished") {
                                 this.loadProduct([task]);
                             }
+                        } else if(task.service == "brainlife/app-archive-secondary") {
+                            this.set_secondary_task(task);
                         } else if(task.config._tid) {
                             //ui task
                             var t = this.tasks.find(t=>t._id == task._id);
@@ -577,6 +593,7 @@ export default {
                 //sort dtv tasks into corresponding task
                 this.dtv_tasks = {};
                 res.data.tasks.filter(task=>task.service.startsWith('brainlife/validator-')).map(this.set_dtv_task);
+                res.data.tasks.filter(task=>task.service == 'brainlife/app-archive-secondary').map(this.set_secondary_task);
 
                 //load show/hide status
                 this.tasks.forEach(task=>{
@@ -796,18 +813,13 @@ white-space: nowrap;
 overflow: hidden;
 text-overflow: ellipsis; 
 }
-.archived-datasets {
-border-left: 3px solid #ddd;
-padding-left: 8px;
-margin: 3px;
-}
-.validator {
+.subinfo {
 border-left: 3px solid #ddd;
 padding-left: 8px;
 margin: 3px;
 margin-top: 8px;
 }
-.output-subtitle {
+.subtitle {
 color: #aaa;
 font-weight: bold;
 font-size: 95%;

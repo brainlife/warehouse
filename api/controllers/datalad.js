@@ -78,7 +78,7 @@ router.post('/import/:dataset_id', jwt({secret: config.express.pubkey}), (req, r
             let participants = new db.Participants({
                 project,
                 columns: req.body.meta_info,
-                rows: req.body.meta,
+                subjects: req.body.meta,
             });
             common.publish("participant.create."+req.user.sub+"."+project._id, participants);
             participants.save();

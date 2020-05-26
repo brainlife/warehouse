@@ -8,7 +8,6 @@
                     <b-tab title="Profile"/>
                     <b-tab title="Avatar"/>
                     <b-tab title="Account"/>
-                    <b-tab title="Notifications"/>
                     <!--<b-tab title="Notifications"/>-->
                 </b-tabs>
             </b-container>
@@ -169,7 +168,7 @@
                     Your avatar is handled by <a href="https://gravatar.com">gravatar.com</a> using your account email address 
                     <span style="opacity: 0.8;">({{config.user.profile.email}})</span>.
                 </p>
-                <div style="opacity: 0.8; border-top: 1px solid #ddd; clear: both; margin-top: 100px; padding-top: 20px;">
+                <div style="background-color: white; border-radius: 10px; padding: 20px; opacity: 0.8; clear: both; margin-top: 100px; padding-top: 20px;">
                     <h5>What is Gravatar?</h5>
                     <p>
                         <a href="https://en.gravatar.com/support/what-is-gravatar/">https://en.gravatar.com/support/what-is-gravatar/</a>

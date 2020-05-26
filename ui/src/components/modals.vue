@@ -17,6 +17,7 @@
         <appsubmit/>
         <importer/>
         <participants/>
+        <galauncher/>
     </div>
 </div>
 </template>
@@ -38,12 +39,24 @@ import appsubmit from '@/modals/appsubmit'
 import copytarget from '@/modals/copytarget'
 import importer from '@/modals/importer'
 import participants from '@/modals/participants'
+import galauncher from '@/modals/galauncher'
 
 export default {
     components: {
-        viewselecter, dataset, 
-        uploader, datasetselecter, instanceselecter, 
-        archiver, agreements, downscript, taskinfo, appsubmit, copytarget, importer, participants,
+        viewselecter, 
+        dataset, 
+        uploader, 
+        datasetselecter, 
+        instanceselecter, 
+        archiver, 
+        agreements, 
+        downscript, 
+        taskinfo, 
+        appsubmit, 
+        copytarget, 
+        importer, 
+        participants,
+        galauncher,
     },
     data() {
         return {

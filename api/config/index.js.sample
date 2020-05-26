@@ -170,6 +170,11 @@ exports.archive = {
     gid: 137, //warehouse group enabled to access storage service
 }
 
+//group analysis 
+exports.groupanalysis = {
+    gid: 3,
+}
+
 //
 // jetstream
 // //https://github.com/pkgcloud/pkgcloud/blob/master/examples/storage/rackspace.js

@@ -13,7 +13,7 @@
         <statusicon :status="status" :scale="scale"></statusicon> Finished
     </p>
     <p class="text-primary" v-else-if="status == 'running'">
-        <statusicon :status="status" :scale="scale"></statusicon> Processing
+        <statusicon :status="status" :scale="scale"></statusicon> Running
     </p>
     <p class="text-info" v-else-if="status == 'waiting'">
         <statusicon :status="status" :scale="scale"></statusicon> Waiting

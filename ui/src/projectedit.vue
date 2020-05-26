@@ -239,7 +239,7 @@ export default {
 
             this.axios.get("/participant/"+this.$route.params.id).then(res=>{
                 if(res.data) {
-                    this.participants = JSON.stringify(res.data.rows||participants_def, null, 4);
+                    this.participants = JSON.stringify(res.data.subjects||participants_def, null, 4);
                     this.participants_columns = JSON.stringify(res.data.columns||participants_columns_def, null, 4);
                 }
             });
@@ -300,7 +300,7 @@ export default {
                 this.axios.put('project/'+this.project._id, this.project).then(res=>{
                     this.$root.$emit("refresh_jwt");
                     return this.axios.put('participant/'+this.project._id, {
-                        rows: participants,
+                        subjects: participants,
                         columns: participants_columns,
                     });
                 }).then(res=>{
@@ -318,7 +318,7 @@ export default {
                     project = res.data;
                     this.$root.$emit("refresh_jwt");
                     return this.axios.put('participant/'+project._id, {
-                        rows: participants,
+                        subjects: participants,
                         columns: participants_columns,
                     });
                 }).then(res=>{

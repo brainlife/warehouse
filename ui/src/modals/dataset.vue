@@ -863,6 +863,7 @@ export default {
 
         create_stage_task(cb) {
             console.log("creating stage task");
+
             //it hasn't been staged.. create a new instance to download dataset to
             let instance = {
                 name: "brainlife.download",

@@ -85,15 +85,6 @@ export default {
     mounted() {
         console.log("secondary task");
         this.loadSecondaryTask();
-        /*
-        console.dir(this.task);
-        axios.get('/secondary/'+this.task._id+'/'+this.output_id+'/secondary/x.png').then(res=>{
-            console.log(res.data);
-        }).catch(err=>{
-            console.dir(err.response);
-            this.$notify({type: "error", text: err.toString()})
-        });
-        */
     },
     methods: {
         loadSecondaryTask() {

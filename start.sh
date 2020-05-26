@@ -1,7 +1,7 @@
 
 #api
-pm2 delete warehouse
-pm2 start api/warehouse.js --watch --ignore-watch="*.log test *.sh ui bin example .git"
+pm2 delete warehouse-api
+pm2 start api/warehouse.js --name warehouse-api --watch --ignore-watch="*.log test *.sh ui bin example .git"
 
 pm2 delete warehouse-rule
 pm2 start bin/rule_handler.js --name warehouse-rule --watch --ignore-watch="*.log test *.sh ui example .git"

@@ -180,8 +180,7 @@
 
                 <div class="box" v-if="participants && Object.keys(participants).length > 0">
                     <span class="form-header">Participants Info</span>     
-                    <p><small>participants info provides information for each subject and can be used for the group analysis.</small></p>             
-                    <participants :rows="participants" :columns="participants_columns" style="max-height: 500px; overflow: auto;"/>
+                    <p><small>participants info provides information for each subject and can be used for the group analysis.</small></p>                        <participants :subjects="participants" :columns="participants_columns" style="max-height: 500px; overflow: auto;"/>
                 </div>
 
                 <div v-if="resource_usage && total_walltime > 3600*1000" class="box">      
@@ -211,13 +210,6 @@
         </div><!-- project detail content-->
         
     </div>
-
-    <!--
-    <div v-if="tabs[tab].id == 'participants'" style="margin-left: 40px; margin-top: 95px">
-        <b-alert show variant="secondary" v-if="!(ismember()||isadmin())">Only the admins or members of this project can access participants information. Please contact the project admin to give you access.</b-alert>
-        <participants :project="selected" v-else/>
-    </div>
-    -->
 
     <div v-if="tabs[tab].id == 'dataset'" style="margin-left: 40px; margin-top: 95px">
         <b-alert show variant="secondary" v-if="selected.access != 'public' && !(ismember()||isadmin()||isguest())">For non public project, only the admin/members/guests of this project can access processes.</b-alert>
@@ -522,7 +514,7 @@ export default {
                 this.participants = null;
                 this.axios.get("/participant/"+project._id).then(res=>{
                     if(res.data) {
-                        this.participants = res.data.rows||{}; 
+                        this.participants = res.data.subjects||{}; 
                         this.participants_columns = res.data.columns||{}; 
                     }
                 });
@@ -654,22 +646,6 @@ export default {
                 });
             }
         },
-
-        /*
-        editParticipants() {
-            this.participants_editing = JSON.stringify(this.participants, null, 4);
-        },
-        saveParticipants() {
-            try {
-                this.participants = JSON.parse(this.participants_editing);
-                this.participants_editing = null;
-                //TODO - save
-
-            } catch(err) {
-                this.$notify({type: 'error', text: err});
-            }
-        },
-        */
 
         getvariant(state) {
             switch(state) {

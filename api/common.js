@@ -184,6 +184,7 @@ exports.wait_task = function(req, task_id, cb) {
     });
 }
 
+//TODO - I should create more generic version of this
 exports.issue_archiver_jwt = async function(user_id, cb) {
 
     //load user's gids so that we can add warehouse group id (authorized to access archive)
@@ -347,20 +348,12 @@ exports.update_appinfo = function(app, cb) {
             //see https://api.github.com/users/francopestilli for other fields
             return {name: con.name, email: con.email};
         });
-        //console.log("after....");
-        //console.dir(app.toString());
         cb();
     });
 }
 
 exports.load_github_detail = function(service_name, cb) {
     if(!config.github) return cb("no github config");
-
-//    let auth = "?client_id="+config.github.client_id + "&client_secret="+config.github.client_secret;
-
-    //first load main repo info
-    //logger.debug("loading repo detail");
-    //logger.debug("https://api.github.com/repos/"+service_name+auth);
     request("https://api.github.com/repos/"+service_name, { json: true, headers: {
         //needed to get topic (which is currently in preview mode..)
         //https://developer.github.com/v3/repos/#list-all-topics-for-a-repository
@@ -745,7 +738,6 @@ exports.update_dataset_stats = async function(project_id, cb) {
             }, count: {$sum: 1}, size: {$sum: "$size"} })
             .sort({"_id.subject":1});
         let subjects = new Set();
-        //let datatypes = new Set(); //obsoleted by datatypes_detail
         let stats = {
             subject_count: 0,
             count: 0, 
@@ -758,9 +750,6 @@ exports.update_dataset_stats = async function(project_id, cb) {
             //some project contains dataset without datatype??
             if(item._id.datatype) {
                 let type = item._id.datatype;
-                
-                //datatypes.add(type); //datatypes is obsoleted by datatypes_detail
-
                 let datatype = stats.datatypes_detail.find(datatype=>datatype.type.toString() == type.toString());
                 if(datatype) {
                     datatype.subject_count++;
@@ -776,9 +765,6 @@ exports.update_dataset_stats = async function(project_id, cb) {
             stats.size += item.size;
         });
         stats.subject_count = subjects.size;
-        //stats.datatypes = [...datatypes].sort();
-
-        //console.log(JSON.stringify(stats, null, 4));
 
         let doc = await db.Projects.findByIdAndUpdate(project_id, {$set: {"stats.datasets": stats}}, {new: true});
         if(cb) cb(null, doc);
@@ -790,7 +776,6 @@ exports.update_dataset_stats = async function(project_id, cb) {
 
 exports.update_project_stats = async function(project, cb) {
     try {
-        //logger.debug("getting instance status counts from amaretti for group_id:%s", project.group_id);
         let counts = await rp.get({
             url: config.amaretti.api+"/instance/count", json: true,
             qs: {
@@ -799,10 +784,7 @@ exports.update_project_stats = async function(project, cb) {
             headers: { authorization: "Bearer "+config.warehouse.jwt, },
         });
         let instance_counts = counts[0]; //there should be only 1
-        //logger.debug(JSON.stringify(stats, null, 4));
-        //let project = await db.Projects.findOneAndUpdate({group_id}, {$set: {"stats.instances": stats}}, {new: true});
 
-        //logger.debug("updating rule stats for project_id:%s", project._id.toString());
         let stats = await db.Rules.aggregate()
             .match({removed: false, project: project._id})
             .group({_id: { "active": "$active" }, count: {$sum: 1}});
@@ -838,7 +820,6 @@ exports.update_project_stats = async function(project, cb) {
             headers: { authorization: "Bearer "+config.warehouse.jwt, },
         });
         let resource_stats = resource_usage.map(raw=>{
-            //if(!raw._id.resource_id) return; //some entries doesn't have resource_id .. why?
             let resource = resources.find(r=>r._id == raw._id.resource_id);
             return {
                 service: raw._id.service,
@@ -988,32 +969,4 @@ exports.list_users = async ()=>{
     });
     return lists;
 }
-
-
-/*
-exports.all_users = async ()=>{
-    let year_ago = new Date();
-    year_ago.setDate(year_ago.getDate() - 365);
-    let users = await rp.get({
-        url: config.auth.api+"/profile/list", json: true,
-        qs: {
-            find: JSON.stringify({
-                active: true,
-                "$or": [
-                    { "times.github_login": {$gt: year_ago} },
-                    { "times.google_login": {$gt: year_ago} },
-                    { "times.local_login": {$gt: year_ago} },
-                    { "times.orcid_login": {$gt: year_ago} },
-                ]
-            }),
-            limit: 3000,
-        },
-        headers: { authorization: "Bearer "+config.warehouse.jwt },
-    });
-
-    return users.profiles;
-}
-*/
-
-
 

@@ -11,12 +11,7 @@
             <b-alert show v-for="(warning, idx) in task.product.warnings" :key="idx" variant="secondary"><b>Warning</b> {{warning}}</b-alert>
             <product :product="task.product"/>
         </div>
-
-        <!--<b style="opacity: 0.5">Secondary Output</b>-->
         <secondary :task="task" :output="output" :product="product"/>
-        <!--
-        <filebrowser :task="task" :path="'secondary'"/>
-        -->
     </div>
     <div v-else>
         <task :task="task"/>
@@ -26,10 +21,8 @@
 
 <script>
 import Vue from 'vue'
-import statusicon from '@/components/statusicon'
 import product from '@/components/product'
 import secondary from '@/components/secondary'
-//import filebrowser from '@/components/filebrowser'
 import task from '@/components/task'
 
 import axios from 'axios'
@@ -37,7 +30,6 @@ import axios from 'axios'
 export default {
     props: ['task', 'output', 'product'],
     components: {
-        statusicon, 
         secondary,
         product,
         task,
@@ -46,11 +38,5 @@ export default {
 </script>
 
 <style scoped>
-.subtitle {
-color: #aaa;
-font-weight: bold;
-font-size: 95%;
-}
-
 </style>
 

@@ -12,6 +12,8 @@ const logger = winston.createLogger(config.logger.winston);
 const db = require('../api/models');
 const common = require('../api/common');
 
+console.log("running appinfo");
+
 db.init(function(err) {
     if(err) throw err;
     rcon = redis.createClient(config.redis.port, config.redis.server);
@@ -102,7 +104,6 @@ function handle_app(app, cb) {
 
         //now save the app
         next=>{
-            logger.debug("saving app");
             app.save(next);
         },
 
