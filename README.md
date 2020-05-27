@@ -4,9 +4,9 @@ The brainlife.io warehouse provides most of the user interface functionality and
 
 ![architecture](https://docs.google.com/drawings/d/e/2PACX-1vSbxpvxhckYT5rUJReexZdbaL4xZpMDiebDP-yQAxrcy1VwKCAHYQQTWE8mMQ4lBgQg9qpcZcZmaEr1/pub?w=960&amp;h=551)
 
-For more information, please read [Brainlife Doc](https://brain-life.github.io/docs/)
+For more information, please read [Brainlife Doc](https://brainlife.io/docs/)
 
-For Warehouse API doc, please read [Warehouse API Doc](https://brain-life.github.io/warehouse/apidoc/)
+For Warehouse API doc, please read [Warehouse API Doc](https://brainlife.github.io/warehouse/apidoc/)
 
 ### Author
 - Soichi Hayashi (hayashis@iu.edu)
