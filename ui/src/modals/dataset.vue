@@ -141,7 +141,7 @@
                                         </a>
                                     </p>
                                     <app slot="header"
-                                        :appid="dataset.prov.task.config._app" 
+                                        :appid="dataset.prov.task && dataset.prov.task.config._app" 
                                         :branch="dataset.prov.task.service_branch||'master'">
                                         <taskconfig style="margin: 10px; margin-bottom: 40px;" :task="dataset.prov.task"/>
                                     </app>
@@ -447,7 +447,6 @@ export default {
                             tooltip += "<table class='table table-sm'>";
                             tooltip += recs.join("\n");
                             tooltip += "</table>";
-                            //console.dir(tooltip);
                         }
                     }
                     node.title = tooltip+"<small>"+node.id+"</small>";
@@ -979,5 +978,9 @@ background-color: white;
 border: none;
 box-shadow: 2px 2px 4px rgba(0,0,0,.1);
 opacity: 0.8;
+}
+.table-sm th, .table-sm td {
+padding: 0px 2px;
+border-top: 1px solid #0001;
 }
 </style>

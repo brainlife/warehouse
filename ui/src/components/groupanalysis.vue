@@ -6,7 +6,7 @@
         </div>
         <iframe :src="'https://dev1.soichi.us/ipython/'+selected.port+'/lab?token='+selected.token" frameBorder="0"/>
     </div>
-    <div v-else class="home">
+    <div v-else-if="ready" class="home">
         <div class="welcome" v-if="tasks.length == 0">
             <b-alert show variant="warning">Experimental</b-alert>
             <p>
@@ -23,10 +23,8 @@
                     <b-col cols="3">
                         Creator
                     </b-col>
-                    <b-col cols="3">
+                    <b-col cols="5">
                         Status
-                    </b-col>
-                    <b-col cols="2">
                     </b-col>
                 </b-row>
             </div>
@@ -41,26 +39,24 @@
                             <contact :id="task.user_id" size="small"/>
                             <time style="float: right"><timeago :datetime="task.create_date" :auto-update="60"/></time>
                         </b-col>
-                        <b-col cols="3">
-                            <div style="float: right">
-                                <div class="button" v-if="task.status == 'running'" title="Stop" @click="stop(task)">
-                                    <icon name="stop-circle"/> Stop
-                                </div>
-                                <div class="button" v-if="task.status == 'stopped' || task.status == 'failed'" title="Rerun" @click="rerun(task)">
-                                    <icon name="play"/> Rerun
-                                </div>
-                                <div class="button" title="Remove this container" @click="remove(task)">
-                                    <icon name="trash"/>
-                                </div>
-                            </div>
+                        <b-col cols="5">
+                            <b-button-group style="float: right">
+                                <b-dropdown right split text="Open" variant="primary" @click="open(task)">
+                                    <b-dropdown-item v-if="task.status == 'running'" title="Stop" @click="stop(task)">
+                                        <icon name="stop-circle"/> Stop
+                                    </b-dropdown-item>
+                                    <b-dropdown-item v-if="task.status == 'stopped' || task.status == 'failed'" title="Rerun" @click="rerun(task)">
+                                        <icon name="play"/> Rerun
+                                    </b-dropdown-item>
+                                    <b-dropdown-divider></b-dropdown-divider>
+                                    <b-dropdown-item title="Remove this container" @click="remove(task)">
+                                        <icon name="trash"/> Remove
+                                    </b-dropdown-item>
+                                </b-dropdown>
+                            </b-button-group>
 
                             <statustag :status="task.status"/><br>
                             {{task.status_msg}}
-                        </b-col>
-                        <b-col cols="2">
-                            <b-button size="sm" variant="primary" v-if="task.status_msg == 'running'" title="Open the container" @click="open(task)">
-                                <icon name="play"/> Open
-                            </b-button>
                         </b-col>
                     </b-row>
                 </div>
@@ -70,11 +66,9 @@
         <b-button @click="launch" class="button-fixed" v-b-tooltip.hover title="Launch New Analysis">
             <icon name="plus" scale="2"/>
         </b-button>
-        <!--
-        <div v-if="config.debug">
-            <pre>{{tasks}}</pre>
-        </div>
-        -->
+    </div>
+    <div v-else class="home">
+        Loading...
     </div>
 </div>
 </template>
@@ -106,6 +100,7 @@ export default {
 
             ws: null, //websocket
 
+            ready: false,
             config: Vue.config,
         }
     },
@@ -159,6 +154,7 @@ export default {
                 }
             }).then(res=>{
                 this.tasks = res.data.tasks;
+                this.ready = true;
             });
         });
     },
@@ -222,6 +218,11 @@ export default {
         },
 
         open(task) {
+            if(task.status_msg != 'running') {
+                alert('please wait until the container starts running');
+                return;
+            }
+
             this.$http.get(Vue.config.amaretti_api+"/task/download/"+task._id+'/container.json').then(res=>{
                 if(res.status == 200) {
                     this.selected = res.data; 
@@ -260,9 +261,6 @@ iframe {
     top: 95x;
     width: calc(100% - 40px);
     height: calc(100% - 95px)
-    /* this creates scrolling issue with iframe
-    overflow: auto;
-    */
 }
 .selected-controller {
     position: fixed;

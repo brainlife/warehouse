@@ -7,15 +7,13 @@
 
             <!--value-->
             <td>
-                <pre v-if="v === null" class="text-muted" style="margin-bottom: 0;">null</pre>
-                <span v-else-if="v === ''">(empty)</span>
-                <pre v-else-if="typeof v == 'object'" style="margin-bottom: 0;">{{JSON.stringify(v, null, 4)}}</pre>
-                <pre v-else style="white-space: pre-wrap; margin-bottom: 0;">{{v}}</pre>
-            </td>
-
-            <!--default-->
-            <td>
-                <span v-if="!is_default(k)">(default: {{get_default(k)}})</span>
+                <div style="display: inline-block;">
+                    <pre v-if="v === null" class="text-muted" style="margin-bottom: 0;">null</pre>
+                    <span v-else-if="v === ''">(empty)</span>
+                    <pre v-else-if="typeof v == 'object'" style="margin-bottom: 0;">{{JSON.stringify(v, null, 4)}}</pre>
+                    <pre v-else style="white-space: pre-wrap; margin-bottom: 0;">{{v}}</pre>
+                </div>
+                <span style="position: relative; top: -4px; opacity: 0.6;" v-if="!is_default(k)">(default: {{get_default(k)}})</span>
             </td>
             
             <!--desc-->
@@ -111,17 +109,17 @@ export default {
             var d = this.appconfig[key].default;
             //console.dir(d);
             if(d === undefined) {
-                return "(not set)";
+                return "[not set]";
             }
             if(d === null) {
-                return "(null)";
+                return "[null]";
             }
             if(typeof d == 'boolean') {
-                if(d) return "(true)";
-                return "(false)";
+                if(d) return "true";
+                return "false";
             }
             if(d === '') {
-                return "(empty)";
+                return "[empty]";
             }
             return d;
         },

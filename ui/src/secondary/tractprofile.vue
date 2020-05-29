@@ -2,7 +2,7 @@
 <div>
     <b-row>
         <b-col>
-            TODO..
+            <!--
             <a :href="config.api+'/secondary/'+task._id+'/'+output.id+'/secondary/aparc+aseg.nii.gz?at='+config.jwt">
                 aparc+aseg.nii.gz
             </a>
@@ -12,13 +12,11 @@
             <a :href="config.api+'/secondary/'+task._id+'/'+output.id+'/secondary/aparc.DKTatlas+aseg.nii.gz?at='+config.jwt">
                 aparc.DKTatlas+aseg.nii.gz
             </a>
+            -->
+            TODO..
+            {{product.meta.csvs}}
         </b-col>
     </b-row>
-
-    <!-- metadata can be accessed via product.meta-->
-    <!--
-    {{product.meta}}
-    -->
 </div>
 </template>
 

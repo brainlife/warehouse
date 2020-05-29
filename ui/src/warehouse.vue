@@ -565,4 +565,8 @@ background-color: #50bfff;
 color: white;
 background-color: gray;
 }
+.table-sm th {
+padding: 2px;
+border-top: 1px solid #0001;
+}
 </style>

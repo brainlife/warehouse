@@ -70,10 +70,17 @@ export default {
             //will come from db someday
             apps: [
                 {
-                    name: "Brainlife Generic Jupyter Notebook", 
+                    name: "Brainlife dipy Jupyter Notebook", 
                     img: "https://kanoki.org/wp-content/uploads/2017/07/Screen-Shot-2017-07-15-at-04.59.36.png",
                     desc: "Jupyter Datascience Notebook (lab-2.1.1) with Dipy and Fury",
-                    container: "brainlife/ga-base",
+                    container: "brainlife/ga-dipy",
+                    tag: "1.0",
+                },
+                {
+                    name: "Brainlife Octave(matlab) Jupyter Notebook", 
+                    img: "https://kanoki.org/wp-content/uploads/2017/07/Screen-Shot-2017-07-15-at-04.59.36.png",
+                    desc: "Jupyter Datascience Notebook (lab-2.1.1) with Octave",
+                    container: "brainlife/ga-octave",
                     tag: "1.0",
                 },
                 {

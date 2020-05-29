@@ -64,7 +64,8 @@ router.get('/list/:projectid', jwt({secret: config.express.pubkey}), (req, res, 
                         tags: output.tags,
                         datatype_tags: output.datatype_tags,
 
-                        path: project.group_id+"/"+task.instance_id+"/"+task.config.validator_task.follow_task_id+"/"+output.id+"/secondary",
+                        //path: project.group_id+"/"+task.instance_id+"/"+task.config.validator_task.follow_task_id+"/"+output.id+"/secondary",
+                        path: task.instance_id+"/"+task.config.validator_task.follow_task_id+"/"+output.id+"/secondary",
                     }
                 });
                 res.json(sectasks);

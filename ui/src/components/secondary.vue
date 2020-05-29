@@ -35,6 +35,9 @@
         <!--freesurfer-->
         <secondaryFreesurfer v-else-if="output.datatype == '58cb22c8e13a50849b25882e'" 
             :task="task" :output="output" :product="product"/>
+        <!--tractprofile-->
+        <secondaryTractprofile v-else-if="output.datatype == '5965467cb09297d8d81bdbcd'" 
+            :task="task" :output="output" :product="product"/>
 
         <div v-else>
             <b-alert show variant="secondary">
@@ -73,6 +76,7 @@ export default {
         'secondaryRois': ()=> import('@/secondary/rois'),
         'secondaryWmc': ()=> import('@/secondary/wmc'),
         'secondaryFreesurfer': ()=> import('@/secondary/freesurfer'),
+        'secondaryTractprofile': ()=> import('@/secondary/tractprofile'),
     },
     watch: {
         task() {

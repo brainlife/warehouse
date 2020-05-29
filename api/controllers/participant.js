@@ -26,6 +26,15 @@ function getParticipants(req, project, cb) {
             participants.save();
         }
 
+        //migrate
+        if(participants.rows) {
+            participants.subjects = participants.rows;
+            participants.rows = undefined;
+            participants.save();
+
+            delete participants.rows;
+        }
+
         cb(null, participants);
     });
 }

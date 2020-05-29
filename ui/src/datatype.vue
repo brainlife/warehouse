@@ -11,7 +11,7 @@
                     <div @click="back()" class="button button-page" style="position: absolute; left: -30px;">
                         <icon name="angle-left" scale="1.5"/>
                     </div>
-                    <h2>
+                    <h2 style="position: relative; top: -3px;">
                         <datatypetag :datatype="datatype" :trimname="!!(~datatype.name.indexOf('neuro/'))"/>
                     </h2>
                     <p style="opacity: 0.6">{{datatype.desc}}</p>
@@ -66,7 +66,10 @@
                 </div>
 
                 <div v-if="sample_datasets.length > 0" class="box">
-                    <span class="form-header">Sample Datasets</span>
+                    <span class="form-header">Sample Data</span>
+                    <p>
+                        <small style="opacity: 0.7;">Please use the following data objects are template.</small>
+                    </p>
                     <div v-for="dataset in sample_datasets" :key="dataset._id" class="sample-dataset" @click="open_sample_dataset(dataset._id)">
                         <b-row>
                             <b-col cols="6">
@@ -427,7 +430,6 @@ height: 150px;
 }
 .sample-dataset {
 background-color: white;
-border-bottom: 1px solid #ddd;
 padding: 5px 10px;
 cursor: pointer;
 } 

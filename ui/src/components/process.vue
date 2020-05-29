@@ -116,8 +116,11 @@
                         </div>
                         <div class="subinfo" v-if="output.secondary_task">
                             <div class="subtitle">Seconary Output Archiver</div>
-                            <statusicon :status="output.secondary_task.status"/>
-                            <small>{{output.secondary_task.status_msg}} ({{output.secondary_task._id}})</small>
+                            <small v-if="output.secondary_task.finish_date"><icon name="check"/> Archived</small>
+                            <small v-else>
+                                <statusicon :status="output.secondary_task.status"/>
+                                {{output.secondary_task.status_msg}}</small>
+                            <small>({{output.secondary_task._id}})</small>
                         </div>
 
                         <div class="subinfo" v-if="findarchived(task, output).length > 0">
