@@ -5,7 +5,7 @@
         <div v-else>
             <div class="header header-sticky">
                 <b-container style="position: relative;">
-                    <div style="float: right;">
+                    <div style="float: right; z-index: 1; position: relative;">
                         <b-btn @click="edit" v-if="canedit" variant="secondary" size="sm"><icon name="edit"/> Edit</b-btn>
                     </div>
                     <div @click="back()" class="button button-page" style="position: absolute; left: -30px;">

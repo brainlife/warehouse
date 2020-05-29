@@ -112,7 +112,8 @@
 
                         <div class="subinfo" v-if="output.dtv_task">
                             <!--<div class="subtitle">{{output.dtv_task.service}} <small>{{output.dtv_task._id}}</small></div>-->
-                            <dtv :task="output.dtv_task" :output="output" :product="task.product"/>
+                            <!--<dtv :task="output.dtv_task" :output="output" :product="task.product"/>-->
+                            <dtv :task="output.dtv_task" :output="output"/>
                         </div>
                         <div class="subinfo" v-if="output.secondary_task">
                             <div class="subtitle">Seconary Output Archiver</div>
@@ -416,7 +417,7 @@ export default {
         },
         update_taskdesc(task) {
             task.desc = this.editing_taskdesc[task.config._tid];
-            this.$http.put(Vue.config.wf_api+'/task/'+task._id, {desc: this.editing_taskdesc[task.config._tid].trim()})
+            this.$http.put(Vue.config.amaretti_api+'/task/'+task._id, {desc: this.editing_taskdesc[task.config._tid].trim()})
             .then(res=>{
                 this.editing_taskdesc[task.config._tid] = undefined;
             }).catch(err=>{
@@ -577,7 +578,7 @@ export default {
                 };
             };
 
-            this.$http.get(Vue.config.wf_api+'/task', {params: {
+            this.$http.get(Vue.config.amaretti_api+'/task', {params: {
                 find: JSON.stringify({
                     instance_id: this.instance._id,
                     //status: {$ne: "removed"}, //need to load validator that's removed
@@ -637,7 +638,7 @@ export default {
 
         loadProduct(tasks) {
             let ids = tasks.map(task=>task._id);
-            this.$http.get(Vue.config.wf_api+'/task/product/', {params: {ids}}).then(res=>{
+            this.$http.get(Vue.config.amaretti_api+'/task/product/', {params: {ids}}).then(res=>{
                 res.data.forEach(rec=>{
                     let task = tasks.find(t=>t._id == rec.task_id);
                     Vue.set(task, 'product', rec.product);
@@ -667,7 +668,7 @@ export default {
         },
 
         download(task, output) {
-            var url = Vue.config.wf_api+'/task/download/'+task._id+'/';
+            var url = Vue.config.amaretti_api+'/task/download/'+task._id+'/';
             this.$notify({type: 'info', text: "Download should start soon.."});
             if(output.subdir) url+=output.subdir;
             url+='?at='+Vue.config.jwt;
@@ -703,7 +704,7 @@ export default {
             //set last minutes stuff
             task.instance_id = this.instance._id;
             task.config._tid = this.next_tid();
-            this.$http.post(Vue.config.wf_api+'/task', task).then(res=>{
+            this.$http.post(Vue.config.amaretti_api+'/task', task).then(res=>{
                 var _task = res.data.task;
             }).catch(this.notify_error);
         },
@@ -744,7 +745,7 @@ export default {
                 //if(this.selected == this.instance) this.toggle_instance(instance);
 
                 //remove for real
-                this.$http.delete(Vue.config.wf_api+'/instance/'+this.instance._id).then(res=>{
+                this.$http.delete(Vue.config.amaretti_api+'/instance/'+this.instance._id).then(res=>{
                     this.$notify({type: "success", text: "Removing the process.."});
                     this.$emit("remove"); 
                 }).catch(err=>{

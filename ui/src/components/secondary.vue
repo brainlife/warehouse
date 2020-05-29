@@ -5,9 +5,6 @@
         <small v-else>Pending secondary output..</small>
     </div>
     <div v-if="secondary">
-        <!--
-        <pre>{{task.service}} {{task.service_branch}} {{task.commit_id}}</pre>
-        -->
         <!--t1w-->
         <secondaryAnat v-if="output.datatype == '58c33bcee13a50849b25879a'" 
             :task="task" :output="output" :product="product"/>

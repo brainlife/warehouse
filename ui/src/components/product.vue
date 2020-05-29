@@ -1,6 +1,6 @@
 <template>
 <div v-if="product">
-    <div v-for="alert in alerts">
+    <div v-for="(alert, idx) in alerts" :key="idx">
         <b-alert v-if="alert.type == 'error'" variant="danger" show>{{alert.msg}}</b-alert>
         <b-alert v-else-if="alert.type == 'info'" variant="secondary" show>{{alert.msg}}</b-alert>
         <b-alert v-else-if="alert.type == 'warning'" variant="dark" show>{{alert.msg}}</b-alert>
@@ -36,7 +36,7 @@ import VuePlotly from '@statnett/vue-plotly'
 const alert_types = ["error", "info", "danger", "warning", "success"];
 
 export default {
-    props: ['product'],
+    props: ['product', 'skipFollow'],
 
     components: {
         VuePlotly,
@@ -63,25 +63,37 @@ export default {
         },
         alerts() {
             if(!this.product.brainlife) return [];
-            return this.product.brainlife.filter(p=>alert_types.includes(p.type)); 
+            let items = this.product.brainlife.filter(p=>alert_types.includes(p.type)); 
+            if(this.skipFollow) items = this.filterFollow(items);
+            return items;
         },
         plots() {
             if(!this.product.brainlife) return [];
-            return this.product.brainlife.filter(p=>p.type == 'plotly');
+            let items = this.product.brainlife.filter(p=>p.type == 'plotly');
+            if(this.skipFollow) items = this.filterFollow(items);
+            return items;
         },
         images() {
             if(!this.product.brainlife) return [];
-            return this.product.brainlife.filter(p=>p.type.startsWith('image/'));
+            let items = this.product.brainlife.filter(p=>p.type.startsWith('image/'));
+            if(this.skipFollow) items = this.filterFollow(items);
+            return items;
         },
 
         shouldShowTab() {
             if(!this.product.brainlife) return false;
-            let alerts = this.product.brainlife.filter(p=>!alert_types.includes(p.type)); 
-            return (alerts.length > 0)
+            let items = this.product.brainlife.filter(p=>!alert_types.includes(p.type)); 
+            items = this.filterFollow(items);
+            return (items.length > 0)
         },
     },
 
     methods: {
+        filterFollow(items) {
+            if(!this.skipFollow) return items; 
+            return items.filter(item=>!Boolean(item._follow));
+        },
+
         editorInit(editor) {
             require('brace/mode/json')
 

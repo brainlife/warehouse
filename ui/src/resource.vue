@@ -163,7 +163,7 @@
                     <table class="table table-sm">
                         <thead>
                             <tr style="background-color: #eee;">
-                                <th style="padding-left: 20px;">Group</th>
+                                <th style="padding-left: 20px; width: 100px;">Group</th>
                                 <th>Status</th>
                                 <th>Submitter</th>
                                 <th>Date</th>
