@@ -134,7 +134,7 @@ function register_dataset(task, output, product, cb) {
         },
     }, (err, _dataset)=>{
         if(err) return cb(err);
-        exports.publish("dataset.create."+task.user_id+"."+_dataset.project+"."+_dataset._id, _dataset);
+        //exports.publish("dataset.create."+task.user_id+"."+_dataset.project+"."+_dataset._id, _dataset);
         
         //store product in different table
         db.DatasetProducts.create({
@@ -147,7 +147,7 @@ function register_dataset(task, output, product, cb) {
             //service_branch: task.service_branch,
 
         }, (err, _dataset_product)=>{
-            if(!err) exports.publish("dataset.create."+task.user_id+"."+output.archive.project+"."+_dataset._id, {});
+            if(!err) exports.publish("dataset.create."+task.user_id+"."+output.archive.project+"."+_dataset._id, _dataset);
             cb(err, _dataset);
         });
     });

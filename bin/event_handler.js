@@ -82,8 +82,10 @@ function subscribe() {
         next=>{
             //TODO - why can't I use warehouse queue for this?
             acon.queue('warehouse.dataset', {durable: true, autoDelete: false}, dataset_q=>{
-                dataset_q.bind('warehouse.dataset', '#');
+                dataset_q.bind('warehouse', 'dataset.create.*');
                 dataset_q.subscribe({ack: true}, (dataset, head, dinfo, ack)=>{
+                    //console.log("########################### RECEIVED dataset create event ###################");
+                    //console.dir(dataset);
                     handle_dataset(dataset, err=>{
                         if(err) {
                             logger.error(err)
@@ -98,6 +100,7 @@ function subscribe() {
        
         next=>{
             acon.queue('auth', {durable: true, autoDelete: false}, q=>{
+                //TODO why not just user.*?
                 q.bind('auth', 'user.create.*');
                 q.bind('auth', 'user.login.*');
                 q.subscribe({ack: true}, (msg, head, dinfo, ack)=>{
@@ -183,7 +186,6 @@ function handle_task(task, cb) {
         
         //number of task change events for each project
         //if(task._group_id) inc_count("task.group."+task._group_id+"."+task.status);  //too much data
-
         if(task.config && task.config._rule) {
             logger.debug("rule task status changed");
             debounce("update_rule_stats."+task.config._rule.id, ()=>{
