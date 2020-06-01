@@ -355,7 +355,7 @@ export default {
 
                 let routingKey = event.dinfo.routingKey; //"dataset.update.1.5aaeb3dc7bc1.5e309"
                 let dataset_id = routingKey.split(".")[4];
-                console.log(routingKey, dataset_id);
+                //console.log(routingKey, dataset_id);
 
                 //look for the dataset
                 this.pages.forEach(page=>{
@@ -366,7 +366,7 @@ export default {
                         if(old_dataset) break;
                     }
                     if(old_dataset) {
-                        console.log("updating");
+                        //console.log("updating");
                         //apply updates (don't apply all changes.. it could blow up populated field)
                         if(dataset.desc) old_dataset.desc = dataset.desc;
                         if(dataset.tags) old_dataset.tags = dataset.tags;
@@ -540,7 +540,7 @@ export default {
 
                 this.last_groups = {};
                 //loaded += res.data.datasets.length;
-                console.log("loaded", loaded);
+                //console.log("loaded", loaded);
                 if(this.total_datasets != loaded) {
                     //don't add last subject group - in case we might have more datasets for that key in the next page - so that we can join them together
                     this.last_groups[last_group] = groups[last_group];

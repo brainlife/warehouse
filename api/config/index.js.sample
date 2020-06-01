@@ -162,8 +162,8 @@ exports.datacite = {
 exports.storage_systems = {};
 
 exports.archive = {
-    storage_default: "wrangler",  
-    //storage_default: "osiris",  
+    //storage_default: "wrangler",  
+    storage_default: "osiris",  
     storage_config: {
         resource_id: "59ea931df82bb308c0197c3d", //wrangler-nfs server
     },
@@ -175,10 +175,6 @@ exports.groupanalysis = {
     gid: 3,
 }
 
-//
-// jetstream
-// //https://github.com/pkgcloud/pkgcloud/blob/master/examples/storage/rackspace.js
-//
 const js_config = require(__dirname+'/jetstream');
 const js_storage = pkgcloud.storage.createClient(js_config);
 exports.storage_systems.jetstream = {
@@ -419,7 +415,7 @@ exports.storage_systems.wrangler = {
 } 
 
 function get_osiris_archive_path(dataset) {
-    let _path = "/mnt/osiris-encfs/dev-archive/";
+    let _path = "/mnt/osiris/dev-archive/";
     _path += dataset.project+"/";
     _path += dataset._id+".tar";
     console.log(_path);
@@ -706,44 +702,6 @@ exports.storage_systems["nki"] = {
         cb(null, archive, dataset._id+".tar");
     },
 }
-
-/*
-//TODO - deprecate this in favor of url
-const openneuro_config = require(__dirname+'/openneuro');
-const openneuro_storage = pkgcloud.storage.createClient(openneuro_config);
-//I don't know how to stream directory structures like freesurfer..
-exports.storage_systems["openneuro"] = {
-    test: cb=>{
-        openneuro_storage.getContainer(openneuro_config.bucket, (err,container)=>{
-            if(err) return cb(err);
-            console.log("openneuro debug/test", container.files.length); //length should be 1000 (max)
-            cb();
-        }); 
-    }, 
-    stat: (dataset, cb)=>{
-        //can't obtain stats for .tar.gz because we are creating it on the fly
-        cb(null);
-    },
-    upload: (dataset, cb)=>{
-        cb("read only");
-    },
-    download: (dataset, cb)=>{
-        var archive = archiver('tar');
-        let gzip = zlib.createGzip();
-        dataset.storage_config.files.forEach(file=>{
-            console.log("downloading", file.s3, "from", openneuro_config.bucket, file.local);
-            //downloading from s3 takes 30 seconds before the first byte arrives.
-            //it's not archiver's fault or anything else.
-            //https://github.com/pkgcloud/pkgcloud/issues/596
-            var stream = openneuro_storage.download({container: openneuro_config.bucket, remote: file.s3});
-
-            archive.append(stream, {name: file.local});
-        });
-        archive.finalize();
-        cb(null, archive, dataset._id+".tar");
-    },
-}
-*/
 
 exports.storage_systems["url"] = {
     need_backup: false,

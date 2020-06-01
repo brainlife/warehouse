@@ -82,7 +82,7 @@ function subscribe() {
         next=>{
             //TODO - why can't I use warehouse queue for this?
             acon.queue('warehouse.dataset', {durable: true, autoDelete: false}, dataset_q=>{
-                dataset_q.bind('warehouse', 'dataset.create.*');
+                dataset_q.bind('warehouse', 'dataset.create.#');
                 dataset_q.subscribe({ack: true}, (dataset, head, dinfo, ack)=>{
                     //console.log("########################### RECEIVED dataset create event ###################");
                     //console.dir(dataset);
@@ -331,6 +331,7 @@ function handle_task(task, cb) {
                 }
                 next();
             }).catch(err=>{
+                console.error(err);
                 console.error("failed to load product for "+task._id); //TODO should I retry? how?
                 next();
             });
@@ -582,6 +583,8 @@ function invite_slack_user(email, real_name) {
         },  
     }).then(res=>{
         console.dir(res);
+    }).catch(err=>{
+        console.error(err);
     }); 
 }
 
@@ -640,6 +643,8 @@ ${JSON.stringify(iostackRes, null, 4)}
         }).then(res=>{
             console.dir(res);
         }); 
+    }).catch(err=>{
+        console.error(err);
     });
 }
 

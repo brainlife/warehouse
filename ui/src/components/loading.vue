@@ -47,7 +47,7 @@ z-index: 10;
 .loading-message {
 text-align: center;
 color: #0009;
-font-size: 200%;
+font-size: 150%;
 text-shadow: 0px 0px 5px #fff;
 padding: 30px;
 margin: 25%;

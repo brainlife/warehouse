@@ -3,21 +3,17 @@
 import Vue from 'vue'
 
 export default {
-    data: function() {
+    data() {
         return {
             task: null, 
             ws: null,
         }
     },
     destroyed() {
-        console.log("mixin wait destroyed");
+        clearTimeout(this.ws);
     },
-    mounted() {
-        console.log("mixin mounted");
-    },
-
     methods: {
-        wait: function(taskid, cb) {
+        wait(taskid, cb) {
             console.log("waiting for taskid", taskid);
             this.$http.get(Vue.config.wf_api+'/task', {params: {
                 find: JSON.stringify({ _id: taskid, })
@@ -32,11 +28,11 @@ export default {
                     console.debug("rerunning");
                     this.$http.put(Vue.config.wf_api+'/task/rerun/'+this.taskid).then(res => {
                         console.log("rerunning task");
-                        setTimeout(()=>{this.wait(taskid, cb)}, 300);
+                        this.ws = setTimeout(()=>{this.wait(taskid, cb)}, 1000);
                     });
                     break;
                 default:
-                    setTimeout(()=>{this.wait(taskid, cb)}, 300);
+                    this.ws = setTimeout(()=>{this.wait(taskid, cb)}, 1000);
                 }
             });
         },  

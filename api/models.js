@@ -49,19 +49,6 @@ exports.init = (cb)=>{
     });
 }
 
-/*
-const mongojs = require('mongojs');
-const MongoSlowQueryChecker = require('mongo-slow-queries');
-exports.list_slowqueries = (cb)=>{
-    let db = mongojs(config.mongodb);
-    let slowQueries = new MongoSlowQueryChecker({ db, queryThreshold: 3 });
-    slowQueries.get((err, queries)=>{
-        db.close();
-        cb(err, queries);
-    });
-}
-*/
-
 exports.disconnect = function(cb) {
     mongoose.disconnect(cb);
     common.disconnect_amqp(); //I don't think this works..
@@ -318,7 +305,7 @@ var datasetSchema = mongoose.Schema({
 
     //not set if user uploaded it. 
     prov: {
-        task: mongoose.Schema.Types.Mixed, //task document at the time of archival
+        task: mongoose.Schema.Types.Mixed, //task(app) that produced the output
         output_id: String, 
         subdir: String, //(optional) subdir that contained the actual output. often output_id == subdir
 
@@ -330,6 +317,7 @@ var datasetSchema = mongoose.Schema({
         ///////////////////////////////////////
     },
 
+
     //product.json content for this dataset (new) - might be subset of task.product
     product: mongoose.Schema.Types.Mixed,
 
@@ -339,7 +327,12 @@ var datasetSchema = mongoose.Schema({
     //removed - (freed) dataset is freed from storage system (remove_dataset.js will free)
     status: { type: String, default: "storing" },
     status_msg: String,
+
     archive_task_id: String, //amaretti task that was used to archive the data
+
+    //TODO..
+    //validator_task_id: String, //task id for dtv used to validate the output
+    //secondary_task_id: String, //task id for app-archive-secondary task used to store secondary output
 
     download_count: { type: Number, default: 0}, //number of time this dataset was downloaded
 

@@ -55,12 +55,13 @@ export default {
         'task',  //dtv task
         'output', //output spec
         'product', 
+        'secondary', 
     ],
     data() {
         return {
-            secondary: null,
-            secondary_na: false,
-            secondary_t: null,
+            //secondary: null,
+            //secondary_na: false,
+            //secondary_t: null,
 
             config: Vue.config,
         }
@@ -76,18 +77,20 @@ export default {
         'secondaryTractprofile': ()=> import('@/secondary/tractprofile'),
     },
     watch: {
+        /*
         task() {
             this.loadSecondaryTask();
         }
+        */
     },
     destroyed() {
         clearTimeout(this.secondary_t);
     },
     mounted() {
-        console.log("secondary task");
-        this.loadSecondaryTask();
+        //this.loadSecondaryTask();
     },
     methods: {
+        /*
         loadSecondaryTask() {
             clearTimeout(this.secondary_t);
 
@@ -113,7 +116,6 @@ export default {
                     //so we don't keep re-loading..
                     const old = new Date();
                     old.setHours(old.getHours()-1);
-                    console.log(this.task.finish_date, old);
                     if(new Date(this.task.finish_date) < old) {
                         console.log("looks like app-archive-secondary was not submitted for "+this.task._id);
                         this.secondary_na = true;
@@ -129,6 +131,7 @@ export default {
                 console.error(err);
             });
         }   
+        */
     },
 }
 </script>

@@ -111,8 +111,6 @@
                         </b-collapse>
 
                         <div class="subinfo" v-if="output.dtv_task">
-                            <!--<div class="subtitle">{{output.dtv_task.service}} <small>{{output.dtv_task._id}}</small></div>-->
-                            <!--<dtv :task="output.dtv_task" :output="output" :product="task.product"/>-->
                             <dtv :task="output.dtv_task" :output="output"/>
                         </div>
                         <div class="subinfo" v-if="output.secondary_task">
@@ -399,7 +397,9 @@ export default {
         set_secondary_task(secondary_task) {
             if(!this.tasks) return;
             let dtv_task = secondary_task.config.validator_task;
+            if(!dtv_task.follow_task_id) return; 
             let task = this.tasks.find(task=>task._id == dtv_task.follow_task_id);
+            if(!task) return; //for dev?
             let output_id = dtv_task.config._outputs[0].id;
             let output = task.config._outputs.find(out=>out.id == output_id);
             Vue.set(output, 'secondary_task', secondary_task);
@@ -560,8 +560,8 @@ export default {
                         break;
                     case "warehouse":
                         //see if we care..
-                        console.log("warehouse event received", event.dinfo.routingKey);
-                        console.dir(event);
+                        //console.log("warehouse event received", event.dinfo.routingKey);
+                        //console.dir(event);
                         let routingKey = event.dinfo.routingKey.split(".");
                         let dataset_id = routingKey[4];  
                         let archived_dataset = this.archived.find(d=>d._id == dataset_id);

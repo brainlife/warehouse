@@ -202,7 +202,7 @@ export default {
 
     watch: {
         datatype() {
-            console.log("datatype changed")
+            //console.log("datatype changed")
             this.change_datatype();
         }
     },
@@ -269,19 +269,19 @@ export default {
             let name = "upload."+this.project.group_id;
             this.$http.get(Vue.config.wf_api+'/instance?find='+JSON.stringify({ name })).then(res=>{
                 if(res.data.instances.length > 0) { 
-                    console.log("reusing instance");
-                    console.dir(res.data);
+                    //console.log("reusing instance");
+                    //console.dir(res.data);
                     this.instance = res.data.instances[0];
                     this.subscribeInstance();
                     return;
                 }
 
-                console.log("creating new instance");
+                //console.log("creating new instance");
                 this.$http.post(Vue.config.wf_api+'/instance', {
                     name,
                     group_id: this.project.group_id,
                 }).then(res=>{
-                    console.dir(res.data);
+                    //console.dir(res.data);
                     this.instance = res.data;
                     this.subscribeInstance();
                 }).catch(err=>{
@@ -295,7 +295,7 @@ export default {
             var url = Vue.config.event_ws+"/subscribe?jwt="+Vue.config.jwt;
             this.ws = new ReconnectingWebSocket(url, null, {debug: Vue.config.debug, reconnectInterval: 3000});
             this.ws.onopen = (e)=>{
-                console.log("websocket opened binding to wf.task", this.instance._id+".#");
+                //console.log("websocket opened binding to wf.task", this.instance._id+".#");
                 this.ws.send(JSON.stringify({
                   bind: {
                     ex: "wf.task",

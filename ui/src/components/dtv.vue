@@ -11,7 +11,8 @@
             <b-alert show v-for="(warning, idx) in task.product.warnings" :key="idx" variant="secondary"><b>Warning</b> {{warning}}</b-alert>
             <product :product="task.product" skipFollow="true"/>
         </div>
-        <secondary v-if="secondaryArchived && product" :task="task" :output="output" :product="product"/>
+        <secondary v-if="secondary && product" 
+            :task="task" :output="output" :product="product" :secondary="secondary"/>
     </div>
     <div v-else>
         <task :task="task"/>
@@ -24,22 +25,39 @@ import Vue from 'vue'
 import product from '@/components/product'
 import secondary from '@/components/secondary'
 import task from '@/components/task'
+import secondaryWaiter from '@/mixins/secondarywaiter'
 
 import axios from 'axios'
 
 export default {
+    mixins: [secondaryWaiter],
     props: ['task', 'output'],
+
     components: {
         secondary,
         product,
         task,
     },
+
     data() {
         return {
             product: null, 
-            secondaryArchived: false,
+            secondary: null, 
         }
     },
+
+    watch: {
+        task() {
+            if(this.task.finish_date && !this.secondary) {
+                console.log("watch detected dtv finish");
+                this.waitSecondaryArchive(this.task, (err, secondary)=>{
+                    if(err) console.error(err);
+                    else this.secondary = secondary;
+                });
+            }
+        }
+    },
+
     mounted() {
         this.$http.get(Vue.config.wf_api+'/task/product/', {params: {ids: [this.task._id]}}).then(res=>{
             if(res.data.length == 1) {
@@ -49,47 +67,13 @@ export default {
             }
         });
 
-        this.checkSecondaryArchive();
-    },
-    methods: {
-        checkSecondaryArchive() {
-            console.log("checking to see if secondary archive task has finished", this.task._id);
-            //look for finished secondary archive task
-            this.$http.get(Vue.config.amaretti_api+'/task', {params: {
-                find: JSON.stringify({
-                    instance_id: this.task.instance_id,
-                    'deps_config.task': this.task._id,
-                    //finish_date: {$exists: true},
-                }),
-                populate: 'finish_date status',
-                limit: 1,
-            }})
-            .then(res=>{
-                if(res.data.tasks.length == 0) {
-                    console.log("secondary archiver hasn't been submitted yet.. waiting");
-                    setTimeout(()=>{
-                        this.checkSecondaryArchive();
-                    }, 5000);
-                } else if(res.data.tasks.length == 1) {
-                    let task = res.data.tasks[0];
-                    if(task.finish_date) {
-                        console.log("secondary archiver exists and it's finished");
-                        this.secondaryArchived = true;
-                    } else {
-                        if(task.status == "requested" || task.status == "running") {
-                            console.log("secondary task archiver still running.. waiting");
-                            //secondary data not yet archived? pull again later
-                            setTimeout(()=>{
-                                this.checkSecondaryArchive();
-                            }, 5000);
-                        } else {
-                            console.error("secondary task failed?");
-                            console.dir(task);
-                        }
-                    }
-                }
+        if(this.task.finish_date) {
+            console.log("validator finished.. now waiting for secondary");
+            this.waitSecondaryArchive(this.task, (err, secondary)=>{
+                if(err) console.error(err);
+                else this.secondary = secondary;
             });
-        },
+        }
     },
 }
 </script>

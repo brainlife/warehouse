@@ -15,21 +15,27 @@
             -->
             <div v-for="plot in plots" :key="plot.csv">
                 <center><b>{{plot.csv}}</b></center>
-                <b-row no-gutters="true">
+                <b-row :no-gutters="true">
                     <b-col>
-                        <vue-plotly :data="plot.ad.data" :layout="plot.ad.layout" :autoResize="true"/>
+                        <vue-plotly :data="plot.p1.data" :layout="plot.p1.layout" :autoResize="true"/>
                     </b-col>
                     <b-col>
-                        <vue-plotly :data="plot.fa.data" :layout="plot.fa.layout" :autoResize="true"/>
+                        <vue-plotly :data="plot.p2.data" :layout="plot.p2.layout" :autoResize="true"/>
                     </b-col>
                     <b-col>
-                        <vue-plotly :data="plot.md.data" :layout="plot.md.layout" :autoResize="true"/>
+                        <vue-plotly :data="plot.p3.data" :layout="plot.p3.layout" :autoResize="true"/>
                     </b-col>
-                    <b-col>
-                        <vue-plotly :data="plot.rd.data" :layout="plot.rd.layout" :autoResize="true"/>
+                    <b-col v-if="plot.p4">
+                        <vue-plotly :data="plot.p4.data" :layout="plot.p4.layout" :autoResize="true"/>
                     </b-col>
                 </b-row>
             </div>
+            <small v-if="product.meta.tensor_measures">
+                TODO - describe tensor measures. 
+            </small>
+            <small v-if="product.meta.noddi_measures">
+                NDI is a summary of the intra-cellular anisotropic diffusion, ISOVF is a summary of the extracellular isotropic diffusion, and ODI is a mathematical inference based on the watson distribution that depends on both anistropic and isotropic components
+            </small>
         </b-col>
     </b-row>
     <small>TODO... Only showing only the first few CSVs. noddi measures is coming soon!</small>
@@ -67,55 +73,55 @@ export default {
             this.$http.get('secondary/'+this.task._id+'/'+this.output.id+'/secondary/profiles/'+csv).then(res=>{
                 let plot = {
                     csv, 
-                    ad: { 
-                        data: [], 
-                        layout: {
-                            title: "AD",
-                            showlegend: false,
-                            margin: {
-                                l: 30, r: 0, b: 30, t: 30, pad: 0 
-                            },
-                            height: 300,
-                        }
-                    }, 
-                    fa: { 
-                        data: [], 
-                        layout: {
-                            title: "FA",
-                            showlegend: false,
-                            margin: {
-                                l: 30, r: 0, b: 30, t: 30, pad: 0 
-                            },
-                            height: 300,
-                        }
-                    }, 
-                    md: { 
-                        data: [], 
-                        layout: {
-                            title: "MD",
-                            showlegend: false,
-                            margin: {
-                                l: 30, r: 0, b: 30, t: 30, pad: 0 
-                            },
-                            height: 300,
-                        }
-                    }, 
-                    rd: { 
-                        data: [], 
-                        layout: {
-                            title: "RD",
-                            showlegend: false,
-                            margin: {
-                                l: 30, r: 0, b: 30, t: 30, pad: 0 
-                            },
-                            height: 300,
-                        }
-                    }, 
                 };
+            
+                function initPlot(name, unit) {
+                    return {
+                        layout: {
+                            title: name,
+                            showlegend: false,
+                            margin: {
+                                l: 40, r: 10, b: 30, t: 30, pad: 0 
+                            },
+                            xaxis: {
+                                title: {
+                                    text: 'node postition',
+                                    font: {
+                                        color: '#999',
+                                    },
+                                },
+                            },
+                            yaxis: {
+                                title: {
+                                    text: unit,
+                                    font: {
+                                        color: '#999',
+                                        size: 12,
+                                    },
+                                },
+                            },
+                            height: 300,
+                        },
+                        data: [],
+                    }
+                }
+
+                if(this.product.meta.tensor_measures) {
+                    //ad_1,ad_2,fa_1,fa_2,md_1,md_2,rd_1,rd_2,ad_inverse_1,ad_inverse_2,fa_inverse_1,fa_inverse_2,md_inverse_1,md_inverse_2,rd_inverse_1,rd_inverse_2,ndi_1,ndi_2,isovf_1,isovf_2,odi_1,odi_2,ndi_inverse_1,ndi_inverse_2,isovf_inverse_1,isovf_inverse_2,odi_inverse_1,odi_inverse_2
+                    plot.p1 = initPlot("Axial Diffusivity (AD)", "nm^2/msec");
+                    plot.p2 = initPlot("Fractional Anisotropy (FA)", "normalized fraction of anisotropic component");
+                    plot.p3 = initPlot("Mean Diffusivity (MD)", "nm^2/msec");
+                    plot.p4 = initPlot("Radial Diffusivity (RD)", "nm^2/msec");
+                } else {
+                    //ndi_1,ndi_2,isovf_1,isovf_2,odi_1,odi_2,ndi_inverse_1,ndi_inverse_2,isovf_inverse_1,isovf_inverse_2,odi_inverse_1,odi_inverse_2
+                    plot.p1 = initPlot("Neurite Density Index (NDI)", "intra-cellular volume fraction");
+                    plot.p2 = initPlot("Isotropic Volume Fraction (ISOVF)", "extra-cellular volume fraction");
+                    plot.p3 = initPlot("Orientation Dispersion Index (ODI)", "relative dispersion of fiber orientation");
+                }
 
                 let rows = res.data.split("\n"); 
                 let header = rows.shift();
-                console.log(header);
+                //console.log(header);
 
                 //value
                 let x = [];
@@ -159,37 +165,39 @@ export default {
                 });
 
                 //now put data together for each plots
-                plot.ad.data.push({
+                plot.p1.data.push({
                     x: x2,
                     y: ad_y2,
                     fill: "tozerox",
                     line: { color: "transparent"},
                 })
-                plot.ad.data.push({ x, y: ad_y, })
+                plot.p1.data.push({ x, y: ad_y, })
 
-                plot.fa.data.push({
+                plot.p2.data.push({
                     x: x2,
                     y: fa_y2,
                     fill: "tozerox",
                     line: { color: "transparent"},
                 })
-                plot.fa.data.push({ x, y: fa_y, })
+                plot.p2.data.push({ x, y: fa_y, })
 
-                plot.md.data.push({
+                plot.p3.data.push({
                     x: x2,
                     y: md_y2,
                     fill: "tozerox",
                     line: { color: "transparent"},
                 })
-                plot.md.data.push({ x, y: md_y, })
+                plot.p3.data.push({ x, y: md_y, })
 
-                plot.rd.data.push({
-                    x: x2,
-                    y: rd_y2,
-                    fill: "tozerox",
-                    line: { color: "transparent"},
-                })
-                plot.rd.data.push({ x, y: rd_y, })
+                if(plot.p4) {
+                    plot.p4.data.push({
+                        x: x2,
+                        y: rd_y2,
+                        fill: "tozerox",
+                        line: { color: "transparent"},
+                    })
+                    plot.p4.data.push({ x, y: rd_y, })
+                }
 
                 this.plots.push(plot);
             });

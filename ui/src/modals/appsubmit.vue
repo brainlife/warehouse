@@ -529,8 +529,8 @@ export default {
                 
                 return this.$http.post(Vue.config.wf_api+'/task', submissionParams);
             }).then(res=>{
-                console.log("submitted app task", res.data.task);
-                console.log("/project/"+this.project+"/process/"+instance._id);
+                //console.log("submitted app task", res.data.task);
+                //console.log("/project/"+this.project+"/process/"+instance._id);
                 this.$router.push("/project/"+this.project+"/process/"+instance._id);
             }).catch(err=>{
                 console.error(err);
