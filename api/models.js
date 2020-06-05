@@ -167,6 +167,9 @@ var projectSchema = mongoose.Schema({
     
     create_date: { type: Date, default: Date.now },
 
+    //enable group_analysis UI (experimental)
+    group_analysis: { type: Boolean, default: false },
+
     removed: { type: Boolean, default: false },
 });
 exports.Projects = mongoose.model("Projects", projectSchema);

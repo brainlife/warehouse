@@ -178,6 +178,7 @@ export default {
         },
 
         download_file(file) {
+            this.$notify({text: "Downloading file.. Please wait"});
             document.location = this.get_download_url(file);
         },
 
@@ -226,7 +227,7 @@ export default {
 
             //for large file, just download
             if(file.attrs.size > 1024*1024*5) {
-                console.log("loading file", url);
+                this.$notify({text: "Downloading file.."});
                 document.location = url;
                 return;
             }

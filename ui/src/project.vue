@@ -57,7 +57,8 @@
             </b-tab>
         </b-tabs>
     </div>
-    <div v-if="tabs[tab].id == 'detail'">
+    <!--<div v-if="tabs[tab].id == 'detail'">-->
+    <div v-if="openedTab == 'detail'">
         <div class="page-content">
         <!--detail-->
             <div class="project-header">
@@ -211,27 +212,27 @@
         
     </div>
 
-    <div v-if="tabs[tab].id == 'dataset'" style="margin-left: 40px; margin-top: 95px">
+    <div v-if="openedTab == 'dataset'" style="margin-left: 40px; margin-top: 95px">
         <b-alert show variant="secondary" v-if="selected.access != 'public' && !(ismember()||isadmin()||isguest())">For non public project, only the admin/members/guests of this project can access processes.</b-alert>
         <datasets :project="selected" :projects="projects" v-else :participants="participants"/>
     </div>
 
-    <div v-if="tabs[tab].id == 'process'" style="margin-left: 40px; margin-top: 95px">
+    <div v-if="openedTab == 'process'" style="margin-left: 40px; margin-top: 95px">
         <noprocess v-if="!(ismember()||isadmin())"/>
         <processes :project="selected" v-else/>
     </div>
 
-    <div v-if="tabs[tab].id == 'pipeline'" style="margin-left: 40px; margin-top: 95px">
+    <div v-if="openedTab == 'pipeline'" style="margin-left: 40px; margin-top: 95px">
         <b-alert show variant="secondary" v-if="!(ismember()||isadmin())">Only the admins or members of this project can access pipelines. Please contact the project admin to give you access.</b-alert>
         <pipelines :project="selected" v-else/>
     </div>
 
-    <div v-if="tabs[tab].id == 'groupanalysis'" style="margin-left: 40px; margin-top: 95px">
+    <div v-if="openedTab == 'groupanalysis'" style="margin-left: 40px; margin-top: 95px">
         <b-alert show variant="secondary" v-if="!(ismember()||isadmin())">Only the admins or members of this project can access group analysis page. Please contact the project admin to give you access.</b-alert>
         <groupAnalysis :project="selected" v-else/>
     </div>
 
-    <div v-if="tabs[tab].id == 'pub'" style="margin-left: 40px; margin-top: 95px">
+    <div v-if="openedTab == 'pub'" style="margin-left: 40px; margin-top: 95px">
         <b-alert show variant="secondary" v-if="!(ismember()||isadmin())">Only the admins or members of this project can access publications. Please contact the project admin to give you access.</b-alert>
         <publications :project="selected" v-else/>
     </div>
@@ -310,24 +311,29 @@ export default {
 
             participants: null,
             participants_columns: null,
-            //participants_editing: null,
 
             tabs: [],
+            tab: 0, //initial tab top open
 
-            tab: 0, //initial tab
             projects: null, //all projects that user can see summary of
-            config: Vue.config,
 
             datatypes: {}, //datatypes loadded (used by datatype_groups)
 
             resource_citations: [],
 
-            ws: null, //websocket
+            ws: null,
+
+            config: Vue.config,
 
         }
     },
 
-    computed: {},
+    computed: {
+        openedTab() {
+            if(!this.tabs[this.tab]) return false;
+            return this.tabs[this.tab].id;
+        }
+    },
 
     watch: {
         '$route': function() {
@@ -348,31 +354,19 @@ export default {
 
         tab: function() {
             //tab gets changed even if value doesn't change.. so I have to hve if statement like this..
-            //console.log(this.tab, this.tabs);
-            var tabid = this.tabs[this.tab].id;
-            if(tabid != this.$route.params.tab) {
-                console.log("tab seems to have really changed", tabid);
+            if(this.openedTab != this.$route.params.tab) {
+                console.log("tab seems to have really changed", this.openedTab);
 
                 //TODO - maybe make pubform a modal so that I don't have to do this.
                 this.publishing = false;
                 this.pub_editing = null;
 
-                this.$router.replace("/project/"+this.selected._id+"/"+this.tabs[this.tab].id);
+                this.$router.replace("/project/"+this.selected._id+"/"+this.openedTab);
             }
         },
     },
 
     mounted() {
-
-        this.tabs.push({id: "detail", label: "Detail"});
-        this.tabs.push({id: "dataset", label: "Archive"});
-        this.tabs.push({id: "process", label: "Processes"});
-        if(Vue.config.user) {
-            this.tabs.push({id: "pipeline", label: "Pipelines"});
-            if(Vue.config.debug) this.tabs.push({id: "groupanalysis", label: "Group Analysis"});
-            this.tabs.push({id: "pub", label: "Publications"});
-        }
-
         //load all projects that user has summary access (including removed ones so we can open it)
         this.$http.get('project', {params: {
             limit: 500,
@@ -399,23 +393,9 @@ export default {
             }
             this.open_project(this.projects[project_id]);
     
-            //open tab requested..
-            if(this.$route.params.tab) {
-                //find the tab requested
-                this.tabs.forEach((tab, idx)=>{  
-                    if(tab.id == this.$route.params.tab) {
-                        console.log("setting tab", idx);
-                        this.tab = idx; //this has an effect of *clicking* the tab..
-                    }
-                });
-            } else {
-                //if no tab is opened, open first pag
-                console.log("resetting url due to missing tab");
-                this.$router.replace("/project/"+project_id+"/"+this.tabs[this.tab].id);
-            }
         }).catch(err=>{
             console.error(err);
-            this.$notify({type: 'error', text: err.response.data.message});
+            if(err.response) this.$notify({type: 'error', text: err.response.data.message});
         });
     },
 
@@ -505,6 +485,32 @@ export default {
                 //https://github.com/ktquez/vue-disqus/issues/11#issuecomment-354023326
                 if(this.$refs.disqus && window.DISQUS) {
                     this.$refs.disqus.reset(window.DISQUS);
+                }
+
+                //setup tabs
+                this.tabs = [];
+                this.tabs.push({id: "detail", label: "Detail"});
+                this.tabs.push({id: "dataset", label: "Archive"});
+                this.tabs.push({id: "process", label: "Processes"});
+                if(Vue.config.user) {
+                    this.tabs.push({id: "pipeline", label: "Pipelines"});
+                    if(full_project.group_analysis) this.tabs.push({id: "groupanalysis", label: "Group Analysis"});
+                    this.tabs.push({id: "pub", label: "Publications"});
+                }
+
+                //open tab requested..
+                if(this.$route.params.tab) {
+                    //find the tab requested
+                    this.tabs.forEach((tab, idx)=>{  
+                        if(tab.id == this.$route.params.tab) {
+                            console.log("setting tab", idx);
+                            this.tab = idx; //this has an effect of *clicking* the tab..
+                        }
+                    });
+                } else {
+                    //if no tab is opened, open first pag
+                    console.log("resetting url due to missing tab");
+                    this.$router.replace("/project/"+project_id+"/"+this.tabs[this.tab].id);
                 }
             });
 

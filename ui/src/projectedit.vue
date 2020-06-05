@@ -132,6 +132,10 @@
                     <span class="form-header">Participants Info</span>
                 </b-col> 
                 <b-col cols="9">
+                    <p>
+                        <b-form-checkbox v-model="project.group_analysis">Enable Group Analysis Tab (experimental)</b-form-checkbox>
+                    </p>
+                    
                     <p class="text-muted"><small>Key/value dictionary for each subject(participants.tsv). You can use this information for group analysis.</small></p>
                     <editor v-model="participants" @init="editorInit" lang="json" height="500"/>
 
@@ -190,6 +194,8 @@ export default {
                 admins: [Vue.config.user.sub],
                 members: [],
                 agreements: [],
+
+                group_analysis: false,
             },
 
             participants: null,

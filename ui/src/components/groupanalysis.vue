@@ -68,7 +68,7 @@
         </b-button>
     </div>
     <div v-else class="home">
-        Loading...
+        <p style="padding: 20px">Loading...</p>
     </div>
 </div>
 </template>

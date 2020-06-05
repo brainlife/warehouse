@@ -15,29 +15,29 @@
     </p>
     <b-row>
         <b-col>
-            <b>(-1,1,0)</b> <small>should see features parallel to \ (toward top left) direction</small><br>
+            <b>(-1,1,0)</b> <small>should see red features stretching toward top left</small><br>
             <img :src="config.api+'/secondary/'+task._id+'/'+output.id+'/secondary/xy2.png?at='+config.jwt"/>
         </b-col>
         <b-col>
-            <b>(0,1,1)</b> <small>should see features parallel to \ (toward top left) direction</small><br>
+            <b>(0,1,1)</b> <small>should see red features stretching toward top left</small><br>
             <img :src="config.api+'/secondary/'+task._id+'/'+output.id+'/secondary/yz1.png?at='+config.jwt"/>
         </b-col>
         <b-col>
-            <b>(1,0,1)</b> <small>should see features parallel to \ (toward top left) direction</small><br>
+            <b>(1,0,1)</b> <small>should see red features stretching toward top left</small><br>
             <img :src="config.api+'/secondary/'+task._id+'/'+output.id+'/secondary/xz1.png?at='+config.jwt"/>
         </b-col>
     </b-row>
     <b-row>
         <b-col>
-            <b>(1,1,0) </b> <small>should see features parallel to / (toward top right) direction</small><br>
+            <b>(1,1,0) </b> <small>should see red features stretching toward top right</small><br>
             <img :src="config.api+'/secondary/'+task._id+'/'+output.id+'/secondary/xy1.png?at='+config.jwt"/>
         </b-col>
         <b-col>
-            <b>(0,-1,1)</b> <small>should see features parallel to / (toward top right) direction</small><br>
+            <b>(0,-1,1)</b> <small>should see red features stretching toward top right</small><br>
             <img :src="config.api+'/secondary/'+task._id+'/'+output.id+'/secondary/yz2.png?at='+config.jwt"/>
         </b-col>
         <b-col>
-            <b>(1,0,-1)</b> <small>should see features parallel to / (toward top right) direction</small><br>
+            <b>(1,0,-1)</b> <small>should see red features stretching toward top right</small><br>
             <img :src="config.api+'/secondary/'+task._id+'/'+output.id+'/secondary/xz2.png?at='+config.jwt"/>
         </b-col>
     </b-row>
