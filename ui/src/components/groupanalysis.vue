@@ -4,7 +4,7 @@
         <div class="selected-controller">
             <div class="button" @click="selected = null"><icon name="times"/> Close</div>
         </div>
-        <iframe :src="'https://dev1.soichi.us/ipython/'+selected.port+'/lab?token='+selected.token" frameBorder="0"/>
+        <iframe :src="host+'/ipython/'+selected.port+'/lab?token='+selected.token" frameBorder="0"/>
     </div>
     <div v-else-if="ready" class="home">
         <div class="welcome" v-if="tasks.length == 0">
@@ -95,6 +95,7 @@ export default {
             //currently opened group analysis container
             tasks: [],
             selected: null,
+            host: "",
 
             instance: null,
 
@@ -113,6 +114,9 @@ export default {
     },
 
     mounted() {
+        if(Vue.config.debug) {
+            this.host = "https://dev1.soichi.us";
+        }
 
         this.find_or_create_instance((err, instance)=>{
             if(err) return console.error(err); //TODO notify?

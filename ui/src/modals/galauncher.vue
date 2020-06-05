@@ -31,7 +31,7 @@
                 <div class="submit-form">
                     <pre>{{selected}}</pre>
                     TODO - show any parameters to set..
-                    <b-form-textarea v-model="form.desc" placeholder="Optional description for this analysis" :rows="3" :max-rows="6" required/>
+                    <b-form-textarea v-model="form.desc" placeholder="Optional description for this analysis" :rows="3" :max-rows="6"/>
                 </div>
                 <div class="form-action">
                     <b-button variant="primary" type="submit">Launch</b-button>

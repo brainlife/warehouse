@@ -36,7 +36,8 @@ router.get('/list/:projectid', jwt({secret: config.express.pubkey}), (req, res, 
                     'finish_date': {$exists: true},
                     'service': 'brainlife/app-archive-secondary',
                     '_group_id': project.group_id,
-                })
+                }),
+                limit: 20000, //TODO.. how scalable is this!?
             },
             headers: { authorization: req.headers.authorization },
         }).then(_res=>{
