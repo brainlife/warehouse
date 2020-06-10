@@ -14,6 +14,7 @@
 <script>
 import Vue from 'vue'
 
+//TODO - why can't I just use vue-plotly for this?
 var Plotly = require('plotly.js/lib/core');
 Plotly.register([
     require('plotly.js/lib/histogram')

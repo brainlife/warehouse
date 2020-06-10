@@ -664,6 +664,7 @@ float: right;
 background-color: white;
 margin-bottom: 20px;
 margin-left: -20px;
+margin-right: -20px;
 }
 .io-card {
 padding: 8px; 

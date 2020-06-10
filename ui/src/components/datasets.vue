@@ -273,8 +273,12 @@ export default {
             console.error(err);
         });
 
+        //console.log("handling dataset route params");
+        //console.dir(this.$route);
         let subid = this.$route.params.subid;
-        if(subid) this.$root.$emit('dataset.view', {id: subid, back: './'});
+        if(subid) {
+            this.$root.$emit('dataset.view', {id: subid, back: './'});
+        }
     },
 
     destroyed() {
@@ -294,13 +298,15 @@ export default {
             this.reload();
         },
         '$route': function() {
-            let subid = this.$route.params.subid;
-            this.$root.$emit('dataset.view', {id: subid, back: './'});
+            var tab_id = this.$route.params.tab;
+            if(tab_id == "dataset") {
+                let subid = this.$route.params.subid;
+                this.$root.$emit('dataset.view', {id: subid, back: './'});
+            }
         },
     },
 
 	methods: {
-        
         isadmin() {
             if(!this.project) return false;
             if(!Vue.config.user) return false;
@@ -505,8 +511,7 @@ export default {
             this.$http.get('dataset', {
                 params: {
                     find: JSON.stringify({$and: query}),
-                    //skip: loaded,
-                    limit: 250,  //needs to be bigger than the largest dataset per subject (bigger == slower for vue to render)
+                    limit: 500,  //needs to be bigger than the largest dataset per subject x2 (bigger == slower for vue to render)
                     sort: 'meta.subject meta.session -create_date',
                     select: 'create_date datatype datatype_tags prov.task.name desc size tags meta.subject meta.session meta.run status removed project',
                 },
@@ -576,7 +581,7 @@ export default {
 
         open(dataset_id) {
             this.$router.replace('/project/'+this.project._id+'/dataset/'+dataset_id);
-            this.$root.$emit('dataset.view', {id: dataset_id});
+            //this.$root.$emit('dataset.view', {id: dataset_id});
         },
 
         check(dataset, event) {

@@ -1,211 +1,424 @@
 <template>
 <div>
-    <b-row>
-        <b-col>
-            <!--
-            <a :href="config.api+'/secondary/'+task._id+'/'+output.id+'/secondary/aparc+aseg.nii.gz?at='+config.jwt">
-                aparc+aseg.nii.gz
-            </a>
-            <a :href="config.api+'/secondary/'+task._id+'/'+output.id+'/secondary/aparc.a2009s+aseg.nii.gz?at='+config.jwt">
-                aparc.a2009s+aseg.nii.gz
-            </a>
-            <a :href="config.api+'/secondary/'+task._id+'/'+output.id+'/secondary/aparc.DKTatlas+aseg.nii.gz?at='+config.jwt">
-                aparc.DKTatlas+aseg.nii.gz
-            </a>
-            -->
-            <div v-for="plot in plots" :key="plot.csv">
-                <center><b>{{plot.csv}}</b></center>
-                <b-row :no-gutters="true">
-                    <b-col>
-                        <vue-plotly :data="plot.p1.data" :layout="plot.p1.layout" :autoResize="true"/>
-                    </b-col>
-                    <b-col>
-                        <vue-plotly :data="plot.p2.data" :layout="plot.p2.layout" :autoResize="true"/>
-                    </b-col>
-                    <b-col>
-                        <vue-plotly :data="plot.p3.data" :layout="plot.p3.layout" :autoResize="true"/>
-                    </b-col>
-                    <b-col v-if="plot.p4">
-                        <vue-plotly :data="plot.p4.data" :layout="plot.p4.layout" :autoResize="true"/>
-                    </b-col>
-                </b-row>
-            </div>
-            <small v-if="product.meta.tensor_measures">
-                TODO - describe tensor measures. 
-            </small>
-            <small v-if="product.meta.noddi_measures">
-                NDI is a summary of the intra-cellular anisotropic diffusion, ISOVF is a summary of the extracellular isotropic diffusion, and ODI is a mathematical inference based on the watson distribution that depends on both anistropic and isotropic components
-            </small>
-        </b-col>
-    </b-row>
-    <small>TODO... Only showing only the first few CSVs. noddi measures is coming soon!</small>
+    <div style="width: 250px; float: left; background-color: #eee;">
+        <!--
+        <table class="table table-sm">
+        <thead>
+            <tr style="opacity: 0.7;">
+                <th>Measures</th>
+                <th width="16px"></th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr v-for="(o, column) in columns" :key="column">
+                <th><b>{{column}}</b></th>
+                <th>
+                    <b-form-checkbox v-model="o.show"/>
+                </th>
+            </tr>
+        </tbody>
+        </table>
+        -->
+        <p style="margin: 5px">
+            <span class="form-header">Measures</span>
+            <span v-for="(o, column) in columns" :key="column" style="margin: 0; padding-right: 5px;">
+                <b-form-checkbox v-model="o.show" style="display: inline-block">{{column.toUpperCase()}}</b-form-checkbox>
+            </span>
+        </p>
+
+        <table class="table table-sm">
+        <thead>
+            <tr style="opacity: 0.7;">
+                <th>Tracts</th>
+                <th width="16px">L</th>
+                <th width="16px">C</th>
+                <th width="16px">R</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr v-for="(o, name) in csvs" :key="name">
+                <th><b>{{name}}</b></th>
+                <th>
+                    <b-form-checkbox v-if="o.left" v-model="o.left.show" @change="showHideTract($event, o.left)"/>
+                </th>
+                <th>
+                    <b-form-checkbox v-if="o.center" v-model="o.center.show" @change="showHideTract($event, o.center)"/>
+                </th>
+                <th>
+                    <b-form-checkbox v-if="o.right" v-model="o.right.show" @change="showHideTract($event, o.right)"/>
+                </th>
+            </tr>
+        </tbody>
+        </table>
+    </div>
+    <div style="margin-left: 250px; padding-left: 10px;">
+        <div v-for="o in shownTracts" :key="o.path">
+            <center><b>{{o.path}}</b></center>
+            <b-row v-if="plots[o.path]" no-gutters>
+                <b-col v-for="column_name in shownColumns" :key="column_name" v-if="">
+                    <div v-if="plots[o.path][column_name]">
+                        <Plotly :data="plots[o.path][column_name].data" :layout="plots[o.path][column_name].layout" :autoResize="true" @hover="hover"/>
+                    </div>
+                    <span v-else>No {{column_name}}</span>
+                </b-col>
+            </b-row>
+        </div>
+    </div>
+    <br clear="both"/>
 </div>
 </template>
 
 <script>
 import Vue from 'vue'
 import axios from 'axios'
+import { Plotly } from 'vue-plotly'
 
 export default {
     props: ['task', 'output', 'product'],
     components: {
-        'vuePlotly': ()=> import('@statnett/vue-plotly'),
+        Plotly
     },
     data() {
         return {
             config: Vue.config,
-
-            plots: [], // grouped by csv, then measures
-            /*
-            ad_data: [],
-            ad_layout: { title: 'AD', },
-            fa_data: [],
-            fa_layout: { title: 'FA', },
-            */
+            csvs: {
+                //name: {
+                //  left: {csv: , show: true/false}, 
+                //  right: 
+                //  center: 
+                //}
+            },
+            columns: {},
+            plots: {}, //keyed by path - loaded plots
         }
     },
-    mounted() {
-        //load csvs
-        this.product.meta.csvs.forEach((csv, csv_idx)=>{
-            if(csv_idx >= 3) return; //only show the first csv..
 
-            console.log("loading", csv);
-            this.$http.get('secondary/'+this.task._id+'/'+this.output.id+'/secondary/profiles/'+csv).then(res=>{
-                let plot = {
-                    csv, 
-                };
-            
-                function initPlot(name, unit) {
-                    return {
-                        layout: {
-                            title: name,
-                            showlegend: false,
-                            margin: {
-                                l: 40, r: 10, b: 30, t: 30, pad: 0 
-                            },
-                            xaxis: {
-                                title: {
-                                    text: 'node postition',
-                                    font: {
-                                        color: '#999',
-                                    },
-                                },
-                            },
-                            yaxis: {
-                                title: {
-                                    text: unit,
-                                    font: {
-                                        color: '#999',
-                                        size: 12,
-                                    },
-                                },
-                            },
-                            height: 300,
-                        },
-                        data: [],
+    computed: {
+        shownColumns() {
+            let shown = [];
+            for(let column in this.columns) {
+                if(this.columns[column].show) shown.push(column);
+            }
+            return shown;
+        },
+        shownTracts() {
+            let shown = [];
+            for(let tract in this.csvs) {
+                if(this.csvs[tract].left && this.csvs[tract].left.show) shown.push(this.csvs[tract].left);
+                if(this.csvs[tract].right && this.csvs[tract].right.show) shown.push(this.csvs[tract].right);
+                if(this.csvs[tract].center && this.csvs[tract].center.show) shown.push(this.csvs[tract].center);
+            }
+            return shown;
+        },
+    },
+
+    mounted() {
+        if(this.product.meta.tensor_measures) {
+            Vue.set(this.columns, 'fa', {show: false});
+            Vue.set(this.columns, 'ad', {show: false});
+            Vue.set(this.columns, 'md', {show: false});
+            Vue.set(this.columns, 'rd', {show: false});
+        }
+
+        if(this.product.meta.noddi_measures) {
+            Vue.set(this.columns, 'ndi', {show: false});
+            Vue.set(this.columns, 'isovf', {show: false});
+            Vue.set(this.columns, 'odi', {show: false});
+        }
+        Vue.set(this.columns, 'xyz', {show: false});
+
+        if(this.product.meta.tensor_measures) {
+            this.columns.ad.show = true;
+            this.columns.fa.show = true;
+            this.columns.rd.show = true;
+            //this.columns.xyz.show = true;
+        } else if(this.product.meta.noddi_measures) {
+            this.columns.ndi.show = true;
+            this.columns.isovf.show = true;
+            this.columns.odi.show = true;
+        } else {
+            console.error("odd.. either tensor or noddi should be set");
+        }
+
+        //load csvs
+        this.product.meta.csvs.sort((a,b)=>{
+            return a.localeCompare(b);
+        }).forEach((path, csv_idx)=>{
+            let name = path.substring(0, path.length-4); //remove ".csv"
+            name = name.replace("_profiles", "");
+            let left = false;
+            let right = false;
+            if(name.includes("left")) {
+                left = true;
+                name = name.replace("left", "");
+            }  
+            if(name.includes("right")) {
+                right = true;
+                name = name.replace("right", "");
+            }  
+            if(!this.csvs[name]) Vue.set(this.csvs, name, {});
+            if(left) Vue.set(this.csvs[name], 'left', {path, show: false, });
+            else if(right) Vue.set(this.csvs[name], 'right', {path, show: false, });
+            else Vue.set(this.csvs[name], 'center', {path, show: false, });
+
+        });
+
+        //select the first 3 csvs
+        let count = 0;
+        for(let name in this.csvs) {
+            let csv = this.csvs[name];
+            if(csv.left && count < 2) {
+                this.loadCSV(csv.left.path);
+                csv.left.show = true;
+                count++;
+            }
+        }
+    },
+
+    methods: {
+        hover(e) {
+            let points = e.points[e.points.length-1];
+            let pointNum = points.pointNumber;
+
+            //TODO - doesn't work yet..
+            /*
+            for(let path in this.plots) {
+                for(let col in this.plots[path]) {
+                    this.plots[path][col].data[0] = {
+                        x: [30],
+                        y: [0.5],
+                        mode: "text",
+                        text: [pointNum.toString()],
                     }
                 }
+            } 
+            */
+        },
 
-                if(this.product.meta.tensor_measures) {
-                    //ad_1,ad_2,fa_1,fa_2,md_1,md_2,rd_1,rd_2,ad_inverse_1,ad_inverse_2,fa_inverse_1,fa_inverse_2,md_inverse_1,md_inverse_2,rd_inverse_1,rd_inverse_2,ndi_1,ndi_2,isovf_1,isovf_2,odi_1,odi_2,ndi_inverse_1,ndi_inverse_2,isovf_inverse_1,isovf_inverse_2,odi_inverse_1,odi_inverse_2
-                    plot.p1 = initPlot("Axial Diffusivity (AD)", "nm^2/msec");
-                    plot.p2 = initPlot("Fractional Anisotropy (FA)", "normalized fraction of anisotropic component");
-                    plot.p3 = initPlot("Mean Diffusivity (MD)", "nm^2/msec");
-                    plot.p4 = initPlot("Radial Diffusivity (RD)", "nm^2/msec");
-                } else {
-                    //ndi_1,ndi_2,isovf_1,isovf_2,odi_1,odi_2,ndi_inverse_1,ndi_inverse_2,isovf_inverse_1,isovf_inverse_2,odi_inverse_1,odi_inverse_2
-                    plot.p1 = initPlot("Neurite Density Index (NDI)", "intra-cellular volume fraction");
-                    plot.p2 = initPlot("Isotropic Volume Fraction (ISOVF)", "extra-cellular volume fraction");
-                    plot.p3 = initPlot("Orientation Dispersion Index (ODI)", "relative dispersion of fiber orientation");
+        showHideTract(show, o) {
+            console.log("showdhide", o.path);
+            if(show) {
+                if(this.plots[o.path] == null) {
+                    this.loadCSV(o.path);
+                }
+            }
+        },
+
+        loadCSV(path) {
+            console.log("loading", path);
+            Vue.set(this.plots, path, {});
+            this.$http.get('secondary/'+this.task._id+'/'+this.output.id+'/secondary/profiles/'+path, {responseType: 'text'}).then(res=>{
+                this.plots[path] = this.createPlot(res.data);
+            });
+        },
+
+        createPlot(csv) {
+            let csv_rows = csv.split("\n"); 
+            let headers = csv_rows.shift().split(",");
+            let plots = {}; 
+            let rows = [];
+            csv_rows.forEach(csv_row=>{
+                rows.push(csv_row.split(",").map(v=>parseFloat(v)));
+            });
+
+            let x_coords = null;
+            let y_coords = null;
+            let z_coords = null;
+
+            headers.forEach((header, cid)=>{
+                let plot = {
+                    layout: {
+                        showlegend: false,
+                        margin: {
+                            l: 40, r: 10, b: 30, t: 30, pad: 0 
+                        },
+                        xaxis: {
+                            title: {
+                                text: 'node postition',
+                                font: {
+                                    color: '#999',
+                                },
+                            },
+                        },
+                        yaxis: {
+                            title: {
+                                font: {
+                                    color: '#999',
+                                    size: 12,
+                                },
+                            },
+                        },
+                        height: 300,
+                    },
+                    data: [],
+                };
+
+                switch(header) {
+                case "fa_1":
+                    plot.layout.title = "Fractional Anisotropy (FA)";
+                    plot.layout.yaxis.title.text = "normalized fraction of anisotropic component";
+                    plots["fa"] = plot;
+                    break;
+                case "ad_1":
+                    plot.layout.title = "Axial Diffusivity (AD)";
+                    plot.layout.yaxis.title.text = "nm^2/msec";
+                    plots["ad"] = plot;
+                    break;
+                case "md_1":
+                    plot.layout.title = "Mean Diffusivity (MD)";
+                    plot.layout.yaxis.title.text = "nm^2/msec";
+                    plots["md"] = plot;
+                    break;
+                case "rd_1":
+                    plot.layout.title = "Radial Diffusivity (RD)";
+                    plot.layout.yaxis.title.text = "nm^2/msec";
+                    plots["rd"] = plot;
+                    break;
+                case "ndi_1":
+                    plot.layout.title = "Neurite Density Index (NDI)";
+                    plot.layout.yaxis.title.text = "intra-cellular volume fraction";
+                    plots["ndi"] = plot;
+                    break;
+                case "isovf_1":
+                    plot.layout.title = "Isotropic Volume Fraction (ISOVF)";
+                    plot.layout.yaxis.title.text = "extra-cellular volume fraction";
+                    plots["isovf"] = plot;
+                    break;
+                case "odi_1":
+                    plot.layout.title = "Orientation Dispersion Index (ODI)";
+                    plot.layout.yaxis.title.text = "relative dispersion of fiber orientation";
+                    plots["odi"] = plot;
+                    break;
+                case "x_coords":
+                    x_coords = [];
+                    y_coords = [];
+                    z_coords = [];
+                    rows.forEach(cols=>{
+                        x_coords.push(cols[cid]); 
+                        y_coords.push(cols[cid+1]); 
+                        z_coords.push(cols[cid+2]); 
+                    });
+                    return;
+                default:
+                    //console.log("ignoring ", header);
+                    return;
                 }
 
-                let rows = res.data.split("\n"); 
-                let header = rows.shift();
-                //console.log(header);
-
-                //value
                 let x = [];
-                let ad_y = [];
-                let fa_y = [];
-                let md_y = [];
-                let rd_y = [];
-
-                //sdev
-                let x2 = [];
-                let ad_y2 = [];
-                let fa_y2 = [];
-                let md_y2 = [];
-                let rd_y2 = [];
-
-                rows.forEach(row=>{
-                    let cols = row.split(",").map(v=>parseFloat(v));
-
+                let y = [];
+                let xerr = [];
+                let yerr = [];
+                rows.forEach(cols=>{
                     x.push(x.length); 
-                    ad_y.push(cols[0]); 
-                    fa_y.push(cols[2]); 
-                    md_y.push(cols[4]); 
-                    rd_y.push(cols[6]); 
-
-                    x2.push(x2.length); 
-                    ad_y2.push(cols[0]+cols[1]);
-                    fa_y2.push(cols[2]+cols[3]);
-                    md_y2.push(cols[4]+cols[5]);
-                    rd_y2.push(cols[6]+cols[7]);
+                    y.push(cols[cid]); 
+                    xerr.push(xerr.length); 
+                    yerr.push(cols[cid]+cols[cid+1]);
                 });
 
                 //follow the bottom curve of sdev in reverse order back to the beginning
-                let x2idx = x.length-1;
-                rows.reverse().forEach(row=>{
-                    let cols = row.split(",").map(v=>parseFloat(v));
-                    x2.push(x2idx--);
-                    ad_y2.push(cols[0]-cols[1]);
-                    fa_y2.push(cols[2]-cols[3]);
-                    md_y2.push(cols[4]-cols[5]);
-                    rd_y2.push(cols[6]-cols[7]);
+                let xerridx = x.length-1;
+                rows.reverse().forEach(cols=>{
+                    xerr.push(xerridx--);
+                    yerr.push(cols[cid]-cols[cid+1]);
                 });
 
-                //now put data together for each plots
-                plot.p1.data.push({
-                    x: x2,
-                    y: ad_y2,
+                //now put data together for each plots (put err bar first so that primary line goes on top)
+                plot.data.push({
+                    x: xerr,
+                    y: yerr,
                     fill: "tozerox",
                     line: { color: "transparent"},
                 })
-                plot.p1.data.push({ x, y: ad_y, })
+                plot.data.push({ x, y })
 
-                plot.p2.data.push({
-                    x: x2,
-                    y: fa_y2,
-                    fill: "tozerox",
-                    line: { color: "transparent"},
-                })
-                plot.p2.data.push({ x, y: fa_y, })
+                /*
+                plot.data.push({
+                    x: [30],
+                    y: [0.5],
+                    mode: "text",
+                    text: ["soichi"],
+                });
+                */
+            });
 
-                plot.p3.data.push({
-                    x: x2,
-                    y: md_y2,
-                    fill: "tozerox",
-                    line: { color: "transparent"},
-                })
-                plot.p3.data.push({ x, y: md_y, })
-
-                if(plot.p4) {
-                    plot.p4.data.push({
-                        x: x2,
-                        y: rd_y2,
-                        fill: "tozerox",
-                        line: { color: "transparent"},
-                    })
-                    plot.p4.data.push({ x, y: rd_y, })
+            //create xyz graph
+            if(x_coords) {
+                let text = [];
+                for(let i = 0;i < x_coords.length;++i) {
+                    if(i%50 == 0) text.push(i.toString());
+                    else text.push(null);
                 }
 
-                this.plots.push(plot);
-            });
-        });
+                let min = null;
+                let max = null;
+                function checkMinMax(v) {
+                    if(min == null || min > v) min = v;
+                    if(max == null || max < v) max = v;
+                }
+                x_coords.forEach(checkMinMax);
+                y_coords.forEach(checkMinMax);
+                z_coords.forEach(checkMinMax);
+
+                plots["xyz"] = {
+                    layout: {
+                        //showlegend: false,
+                        margin: {
+                            l: 40, r: 10, b: 30, t: 30, pad: 0 
+                        },
+                        height: 300,
+                        scene: {
+                            xaxis: {
+                                range: [min, max],
+                                title: 'x (L/R)',
+                            },
+                            yaxis: {
+                                range: [min, max],
+                                title: 'y (A/P)'
+                            },
+                            zaxis: {
+                                range: [min, max],
+                                title: 'z (S/I)'
+                            },
+                        },
+                    },
+                    data: [
+                        {
+                            type: 'scatter3d',
+                            mode: 'lines+markers+text',
+                            x: x_coords,
+                            y: y_coords,
+                            z: z_coords,
+                            text,
+                            //textposition: "bottom center",
+                            //opacity: 1,
+                            marker: {
+                                size: 2,
+                            }
+                            /*
+                            line: {
+                                width: 6,
+                                color: 'red',
+                                reversescale: false
+                            }
+                            */
+                        }
+                    ],
+                };
+            }
+
+            return plots;        
+        },
     },
 }
 </script>
 
 <style scoped>
+.table-sm tbody {
+font-size: 80%;
+}
+.table-sm tbody th {
+padding: 0;
+padding-left: 5px;
+}
 </style>
 

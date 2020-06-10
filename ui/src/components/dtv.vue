@@ -7,8 +7,8 @@
         </span>
         <small>({{task._id}})</small>
         <div v-if="task.product" style="margin-bottom: 5px;">
-            <b-alert show v-for="(error, idx) in task.product.errors" :key="idx" variant="danger"><b>Error</b> {{error}}</b-alert>
-            <b-alert show v-for="(warning, idx) in task.product.warnings" :key="idx" variant="secondary"><b>Warning</b> {{warning}}</b-alert>
+            <b-alert show v-for="(error, idx) in task.product.errors" :key="idx" variant="danger" class="dtv-alert"><b>Error</b> {{error}}</b-alert>
+            <b-alert show v-for="(warning, idx) in task.product.warnings" :key="idx" variant="secondary" class="dtv-alert"><b>Warning</b> {{warning}}</b-alert>
             <product :product="task.product" skipFollow="true"/>
         </div>
         <secondary v-if="secondary && product" 
@@ -79,5 +79,13 @@ export default {
 </script>
 
 <style scoped>
+.dtv-alert {
+padding-left: 10px;
+margin-bottom: 1px !important;
+}
+.dtv-alert b {
+opacity: 0.5;
+margin-right: 10px;
+}
 </style>
 

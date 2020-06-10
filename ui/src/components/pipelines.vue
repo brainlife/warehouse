@@ -372,6 +372,7 @@ export default {
                 }),
                 populate: 'app', 
                 sort: 'create_date', 
+                limit: 500,
             }})
             .then(res=>{
                 this.rules = res.data.rules; 
@@ -406,7 +407,8 @@ export default {
             return this.$http.get('datatype', {params: {
                 find: JSON.stringify({
                     _id: {$in: ids}
-                })
+                }),
+                limit: 1000,
             }})
             .then(res=>{
                 this.datatypes = {};

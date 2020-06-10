@@ -15,7 +15,7 @@
     <b-tabs class="brainlife-tab" v-model="tab" v-if="shouldShowTab">
         <b-tab v-for="(p, $idx) in plots" :title="p.name||$idx" :key="$idx">
             <p v-if="p.desc" style="background-color: white; padding: 5px 10px; margin: 0;"><small>{{p.desc}}</small></p>
-            <vue-plotly v-if="tab == $idx && p.data" :data="p.data" :layout="p.layout" :options="p.options" ref="plotrefs" :autoResize="true" :watchShallow="true"/>
+            <Plotly v-if="tab == $idx && p.data" :data="p.data" :layout="p.layout" :options="p.options" ref="plotrefs" :autoResize="true" :watchShallow="true"/>
         </b-tab>
         <b-tab title="product.json" v-if="others">
             <editor v-model="others" @init="editorInit" lang="json"></editor>
@@ -31,7 +31,8 @@
 <script>
 
 import Vue from 'vue'
-import VuePlotly from '@statnett/vue-plotly'
+//import VuePlotly from '@statnett/vue-plotly'
+import { Plotly } from 'vue-plotly'
 
 const alert_types = ["error", "info", "danger", "warning", "success"];
 
@@ -39,7 +40,7 @@ export default {
     props: ['product', 'skipFollow'],
 
     components: {
-        VuePlotly,
+        Plotly,
         editor: require('vue2-ace-editor'), 
     },
 
@@ -161,7 +162,7 @@ export default {
             this.$nextTick(()=>{
                 if(!this.$refs.plotrefs) return; //console.log("plotrefs not set (yet?)");
                 let p = this.$refs.plotrefs[this.tab];
-                if(p) p.newPlot(); //this causes it to be resized
+                //if(p) p.newPlot(); //this causes it to be resized
             });
         },
 

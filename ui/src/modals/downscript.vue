@@ -8,7 +8,7 @@
                     <icon name="download"/> Download
                 </b-button>
             </b-col>
-            <b-col v-if="query && query.find && query.find._id">
+            <b-col cols="7" v-if="query && query.find && query.find._id">
                 <p style="opacity: 0.8; min-height: 40px;">Or, copy and paste the following command where you want to download this dataset
                     using <a href="https://brainlife.io/docs/cli/download/">Brainlife CLI</a>.</p>
                 <pre class="code">bl dataset download --id {{query.find._id[0]}}</pre>

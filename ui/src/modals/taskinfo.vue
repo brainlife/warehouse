@@ -141,16 +141,16 @@
                
                     <!-- without watchShallow, vue-plotly will go infinite loop with layout watch event and locks up the browser-->
                     <div v-if="smon.cpu.data">
-                        <vue-plotly :data="smon.cpu.data" :layout="smon.cpu.layout" :autoResize="true" :watchShallow="true"/>
+                        <Plotly :data="smon.cpu.data" :layout="smon.cpu.layout" :autoResize="true" :watchShallow="true"/>
                     </div>
                     <div v-if="smon.memory_rss.data">
-                        <vue-plotly :data="smon.memory_rss.data" :layout="smon.memory_rss.layout" :autoResize="true" :watchShallow="true"/>
+                        <Plotly :data="smon.memory_rss.data" :layout="smon.memory_rss.layout" :autoResize="true" :watchShallow="true"/>
                     </div>
                     <div v-if="smon.memory_vsz.data">
-                        <vue-plotly :data="smon.memory_vsz.data" :layout="smon.memory_vsz.layout" :autoResize="true" :watchShallow="true"/>
+                        <Plotly :data="smon.memory_vsz.data" :layout="smon.memory_vsz.layout" :autoResize="true" :watchShallow="true"/>
                     </div>
                     <div v-if="smon.disk.data">
-                        <vue-plotly :data="smon.disk.data" :layout="smon.disk.layout" :autoResize="true" :watchShallow="true"/>
+                        <Plotly :data="smon.disk.data" :layout="smon.disk.layout" :autoResize="true" :watchShallow="true"/>
                     </div>
                     <br>
 
@@ -181,13 +181,13 @@ import tageditor from '@/components/tageditor'
 
 import contact from '@/components/contact'
 import VueMarkdown from 'vue-markdown'
-import VuePlotly from '@statnett/vue-plotly'
+import { Plotly } from 'vue-plotly'
 
 const lib = require('../lib');
 
 export default {
     components: { 
-        app, datatypetag, configform, advanced, tageditor, contact, VueMarkdown, VuePlotly,
+        app, datatypetag, configform, advanced, tageditor, contact, VueMarkdown, Plotly,
     },
 
     data() {

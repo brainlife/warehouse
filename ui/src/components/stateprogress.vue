@@ -57,12 +57,14 @@ export default {
             //https://github.com/twbs/bootstrap/issues/5148
             return false;
 
+            /*
             switch(state) {
             case "running": 
             case "requested":           
                 return true;
             }
             return false;
+            */
         },
         label(item) {
             if(!this.show_label) return null;

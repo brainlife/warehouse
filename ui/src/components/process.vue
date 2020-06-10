@@ -292,13 +292,11 @@ export default {
         if(cache_datatypes && cache_projects) {
             this.datatypes = cache_datatypes;
             this.projects = cache_projects;
-            console.log("skip loading cache");
             return this.load(err=>{
                 this.readHash();
             });
         }
 
-        console.log("loading cache");
         this.$http.get('datatype').then(res=>{
             this.datatypes = {};
             res.data.datatypes.forEach(datatype=>{
@@ -457,7 +455,6 @@ export default {
         },
 
         readHash() {
-            console.log("reading hash!");
             this.$nextTick(()=>{
                 let hash = document.location.hash;
                 if(hash) {

@@ -331,8 +331,10 @@ export default {
     },
 
     created() {
-        console.log("modal/dataset listening to dataset.view event");
+        //console.log("modal/dataset listening to dataset.view event");
         this.$root.$on("dataset.view", opt=>{
+            //console.log("loading dataset");
+            //console.dir(opt);
             this.load(opt.id);
         });
 
@@ -753,8 +755,7 @@ export default {
             }})
             .then(res=>{
                 if(res.data.count == 0) {
-                    console.error("can't find dataset");
-                    return;
+                    throw new Error("can't find dataset id:"+id);
                 }
                 this.dataset = res.data.datasets[0];
                 if(this.dataset.status == "storing") {
@@ -999,17 +1000,17 @@ margin-bottom: 0;
 }
 </style>
 
-
 <style>
 .dataset-provenance div.vis-tooltip {
 font-family: inherit;
-font-size: inherit;
+font-size: 80%;
 background-color: white;
 border: none;
 box-shadow: 2px 2px 4px rgba(0,0,0,.1);
 opacity: 0.8;
 }
-.table-sm th, .table-sm td {
+.dataset-provenance .table-sm th, 
+.dataset-provenance .table-sm td {
 padding: 0px 2px;
 border-top: 1px solid #0001;
 }

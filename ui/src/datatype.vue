@@ -70,7 +70,7 @@
                     <p>
                         <small style="opacity: 0.7;">Please use the following data objects are template.</small>
                     </p>
-                    <div v-for="dataset in sample_datasets" :key="dataset._id" class="sample-dataset" @click="open_sample_dataset(dataset._id)">
+                    <div v-for="dataset in sample_datasets" :key="dataset._id" class="sample-dataset" @click="open_sample_dataset(dataset)">
                         <b-row>
                             <b-col cols="6">
                                 <datatypetag :datatype="datatype" :tags="dataset.datatype_tags"/>
@@ -258,25 +258,6 @@ export default {
                     this.adhoc_datatype_tags = res.data;
                 });
 
-                /*
-                //load prestaged task for sample
-                if(this.datatype.sample) {
-                    this.$http.get(Vue.config.amaretti_api+'/task', {params: {
-                        find: JSON.stringify({
-                            "service": "brainlife/app-stage",
-                            $or: [
-                                //{"config.datasets.id": this.datatype.sample},
-                                {"config._outputs.id": this.datatype.sample}, //works for both original and copy
-                            ]
-                        }),
-                        limit: 1, 
-                    }}).then(res=>{
-                        console.log("loaded sample");
-                        if(res.data.tasks.length == 1) this.sample_task = res.data.tasks[0];
-                    });
-                }
-                */
-
                 //load sample datasets
                 if(this.datatype.samples) {
                     this.$http.get('/dataset', {params: {
@@ -296,9 +277,10 @@ export default {
             if(window.history.length > 1) this.$router.go(-1);
             else this.$router.push('/datatypes');
         },
-        open_sample_dataset(dataset_id) {
-            //this.$router.replace('/project/'+this.project._id+'/dataset/'+dataset_id);
-            this.$root.$emit('dataset.view', {id: dataset_id,  back: './'});
+        open_sample_dataset(dataset) {
+            console.log("click sample", dataset._id);
+            this.$router.replace('/project/'+dataset.project+'/dataset/'+dataset._id);
+            //this.$root.$emit('dataset.view', {id: dataset_id,  back: './'});
         },
 
         get_datatypes(prefix) {

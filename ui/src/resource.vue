@@ -159,7 +159,7 @@
                     <div style="padding: 20px">
                         <span class="form-header">Recent Jobs</span>
                     </div>
-                    <vue-plotly v-if="usage_data" :data="usage_data" :layout="usage_layout" style="background-color: #f6f6f6;"/>
+                    <Plotly v-if="usage_data" :data="usage_data" :layout="usage_layout" style="background-color: #f6f6f6;"/>
                     <table class="table table-sm">
                         <thead>
                             <tr style="background-color: #eee;">
@@ -260,7 +260,7 @@
 
 import Vue from 'vue'
 import Router from 'vue-router'
-import VuePlotly from '@statnett/vue-plotly'
+import {Plotly} from 'vue-plotly'
 
 import pageheader from '@/components/pageheader'
 import contact from '@/components/contact'
@@ -272,7 +272,7 @@ import stateprogress from '@/components/stateprogress'
 
 export default {
     components: { 
-        pageheader, app, contact, tags, statustag, statusicon, stateprogress, VuePlotly,
+        pageheader, app, contact, tags, statustag, statusicon, stateprogress, Plotly,
     },
 
     data () {

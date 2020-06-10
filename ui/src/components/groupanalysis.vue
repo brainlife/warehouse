@@ -34,6 +34,7 @@
                         <b-col cols="4">
                             <small v-if="task.config"> {{task.config.container}} </small>
                             {{task.desc}}
+                            <small>{{task._id}}</small>
                         </b-col>
                         <b-col cols="3">
                             <contact :id="task.user_id" size="small"/>
@@ -42,7 +43,7 @@
                         <b-col cols="5">
                             <b-button-group style="float: right">
                                 <b-dropdown right split text="Open" variant="primary" @click="open(task)">
-                                    <b-dropdown-item v-if="task.status == 'running'" title="Stop" @click="stop(task)">
+                                    <b-dropdown-item v-if="task.status == 'running' || task.status == 'requested'" title="Stop" @click="stop(task)">
                                         <icon name="stop-circle"/> Stop
                                     </b-dropdown-item>
                                     <b-dropdown-item v-if="task.status == 'stopped' || task.status == 'failed'" title="Rerun" @click="rerun(task)">

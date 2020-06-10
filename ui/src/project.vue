@@ -1,11 +1,13 @@
 <template>
-<div v-if="selected">
+<div v-if="selected && tabs.length > 0">
     <div class="page-header">
         <div style="float: right;">
+            <!--
             <div @click="openneuro()" v-if="selected.openneuro" class="button">
                 <icon name="external-link-alt" scale="1.25"/>
                 OpenNeuro
             </div>
+            -->
             <div @click="edit()" v-if="isadmin()" class="button">
                 <icon name="edit" scale="1.25"/>
             </div>
@@ -57,8 +59,7 @@
             </b-tab>
         </b-tabs>
     </div>
-    <!--<div v-if="tabs[tab].id == 'detail'">-->
-    <div v-if="openedTab == 'detail'">
+    <div v-if="tabs[tab].id == 'detail'">
         <div class="page-content">
         <!--detail-->
             <div class="project-header">
@@ -187,8 +188,12 @@
                 <div v-if="resource_usage && total_walltime > 3600*1000" class="box">      
                     <span class="form-header">Resource Usage</span>     
                     <p><small>Data-objects on this project has been computed using the following apps/resources.</small></p>             
-                    <vue-plotly :data="resource_usage.data" :layout="resource_usage.layout" :options="resource_usage.options"
-                            ref="resource_usage" :autoResize="true" :watchShallow="true"/>
+                    <Plotly :data="resource_usage.data" 
+                            :layout="resource_usage.layout" 
+                            :options="resource_usage.options"
+                            ref="resource_usage" 
+                            :autoResize="true" 
+                            :watchShallow="true"/>
                 </div>
 
                 <div v-if="resource_citations.length > 0" class="box">
@@ -212,27 +217,27 @@
         
     </div>
 
-    <div v-if="openedTab == 'dataset'" style="margin-left: 40px; margin-top: 95px">
+    <div v-if="tabs[tab].id == 'dataset'" style="margin-left: 40px; margin-top: 95px">
         <b-alert show variant="secondary" v-if="selected.access != 'public' && !(ismember()||isadmin()||isguest())">For non public project, only the admin/members/guests of this project can access processes.</b-alert>
         <datasets :project="selected" :projects="projects" v-else :participants="participants"/>
     </div>
 
-    <div v-if="openedTab == 'process'" style="margin-left: 40px; margin-top: 95px">
+    <div v-if="tabs[tab].id == 'process'" style="margin-left: 40px; margin-top: 95px">
         <noprocess v-if="!(ismember()||isadmin())"/>
         <processes :project="selected" v-else/>
     </div>
 
-    <div v-if="openedTab == 'pipeline'" style="margin-left: 40px; margin-top: 95px">
+    <div v-if="tabs[tab].id == 'pipeline'" style="margin-left: 40px; margin-top: 95px">
         <b-alert show variant="secondary" v-if="!(ismember()||isadmin())">Only the admins or members of this project can access pipelines. Please contact the project admin to give you access.</b-alert>
         <pipelines :project="selected" v-else/>
     </div>
 
-    <div v-if="openedTab == 'groupanalysis'" style="margin-left: 40px; margin-top: 95px">
+    <div v-if="tabs[tab].id == 'groupanalysis'" style="margin-left: 40px; margin-top: 95px">
         <b-alert show variant="secondary" v-if="!(ismember()||isadmin())">Only the admins or members of this project can access group analysis page. Please contact the project admin to give you access.</b-alert>
         <groupAnalysis :project="selected" v-else/>
     </div>
 
-    <div v-if="openedTab == 'pub'" style="margin-left: 40px; margin-top: 95px">
+    <div v-if="tabs[tab].id == 'pub'" style="margin-left: 40px; margin-top: 95px">
         <b-alert show variant="secondary" v-if="!(ismember()||isadmin())">Only the admins or members of this project can access publications. Please contact the project admin to give you access.</b-alert>
         <publications :project="selected" v-else/>
     </div>
@@ -247,8 +252,6 @@
 import Vue from 'vue'
 import Router from 'vue-router'
 import VueMarkdown from 'vue-markdown'
-import VuePlotly from '@statnett/vue-plotly'
-
 import pageheader from '@/components/pageheader'
 import contact from '@/components/contact'
 import projectaccess from '@/components/projectaccess'
@@ -265,12 +268,12 @@ import noprocess from '@/assets/noprocess'
 import resource from '@/components/resource'
 import datatypetag from '@/components/datatypetag'
 import participants from '@/components/participants'
+import { Plotly } from 'vue-plotly'
 
 //modals
 import newtaskModal from '@/modals/newtask'
 import datatypeselecterModal from '@/modals/datatypeselecter'
 import ReconnectingWebSocket from 'reconnectingwebsocket'
-import PerfectScrollbar from 'perfect-scrollbar'
 
 let ps;
 
@@ -296,7 +299,7 @@ export default {
 
         noprocess, 
         resource, 
-        VuePlotly,
+        Plotly,
 
         newtaskModal, 
         datatypeselecterModal, 
@@ -328,40 +331,23 @@ export default {
         }
     },
 
-    computed: {
-        openedTab() {
-            if(!this.tabs[this.tab]) return false;
-            return this.tabs[this.tab].id;
-        }
-    },
-
     watch: {
         '$route': function() {
             var project_id = this.$route.params.id;
-            if(project_id && this.selected && project_id != this.selected._id) {
+            if(this.selected != project_id && project_id) {
                 this.open_project(this.projects[project_id]);
+            } else {
+                this.handleRouteParams();
             }
-            var tab_id = this.$route.params.tab;
-            if(tab_id) {
-                //find the tab requested
-                this.tabs.forEach((tab, idx)=>{  
-                    if(tab.id == tab_id) {
-                        this.tab = idx; 
-                    }
-                });
-            }         
         },
 
         tab: function() {
-            //tab gets changed even if value doesn't change.. so I have to hve if statement like this..
-            if(this.openedTab != this.$route.params.tab) {
-                console.log("tab seems to have really changed", this.openedTab);
-
-                //TODO - maybe make pubform a modal so that I don't have to do this.
-                this.publishing = false;
-                this.pub_editing = null;
-
-                this.$router.replace("/project/"+this.selected._id+"/"+this.openedTab);
+            //TODO - maybe make pubform a modal so that I don't have to do this.
+            this.publishing = false;
+            this.pub_editing = null;
+            if(this.$route.params.tab != this.tabs[this.tab].id) {
+                console.log("switching to different tab............");
+                this.$router.replace("/project/"+this.selected._id+"/"+this.tabs[this.tab].id);
             }
         },
     },
@@ -400,10 +386,7 @@ export default {
     },
 
     destroyed() {
-        if(this.ws) {
-            console.log("disconnecting from ws - project");
-            this.ws.close();
-        }
+        if(this.ws) this.ws.close();
     },
 
     methods: {
@@ -414,6 +397,20 @@ export default {
                 counts += instances[key];
             }
             return counts;
+        },
+
+        handleRouteParams() {
+            var tab_id = this.$route.params.tab;
+            if(tab_id) {
+                //lookup tab index from the tab_id
+                this.tabs.forEach((tab, idx)=>{  
+                    if(tab.id == tab_id) {
+                        this.tab = idx; 
+                    }
+                });
+            } else {
+                this.$router.replace("/project/"+this.selected._id+"/detail");
+            }
         },
 
         edit() {
@@ -460,17 +457,15 @@ export default {
             }
         },
 
+        /*
         change_project(project) {
-            console.log("change project");
             this.$router.push('/project/'+project._id+'/'+this.$route.params.tab);
             this.open_project(project);
         },
+        */
 
         open_project(project) {
-            if(this.selected == project) return; //no point of opening project if it's already opened
             this.selected = project;
-
-            //load full detail
             this.$http.get('project', {params: {
                 find: JSON.stringify({
                     _id: project._id,
@@ -498,25 +493,11 @@ export default {
                     this.tabs.push({id: "pub", label: "Publications"});
                 }
 
-                //open tab requested..
-                if(this.$route.params.tab) {
-                    //find the tab requested
-                    this.tabs.forEach((tab, idx)=>{  
-                        if(tab.id == this.$route.params.tab) {
-                            console.log("setting tab", idx);
-                            this.tab = idx; //this has an effect of *clicking* the tab..
-                        }
-                    });
-                } else {
-                    //if no tab is opened, open first pag
-                    console.log("resetting url due to missing tab");
-                    this.$router.replace("/project/"+project_id+"/"+this.tabs[this.tab].id);
-                }
+                this.handleRouteParams();
             });
 
             //optionally.. load participant info
             if(this.isadmin() || this.ismember()) {
-                console.log("loading participants info");
                 this.participants = null;
                 this.axios.get("/participant/"+project._id).then(res=>{
                     if(res.data) {
@@ -539,8 +520,6 @@ export default {
                 }));
                 this.ws.onmessage = (json)=>{
                     var event = JSON.parse(json.data);
-                    console.dir(event);
-
                     //update
                     for(var key in event.msg) {
                         this.selected[key] = event.msg[key];

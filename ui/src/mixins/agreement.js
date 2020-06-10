@@ -35,7 +35,6 @@ export default {
                 if(!Vue.config.jwt) return resolve(agreements);
 
                 //load from profile service
-                console.log("loading private profile for user agreements");
                 this.$http.get(Vue.config.auth_api+"/profile").then(res=>{
                     let user = res.data;
                     if(user.profile && user.profile.private && user.profile.private.agreements) resolve(user.profile.private.agreements);
@@ -47,16 +46,13 @@ export default {
         check_agreements: async function(project, cb) {
             if(!project.agreements) return cb(); 
             let user_agreements = await this.get_user_agreements();
-            //console.log("analyzig user_agreement", user_agreements);
             let agreed = true;
             project.agreements.forEach(agreement=>{
                 if(!user_agreements[agreement._id]) {
-                    //console.log(agreement._id, "not agreed");
                     agreed = false;
                 }
             });
             if(agreed) return cb();
-            //console.log("need to agree...");
             this.$root.$emit("agreements.open", {project, cb});
         }
     }

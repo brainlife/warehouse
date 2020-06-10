@@ -229,8 +229,26 @@ export default {
 
     },//computed
 
-    mounted: function() {
-        this.load();
+    mounted() {
+        this.check_agreements(this.project, ()=>{
+            let group_id = this.project.group_id;
+            this.order = window.localStorage.getItem("processes.order."+group_id)||"create_date";
+            this.show = window.localStorage.getItem("processes.show."+group_id)||null;
+            
+            if(!this.$route.params.subid) {
+                let previous_instance = window.localStorage.getItem("processes.previous_instance."+group_id);
+                if(previous_instance) {
+                    this.$router.replace("./process/"+previous_instance);
+                }
+            }
+
+            this.load_instances(err=>{
+                if(err) return this.notify_error(err);
+                this.subscribe_instance_update(err=>{
+                    if(err) return this.notify_error(err);
+                });
+            });
+        });
     },
 
     destroyed() {
@@ -241,12 +259,6 @@ export default {
     },
 
     watch: {
-        /* I don't think we need this anymore?
-        project: function(nv, ov) {
-            if(nv && nv._id != ov._id) this.load();
-        },
-        */
-
         order: function() {
             let group_id = this.project.group_id;
             window.localStorage.setItem("processes.order."+group_id, this.order);
@@ -256,9 +268,7 @@ export default {
             let group_id = this.project.group_id;
             if(this.show) window.localStorage.setItem("processes.show."+group_id, this.show);
             else window.localStorage.removeItem("processes.show."+group_id);
-            if (this.$refs["instances-list"]) {
-                this.$refs["instances-list"].scrollTop = 0;
-            }
+            if (this.$refs["instances-list"]) this.$refs["instances-list"].scrollTop = 0;
         },
 
         '$route': function() {
@@ -298,29 +308,6 @@ export default {
             }, 1000);
         },
 
-        load() {
-            console.log("load................................................................");
-            this.check_agreements(this.project, ()=>{
-                let group_id = this.project.group_id;
-                this.order = window.localStorage.getItem("processes.order."+group_id)||"create_date";
-                this.show = window.localStorage.getItem("processes.show."+group_id)||null;
-                
-                if(!this.$route.params.subid) {
-                    let previous_instance = window.localStorage.getItem("processes.previous_instance."+group_id);
-                    console.log("replacing to " + previous_instance);
-                    if(previous_instance) {
-                        this.$router.replace("./process/"+previous_instance);
-                    }
-                }
-
-                this.load_instances(err=>{
-                    if(err) return this.notify_error(err);
-                    this.subscribe_instance_update(err=>{
-                        if(err) return this.notify_error(err);
-                    });
-                });
-            });
-        },
 
         change_query() {
             this.$refs["instances-list"].scrollTop = 0;
@@ -352,9 +339,7 @@ export default {
             var elem = document.getElementById(instance._id);
             if(!elem) return; //sometime user might be selecting instance that's not listed in the list due to filtering
             var top = elem.offsetTop;
-            if (this.$refs["instances-list"]) {
-                this.$refs["instances-list"].scrollTop = top;
-            }
+            if (this.$refs["instances-list"]) this.$refs["instances-list"].scrollTop = top;
         },
 
         toggle_instance(instance, task) {
