@@ -80,12 +80,44 @@ function handle_app(app, cb) {
                 app.stats.runtime_std = info.runtime_std;
                 app.stats.requested =  info.counts.requested,
 
+                next();
+            });
+        },
+        
+        //list shared resources that are registered to this app
+        next=>{
+            request.get({
+                url: config.amaretti.api+"/resource", json: true,
+                headers: { authorization: "Bearer "+config.warehouse.jwt },  //config.auth.jwt is deprecated
+                qs: {
+                    find: JSON.stringify({
+                        gids: 1, //shared globally
+                        active: true,
+                        status: "ok",
+                        //"config.maxtask": {$gt: 0},
+                        "config.services.name": app.github,
+                        "config.services.score": {$gt: 0},
+                    }),
+                    select: '_id name',
+                }
+            }, (err, res, data)=>{
+                if(err) return next(err);
+                if(res.statusCode != 200) return next("couldn't obtain service stats "+res.statusCode);
+                app.stats.resources = data.resources.map(resource=>{
+                    return {
+                        resource_id: resource._id,
+                        name: resource.name,
+                    }
+                });
+
                 app.markModified('stats');
                 common.update_appinfo(app, next);
             });
+
         },
 
-        //make sure doi is issued (shouldn't be needed anymore.. but in case it failes to issue doi when the app is registered?)
+        //make sure doi is issued (shouldn't be needed anymore.. 
+        //but in case it failes to issue doi when the app is registered?)
         next=>{
             if(app.doi) return next();
             logger.debug("minting doi");
@@ -101,6 +133,7 @@ function handle_app(app, cb) {
                 });
             });
         },
+
 
         //now save the app
         next=>{

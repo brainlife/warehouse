@@ -549,9 +549,16 @@ var appSchema = mongoose.Schema({
         runtime_std: Number, //3342304.692416079,
         requested: Number, //234
 
-        //serviceinfo: Object,
         gitinfo: Object,
         
+        //list of shared resources (currently available)
+        resources: [
+            new mongoose.Schema({
+                resource_id: {type: mongoose.Schema.Types.ObjectId },
+                name: String, //resource name
+            })
+        ],
+
         /*
         //DEPRECTED - stats.serviceinfo / stats.gitinfo
         requested: Number, //number of times this app was requested

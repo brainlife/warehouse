@@ -369,15 +369,15 @@ export default {
                         scene: {
                             xaxis: {
                                 range: [min, max],
-                                title: 'x (L/R)',
+                                title: 'x (Left to Right)',
                             },
                             yaxis: {
                                 range: [min, max],
-                                title: 'y (A/P)'
+                                title: 'y (Posterior to Anterior)'
                             },
                             zaxis: {
                                 range: [min, max],
-                                title: 'z (S/I)'
+                                title: 'z (Inferior to Superior)'
                             },
                         },
                     },

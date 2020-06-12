@@ -258,7 +258,7 @@ table.info td {
     border: none;
     margin-bottom: 0px;
 }
-#warehouse .card {
+.card {
     border-radius: 0;
 }
 

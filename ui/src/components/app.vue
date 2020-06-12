@@ -52,8 +52,16 @@
                 &nbsp;
                 &nbsp;
             </span>
+            <!-- who cares?-->
+            <!--
             <span class="stat" title="github stars" v-if="app_.stats.gitinfo">
                 <icon name="star" scale="0.8"/> {{app_.stats.gitinfo.stats.stars}}
+                &nbsp;
+                &nbsp;
+            </span>
+            -->
+            <span class="stat" title="number of shared resources that this app is registered on" v-if="app_.stats.resources">
+                <icon name="server" scale="0.8"/> {{app_.stats.resources.length}}
                 &nbsp;
                 &nbsp;
             </span>

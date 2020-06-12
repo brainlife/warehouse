@@ -52,7 +52,7 @@
                     <app :app="app" height="220px" class="app-card"/>
                 </div>
                 <br clear="both">
-                <small style="padding: 10px; color: white">Showing recently registered Apps. Apps that use <b>master</b> branch are hidden.</small>
+                <small style="padding: 10px; color: white">Showing recently registered Apps that has at least 1 shared resource. Apps that use master branch are hidden.</small>
             </div>
 
             <div v-for="tag in sorted_tags" :id="tag" style="position: relative;" :key="tag" :ref="'category-'+tag">
@@ -246,6 +246,11 @@ export default {
 
                         //only find apps that has non empty branch
                         if(!a.github_branch || a.github_branch == "master") return false;
+
+                        //only find apps enabled on at least 1 shared resource
+                        if(!a.stats || a.stats.resources.length == 0) return false;
+
+                        //all good
                         return true;
                     });
                     apps.sort((a,b)=>new Date(b.create_date) - new Date(a.create_date));

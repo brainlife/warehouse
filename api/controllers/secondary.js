@@ -146,6 +146,7 @@ router.get('/:task_id/*', jwt({
  * @apiParam {String} instance_id  Instance to launch the group analysis 
  * @apiParam {String} container     Name of the container to submit
  * @apiParam {String} tag           Tag of the container
+ * @apiParam {String} [name]        Name for this analysis
  * @apiParam {String} [desc]        Description for this analysis
  * @apiParam {Object} [config]      Configuration to send to the launcher
  *
@@ -158,6 +159,8 @@ router.post('/launchga', jwt({secret: config.express.pubkey}), (req, res, next)=
     if(!req.body.instance_id) return next("instance_id is not set");
     if(!req.body.container) return next("container name is not set");
     if(!req.body.tag) return next("container tag is not set");
+
+    if(!req.body.config) req.body.config = {};
 
     let project = null;
     let instance = null;
@@ -235,7 +238,7 @@ router.post('/launchga', jwt({secret: config.express.pubkey}), (req, res, next)=
             req.body.config.group = instance.group_id;
 
             axios.post(config.amaretti.api+"/task", {
-                name: "AG Launcher",
+                name: req.body.name,
                 desc: req.body.desc,
                 service : "brainlife/ga-launcher",
                 service_branch: "master", //TODO
