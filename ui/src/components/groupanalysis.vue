@@ -77,7 +77,10 @@
                             <p class="card-text" style="min-height: 60px;">{{task.desc}}<br> 
                                 <small>{{task.config.container}}</small>
                             </p>
-                            <b-button variant="primary" size="sm" @click="open(task)" :disabled="task._id == openWhenReady"><icon name="play"/> Open</b-button>
+                            <b-button variant="primary" size="sm" @click="open(task)" :disabled="task._id == openWhenReady">
+                                <span v-if="task._id == openWhenReady"><icon name="cog" spin/> Opening..</span>
+                                <span v-else><icon name="play"/> Open</span>
+                            </b-button>
                             <div class="button" style="float: right;" variant="secondary" size="sm" @click="remove(task)"><icon name="trash"/></div>
                         </div>
                         <div class="card-footer">
