@@ -471,7 +471,7 @@ function handle_task(task, cb) {
                         if(dataset_config.storage) _set.storage = dataset_config.storage;
                         if(dataset_config.storage_config) _set.storage_config = dataset_config.storage_config; //might not be set
                         if(task_product) { //app-archive didn't create task.product before
-                            let dataset_product = task_product[dataset_config.dataset._id];
+                            let dataset_product = task_product[dataset_config.dataset_id];
                             if(dataset_product) _set.size = dataset_product.size;
                         }
                         break;
@@ -479,8 +479,8 @@ function handle_task(task, cb) {
                         _set.status = "failed";
                         break;
                     }
-                    common.publish("dataset.update."+task.user_id+"."+dataset_config.project+"."+dataset_config.dataset._id, _set);
-                    db.Datasets.findByIdAndUpdate(dataset_config.dataset._id, {$set: _set}, next_dataset);
+                    common.publish("dataset.update."+task.user_id+"."+dataset_config.project+"."+dataset_config.dataset_id, _set);
+                    db.Datasets.findByIdAndUpdate(dataset_config.dataset_id, {$set: _set}, next_dataset);
                 }, next);
             } else next();
         },
