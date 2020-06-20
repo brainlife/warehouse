@@ -600,7 +600,7 @@ exports.Apprates = mongoose.model('Apprates', apprateSchema);
 var ruleSchema = mongoose.Schema({
 
     name: String,
-    desc: String, 
+    //desc: String, 
 
     //user submitted this rule (all tasks will be submitted under this user)
     user_id: String,

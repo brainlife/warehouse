@@ -19,6 +19,7 @@ const common = require('../common');
  *                              A valid JWT token "Bearer: xxxxx"
  * @apiSuccess {Object}         List of secondary outputs
  */
+//TODO - deprecated by update_secondary_index() 
 router.get('/list/:projectid', jwt({secret: config.express.pubkey}), (req, res, next)=>{
     console.log(req.params.projectid);
     db.Projects.findById(req.params.projectid, (err, project)=>{

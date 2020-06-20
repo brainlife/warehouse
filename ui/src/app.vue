@@ -665,6 +665,7 @@ background-color: white;
 margin-bottom: 20px;
 margin-left: -20px;
 margin-right: -20px;
+word-break: break-word;
 }
 .io-card {
 padding: 8px; 

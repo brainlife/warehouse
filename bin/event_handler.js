@@ -391,7 +391,7 @@ function handle_task(task, cb) {
             } else next();
         },
         
-        //handle secondary output from validator
+        //submit secondary output archiver
         async next=>{
             if(task.status != "finished" || !isValidationTask(task)) {
                 return;
@@ -419,7 +419,7 @@ function handle_task(task, cb) {
 
             let user_jwt = await common.issue_archiver_jwt(task.user_id);
 
-            //submit archiver with just secondary deps
+            //submit secondary archiver with just secondary deps
             console.log("submitting secondary output archiver");
             let remove_date = new Date();
             remove_date.setDate(remove_date.getDate()+1); //remove in 1 day
@@ -440,6 +440,18 @@ function handle_task(task, cb) {
             });
             console.log("submitted! "+newtask._id);
             //console.log(JSON.stringify(newtask, null, 4));
+        },
+
+        //update secondary archive index
+        next=>{
+            if(task.status != "finished" || task.service != "brainlife/app-archive-secondary") {
+                return next();
+            }
+            debounce("update_secondary_index."+task._group_id, async ()=>{
+                let project = await db.Projects.findOne({group_id: task._group_id});
+                await common.update_secondary_index(project);
+                next();
+            }, 1000*10); 
         },
 
         //report archive status back to user through dataset_config

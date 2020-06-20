@@ -1,5 +1,8 @@
-const request = require('request'); //TODO - switch to rp
+
+//TODO switch to axios!
+const request = require('request');
 const rp = require('request-promise-native');
+
 const winston = require('winston');
 const tmp = require('tmp');
 const mkdirp = require('mkdirp');
@@ -10,6 +13,7 @@ const async = require('async');
 const redis = require('redis');
 const xmlescape = require('xml-escape');
 const amqp = require("amqp"); //switch to amqplib?
+const axios = require('axios');
 
 const config = require('./config');
 const logger = winston.createLogger(config.logger.winston);
@@ -765,13 +769,95 @@ exports.update_dataset_stats = async function(project_id, cb) {
             stats.size += item.size;
         });
         stats.subject_count = subjects.size;
-
         let doc = await db.Projects.findByIdAndUpdate(project_id, {$set: {"stats.datasets": stats}}, {new: true});
+
         if(cb) cb(null, doc);
     } catch(err) {
         if(cb) cb(err);
         else logger.error(err);
     }
+}
+
+exports.update_secondary_index = async function(project) {
+    //console.log("updating secondary output index file for project", project._id);
+    let participants = await db.Participants.findOne({project}).lean();
+    
+    //migrate
+    if(participants && participants.rows) {
+        console.log("renaming rows to subjects (rows are deprecated now)");
+        participants.subjects = participants.rows;
+        delete participants.rows;
+    }
+
+    //now load the index
+    const _res = await axios.get(config.amaretti.api+'/task', {
+        params: {
+            //select: 'config.validator_task._id config.validator_task.follow_task_id instance_id',
+            select: 'config instance_id',
+            find: JSON.stringify({
+                'finish_date': {$exists: true},
+                'service': 'brainlife/app-archive-secondary',
+                '_group_id': project.group_id,
+            }),
+            limit: 20000, //TODO.. how scalable is this!?
+        },
+        headers: { authorization: "Bearer "+config.warehouse.jwt },
+    });
+
+    let validator_ids = _res.data.tasks.map(task=>task.config.validator_task._id);
+    let datatype_ids = [];
+    _res.data.tasks.forEach(task=>{
+        let id = task.config.validator_task.config._outputs[0].datatype;
+        if(!datatype_ids.includes(id)) datatype_ids.push(id);
+    });
+
+    //lookup datatype names
+    let datatypes = await db.Datatypes.find({_id: {$in: datatype_ids}}, {name:1,desc:1,files:1}).lean();
+    let datatypes_obj = {};
+    datatypes.forEach(rec=>{
+        datatypes_obj[rec._id] = rec;
+    });
+
+    let sectasks = _res.data.tasks.map(task=>{
+        let output = task.config.validator_task.config._outputs[0];
+        return {
+            //group_id: project.group_id,
+            //instance_id: task.instance_id,
+            //follow_task_id: task.config.validator_task.follow_task_id,
+            //validator_task_id: task.config.validator_task._id,
+            //output_id: output.id,
+            //datatype_id: output.datatype,
+            datatype: datatypes_obj[output.datatype],
+            meta: output.meta,
+            tags: output.tags,
+            datatype_tags: output.datatype_tags,
+
+            path: task.instance_id+"/"+task.config.validator_task.follow_task_id+"/"+output.id+"/secondary",
+        }
+    });
+
+    //merge sectasks into participants.subjects
+    let index = {
+        //project,
+        subjects: {},
+    };
+    if(participants) {
+        index.columns = participants.columns;
+        for(let subject in participants.subjects) {
+            if(!index.subjects[subject]) index.subjects[subject] = {}
+            index.subjects[subject].phenotype = participants.subjects[subject];
+        }
+    }
+    sectasks.forEach(sectask=>{
+        let subject = sectask.meta.subject;
+        if(!index.subjects[subject]) index.subjects[subject] = {}
+        if(!index.subjects[subject].items) index.subjects[subject].items = [];
+        index.subjects[subject].items.push(sectask);
+    });
+
+    const path = config.groupanalysis.secondaryDir+"/"+project.group_id+"/index.json";
+    console.log("storing index.json", path);
+    fs.writeFileSync(path, JSON.stringify(index, null, 4));
 }
 
 exports.update_project_stats = async function(project, cb) {

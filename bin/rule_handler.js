@@ -822,7 +822,7 @@ function handle_rule(rule, cb) {
                     body: {
                         instance_id: instance._id,
                         name: rule.app.name,
-                        desc: "submitted by pipeline rule > "+rule.name.trim()||rule.app.name,
+                        desc: "Submitted by pipeline rule: "+rule.app.name+" - "+rule.name,
                         service: rule.app.github,
                         
                         //rule.app.github_branch is no longer used, but rule.branch might not be set for old rules

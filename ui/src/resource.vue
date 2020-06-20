@@ -180,7 +180,7 @@
                                     <!--<span style="text-transform: uppercase;" >{{task.status}}</span>-->
                                 </span>
                                 {{task.service}} <b-badge>{{task.service_branch}}</b-badge><br>
-                                <small>{{task.status_msg}}</small>
+                                <small style="word-break: break-word;">{{task.status_msg}}</small>
                                 <small style="font-size: 70%">{{task._id}}</small>
                             </td>
                             <td>

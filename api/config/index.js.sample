@@ -173,6 +173,7 @@ exports.archive = {
 //group analysis 
 exports.groupanalysis = {
     gid: 3,
+    secondaryDir: "/mnt/secondary", // group id / task id
 }
 
 const js_config = require(__dirname+'/jetstream');
