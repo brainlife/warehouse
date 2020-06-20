@@ -273,7 +273,9 @@ exports.archive_task_outputs = async function(user_id, task, outputs, cb) {
                 let dataset_config = {
                     project: output.archive.project,
                     dir,
-                    dataset, //need to pass the dataet for .brainlife.io
+
+                    //dataset,  //used for .brainlife.json
+                    dataset_id: dataset._id,
 
                     //should be the same across all requested dataset (these are set by event_handler when app-achive finishes successfully)
                     storage,

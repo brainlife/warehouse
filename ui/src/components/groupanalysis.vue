@@ -48,21 +48,11 @@
                             </p>
                             <b-card-text style="min-height: 110px;">{{app.desc}}</b-card-text>
                         </div>
-                        <!--
-                        <div class="card-footer">
-                            <small class="text-muted">{{app.container}}:{{app.tag}}</small>
-                        </div>
-                        -->
                     </div>
                 </div>
             </div>
         </div>
 
-        <!--
-        <b-button @click="launch" class="button-fixed" v-b-tooltip.hover title="Launch New Analysis">
-            <icon name="plus" scale="2"/>
-        </b-button>
-        -->
     </div>
     <div v-else class="home">
         <p style="padding: 20px">Loading...</p>
@@ -227,22 +217,6 @@ export default {
             }).catch(cb);
         },
 
-        /*
-        launch() {
-            this.check_agreements(this.project, err=>{
-                if(err) return this.cb(err);
-                this.$root.$emit("galauncher.open", {
-                    instance: this.instance,
-                    cb: (err, task)=>{
-                        if(err) return console.error(err);
-                        console.log("submitted launcher");
-                        console.dir(task);
-                    }
-                });
-            });
-        },
-        */
-
         launch(app) {
             this.check_agreements(this.project, err=>{
                 if(err) return this.cb(err);
@@ -270,24 +244,6 @@ export default {
                 }
             });
         },
-
-        /*
-        stop(task) {
-            this.$http.put(Vue.config.amaretti_api+"/task/stop/"+task._id).then(res=>{
-                if(res.status == 200) {
-                    this.$notify("Stop request submitted");
-                }
-            });
-        },
-
-        rerun(task) {
-            this.$http.put(Vue.config.amaretti_api+"/task/rerun/"+task._id).then(res=>{
-                if(res.status == 200) {
-                    this.$notify("Rerun request submitted");
-                }
-            });
-        },
-        */
 
         open(task) {
             switch(task.status) {

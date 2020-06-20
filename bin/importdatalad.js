@@ -132,6 +132,7 @@ function handle_bids(key, bids, cb) {
         }
         */
         dldataset.commit_id = commit_id;
+        dldataset.removed = false;
 
         dldataset.save(err=>{
             if(err) throw err;
