@@ -13,7 +13,8 @@ if(config.debug) root = "/mnt/scratch/datalad-test";
 else process.chdir(root)
 
 //https://github.com/OpenNeuroOrg/openneuro/issues/1608
-let bad_datasets = [ "ds000030", "ds000113", "ds000217", "ds000221", "ds001417", "ds002236" ];
+//let bad_datasets = [ "ds000030", "ds000113", "ds000217", "ds000221", "ds001417", "ds002236" ];
+let bad_datasets = [ ];
 
 console.log("connecting to db");
 db.init(async err=>{
