@@ -259,6 +259,7 @@ exports.archive_task_outputs = async function(user_id, task, outputs, cb) {
     exports.validate_projects(user_id, project_ids, err=>{
         if(err) return cb(err);
         let datasets = []; 
+        let dataset_configs = []; 
         let subdirs;
         let noSubdirs = false;
         async.eachSeries(outputs, (output, next_output)=>{
@@ -293,7 +294,8 @@ exports.archive_task_outputs = async function(user_id, task, outputs, cb) {
                     dataset_config.files_override = output.files;
                     noSubdirs = true; //old method requires the entire workdir to be synced.
                 }
-                datasets.push(dataset_config);
+                dataset_configs.push(dataset_config);
+                datasets.push(dataset);
                 next_output();
             });
         }, async err=>{
@@ -317,7 +319,7 @@ exports.archive_task_outputs = async function(user_id, task, outputs, cb) {
                         service_branch: "1.1",
                         instance_id: task.instance_id,
                         config: {
-                            datasets,
+                            datasets: dataset_configs,
                         },
                         max_runtime: 1000*3600, //1 hour should be enough for most..
                         remove_date,
@@ -780,6 +782,9 @@ exports.update_dataset_stats = async function(project_id, cb) {
     }
 }
 
+//TODO - this function list *all* secondary archives. maybe I should filter out archives that didn't 
+//get archived into data-object archive? I think the easier way to do this is to store secondary archive info 
+//on each archived dataset. I can then just query all that and dump ot. 
 exports.update_secondary_index = async function(project) {
     //console.log("updating secondary output index file for project", project._id);
     let participants = await db.Participants.findOne({project}).lean();
