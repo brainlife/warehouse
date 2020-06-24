@@ -105,7 +105,7 @@
                                 </b-col>
                             </b-row>
 
-                            <b-row v-if="secondary">
+                            <b-row v-if="secondary && product">
                                 <b-col cols="3">
                                     <span class="form-header">Secondary</span>
                                     <p><small class="text-muted">Secondary output from the validator service ({{dataset.prov.task.service}})</small></p>

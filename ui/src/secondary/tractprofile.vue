@@ -1,24 +1,6 @@
 <template>
 <div>
     <div style="width: 250px; float: left; background-color: #eee;">
-        <!--
-        <table class="table table-sm">
-        <thead>
-            <tr style="opacity: 0.7;">
-                <th>Measures</th>
-                <th width="16px"></th>
-            </tr>
-        </thead>
-        <tbody>
-            <tr v-for="(o, column) in columns" :key="column">
-                <th><b>{{column}}</b></th>
-                <th>
-                    <b-form-checkbox v-model="o.show"/>
-                </th>
-            </tr>
-        </tbody>
-        </table>
-        -->
         <p style="margin: 5px">
             <span class="form-header">Measures</span>
             <span v-for="(o, column) in columns" :key="column" style="margin: 0; padding-right: 5px;">
@@ -113,6 +95,7 @@ export default {
     },
 
     mounted() {
+        console.log("mounted tractprofile secondary ui");
         if(this.product.meta.tensor_measures) {
             Vue.set(this.columns, 'fa', {show: false});
             Vue.set(this.columns, 'ad', {show: false});
@@ -160,7 +143,6 @@ export default {
             if(left) Vue.set(this.csvs[name], 'left', {path, show: false, });
             else if(right) Vue.set(this.csvs[name], 'right', {path, show: false, });
             else Vue.set(this.csvs[name], 'center', {path, show: false, });
-
         });
 
         //select the first 3 csvs
