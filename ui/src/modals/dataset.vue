@@ -111,7 +111,7 @@
                                     <p><small class="text-muted">Secondary output from the validator service ({{dataset.prov.task.service}})</small></p>
                                 </b-col>
                                 <b-col>
-                                    <secondary :task="dataset.prov.task" :output="findOutputConfig()" :product="product" :secondary="secondary"/>
+                                    <secondary :task="dtv" :output="findOutputConfig()" :product="product" :secondary="secondary"/>
                                     <br>
                                 </b-col>
                             </b-row>
@@ -315,6 +315,8 @@ export default {
             apps: null,
             prov: null, 
             product: null,
+
+            dtv: null,
             secondary: null,
             
             resource: null,
@@ -553,26 +555,10 @@ export default {
         },
 
         load_secondary() {
+            //see the secondary output archive diagram to understand this
             console.log("loading secondary");
-
-            /*
-            this.$http.get(Vue.config.amaretti_api+'/task', {params: {
-                find: JSON.stringify({ 
-                    status: { $ne: "removed" },
-                    service: "brainlife/app-stage", 
-                    "config._outputs.id": this.dataset._id, 
-                }),
-                limit: 1,
-            }}).then(res=>{
-                let task = res.data.tasks[0];
-                if(task) {
-                    console.log("found previously staged task !"+this.dataset._id);
-                    let output = task.config._outputs.find(output=>output.dataset_id == this.dataset._id);
-                    return cb(task, output.subdir);
-                }
-            });
-            */
             if(this.dataset.prov.task.follow_task_id) {
+                this.dtv = this.dataset.prov.task;
                 this.waitSecondaryArchive(this.dataset.prov.task, (err, secondary)=>{
                     if(err) console.error(err);
                     else {
@@ -582,9 +568,28 @@ export default {
                 });
             } else {
                 //prov.task is not dtv.. maybe user archived the output directly?
-                //TODO - I need to search for secondary manually as waitSecondaryArchive requires task
-                //to be dtv.. (maybe I should remedy that?)
-                console.log("waitSecondaryArchive requires dtv");
+                //I need to search for dtv (if exists) as waitSecondaryArchive requires task to be dtv
+                console.log("data probably archived manually, or without validator .. looking for dtv..");
+                this.$http.get(Vue.config.amaretti_api+'/task', {params: {
+                    find: JSON.stringify({
+                        follow_task_id: this.dataset.prov.task._id,
+                    }),
+                    populate: 'finish_date status',
+                    limit: 1,
+                }})
+                .then(res=>{
+                    if(res.data.tasks.length == 1) {
+                        //console.log("found dtv! waiting for secondary");
+                        //console.dir(res.data.tasks);
+                        this.dtv = res.data.tasks[0];
+                        this.waitSecondaryArchive(this.dtv, (err, secondary)=>{
+                            if(err) console.error(err);
+                            else {
+                                this.secondary = secondary;
+                            }
+                        });                        
+                    }
+                });
             }
         },
 
@@ -739,6 +744,7 @@ export default {
             this.resource = null;
             this.tab_index = 0;
             this.alltags = null;
+            this.dtv = null;
             this.secondary = null;
 
             if(!id) return;

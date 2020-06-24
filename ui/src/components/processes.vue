@@ -7,7 +7,6 @@
         <div class="instances-header" :style="{width: splitter_pos-40+'px'}">
             <div style="padding-top: 10px;">
                 <div style="float: right;">
-                    <!--<small><icon name="sort"/></small>-->
                     <b-dropdown :text="order" size="sm" right variant="outline-secondary">
                         <b-dropdown-item @click="order = 'create_date'">Create Date (new first)</b-dropdown-item>
                         <b-dropdown-item @click="order = '-create_date'">Create Date (old first)</b-dropdown-item>
@@ -317,19 +316,6 @@ export default {
             return string.charAt(0).toUpperCase() + string.slice(1);
         },
 
-        /*
-        state2variant(state) {
-            switch(state) {
-            case "requested": return "outline-info";
-            case "failed": return "outline-danger";
-            case "finished": return "outline-success";
-            case "running": return "outline-primary";
-            case "others": return "outline-secondary";
-            default: return "outline-warning";
-            }
-        },
-        */
-
         notify_error(err) {
             console.error(err);
             this.$notify({type: 'error', text: JSON.stringify(err)});
@@ -548,17 +534,6 @@ top: 175px;
 left: 40px;
 width: 400px;
 }
-/*
-.process {
-position: fixed;
-top: 95px;
-bottom: 0px;
-right: 0px;
-background-color: #eee;
-overflow-y: auto;
-overflow-x: hidden;
-}
-*/
 
 .instance-header {
 border-bottom: 1px solid rgba(0,0,0,0.1);
@@ -570,16 +545,17 @@ color: #333;
 display:inline-block;
 vertical-align:middle;
 }
+
 .instance-header:hover {
 cursor: pointer;
 background-color: #9993;
 }
+
 .instance-header.instance-active {
 color: white;
-/*background-color: #007bff;*/
 background-color: #2693ff;
-/*box-shadow: 0 0 5px #aaa;*/
 }
+
 .instance-desc {
 font-size: 90%;
 padding-left: 3px;
@@ -587,7 +563,6 @@ margin-left: 0px;
 }
 
 .button-fixed {
-/*left: 500px;*/
 transition: background-color 0.3s, transform 0.5s, box-shadow 0.5s, opacity 0.5s;
 }
 
@@ -643,6 +618,7 @@ background-color: #007bff;
 .status-toggler {
 display: inline-block;
 }
+
 .summary {
 color: white;
 background-color: gray;
@@ -654,18 +630,21 @@ font-size: 65%;
 top: -2px;
 display: inline-block;
 transition: background-color 0.3s;
-/*border-radius: 10%;*/
 }
+
 .summary:hover {
 background-color: white;
 color: black;
 }
+
 .summary-running {
 background-color: #007bff;
 }
+
 .summary-failed {
 background-color: #dc3545;
 }
+
 .summary-stopped {
 background-color: #999;
 }
@@ -673,6 +652,7 @@ background-color: #999;
 .summary-requested {
 background-color: #50bfff;
 }
+
 .summary-finished {
 background-color: #28a745;
 }
@@ -721,10 +701,6 @@ display: inline-block;
     border-top: 2px solid #0000;
     position: relative;
     padding-top: 5px;
-    /*
-    border-top-left-radius: 2px;
-    border-top-right-radius: 2px;
-    */
     font-weight: bold;
     opacity: 0.7;
     background-color: #f6f6f6;

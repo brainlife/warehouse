@@ -71,19 +71,42 @@
                 <div slot="output" v-if="task.config._outputs">
                     <div v-for="(output, idx) in task.config._outputs" :key="idx" class="output">
                         <div class="output-actions">
-                            <div class="button" v-if="output.dataset_id" @click="open_dataset(output.dataset_id)" title="Show Data-object Detail">
+                            <div class="button" v-if="output.dataset_id" 
+                                @click="open_dataset(output.dataset_id)" 
+                                title="Show Data-object Detail">
                                 <icon name="cubes"/>
                             </div>
-                            <div class="button" v-if="!output.dataset_id" v-b-toggle="task._id+'.'+output.id" title="Show Metadata">
+                            <div class="button" v-if="!output.dataset_id" 
+                                v-b-toggle="task._id+'.'+output.id" 
+                                title="Show Metadata">
                                <icon name="cube"/>
                             </div>
+
                             <div v-if="task.status == 'finished'" style="display: inline-block;">
-                                <div class="button" title="View" @click="set_viewsel_options(task, output)">
+                                <div class="button" title="View" 
+                                    @click="set_viewsel_options(task, output)">
                                     <icon name="eye"/>
                                 </div>
-                                <div class="button" @click="download(task, output)" title="Download"><icon name="download"/></div>
-                                <div class="button" title="Archive" @click="open_archiver(task, output)"><icon name="archive"/></div>
+                                <div class="button" 
+                                    @click="download(task, output)" title="Download">
+                                    <icon name="download"/>
+                                </div>
+
+                                <!--archive button-->
+                                <div v-if="output.dtv_task && output.dtv_task.status == 'finished'" style="display: inline-block;">
+                                    <div class="button" title="Archive" 
+                                        @click="open_archiver(output.dtv_task, output.dtv_task.config._outputs[0])">
+                                        <icon name="archive"/> Validated 
+                                    </div>
+                                </div>
+                                <div v-else style="display: inline-block;">
+                                    <div class="button" title="Archive" 
+                                        @click="open_archiver(task, output)">
+                                        <icon name="archive"/>
+                                    </div>
+                                </div>
                             </div>
+
                         </div>
 
                         <b v-if="output.meta && output.meta.subject">{{output.meta.subject}}</b>

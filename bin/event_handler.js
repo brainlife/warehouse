@@ -429,6 +429,7 @@ function handle_task(task, cb) {
                     deps_config: [ {task: task._id, subdirs: ["secondary"]} ],
                     config: {
                         validator_task: task,
+                        app_task_id: task.follow_task_id, //the main app task (used to query secondary archive task)
                     },
                     remove_date,
                     //user_id: task.user_id, 
@@ -450,8 +451,9 @@ function handle_task(task, cb) {
             debounce("update_secondary_index."+task._group_id, async ()=>{
                 let project = await db.Projects.findOne({group_id: task._group_id});
                 await common.update_secondary_index(project);
-                next();
             }, 1000*10); 
+
+            next();
         },
 
         //report archive status back to user through dataset_config
