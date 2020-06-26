@@ -94,7 +94,7 @@
 
                                 <!--archive button-->
                                 <div v-if="output.dtv_task && output.dtv_task.status == 'finished'" style="display: inline-block;">
-                                    <div class="button" title="Archive" 
+                                    <div class="button" title="Archive this output" 
                                         @click="open_archiver(output.dtv_task, output.dtv_task.config._outputs[0])">
                                         <icon name="archive"/> Validated 
                                     </div>
@@ -128,30 +128,13 @@
                         </span>
                         <small class="ioid" v-if="task.app">({{compose_desc(task.app.outputs, output.id)}})</small>
 
-                        <b-collapse :id="task._id+'.'+output.id" style="margin-top: 8px; margin-right: 20px;">
-                            <div class="subtitle">Metadata</div>
-                            <pre style="max-height: 300px; background-color: #eee;">{{JSON.stringify(output.meta, null, 4)}}</pre>
-                        </b-collapse>
-
-                        <div class="subinfo" v-if="output.dtv_task">
-                            <dtv :task="output.dtv_task" :output="output"/>
-                        </div>
-                        <div class="subinfo" v-if="output.secondary_task">
-                            <div class="subtitle">Seconary Output Archiver</div>
-                            <small v-if="output.secondary_task.finish_date"><icon name="check"/> Archived</small>
-                            <small v-else>
-                                <statusicon :status="output.secondary_task.status"/>
-                                {{output.secondary_task.status_msg}}</small>
-                            <small>({{output.secondary_task._id}})</small>
-                        </div>
-
-                        <div class="subinfo" v-if="findarchived(task, output).length > 0">
-                            <div class="subtitle">Archived Primary Output</div>
+                        <div v-if="findarchived(task, output).length > 0">
                             <ul class="archived">
-                                <li v-for="dataset in findarchived(task, output)" :key="dataset._id" @click="open_dataset(dataset._id)" class="clickable">
+                                <li v-for="dataset in findarchived(task, output)" :key="dataset._id" 
+                                    @click="open_dataset(dataset._id)" class="clickable">
                                     <timeago class="text-muted" style="float: right" :datetime="dataset.create_date" :auto-update="10"/>
+                                    <div class="subtitle" style="margin-bottom: 5px;"><icon name="cubes"/> Output Archived</div>
 
-                                    <icon name="cubes"/>
                                     <mute>{{dataset.desc||'(no desc)'}}</mute>
 
                                     <tags :tags="dataset.tags"/>
@@ -169,6 +152,24 @@
                                 </li>
                             </ul>
                         </div>
+
+                        <b-collapse :id="task._id+'.'+output.id" style="margin-top: 8px; margin-right: 20px;">
+                            <div class="subtitle">Metadata</div>
+                            <pre style="max-height: 300px; background-color: #eee;">{{JSON.stringify(output.meta, null, 4)}}</pre>
+                        </b-collapse>
+
+                        <dtv :task="output.dtv_task" :output="output" v-if="output.dtv_task"/>
+
+                        <!--
+                        <div class="subinfo" v-if="output.secondary_task">
+                            <div class="subtitle">Seconary Output Archiver</div>
+                            <small v-if="output.secondary_task.finish_date"><icon name="check"/> Archived</small>
+                            <small v-else>
+                                <statusicon :status="output.secondary_task.status"/>
+                                {{output.secondary_task.status_msg}}</small>
+                            <small>({{output.secondary_task._id}})</small>
+                        </div>
+                        -->
                     </div><!--output-->
 
                     <!-- 
@@ -837,12 +838,14 @@ white-space: nowrap;
 overflow: hidden;
 text-overflow: ellipsis; 
 }
+/*
 .subinfo {
 border-left: 3px solid #ddd;
 padding-left: 8px;
 margin: 3px;
 margin-top: 8px;
 }
+*/
 .subtitle {
 color: #aaa;
 font-weight: bold;
@@ -854,7 +857,11 @@ margin: 0px;
 padding: 0px;
 }
 ul.archived li {
-padding: 5px;
+margin-top: 10px;
+padding: 10px 15px;
+background-color: #eee;
+border-radius: 4px;
+border: 2px solid #ddd;
 }
 ul.archived li:hover {
 cursor: pointer;
