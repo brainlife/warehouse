@@ -102,7 +102,8 @@ margin-top: 10px;
 padding: 10px 15px;
 background-color: white;
 border-radius: 4px;
-border: 2px solid #ddd;
+/*border: 2px solid #ddd;*/
+box-shadow: 0px 0px 3px #0002;
 }
 .subtitle {
 font-weight: bold;

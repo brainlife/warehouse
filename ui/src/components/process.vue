@@ -861,7 +861,7 @@ margin-top: 10px;
 padding: 10px 15px;
 background-color: #eee;
 border-radius: 4px;
-border: 2px solid #ddd;
+/*border: 2px solid #ddd;*/
 }
 ul.archived li:hover {
 cursor: pointer;
