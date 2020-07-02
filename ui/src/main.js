@@ -43,6 +43,7 @@ import 'vue-awesome/icons/chart-area.js'
 import 'vue-awesome/icons/newspaper.js'
 import 'vue-awesome/icons/cog.js'
 import 'vue-awesome/icons/archive.js'
+import 'vue-awesome/icons/bars.js'
 import 'vue-awesome/icons/wrench.js'
 import 'vue-awesome/icons/sign-in-alt.js'
 import 'vue-awesome/icons/sign-out-alt.js'
@@ -61,6 +62,7 @@ import 'vue-awesome/icons/play.js'
 import 'vue-awesome/icons/calendar.js'
 import 'vue-awesome/icons/download.js'
 import 'vue-awesome/icons/certificate.js'
+import 'vue-awesome/icons/cloud.js'
 import 'vue-awesome/icons/cloud-download-alt.js'
 import 'vue-awesome/icons/edit.js'
 import 'vue-awesome/icons/sort.js'
@@ -317,11 +319,18 @@ new Vue({
     data() {
         return {
             ready: false,
+
+            //things we can access via $root
+            sidemenuWide: true,
         }
     },
     components: { warehouse },
 
     mounted() {
+        let wide = localStorage.getItem("sidemenuWide");
+        if(wide) {
+            this.sidemenuWide = (wide=="1"?true:false);
+        }
 
         //allow child component to refresh jwt
         //project/submit (adding project requires jwt scope change for ac)
@@ -353,6 +362,11 @@ new Vue({
     },
 
     methods: {
+        toggleSideMenu() {
+            this.sidemenuWide = !this.sidemenuWide;
+            localStorage.setItem("sidemenuWide", this.sidemenuWide?"1":"0");
+        },
+
         async ensure_myproject() {
             if(!Vue.config.jwt) return;
             

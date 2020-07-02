@@ -1,5 +1,5 @@
 <template>
-<div class="admin">
+<div class="page-content">
     <div class="page-header">
         <h4>Administration</h4>
     </div>
@@ -135,10 +135,6 @@ export default {
 height: 50px;
 padding: 10px;
 }
-.admin {
-margin-left: 40px;
-margin-top: 50px;
-}
 .brainlife-tab {
 padding-top: 0;
 overflow: auto;
@@ -151,8 +147,8 @@ bottom: 0;
 .tab-content > .tab-pane {
 overflow: auto;
 position: absolute;
-top: 90px;
-left: 40px;
+top: 40px;
+left: 0px;
 right: 0;
 bottom: 0;
 }

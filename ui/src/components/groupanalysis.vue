@@ -1,12 +1,12 @@
 <template>
-<div class="groupanalysis">
+<div>
     <div v-if="selected">
         <div class="selected-controller">
             <div class="button" @click="selected = null"><icon name="times"/> Close</div>
         </div>
         <iframe :src="host+'/ipython/'+selected.port+'/lab?token='+selected.token" frameBorder="0"/>
     </div>
-    <div v-else-if="ready" class="home">
+    <div v-else-if="ready" class="page-content">
         <div class="list" style="background-color: white;">
 
             <h4>Existing Analysis</h4>
@@ -54,7 +54,7 @@
         </div>
 
     </div>
-    <div v-else class="home">
+    <div v-else class="page-content">
         <p style="padding: 20px">Loading...</p>
     </div>
 </div>
@@ -283,12 +283,8 @@ export default {
 </script>
 
 <style scoped>
-.home {
-    position: fixed;
-    left: 40px;
-    right: 0;
+.page-content {
     top: 95px;
-    bottom: 0;
     overflow: auto;
 }
 .list h4 {
@@ -298,7 +294,7 @@ font-size: 13pt;
 font-weight: bold;
 margin-bottom: 20px;
 }
-.home .welcome {
+.welcome {
     margin: 20px;
 }
 .list {
@@ -313,8 +309,14 @@ iframe {
     left: 40px;
     top: 95x;
     width: calc(100% - 40px);
-    height: calc(100% - 95px)
+    height: calc(100% - 95px);
+    transition: left 0.2s;
 }
+.sidewide iframe {
+    left: 200px;
+    width: calc(100% - 200px);
+}
+
 .selected-controller {
     position: fixed;
     text-align: right;

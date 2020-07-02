@@ -1,5 +1,5 @@
 <template>
-<div id="warehouse">
+<div id="warehouse" :class="{'sidewide': $root.sidemenuWide}">
     <sidemenu/>
     <router-view/>
     <notifications position="top right"/>
@@ -99,6 +99,11 @@ html,body {
     left: 40px;
     right: 0px;
     top: 0px;
+    transition: left 0.2s;
+}
+.sidewide .page-header, 
+.sidewide .page-content {
+    left: 200px;
 }
 .page-content {
     top: 50px;
@@ -116,7 +121,12 @@ html,body {
     background-color: rgba(100,100,100,0.4);
     z-index: 7;
     pointer-events: none;
+    transition: left 0.2s;
 }
+.sidewide .page-footer {
+    left: 200px;
+}
+
 .page-footer .btn {
     pointer-events: auto;
 }
@@ -219,9 +229,6 @@ table.info td {
     background-color: #dc3545;
     color: white;
 }
-
-/*------------------------------------------------------------*/
-/* update bootstrap default tab */
 
 .brainlife-tab {
     min-height: 45px;
@@ -414,6 +421,10 @@ top: 6px;
 padding-left: 10px;
 right: 0px;
 left: 40px;
+transition: left 0.2s;
+}
+.sidewide .search-box {
+    left: 200px;
 }
 .search-box .input {
 font-size: 120%;
@@ -425,7 +436,6 @@ padding-left: 45px;
 
 .search-box .input:focus,
 .search-box .input:not([value=""]) {
-/*background-color: white;*/
 color: gray;
 box-shadow: none;
 }
@@ -531,9 +541,6 @@ background-attachment: local, local, scroll, scroll;
 }
 
 .btn-primary {
-/*
-background-image: linear-gradient(90deg, #2693ff, #159957);
-*/
 background-color: #2693ff;
 border-color: #2693ff90;
 }

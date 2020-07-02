@@ -20,7 +20,7 @@
             {{selected.name}}
         </h4>
     </div>
-    <div class="sub-header">
+    <div class="page-content tabs">
         <b-tabs class="brainlife-tab" v-model="tab">
             <!--without setting active="true" on active tab, b-tabs emits change event back to tab 0 at mount-->
             <b-tab v-for="(tabinfo, idx) in tabs" :key="tabinfo.id" :title="tabinfo.label" :active="tab == idx">
@@ -222,22 +222,22 @@
         <datasets :project="selected" :projects="projects" v-else :participants="participants"/>
     </div>
 
-    <div v-if="tabs[tab].id == 'process'" style="margin-left: 40px; margin-top: 95px">
+    <div v-if="tabs[tab].id == 'process'" class="page-content">
         <noprocess v-if="!(ismember()||isadmin())"/>
         <processes :project="selected" v-else/>
     </div>
 
-    <div v-if="tabs[tab].id == 'pipeline'" style="margin-left: 40px; margin-top: 95px">
+    <div v-if="tabs[tab].id == 'pipeline'" class="page-content">
         <b-alert show variant="secondary" v-if="!(ismember()||isadmin())">Only the admins or members of this project can access pipelines. Please contact the project admin to give you access.</b-alert>
         <pipelines :project="selected" v-else/>
     </div>
 
-    <div v-if="tabs[tab].id == 'groupanalysis'" style="margin-left: 40px; margin-top: 95px">
+    <div v-if="tabs[tab].id == 'groupanalysis'" class="page-content">
         <b-alert show variant="secondary" v-if="!(ismember()||isadmin())">Only the admins or members of this project can access group analysis page. Please contact the project admin to give you access.</b-alert>
         <groupAnalysis :project="selected" v-else/>
     </div>
 
-    <div v-if="tabs[tab].id == 'pub'" style="margin-left: 40px; margin-top: 95px">
+    <div v-if="tabs[tab].id == 'pub'" class="page-content">
         <b-alert show variant="secondary" v-if="!(ismember()||isadmin())">Only the admins or members of this project can access publications. Please contact the project admin to give you access.</b-alert>
         <publications :project="selected" v-else/>
     </div>
@@ -655,29 +655,26 @@ padding: 10px 20px;
 margin-right: 150px; 
 }
 
-.sub-header {
-position: fixed;
-top: 50px;
-height: 45px;
-left: 40px;  
-right: 0px; 
-background-color: white; 
-box-shadow: 0px 0px 2px #ccc;
-z-index: 1;
-}
 .page-content {
-top: 95px;
 overflow-x: hidden;
+top: 95px;
 }
 .project-header {
 padding: 20px; 
 box-shadow: 0 0 2px #ccc;
 background-color: white;
 position: sticky;
-top: 0;
+top: 0px;
 z-index: 7;
 height: 140px;
 overflow: hidden;
+}
+.tabs {
+top: 50px;
+height: 45px;
+background-color: white; 
+box-shadow: 0px 0px 2px #ccc;
+z-index: 1;
 }
 
 .datasets_link {

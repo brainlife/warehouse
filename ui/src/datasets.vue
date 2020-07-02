@@ -1,13 +1,11 @@
 <template>
 <div>
-    <div class="page-header" :style="{width: splitter_pos-40+'px'}">
-        <div class="search-box" :style="{width: splitter_pos-40+'px'}"> 
-            <b-form-input v-model="query" type="text" placeholder="Search Datasets" @input="change_query_debounce" class="input"/>
-            <icon name="search" class="search-icon" scale="1.5"/>
-            <img src="https://pbs.twimg.com/profile_images/899900469119680512/XybpieA7_400x400.jpg" height="30px" class="datalad-logo">
-        </div>
+    <div class="page-content page-header search-box" :style="{width: listWidth+'px'}">
+        <b-form-input v-model="query" type="text" placeholder="Search Datasets" @input="change_query_debounce" class="input"/>
+        <icon name="search" class="search-icon" scale="1.5"/>
+        <img src="https://pbs.twimg.com/profile_images/899900469119680512/XybpieA7_400x400.jpg" height="30px" class="datalad-logo">
     </div>
-    <div class="page-left-top" style="padding: 10px;" :style="{width: splitter_pos-40+'px'}">
+    <div class="page-content page-left-top" style="padding: 10px;" :style="{width: listWidth+'px'}">
         <b-form-group label="Datatypes">
             <b-form-checkbox-group v-model="datatypes">
                 <b-form-checkbox v-for="datatype_id in datatype_options" :key="datatype_id" :value="datatype_id">
@@ -18,7 +16,7 @@
             </b-form-checkbox-group>
         </b-form-group>
     </div>
-    <div class="page-left scroll-shadow" ref="dataset-list" :style="{width: splitter_pos-40+'px'}">
+    <div class="page-content page-left scroll-shadow" ref="dataset-list" :style="{width: listWidth+'px'}">
         <p v-if="loading_datasets" style="padding: 20px; opacity: 0.8;">Loading...</p>
         <p v-else-if="datasets.length == 0" style="padding: 20px; opacity: 0.8;">No matching dataset</p>
         <div v-for="dataset in datasets" :key="dataset._id" class="dataset" :title="dataset.path" :ref="dataset._id" @click="open_dataset(dataset._id)" 
@@ -40,17 +38,14 @@
                 <small v-for="(count, datatype_id) in dataset.stats.datatypes" :key="datatype_id" style="margin-right: 10px;">
                     <datatypetag :datatype="datatype_id" :clickable="false"/> <small>{{count}}</small>
                 </small>
-                <!--<span>{{license_label(dataset)}}</span>-->
             </p>
-        
         </div>
     </div>
-    <div class="page-left-bottom" style="text-align: right;" :style="{width: splitter_pos-40+'px'}">
+    <div class="page-content page-left-bottom" style="text-align: right;" :style="{width: listWidth+'px'}">
         <small><b>{{datasets.length}}</b> datasets</small>
     </div>
-
     <div class="splitter" ref="splitter" :style="{left: splitter_pos+'px'}"/>
-    <div class="page-main" v-if="selected" :style="{left: splitter_pos+10+'px'}">
+    <div class="page-content page-main" v-if="selected" :style="{left: (splitter_pos+10)+'px'}">
         <div style="padding: 10px">
             <b-button variant="primary" @click="openImporter" class="import-button"><icon name="cloud-download-alt"/> Import</b-button>
             <p>
@@ -58,7 +53,6 @@
                     <b-badge variant="light">{{selected.dataset_description.DatasetDOI}}</b-badge>
                 </a>
                 <pre v-else style="opacity: 0.5; font-size: 70%">{{selected.path}}</pre>
-
                 <h5 style="font-size: 20px; margin-bottom: 0">{{selected.dataset_description.Name}}</h5>
                 <small v-for="(author, idx) in selected.dataset_description.Authors" :key="idx"> 
                     <span v-if="idx > 0" style="opacity: 0.3;">|</span> {{author}} 
@@ -154,7 +148,7 @@
 
     </div>
 
-    <div class="page-main" v-else style="padding: 20px 40px; opacity: 0.7; background-color: #eee;" :style="{left: splitter_pos+10+'px'}"> 
+    <div class="page-content page-main" v-else style="padding: 20px 40px; opacity: 0.7; background-color: #eee;" :style="{left: (splitter_pos+10)+'px'}"> 
         <p v-if="loading_dataset" style="opacity: 0.6; font-size: 150%;">Loading...</p>
         <div v-else>
             <p style="font-size: 150%; margin-top: 200px;"><icon name="arrow-left"/> Select a dataset</p>
@@ -265,21 +259,10 @@ export default {
     },
 
     computed: {
-        /*
-        participants_columns() {
-            if(!this.selected.participants) return [];
-
-            let keys = [];
-            for(let row of this.selected.participants) {
-                for(let key in row) {
-                    if(!keys.includes(key)) keys.push(key);
-                }
-            }
-            console.dir(keys);
-            return keys;
+        listWidth() {
+            if(this.$root.sidemenuWide) return this.splitter_pos-200;
+            else return this.splitter_pos-40;
         },
-        */
-
     },
 
     mounted() {
@@ -510,63 +493,43 @@ z-index: 1;
 box-shadow: 0 0 1px #ccc;
 }
 .page-left {
-position: fixed;
 background-color: #fcfcfc;
-width: 400px;
-left: 40px;
-top: 175px;
-bottom: 30px;
+top: 165px;
+bottom: 40px;
 border-right: 1px solid #eee;
+overflow: hidden;
 }
 .page-main {
-position: fixed;
-right: 0px;
-top: 0px;
 bottom: 0px;
 overflow: auto;
 background-color: white;
 overflow-x: hidden;
+transition: left 0s;
+z-index: 1;
 }
-
-.page-bottom {
-position: fixed;
-right: 0px;
-bottom: 0px;
-height: 40%;
-overflow: auto;
-box-shadow: inset 0 4px 4px #ccc6;
-font-size: 12px;
-overflow-x: hidden;
-}
-
 .page-left-top {
-position: fixed;
 height: 125px;
-top: 50px;
-left: 40px;
-width: 400px;   
+top: 40px;
+overflow: hidden;
 }
 .page-left-bottom {
-position: fixed;
-height: 30px;
-bottom: 0px;
-left: 40px;
-width: 400px;
+height: 40px;
+top: inherit;
 border-top: 1px solid #ddd;
 padding-top: 5px; 
 padding-right: 15px;
 }
 .page-header {
-left: 40px;
 box-shadow: none;
 border-bottom: 1px solid #eee;
+padding-left: 0;
+height: 40px;
 }
 .datalad-logo {
 position: absolute;
 top: 3px;
 right: 20px;
 z-index: -1;
-transition: color 0.5s;
 opacity: 0.5;
 }
 
@@ -640,6 +603,9 @@ position: sticky;
 top: 10px;
 margin-left: 30px;
 z-index: 1;
+}
+.search-icon {
+left: 12px;
 }
 
 </style>

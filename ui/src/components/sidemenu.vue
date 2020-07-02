@@ -1,23 +1,14 @@
 <template>
 
 <div class="sidemenu" v-if="showmenu">
-    <!--
-    <div @click="showpanel = !showpanel" class="logo">
-        <h3 class="title">b</h3>
-        <div class="panel-content" v-if="showpanel">
-            <h3 class="title">brainlife.io</h3>
-            <p>An online platform for reproducible neuroscience.</p>
-            <div style="padding: 4px 10px; background-color: #eee;">
-                <a href="https://brainlife.io">Home</a> |
-                <a href="https://brainlife.io/docs/privacy">Privacy Policy</a> |
-                <a href="https://brainlife.io/docs/aup">Acceptable Use Policy</a>
-            </div>
-            <img src="@/assets/images/logo.png" width="80px" style="position: absolute; bottom: 0px; right: 30px;"/>
-        </div>
-    </div>
-    -->
     <div @click="goindex()" class="logo">
-        <h3 class="title">b</h3>
+        <h3 class="title">b<span class="titlefollow">rainlife</span>
+            <icon name="cloud" class="titlecloud" scale="4"/>
+        </h3>
+    </div>
+
+    <div class="toggle" @click="$root.toggleSideMenu">
+        <icon name="bars" scale="1.2"/>
     </div>
 
     <ul class="items">
@@ -53,9 +44,6 @@
 
         <li @click="go('/datasets')" :class="{active: active == 'dataset'}" style="position: relative;">
             <icon name="cloud-download-alt" scale="1.2"/>
-            <!--
-            <b-badge pill variant="primary" style="opacity: 0.5; position: absolute; top: 20px; right: 5px;">BETA</b-badge>
-            -->
             <h4>Datasets</h4>
         </li>
 
@@ -63,12 +51,6 @@
             <icon name="server" scale="1.2"/>
             <h4>Resources</h4>
         </li>
-        <!--
-        <li v-if="config.user" @click="setting_old">
-            <icon name="cog" scale="1.2"/>
-            <h4>Settings</h4>
-        </li>
-        -->
         <li v-if="config.user" @click="go('/settings')" :class="{active: active == 'setting'}">
             <icon name="cog" scale="1.2"/>
             <span v-if="!config.user.profile.aup" style="position: absolute; top: -15px; left: 20px; font-size: 350%;" class="text-danger">&bull;</span>
@@ -89,6 +71,7 @@
     <ul class="items items-bottom">
         <li v-if="config.user" id="user-popover">
             <img :src="avatar_url(config.user.profile, 22)" width="18px" class="avatar"/>
+            <h5>{{config.user.profile.fullname}}</h5>
             <b-popover target="user-popover" triggers="hover" placement="right">
                  <template v-slot:title>
                     {{config.user.profile.username}}&nbsp;
@@ -97,13 +80,6 @@
                 <p>
                     {{config.user.profile.fullname}} &lt;{{config.user.profile.email}}&gt;
                 </p>
-                <!-- this messes up the signoff button
-                <p>
-                    <b>Authorization</b>
-                    <pre style="font-size: 80%;">{{JSON.stringify(config.user.scopes, null, 4)}}</pre>
-                </p>
-                <hr>
-                -->
                 <b-button size="sm" variant="secondary" @click="signout"> <icon name="sign-out-alt" scale="1.2"/>&nbsp; Signout </b-button>
             </b-popover>
         </li>
@@ -223,6 +199,7 @@ export default {
         open_usersettings() {
             this.$refs.usersettings.$emit('popoever');
         },
+
     }
 }
 </script>
@@ -240,15 +217,35 @@ font-size: 8pt;
 background-image: linear-gradient(0deg, #159957, #2693ff);
 z-index: 2;
 box-shadow: inset -3px 0 2px rgba(33,33,33,0.1);
+transition: width 0.2s;
+}
+.sidewide .sidemenu {
+width: 200px;
 }
 
 .title {
-font-family: "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
-font-size: 24pt;
+font-family: "Open Sans";
 font-weight: bold;
 padding: 8px 2px;
 margin-left: 8px;
 color: rgba(255,255,255,0.6);
+}
+.titlefollow {
+opacity: 0;
+transition: opacity 0.2s;
+overflow: hidden;
+}
+.titlecloud {
+position: fixed;
+opacity: 0;
+top: -2px;
+left: 150px;
+}
+.sidewide .titlecloud {
+opacity: 0.3;
+}
+.sidewide .titlefollow {
+opacity: 1;
 }
 
 .items {
@@ -267,14 +264,20 @@ white-space: nowrap;
 overflow: hidden;
 cursor: pointer;
 position: relative;
-transition: background-color 0.5s;
+transition: background-color 0.2s;
+transition: width 0.2s;
+}
+.sidewide .items li {
+width: 200px;
 }
 
+/*
 .items li:hover:not(#user-popover) {
-width: 180px;
+width: 200px;
 border-top-right-radius: 3px;
 border-bottom-right-radius: 3px;
 }
+*/
 
 .items li h4 {
 position: relative;
@@ -283,16 +286,28 @@ line-height: 100%;
 font-size: 10pt;
 display: inline-block;
 margin-left: 15px;
-transition: color 0.5s;
-color: #666;
 text-transform: uppercase;
+color: white;
+}
+.items li h5 {
+position: relative;
+top: 1px;
+line-height: 100%;
+font-size: 10pt;
+display: inline-block;
+margin-left: 15px;
+color: white;
 }
 
 .items li:not(.divider):hover {
-color: #666;
 background-color: #fff;
-box-shadow: 2px 1px 5px rgba(0, 0, 0, 0.2);
+box-shadow: 2px 1px 4px rgba(0, 0, 0, 0.1);
 z-index: 3;
+color: #666;
+}
+.items li:not(.divider):hover h4,
+.items li:not(.divider):hover h5 {
+color: #666;
 }
 
 .items li.active {
@@ -331,16 +346,16 @@ height: 50px;
 margin-bottom: 10px;
 }
 .logo h3 {
-padding: 12px 4px;
+padding: 8px 4px;
 color: #fff;
-font-size: 18pt;
+font-size: 20pt;
 }
 .panel-content {
 position: fixed;
 top: 0px;
 left: 40px;
 width: 500px;
-transition: opacity 0.3s;
+transition: opacity 0.2s;
 background-color: #fcfcfc;
 z-index: 3;
 box-shadow: 0 0 8px rgba(0,0,0,0.4);
@@ -362,5 +377,15 @@ border-top-left-radius: 50%;
 border-top-right-radius: 50%;
 padding: 10px;
 padding-bottom: 0px;
+}
+.toggle {
+padding: 10px;
+padding-top: 11px;
+width: 40px;
+opacity: 0.4;
+cursor: pointer;
+}
+.toggle:hover {
+opacity: 1;
 }
 </style>

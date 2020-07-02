@@ -388,15 +388,6 @@ export default {
         editor: require('vue2-ace-editor'),
     },
 
-    /*
-    metaInfo: {
-        meta: [
-            { charset: 'utf-8' },
-            { name: 'here is my thing', content: 'appppp' }
-        ]
-    },
-    */
-
     data () {
         return {
             app: null,
@@ -405,7 +396,6 @@ export default {
             preferred_resource: null,
             resources_considered: null,
             readme: null,
-            //info: null,
 
             selfurl: document.location.href,
 

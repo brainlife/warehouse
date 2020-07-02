@@ -26,7 +26,7 @@
             </b-row>
         </div>
 
-        <div class="list" ref="scrolled-area" @scroll="page_scrolled">
+        <div class="page-content" ref="scrolled-area" @scroll="page_scrolled">
             <div v-if="!loading && total_datasets == 0" style="margin: 20px; opacity: 0.8;">
                 Please upload datasets by clicking the button on the right bottom corner of the page. You can also copy datasets from another project.
             </div>
@@ -785,19 +785,20 @@ export default {
     padding-left: 10px;
     padding-right: 16px;
     color: #999;
+
+    transition: left 0.2s;
+}
+.sidewide .table-header {
+    left: 200px;
 }
 
 .table-column {
 text-transform: uppercase;
 }
 
-.list {
+.page-content {
 transition: 0.2s right, 0.2s bottom, 0.2s left;
-position: fixed;
 top: 165px;
-bottom: 0px;
-left: 40px;
-right: 0px;
 overflow-y: scroll;
 padding-left: 10px;
 background-color: white;
@@ -810,8 +811,7 @@ font-weight: bold;
 margin-bottom: 5px;
 }
 
-
-.rightopen .list,
+.rightopen .page-content,
 .rightopen .table-header {
 right: 250px;
 }
@@ -861,27 +861,27 @@ right: 250px;
 .select-group {
     margin-bottom: 10px;
 }
-.list .dataset {
+.dataset {
     transition: background-color 0.3s;
     padding: 1px;
     margin-bottom: 1px;
     height: 20px;
 }
-.list .dataset.clickable:hover {
+.dataset.clickable:hover {
     background-color: #ccc;
 }
-.list .dataset.selected,
-.list .dataset.selected:hover {
+.dataset.selected,
+.dataset.selected:hover {
     background-color: #2693ff;
 }
 .stats {
     opacity: 0.5;
 }
-.list  .subjects {
-border-top: 1px solid #eee;
-padding: 5px 0px;
+.subjects {
+    border-top: 1px solid #eee;
+    padding: 5px 0px;
 }
-.list  .truncate {
+.truncate {
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;

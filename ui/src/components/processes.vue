@@ -1,10 +1,10 @@
 <template>
 <div>
     <!--no instance contents-->
-    <p v-if="!instances" class="loading"><icon name="cog" spin scale="1.5"/> Loading...</p>
-    <div class="instances" v-else>
+    <p v-if="!instances" class="page-content loading"><icon name="cog" spin scale="1.5"/> Loading...</p>
+    <div v-else>
         <!--instances list-->
-        <div class="instances-header" :style="{width: splitter_pos-40+'px'}">
+        <div class="instances-header" :style="{width: listWidth+'px'}">
             <div style="padding-top: 10px;">
                 <div style="float: right;">
                     <b-dropdown :text="order" size="sm" right variant="outline-secondary">
@@ -20,7 +20,7 @@
                 </div>
 
                 <div style="margin-right: 140px; position: relative;">
-                    <icon name="search" style="position: absolute; top: 7px; left: 10px; color: #ccc;"/>
+                    <icon name="search" style="position: absolute; top: 7px; left: 10px; color: #0004;"/>
                     <b-form-input class="filter" 
                         @input="change_query"
                         :class="{'filter-active': query != ''}" 
@@ -47,7 +47,7 @@
 
         </div>
 
-        <div class="instances-list scroll-shadow" ref="instances-list" :style="{width: splitter_pos-40+'px'}">
+        <div class="page-content instances-list scroll-shadow" ref="instances-list" :style="{width: listWidth+'px'}">
             <!--no instances show help doc-->
             <div v-if="instances.length == 0" style="margin: 20px; opacity: 0.7">
                 <p>Here, you can submit a series of Apps to analyze dataset one subject at a time.</p>
@@ -89,7 +89,7 @@
             <br>
         </div>
 
-        <b-button class="button-fixed" @click="newinstance" v-b-tooltip.hover title="Create New Process" :style="{left: splitter_pos-100+'px'}"><icon name="plus" scale="2"/></b-button>     
+        <b-button class="button-fixed" @click="newinstance" v-b-tooltip.hover title="Create New Process" :style="{left: listWidth-60+'px'}"><icon name="plus" scale="2"/></b-button>     
     </div>
     <div class="splitter" ref="splitter" :style="{left: splitter_pos+'px'}"/>
     <transition name="fade">
@@ -143,10 +143,15 @@ export default {
     },
 
     computed: {
+        listWidth() {
+            if(this.$root.sidemenuWide) return this.splitter_pos-200;
+            else return this.splitter_pos-40;
+        },
         sorted_and_filtered_instances: function() {
             //apply filter and query
             let filtered = this.instances.filter(i=>{
                 //apply query filter
+                if(!i.desc) i.desc = "";
                 if(this.query && !i.desc.toLowerCase().includes(this.query.toLowerCase())) return false; //filtered by query..
                 
                 //apply state filter
@@ -499,39 +504,28 @@ export default {
 
 <style scoped>
 .loading {
-padding: 40px;
 margin-top: 95px;
 opacity: 0.5;
 font-size: 170%;
-}
-.instances {
-position: fixed;
-bottom: 0px;
-top: 95px;
-left: 40px;
-right: 0px;
+padding-left: 20px;
 }
 
 .instances-header {
+position: relative;
 padding: 10px;
-position: fixed;
-height: 90px;
-top: 85px;
-left: 40px;
+padding-top: 0;
+height: 80px;
 background-color: #f6f6f6;
-z-index: 1; /*for dropdown menu to go on top*/
 border-bottom: 1px solid #ddd;
+z-index: 1; /*for dropdown menu to go on top*/
+margin-left: 0;
+transition: margin-left 0.2s;
 }
-
 .instances-header .btn {
 padding: .15rem .3rem;
 }
-
 .instances-list {
-position: fixed;
-bottom: 0px;
 top: 175px;
-left: 40px;
 width: 400px;
 }
 
@@ -680,7 +674,9 @@ display: inline-block;
     }
 }
 .filter.filter-active {
-    background-color: #2693ff40;
+    border-color: #80bdff;
+    outline: 0;
+    box-shadow: 0 0 0 0.2rem rgba(0,123,255,.25);
 }
 .status-picker {
     white-space: nowrap;

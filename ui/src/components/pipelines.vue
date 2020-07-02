@@ -16,8 +16,8 @@
             </b-dropdown>
         </div>
     </div>
-    <ruleform class="list" :value="editing" :new_output_tags="['rule'+rules.length]" v-if="editing" @cancel="cancel_edit" @submit="submit"/>
-    <div v-else class="list" ref="scrolled">
+    <ruleform class="page-content" :value="editing" :new_output_tags="['rule'+rules.length]" v-if="editing" @cancel="cancel_edit" @submit="submit"/>
+    <div v-else class="page-content" ref="scrolled">
         <!--list view-->
         <div v-if="nonremoved_rule_count == 0" style="margin: 20px;" >
             <p class="text-muted">Pipeline rules allow you to automate bulk submissions of your processes based on defined criterias.</p>
@@ -95,24 +95,18 @@
                             </div>
                             Submit the following App <small style="opacity: 0.5;">and archive all output datasets to this project</small>
                         </div>
-                        <b-row>
-                            <b-col>
-                                <app :app="rule.app" :compact="true" style="margin-left: 10px; margin-bottom: 10px;" :branch="rule.branch||'master'"/>
-                            </b-col>
-                            <b-col>
-                                <table class="table table-sm" style="font-size: 85%; background-color: #fbfbfb;">
-                                <tbody>
-                                    <tr v-for="(v,k) in rule.config" :key="k">
-                                        <th :cols="3" style="font-size: 90%; opacity: 0.7">&nbsp;&nbsp;{{k}}</th>
-                                        <th v-if="typeof v == 'object'">
-                                            <pre style="margin-bottom: 0px;">{{JSON.stringify(v, null, 4)}}</pre>
-                                        </th>
-                                        <th v-else>{{v}}</th>
-                                    </tr>
-                                </tbody>
-                                </table>
-                            </b-col>
-                        </b-row>
+                        <app :app="rule.app" :compact="true" style="margin-left: 10px; margin-bottom: 10px;" :branch="rule.branch||'master'"/>
+                        <table class="table table-sm" style="font-size: 85%;">
+                        <tbody>
+                            <tr v-for="(v,k) in rule.config" :key="k">
+                                <th width="20%" style="font-size: 90%; padding-left: 15px; opacity: 0.7">&nbsp;&nbsp;{{k}}</th>
+                                <th v-if="typeof v == 'object'" style="word-break: break-word;">
+                                    <pre style="margin-bottom: 0px;">{{JSON.stringify(v, null, 4)}}</pre>
+                                </th>
+                                <th v-else>{{v}}</th>
+                            </tr>
+                        </tbody>
+                        </table>
 
                         <div class="section-header">
                             For
@@ -663,13 +657,9 @@ color: #999;
 background-color: #f9f9f9;
 z-index: 1; /*needed to make sort order dropdown box to show up on top of page-content*/
 }
-.list {
+.page-content {
 overflow-x: hidden; /*i can't figure out why there would be x scroll bar when a rule is active*/
-position: fixed;
 top: 95px;
-bottom: 0px;
-left: 40px;
-right: 0px;
 }
 .header, 
 .content {

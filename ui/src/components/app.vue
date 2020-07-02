@@ -141,6 +141,7 @@ background-color: white;
 min-height: 80px;
 box-shadow: 1px 1px 4px rgba(0,0,0,0.05);
 transition: box-shadow 0.5s;
+position: relative;
 }
 
 .appcard.clickable:hover {

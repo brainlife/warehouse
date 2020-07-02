@@ -5,14 +5,16 @@
         <b>{{pubs.length}}</b> Publications
     </div>
     -->
-    <div class="list">
+    <div class="page-content">
         <div v-if="editing" style="background-color: white; padding: 20px; padding-top: 10px;">
             <pubform :pub="editing" :project="project" @submit="save" @cancel="cancel"/>
         </div>
         <div v-else>
-            <!--give space for Publications count-->
             <br>
-            <br>
+            <div class="margin20 text-muted" v-if="!pubs || pubs.length == 0">
+                <p>No publication registered for this project.</p>
+                <p>To learn about how to submit publications, please refer to our <a href="https://brainlife.io/docs/user/publication/" target="doc">Documentation</a>.</p>
+            </div>
             <div v-for="pub in pubs" :key="pub._id" :class="{'pub-removed': pub.removed, 'pub-editable': (ismember()||isadmin())}" class="pub" @click="edit(pub)">
                 <doibadge :doi="pub.doi" style="float: right;"/>
                 <!--
@@ -33,11 +35,6 @@
                 </p>
                 <!--<span style="float: right; opacity: 0.7;"><b>{{new Date(pub.publish_date||pub.create_date).toLocaleDateString()}}</b></span>-->
             </div>
-            <div class="margin20 text-muted" v-if="!pubs || pubs.length == 0">
-                <p>No publication registered for this project.</p>
-                <p>To learn about how to submit publications, please refer to our <a href="https://brainlife.io/docs/user/publication/" target="doc">Documentation</a>.</p>
-            </div>
-
             <!--space to make sure add button won't overwrap the pub list-->
             <p style="padding-top: 100px;">&nbsp;</p>
 
@@ -210,13 +207,9 @@ color: #999;
 background-color: #f9f9f9;
 z-index: 1; /*needed to make sort order dropdown box to show up on top of page-content*/
 }
-.list {
+.page-content {
 overflow-x: hidden; /*i can't figure out why there would be x scroll bar when a rule is active*/
-position: fixed;
 top: 95px;
-bottom: 0px;
-left: 40px;
-right: 0px;
 }
 
 .pub:first-child {

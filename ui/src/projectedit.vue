@@ -62,7 +62,7 @@
                        </p>
                     </b-form-radio-group>
                     <p>
-                        <b-form-checkbox v-if="project.access == 'private'" style="margin-left: 40px;" v-model="project.listed">List project summary for all users</b-form-checkbox>
+                        <b-form-checkbox v-if="project.access == 'private'" style="margin-left: 30px;" v-model="project.listed">List project summary for all users</b-form-checkbox>
                     </p>
                 </b-col>
             </b-row>

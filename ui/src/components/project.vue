@@ -121,8 +121,9 @@ background-color: #f9f9f9;
 cursor: pointer;
 }
 .header-row {
-margin-left: 40px;
+margin-left: 42px;
 }
+
 .datatypes {
 font-size: 85%;
 }

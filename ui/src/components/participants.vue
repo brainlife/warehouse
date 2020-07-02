@@ -94,16 +94,6 @@ export default {
 </script>
 
 <style scoped>
-/*
-.participants {
-position: fixed;
-top: 95px;
-bottom: 0;
-left: 40px;
-right: 0;
-overflow-y: scroll;
-}
-*/
 .table .header {
 cursor: pointer;
 font-size: 80%;

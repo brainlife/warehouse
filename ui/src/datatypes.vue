@@ -31,7 +31,7 @@
         <b-button v-if="config.has_role('datatype.create')" class="button-fixed" @click="newdatatype" v-b-tooltip.hover title="New Datatype">
             <icon name="plus" scale="2"/>
         </b-button>
-    </div><!--page-content-->
+    </div>
 </div>
 </template>
 
@@ -195,15 +195,6 @@ transition: box-shadow 0.5s;
 .datatype-card:hover {
 box-shadow: 2px 2px 8px rgba(0,0,0,0.3);
 }
-/*
-.card-img {
-heightkj
-}
-
-.card-text {
-height: 70px
-}
-*/
 .sample-dataset {
 background-color: white;
 border-bottom: 1px solid #ddd;

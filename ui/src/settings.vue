@@ -303,7 +303,7 @@ export default {
 <style scoped>
 .page-content {
 top: 0px;
-background-color: #eee;
+background-color: #f9f9f9;
 }
 .page-content h2 {
 margin-bottom: 0px;

@@ -132,7 +132,7 @@ export default {
         submit: function(evt) {
             evt.preventDefault();
 
-            if(this.datasets.length == 0) return this.$notify("Please select a dataset");
+            if(this.datasets.length == 0) return this.$notify("Please select a data object");
             var os = {}; 
             let project_ids = []; 
             this.datasets.forEach(did=>{ 

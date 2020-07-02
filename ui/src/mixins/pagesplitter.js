@@ -36,7 +36,7 @@ export default {
             splitter.onpointerup = e=>{
                 window.localStorage.setItem("splitter_pos", this.splitter_pos);
                 splitter.onpointermove = null;
-                splitter.setPointerCapture(e.pointerId);    
+                splitter.releasePointerCapture(e.pointerId);
             };
         },
     }
