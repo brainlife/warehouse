@@ -32,7 +32,7 @@
     "coveralls": "^3.1.0",
     "elasticsearch": "^15.4.1",
     "express": "^4.16.4",
-    "express-jwt": "^5.3.3",
+    "express-jwt": "^6.0.0",
     "express-winston": "^3.0.1",
     "gunzip-stream": "^1.0.1",
     "istanbul": "^0.4.5",
