@@ -87,8 +87,8 @@
             </div>
         </div>
 
-        <b-button v-if="config.user" class="button-fixed" @click="go('/app/_/edit')" v-b-tooltip.hover title="Register App">
-            <icon name="plus" scale="2"/>
+        <b-button v-if="config.user" class="button-fixed" @click="go('/app/_/edit')">
+            Register App
         </b-button>
     </div><!--page-content-->
 </div><!--root-->

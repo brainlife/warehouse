@@ -39,8 +39,8 @@
         <br>
         <br>
 
-        <b-button v-if="config.has_role('resource.create', 'amaretti')" class="button-fixed" @click="newresource" v-b-tooltip.hover title="New Resource">
-            <icon name="plus" scale="2"/>
+        <b-button v-if="config.has_role('resource.create', 'amaretti')" class="button-fixed" @click="newresource">
+            New Resource
         </b-button>
     </div><!--page-content-->
 </div>

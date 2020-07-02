@@ -89,7 +89,9 @@
             <br>
         </div>
 
-        <b-button class="button-fixed" @click="newinstance" v-b-tooltip.hover title="Create New Process" :style="{left: listWidth-60+'px'}"><icon name="plus" scale="2"/></b-button>     
+        <b-button class="button-fixed" @click="newinstance" :style="{left: splitter_pos-170+'px'}">
+            New Process
+        </b-button>     
     </div>
     <div class="splitter" ref="splitter" :style="{left: splitter_pos+'px'}"/>
     <transition name="fade">

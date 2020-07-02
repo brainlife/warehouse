@@ -171,8 +171,8 @@
         </div><!--rules-->
 
         <p style="padding-top: 90px;">&nbsp;</p>
-        <b-button v-if="isadmin() || ismember()" @click="newrule" class="button-fixed" v-b-tooltip.hover title="Create new rule">
-            <icon name="plus" scale="2"/>
+        <b-button v-if="isadmin() || ismember()" @click="newrule" class="button-fixed">
+            New Rule
         </b-button>
     </div><!--page-content-->
 </div>

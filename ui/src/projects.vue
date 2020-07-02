@@ -51,8 +51,8 @@
         </div>
 
     </div>
-    <b-button class="button-fixed" @click="newproject" v-b-tooltip.hover title="New Project">
-        <icon name="plus" scale="2"/>
+    <b-button class="button-fixed" @click="newproject">
+        New Project
     </b-button>
 </div>
 </template>

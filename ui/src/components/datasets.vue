@@ -86,9 +86,8 @@
 
         <b-btn class="button-fixed" v-b-modal.uploader 
             @click="set_uploader_options" v-if="isadmin() || ismember()"
-            v-b-tooltip.hover title="Upload Dataset" 
             :class="{'selected-view-open':selected_count}">
-            <icon name="plus" scale="2"/>
+            Upload Data
         </b-btn>
 
     </div>

@@ -171,28 +171,25 @@ table.info td {
 }
 
 .button-fixed {
-    opacity: 0.7;
+    opacity: 0.9;
     position: fixed;
     bottom: 20px;
     right: 30px;
-    border-radius: 25px;
-    width: 50px;
-    height: 50px;
-    padding: 10px;
-    margin: 10px;
+    border-radius: 15px;
+    width: 150px;
     font-weight: bold;
-    color: white;
-    background-color: gray;
     border: none;
-    box-shadow: 1px 1px 5px rgba(0,0,0,0.2);
-    transition: background-color 0.3s, transform 0.5s, box-shadow 0.5s, left 0.5s, right 0.5s, opacity 0.5s;
+    box-shadow: 1px 1px 3px rgba(0,0,0,0.2);
+    background-image: linear-gradient(90deg, #2693ff, #159957);
+    transition: background-image 0.5s, box-shadow 0.5s, left 0.5s, right 0.5s, opacity 0.5s, transform 0.2s;
+    color: white;
     z-index: 2;
 }
 .button-fixed:hover {
     opacity: 1;
-    background-color: #2693ff;
-    transform: rotate(180deg);
-    box-shadow: none;
+    background-image: linear-gradient(90deg, white, white);
+    color: #666;
+    transform: scale(1.05);
     cursor: pointer;
 }
 
