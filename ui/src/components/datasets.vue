@@ -373,7 +373,7 @@ export default {
                     if(old_dataset) {
                         //console.log("updating");
                         //apply updates (don't apply all changes.. it could blow up populated field)
-                        if(dataset.desc) old_dataset.desc = dataset.desc;
+                        if(dataset.desc !== undefined) old_dataset.desc = dataset.desc;
                         if(dataset.tags) old_dataset.tags = dataset.tags;
                         if(dataset.meta) old_dataset.meta = dataset.meta;
                         if(dataset.removed !== undefined) {

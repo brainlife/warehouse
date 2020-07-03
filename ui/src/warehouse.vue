@@ -182,7 +182,7 @@ table.info td {
     transition: background-image 0.5s, left 0.5s, right 0.5s, opacity 0.5s, transform 0.2s;
     box-shadow: 1px 1px 3px #0001;
     color: white;
-    z-index: 2;
+    z-index: 6;
 }
 .button-fixed:hover {
     transform: scale(1.05);
@@ -260,7 +260,17 @@ table.info td {
     margin-bottom: 0px;
 }
 .card {
+    border: none;
+    box-shadow: 0 0 3px #0002;
     border-radius: 0;
+}
+.card:first-of-type {
+    border-top-left-radius: 4px;
+    border-top-right-radius: 4px;
+}
+.card:last-of-type {
+    border-bottom-left-radius: 4px;
+    border-bottom-right-radius: 4px;
 }
 
 .modal-content {

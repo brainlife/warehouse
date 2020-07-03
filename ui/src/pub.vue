@@ -570,7 +570,6 @@ width: 100%;
 margin-top: 5px;
 margin-bottom: 5px;
 margin-left: 28px;
-box-shadow: 2px 2px 2px #ddd;
 }
 .dataset:hover {
 cursor: pointer;
@@ -623,7 +622,7 @@ margin-bottom: 20px;
 }
 .citation-box {
 border: none;
-box-shadow: 2px 2px 3px #eee;
+box-shadow: 2px 2px 3px #0001;
 }
 .button-page {
 position: absolute;

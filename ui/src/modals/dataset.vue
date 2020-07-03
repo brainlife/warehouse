@@ -335,8 +335,6 @@ export default {
     created() {
         //console.log("modal/dataset listening to dataset.view event");
         this.$root.$on("dataset.view", opt=>{
-            //console.log("loading dataset");
-            //console.dir(opt);
             this.load(opt.id);
         });
 

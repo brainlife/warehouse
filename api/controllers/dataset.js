@@ -1183,7 +1183,7 @@ router.put('/:id', jwt({secret: config.express.pubkey}), (req, res, next)=>{
             if(!dataset) return res.status(404).end();
             if(canedit(req.user, dataset, canwrite_project_ids)) {
                 //types are checked by mongoose
-                if (req.body.desc) dataset.desc = req.body.desc;
+                if (req.body.desc !== undefined) dataset.desc = req.body.desc;
                 if (req.body.tags) dataset.tags = req.body.tags;
                 if (req.body.datatype_tags) dataset.datatype_tags = req.body.datatype_tags;
                 if (req.body.meta) dataset.meta = req.body.meta;
