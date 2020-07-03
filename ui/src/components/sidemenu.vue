@@ -13,26 +13,21 @@
 
     <ul class="items">
         <li v-if="config.user && config.debug" 
-            @click="go('/dashboard')"
-            :class="{active: active == 'dashboard'}">
+            @click="go('/dashboard')" :class="{active: active == 'dashboard'}">
             <icon name="home" scale="1.2"/> 
             <h4>Dashboard</h4>
         </li>
 
-        <!-- for everyone -->
-        <li @click="go('/apps')"
-            :class="{active: active == 'app'}">
+        <li @click="go('/apps')" :class="{active: active == 'app'}">
             <icon name="th-large" scale="1.2"/>
             <h4>Apps</h4>
         </li>
-        <li @click="go('/projects')"
-            :class="{active: active == 'project'}">
+        <li @click="go('/projects')" :class="{active: active == 'project'}">
             <icon name="shield-alt" scale="1.2"/>
             <h4>Projects</h4>
         </li>
 
-        <li @click="go('/pubs');"
-            :class="{active: active == 'pub'}">
+        <li @click="go('/pubs')" :class="{active: active == 'pub'}">
             <icon name="newspaper" scale="1.2"/>
             <h4>Publications</h4>
         </li>
@@ -47,21 +42,21 @@
             <h4>Datasets</h4>
         </li>
 
-        <li v-if="config.user" @click="go('/resources')" :class="{active: active == 'resource'}">
+        <li v-if="config.user" 
+            @click="go('/resources')" :class="{active: active == 'resource'}">
             <icon name="server" scale="1.2"/>
             <h4>Resources</h4>
         </li>
+        <li class="divider"></li>
+    </ul>
+
+    <ul class="items">
         <li v-if="config.user" @click="go('/settings')" :class="{active: active == 'setting'}">
             <icon name="cog" scale="1.2"/>
             <span v-if="!config.user.profile.aup" style="position: absolute; top: -15px; left: 20px; font-size: 350%;" class="text-danger">&bull;</span>
             <h4>Settings</h4>
         </li>    
-    </ul>
-
-    <!--admin items-->
-    <ul class="items" v-if="config.is_admin">
-        <li class="divider"></li>
-        <li @click="go('/admin')" :class="{active: active == 'admin'}">
+        <li v-if="config.is_admin" @click="go('/admin')" :class="{active: active == 'admin'}">
             <icon name="wrench" scale="1.2"/>
             <h4>Administration</h4>
         </li>
@@ -97,7 +92,7 @@
             <icon name="brands/slack" scale="1.2"/>
             <h4>slack / chat</h4>
         </li>
-        <li @click="reportbug" class="secondary secondary-first">
+        <li @click="reportbug" class="secondary">
             <icon name="brands/github" scale="1.2"/>
             <h4>Report Issues</h4>
         </li>
