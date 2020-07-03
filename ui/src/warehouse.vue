@@ -180,6 +180,7 @@ table.info td {
     border: none;
     background-color: #159957;
     transition: background-image 0.5s, left 0.5s, right 0.5s, opacity 0.5s, transform 0.2s;
+    box-shadow: 1px 1px 3px #0001;
     color: white;
     z-index: 2;
 }
