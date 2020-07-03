@@ -14,7 +14,7 @@
         </div><!--header-->
 
         <!--main content-->
-        <b-container>
+        <b-container v-if="ready">
 
             <!--profile-->
             <div v-if="tab == 0">
@@ -238,6 +238,8 @@ export default {
         return {
             tab: 0,
 
+            ready: false,
+
             fullname: "",
             profile: {
                 public: {
@@ -279,6 +281,7 @@ export default {
             //console.dir(res.data);
             this.fullname = res.data.fullname;
             if(res.data.profile) Object.assign(this.profile, res.data.profile);
+            this.ready = true;
         })
     },
     

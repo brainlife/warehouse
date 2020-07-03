@@ -1,9 +1,11 @@
 <template>
 <div>
-    <div class="page-content page-header search-box" :style="{width: listWidth+'px'}">
-        <b-form-input v-model="query" type="text" placeholder="Search Datasets" @input="change_query_debounce" class="input"/>
-        <icon name="search" class="search-icon" scale="1.5"/>
-        <img src="https://pbs.twimg.com/profile_images/899900469119680512/XybpieA7_400x400.jpg" height="30px" class="datalad-logo">
+    <div class="page-header" :style="{width: listWidth+'px'}">
+        <div class="search-box" :style="{width: listWidth+'px'}">
+            <b-form-input v-model="query" type="text" placeholder="Search Datasets" @input="change_query_debounce" class="input"/>
+            <icon name="search" class="search-icon" scale="1.5"/>
+            <img src="https://pbs.twimg.com/profile_images/899900469119680512/XybpieA7_400x400.jpg" height="30px" class="datalad-logo">
+        </div>
     </div>
     <div class="page-content page-left-top" style="padding: 10px;" :style="{width: listWidth+'px'}">
         <b-form-group label="Datatypes">
@@ -509,7 +511,7 @@ z-index: 1;
 }
 .page-left-top {
 height: 125px;
-top: 40px;
+top: 50px;
 overflow: hidden;
 }
 .page-left-bottom {
@@ -523,7 +525,6 @@ padding-right: 15px;
 box-shadow: none;
 border-bottom: 1px solid #eee;
 padding-left: 0;
-height: 40px;
 }
 .datalad-logo {
 position: absolute;

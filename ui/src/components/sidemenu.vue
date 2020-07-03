@@ -97,6 +97,10 @@
             <icon name="brands/slack" scale="1.2"/>
             <h4>slack / chat</h4>
         </li>
+        <li @click="reportbug" class="secondary secondary-first">
+            <icon name="brands/github" scale="1.2"/>
+            <h4>Report Issues</h4>
+        </li>
         <li @click="doc" class="secondary">
             <icon name="book" scale="1.2"/>
             <h4>Documentation</h4>
@@ -182,7 +186,7 @@ export default {
             document.location = Vue.config.auth_signout;
         },
         reportbug() {
-            window.open("https://github.com/brain-life/warehouse/issues", "github");
+            window.open("https://github.com/brainlife/brainlife/issues", "github");
         },
         login() {
             sessionStorage.setItem('auth_redirect', window.location); //TODO - un-tested.. as to if this gets back here
@@ -192,7 +196,6 @@ export default {
             document.location = "/auth/#!/signup";
         },
         slack() {
-            //document.location = "https://brainlife-inviter.herokuapp.com/";
             window.open("https://brainlife.slack.com", "slack");
         },
         md5, 

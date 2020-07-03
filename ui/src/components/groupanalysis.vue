@@ -2,7 +2,7 @@
 <div>
     <div v-if="selected">
         <div class="selected-controller">
-            <div class="button" @click="selected = null"><icon name="times"/> Close</div>
+            <div class="button" @click="selected = null" style="padding: 1px 10px; margin-top: 3px;"><icon name="times"/> Close</div>
         </div>
         <iframe :src="host+'/ipython/'+selected.port+'/lab?token='+selected.token" frameBorder="0"/>
     </div>
@@ -15,8 +15,8 @@
                     v-for="task in tasks.filter(task=>task.status != 'removed')" :key="task._id">
                     <div class="card ga-card">
                         <div class="card-body">
-                            <h5 class="card-title"><icon name="flask"/> {{task.name}}</h5>
-                            <p class="card-text" style="min-height: 60px;">{{task.desc}}<br> 
+                            <h5 class="card-title" style="min-height: 50px;"><icon name="flask"/> {{task.name}}</h5>
+                            <p class="card-text" style="min-height: 80px;">{{task.desc}}<br> 
                                 <small>{{task.config.container}}</small>
                             </p>
                             <b-button variant="primary" size="sm" @click="open(task)" :disabled="task._id == openWhenReady">
@@ -41,12 +41,12 @@
             <div>
                 <div style="display: inline-block; width: 200px; margin-right: 10px; margin-bottom: 10px;" v-for="(app, idx) in apps" :key="idx">
                     <div class="card ga-card">
-                        <img class="card-img-top" :src="app.img">
+                        <!--<img class="card-img-top" :src="app.img">-->
                         <div class="card-body">
+                            <b-card-text style="min-height: 60px; font-size: 90%">{{app.desc}}</b-card-text>
                             <p>
                                 <b-button variant="success" size="sm" @click="launch(app)"><icon name="play"/> Launch</b-button>
                             </p>
-                            <b-card-text style="min-height: 110px;">{{app.desc}}</b-card-text>
                         </div>
                     </div>
                 </div>
@@ -62,6 +62,8 @@
 
 <script>
 import Vue from 'vue'
+
+import axios from 'axios'
 
 import agreementMixin from '@/mixins/agreement'
 import ReconnectingWebSocket from 'reconnectingwebsocket'
@@ -94,38 +96,38 @@ export default {
             apps: [
                 {
                     name: "Brainlife dipy Jupyter Notebook", 
-                    img: "https://kanoki.org/wp-content/uploads/2017/07/Screen-Shot-2017-07-15-at-04.59.36.png",
+                    //img: "https://kanoki.org/wp-content/uploads/2017/07/Screen-Shot-2017-07-15-at-04.59.36.png",
                     desc: "Jupyter Datascience Notebook (lab-2.1.1) with Dipy and Fury",
                     container: "brainlife/ga-dipy",
                     tag: "1.0",
                 },
                 {
                     name: "Brainlife Octave(matlab) Jupyter Notebook", 
-                    img: "https://kanoki.org/wp-content/uploads/2017/07/Screen-Shot-2017-07-15-at-04.59.36.png",
+                    //img: "https://kanoki.org/wp-content/uploads/2017/07/Screen-Shot-2017-07-15-at-04.59.36.png",
                     desc: "Jupyter Datascience Notebook (lab-2.1.1) with Octave",
                     container: "brainlife/ga-octave",
                     tag: "1.0",
                 },
                 {
                     name: "Jupyter Datascience Lab", 
-                    img: "https://kanoki.org/wp-content/uploads/2017/07/Screen-Shot-2017-07-15-at-04.59.36.png",
+                    //img: "https://kanoki.org/wp-content/uploads/2017/07/Screen-Shot-2017-07-15-at-04.59.36.png",
                     desc: "Jupyter Datascience Notebook (lab-2.1.1)",
                     container: "jupyter/datascience-notebook", 
                     tag: "lab-2.1.1", 
                 },
                 {
                     name: "Jupyter Scipy Notebook", 
-                    img: "https://kanoki.org/wp-content/uploads/2017/07/Screen-Shot-2017-07-15-at-04.59.36.png",
+                    //img: "https://kanoki.org/wp-content/uploads/2017/07/Screen-Shot-2017-07-15-at-04.59.36.png",
                     //img: "https://www.dataquest.io/wp-content/uploads/2019/01/interface-screenshot.png",
-                    desc: "Jupyter Notebook Scientific Python Stack from https://github.com/jupyter/docker-stacks",
+                    desc: "Jupyter Notebook Scientific Python Stack",
                     container: "jupyter/scipy-notebook", 
                     tag: "latest",
                 },   
                 {
                     name: "Jupyter Tensorflow Notebook", 
                     //img: "https://i.imgur.com/n0PmXQn.gif",
-                    img: "https://kanoki.org/wp-content/uploads/2017/07/Screen-Shot-2017-07-15-at-04.59.36.png",
-                    desc: "Jupyter Notebook Scientific Python Stack w/ Tensorflow from https://github.com/jupyter/docker-stacks",
+                    //img: "https://kanoki.org/wp-content/uploads/2017/07/Screen-Shot-2017-07-15-at-04.59.36.png",
+                    desc: "Jupyter Notebook Scientific Python Stack w/ Tensorflow",
                     container: "jupyter/tensorflow-notebook", 
                     tag: "latest",
                 },
@@ -272,10 +274,28 @@ export default {
         jump(task) {
             this.$http.get(Vue.config.amaretti_api+"/task/download/"+task._id+'/container.json').then(res=>{
                 if(res.status == 200) {
-                    this.selected = res.data; 
+                    //let wait for proxy to go through
+                    let url = this.host+'/ipython/'+(res.data.port)+'/';
+                    this.waitProxy(url, ()=>{
+                        console.log("commencing open");
+                        this.selected = res.data; 
+                    });
                 } else {
                     this.$notify("failed to load container.json");
                 }
+            });
+        },
+
+        waitProxy(url, cb) {
+            fetch(url).then(res=>{
+                cb();
+            }).catch(err=>{
+                //TODO - should I give up eventually?
+                console.log("page not opened yet.. waiting?");
+                console.dir(err);
+                setTimeout(()=>{
+                    this.waitProxy(url, cb);
+                }, 1500);
             });
         },
     }
