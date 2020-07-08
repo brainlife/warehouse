@@ -83,9 +83,12 @@ function subscribe() {
             //TODO - why can't I use warehouse queue for this?
             acon.queue('warehouse.dataset', {durable: true, autoDelete: false}, dataset_q=>{
                 dataset_q.bind('warehouse', 'dataset.create.#');
+                dataset_q.bind('warehouse', 'dataset.update.#'); //for removal
                 dataset_q.subscribe({ack: true}, (dataset, head, dinfo, ack)=>{
                     //console.log("########################### RECEIVED dataset create event ###################");
-                    //console.dir(dataset);
+                    let tokens = dinfo.routingKey.split(".");
+                    dataset.project = tokens[3]; //project id
+                    dataset._id = tokens[4]; //dataset id
                     handle_dataset(dataset, err=>{
                         if(err) {
                             logger.error(err)
@@ -481,7 +484,7 @@ function handle_task(task, cb) {
                         _set.status = "failed";
                         break;
                     }
-                    common.publish("dataset.update."+task.user_id+"."+dataset_config.project+"."+dataset_config.dataset_id, _set);
+                    common.publish("dataset.update."+task.user_id+"."+dataset_config.project+"."+dataset_config.dataset_id, Object.assign(_set, {_id: dataset_config.dataset_id}));
                     db.Datasets.findByIdAndUpdate(dataset_config.dataset_id, {$set: _set}, next_dataset);
                 }, next);
             } else next();

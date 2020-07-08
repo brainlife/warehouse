@@ -7,7 +7,7 @@
 
             <!--value-->
             <td>
-                <div style="display: inline-block;">
+                <div style="word-break: break-all; display: inline-block;">
                     <pre v-if="v === null" class="text-muted" style="margin-bottom: 0;">null</pre>
                     <span v-else-if="v === ''">(empty)</span>
                     <pre v-else-if="typeof v == 'object'" style="margin-bottom: 0;">{{JSON.stringify(v, null, 4)}}</pre>

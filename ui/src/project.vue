@@ -511,7 +511,7 @@ export default {
             var url = Vue.config.event_ws+"/subscribe?jwt="+Vue.config.jwt;
             this.ws = new ReconnectingWebSocket(url, null, {reconnectInterval: 3000});
             this.ws.onopen = (e)=>{
-                console.debug("connecting to warehouse ex");
+                //console.debug("connecting to warehouse ex (project.update)");
                 this.ws.send(JSON.stringify({
                     bind: {
                         ex: "warehouse",
@@ -520,10 +520,12 @@ export default {
                 }));
                 this.ws.onmessage = (json)=>{
                     var event = JSON.parse(json.data);
-                    //update
+                    /*
                     for(var key in event.msg) {
                         this.selected[key] = event.msg[key];
                     }
+                    */
+                    Object.assign(this.selected, event.msg);
                 };
             };
             this.update_resource_usage_graph();

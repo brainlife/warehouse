@@ -138,7 +138,6 @@ function register_dataset(task, output, product, cb) {
         },
     }, (err, _dataset)=>{
         if(err) return cb(err);
-        //exports.publish("dataset.create."+task.user_id+"."+_dataset.project+"."+_dataset._id, _dataset);
         
         //store product in different table
         db.DatasetProducts.create({
@@ -773,6 +772,9 @@ exports.update_dataset_stats = async function(project_id, cb) {
             stats.size += item.size;
         });
         stats.subject_count = subjects.size;
+        exports.publish("project.update.warehouse."+project_id, {stats: {
+            datasets: stats
+        }})
         let doc = await db.Projects.findByIdAndUpdate(project_id, {$set: {"stats.datasets": stats}}, {new: true});
 
         if(cb) cb(null, doc);
