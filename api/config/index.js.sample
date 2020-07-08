@@ -170,6 +170,10 @@ exports.archive = {
     gid: 137, //warehouse group enabled to access storage service
 }
 
+exports.geocode = {
+    apikey: fs.readFileSync(__dirname+'/geocode.key', {encoding: 'ascii'}).trim(),
+}
+
 //group analysis 
 exports.groupanalysis = {
     gid: 3,

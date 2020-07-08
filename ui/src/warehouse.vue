@@ -102,8 +102,10 @@ html,body {
     transition: left 0.2s;
 }
 .sidewide .page-header, 
+.sidewide .page-footer,
+.sidewide .search-box,
 .sidewide .page-content {
-    left: 200px;
+    left: 180px;
 }
 .page-content {
     top: 50px;
@@ -122,9 +124,6 @@ html,body {
     z-index: 7;
     pointer-events: none;
     transition: left 0.2s;
-}
-.sidewide .page-footer {
-    left: 200px;
 }
 
 .page-footer .btn {
@@ -426,9 +425,6 @@ padding-left: 10px;
 right: 0px;
 left: 40px;
 transition: left 0.2s;
-}
-.sidewide .search-box {
-    left: 200px;
 }
 .search-box .input {
 font-size: 120%;

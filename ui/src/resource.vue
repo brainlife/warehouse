@@ -316,8 +316,16 @@ export default {
                 this.resource = res.data.resources[0];
                 if(!this.resource) alert("no such resource");
                 this.resource.config.services.sort((a,b)=>{
-                    if(a.name < b.name) return -1;
-                    if(a.name > b.name) return 1;
+                    let a_stats = this.resource.stats.services[a.name];
+                    let b_stats = this.resource.stats.services[b.name];
+                    if(a_stats && b_stats) {
+                        if(a_stats.running < b_stats.running) return 1;
+                        if(a_stats.running > b_stats.running) return -1;
+                    } else {
+                        //if not stats, sort by name
+                        if(a.name < b.name) return -1;
+                        if(a.name > b.name) return 1;
+                    }
                     return 0;
                 });
 

@@ -333,8 +333,8 @@ iframe {
     transition: left 0.2s;
 }
 .sidewide iframe {
-    left: 200px;
-    width: calc(100% - 200px);
+    left: 180px;
+    width: calc(100% - 180px);
 }
 
 .selected-controller {

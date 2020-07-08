@@ -788,7 +788,7 @@ export default {
     transition: left 0.2s;
 }
 .sidewide .table-header {
-    left: 200px;
+    left: 180px;
 }
 
 .table-column {

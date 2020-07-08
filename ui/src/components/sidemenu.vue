@@ -218,7 +218,7 @@ box-shadow: inset -3px 0 2px rgba(33,33,33,0.1);
 transition: width 0.2s;
 }
 .sidewide .sidemenu {
-width: 200px;
+width: 180px;
 }
 
 .title {
@@ -234,10 +234,10 @@ transition: opacity 0.2s;
 overflow: hidden;
 }
 .titlecloud {
-position: fixed;
+position: relative;
+float: right;
 opacity: 0;
-top: -2px;
-left: 150px;
+left: 20px;
 }
 .sidewide .titlecloud {
 opacity: 0.3;
@@ -266,22 +266,14 @@ transition: background-color 0.2s;
 transition: width 0.2s;
 }
 .sidewide .items li {
-width: 200px;
+width: 180px;
 }
-
-/*
-.items li:hover:not(#user-popover) {
-width: 200px;
-border-top-right-radius: 3px;
-border-bottom-right-radius: 3px;
-}
-*/
 
 .items li h4 {
 position: relative;
 top: 1px;
 line-height: 100%;
-font-size: 10pt;
+font-size: 9pt;
 display: inline-block;
 margin-left: 15px;
 text-transform: uppercase;
@@ -342,6 +334,8 @@ background-color: rgba(255,255,255,0.3);
 box-shadow: 0 0 5px rgba(0,0,0,0.2);
 height: 50px;
 margin-bottom: 10px;
+position: relative;
+overflow: hidden;
 }
 .logo h3 {
 padding: 8px 4px;

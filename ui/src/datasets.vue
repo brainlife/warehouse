@@ -262,7 +262,7 @@ export default {
 
     computed: {
         listWidth() {
-            if(this.$root.sidemenuWide) return this.splitter_pos-200;
+            if(this.$root.sidemenuWide) return this.splitter_pos-180;
             else return this.splitter_pos-40;
         },
     },

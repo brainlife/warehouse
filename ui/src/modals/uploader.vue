@@ -71,7 +71,10 @@
             </div>
 
         </div><!--datatype_id set -->
-        <small>To bulk upload your data-objects, you can use <a href="https://github.com/brain-life/cli" target="_blank">Brainlife CLI</a></small>
+        <small>
+            To bulk upload your data, please use <a href="https://brainlife.io/docs/cli/install/" target="doc">Brainlife CLI</a>. You can also use 
+            CLI to upload datatype which are not listed under the datatype selecter.
+        </small>
     </div><!--meta-->
 
     <div v-if="mode == 'validate' && tasks.validation">
@@ -333,7 +336,7 @@ export default {
                     let archive = task.deps_config.find(t=>t.task == this.tasks.validation._id);
                     if(archive) {
                         this.$refs.modal.hide();
-                        this.$router.push("/project/"+this.project._id+"/dataset/"+task.config.datasets[0].dataset._id);
+                        this.$router.push("/project/"+this.project._id+"/dataset/"+task.config.datasets[0].dataset_id);
 
                         //TODO need to reload so that new subject group will show up on dataset paage..
                         //it will be nice if I can just force dataset reload (just use event?)
