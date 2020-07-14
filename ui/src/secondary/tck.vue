@@ -1,6 +1,5 @@
 <template>
 <div>
-    <small>Showing up to 50k streamlines</small>
     <b-row>
         <b-col v-for="(image, idx) in images" :key="idx">
             <b>{{image.name}}</b><br>
@@ -9,10 +8,7 @@
             </a>
         </b-col>
     </b-row>
-    <!-- metadata can be accessed via product.meta-->
-    <!--
-    {{product.meta}}
-    -->
+    <small>Showing up to 50k streamlines</small>
 </div>
 </template>
 

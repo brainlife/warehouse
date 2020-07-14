@@ -65,12 +65,13 @@ export default {
 
 <style scoped>
 .pub {
-margin-bottom: 10px;
+border-bottom: 1px solid #eee;
 background-color: white;
-transition: box-shadow 0.5s ease;
+transition: box-shadow 0.3s ease;
 }
 .pub:hover {
-box-shadow: 2px 2px 6px rgba(0,0,0,0.2);
+box-shadow: 1px 1px 2px rgba(0,0,0,0.1);
+position: relative;
 }
 .page-content {
 top: 0px;

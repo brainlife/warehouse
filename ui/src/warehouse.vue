@@ -263,11 +263,11 @@ table.info td {
     box-shadow: 0 0 3px #0002;
     border-radius: 0;
 }
-.card:first-of-type {
+.card.roundtop {
     border-top-left-radius: 4px;
     border-top-right-radius: 4px;
 }
-.card:last-of-type {
+.card.roundbottom {
     border-bottom-left-radius: 4px;
     border-bottom-right-radius: 4px;
 }

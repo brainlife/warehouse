@@ -21,6 +21,9 @@ export default {
                 this.task = res.data.tasks[0];
                 if(!this.task) console.error("no such task", taskid);
                 switch(this.task.status) {
+                case 'failed':
+                    cb(this.task); 
+                    break;
                 case 'finished':
                     cb(this.task); 
                     break;

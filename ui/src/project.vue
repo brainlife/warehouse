@@ -700,6 +700,8 @@ background-color: #eee;
 background-color: #fff; 
 padding: 20px; 
 margin-bottom: 20px;
+box-shadow: 0 0 3px #0002;
+border-radius: 4px;
 }
 .button-page {
 float: left;
