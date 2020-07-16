@@ -76,11 +76,7 @@
                         </v-select>
                     </div>
                 </div>
-                <b-row>
-                    <b-col cols="5">
-                        <small v-if="input.desc" style="opacity: 0.8; white-space: pre-wrap;">{{input.desc}}</small>
-                    </b-col>
-                </b-row>
+                <small v-if="input.desc" style="opacity: 0.8; white-space: pre-wrap;">{{input.desc}}</small>
             </b-col>
         </b-row>
         
