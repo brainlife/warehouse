@@ -6,7 +6,8 @@ const jwt = require('express-jwt');
 const winston = require('winston');
 const async = require('async');
 const request = require('request');
-const rp = require('request-promise-native');
+//const rp = require('request-promise-native');
+const axios = require('axios');
 
 const config = require('../config');
 const logger = winston.createLogger(config.logger.winston);
@@ -361,37 +362,54 @@ router.delete('/:id', jwt({secret: config.express.pubkey}), (req, res, next)=>{
 /**
  * @apiGroup App
  * @api {delete} /app/github/:org/:name
- *                              Query github information (tab, branches)
+ *                              Query github information (tab, branches) 
+ *                              This works for private repos
  * @apiDescription              Mark the application as removed (redundant with put?)
  *
  * @apiHeader {String} authorization 
  *                              A valid JWT token "Bearer: xxxxx"
  */
-router.get('/info/:org/:name', jwt({secret: config.express.pubkey}), (req, res, next)=>{
-
-    //TODO - this allow for querying private repo that only brainlifeio has
-    //access, but I think it's better to get this working rather than forcing
-    //users to use public repo at all cases.
-    //also user has to know the existance of the repo..(and this only lists tags/branches)
+router.get('/info/:org/:name', jwt({secret: config.express.pubkey}), async (req, res, next)=>{
 
     let service = req.params.org+"/"+req.params.name; //TODO validate?
-    let promise_branches = rp('https://api.github.com/repos/'+service+'/branches',
-        { json: true, 
-            headers: {
-            Authorization: 'token '+config.github.access_token,
-            'User-Agent': 'brainlife/warehouse',
-    }});
-    let promise_tags = rp('https://api.github.com/repos/'+service+'/tags',
-        { json: true, 
-            headers: {
-            Authorization: 'token '+config.github.access_token,
-            'User-Agent': 'brainlife/warehouse',
-    }});
-    Promise.all([promise_branches, promise_tags]).then(results=>{
-        res.json({branches: results[0], tags: results[1]});
-    }).catch(err=>{
+
+    try {
+        
+        let branches = [];
+        let page = 1;
+        while(true) {
+            console.log("loading page", page);
+            let items = await axios.get('https://api.github.com/repos/'+service+'/branches', {
+                params: { page, },
+                headers: {
+                    Authorization: 'token '+config.github.access_token,
+                    'User-Agent': 'brainlife/warehouse',
+                }
+            });
+            branches = [...branches, ...items.data];
+            if(items.data.length == 0) break;
+            page++;
+        }
+
+        let tags = [];
+        page = 1;
+        while(true) {
+            let items = await axios.get('https://api.github.com/repos/'+service+'/tags', {
+                params: { page, },
+                headers: {
+                    Authorization: 'token '+config.github.access_token,
+                    'User-Agent': 'brainlife/warehouse',
+                }
+            });
+            tags = [...tags, ...items.data];
+            if(items.data.length == 0) break;
+            page++;
+        }
+        res.json({branches, tags});
+    } catch(err) {
+        console.error(err);
         next("No such repo?");
-    });
+    }
 });
 
 module.exports = router;
