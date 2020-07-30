@@ -111,7 +111,6 @@ import md5 from 'md5'
 
 import tags from '@/components/tags'
 
-
 const lib = require('@/lib'); //for avatar_url
 
 export default {

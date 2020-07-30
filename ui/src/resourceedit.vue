@@ -238,8 +238,6 @@ export default {
             }}).then(res=>{
                 this.resource = res.data.resources[0];
                 this.envs_ = JSON.stringify(this.resource.envs, null, 4);
-                //if(this.resource.gids.includes(1)) this.global = true;
-                //if(this.resource.gids.includes(137)) this.archive_access = true;
             });
         } else {
             this.reset_sshkey();
@@ -253,7 +251,6 @@ export default {
             this.service_names = [...new Set(this.service_names)]; //debupe
             this.service_names = this.service_names.filter(name=>name && name.includes("/")); //remove odd looking service names
             this.service_names.sort();
-            //console.dir(this.service_names);
         });
     },
 
@@ -290,28 +287,11 @@ export default {
 
         submit(evt) {
             evt.preventDefault(); //TODO do I need this?
-
             if(this.submitting) return; //prevent double submission..
             this.submitting = true;
-
-            //this.resource.gids = [];
-            //if(this.global) this.resource.gids.push(1);
-            //if(this.archive_access) this.resource.gids.push(137); //TODO make it confiruable
             if(this.envs_ && this.envs_.trim()) {
                 try {
                     this.resource.envs = JSON.parse(this.envs_);
-
-                    /* old key=value format
-                        inst.envs = {};
-                        inst._envs.split("\n").forEach(function(env) {
-                            var pos = env.indexOf("=");
-                            var key = env.substr(0, pos);
-                            if(!key) return;//skip empty keys
-                            var value = env.substr(pos+1);
-                            inst.envs[key] = value;
-                        });
-                    */
-
                 } catch(err) {
                     this.$notify({type: 'error', text: err});
                     this.submitting = false;

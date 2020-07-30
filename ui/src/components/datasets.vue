@@ -1,8 +1,7 @@
 <template>
 <div>
     <div :class="{rightopen: selected_count}">
-        <div v-if="loading" class="loading"><icon name="cog" spin scale="2"/></div>
-
+        <div v-if="loading" class="loading" :class="{sidemenuwide: $root.sidemenuWide}"><icon name="cog" spin scale="2"/></div>
         <div class="table-header">
             <div style="float: right; position: relative; top: 4px;">
                 <b-form-input id="filter" class="filter" :class="{'filter-active': query != ''}" size="sm" v-model="query" placeholder="Filter" @input="change_query_debounce"></b-form-input>
@@ -888,9 +887,12 @@ right: 250px;
 .loading {
     position: fixed;
     bottom: 25px;
-    left: 80px; 
+    left: 50px;
     z-index: 10;
     opacity: 0.5;  
+}
+.loading.sidemenuwide {
+    left: 200px;
 }
 .dataset-checker {
     float: left;

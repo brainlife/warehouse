@@ -50,9 +50,8 @@ export default {
                     //until v-select can remove space by itself, I need to clean it up myself
                     let clean_tags = [];
                     if(this.tags) this.tags.forEach(tag=>{
-                        clean_tags.push(tag.trim());
+                        clean_tags.push(tag.toString().trim());
                     });
-                    console.dir(clean_tags);
                     this.$emit('input', clean_tags);
                 }
                 if(this.tags) {
