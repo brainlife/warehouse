@@ -162,7 +162,7 @@
                 <div style="padding: 20px;">
                     <h5>Config</h5>
                     <!--<pre v-highlightjs="JSON.stringify(task.config, null, 4)" style="background-color: white;"><code class="json hljs"></code></pre>-->
-                    <pre>{{JSON.stringify(task.config, null, 4)}}</pre>
+                    <editor ref="task-config" @init="editorInit" v-model="taskConfigJson" lang="json"/>
                 </div>
             </div>
         </b-container>
@@ -188,6 +188,7 @@ const lib = require('../lib');
 export default {
     components: { 
         app, datatypetag, configform, advanced, tageditor, contact, VueMarkdown, Plotly,
+        editor: require('vue2-ace-editor'), 
     },
 
     data() {
@@ -218,6 +219,7 @@ export default {
                     layout: null,
                 },
             },
+            taskConfigJson: "",
             loading: false,
         }
     },
@@ -229,8 +231,8 @@ export default {
             this.resource = opt.resource;
             this.open = true;
             this.load_smon();
+            this.taskConfigJson = JSON.stringify(this.task.config, null, 4);
         });
-
         //TODO - call removeEventListener in destroy()? Or I should do this everytime modal is shown/hidden?
         document.addEventListener("keydown", e => {
             if (e.keyCode == 27) {
@@ -240,6 +242,24 @@ export default {
     },
 
     methods: {
+        editorInit(editor) {
+            console.log("initializing editor");
+            require('brace/ext/language_tools')
+
+            require('brace/mode/json')
+            require('brace/theme/chrome')
+
+            editor.container.style.lineHeight = 1.25;
+            editor.renderer.updateFontSize();
+            editor.setReadOnly(true);  // false to make it editable
+
+            editor.setAutoScrollEditorIntoView(true);
+            editor.setOption("maxLines", 30);
+            editor.setOption("minLines", 3);
+
+            editor.setShowPrintMargin(true);
+        },
+
         load_smon() {
             this.loading = true;
             this.smon.info = null;

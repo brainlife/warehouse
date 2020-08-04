@@ -183,25 +183,6 @@ export default {
                 alert('Please signup/login first to create a new project');
             }
         },
-
-        /*
-        handle_scroll() {
-            if(!this.$refs.scrolled) return;
-            this.scrollTop = this.$refs.scrolled.scrollTop;
-            this.scrollBottom = this.$refs.scrolled.scrollTop + this.$refs.scrolled.clientHeight;
-
-            this.visibleProjects = [];  
-            this.$refs.project.forEach(project=>{
-                if(project.offsetTop+project.clientHeight > this.scrollTop && project.offsetTop < this.scrollBottom) this.visibleProjects.push(project);
-            });
-        },
-
-        isvisible(project) {
-            console.dir(project);
-            if(this.visibleProjects.includes(project)) return true;
-            return false;
-        },
-        */
     }
 }
 </script>

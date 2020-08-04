@@ -5,9 +5,11 @@
         <div v-else>
             <div class="header header-sticky">
                 <b-container  style="position: relative;">
+                    <!--
                     <div @click="back()" class="button button-page">
                         <icon name="angle-left" scale="1.5"/>
                     </div>
+                    -->
                     <div style="float: right; margin-left: 20px; margin-bottom: 20px;">
                         <b-btn size="sm" @click="test" variant="success" v-if="resource._canedit && !testing" title="Test">Test</b-btn>
                         <b-btn size="sm" v-if="testing" title="Test" disabled><icon name="cog" :spin="true"/> Testing ... </b-btn>
@@ -330,6 +332,7 @@ export default {
                 });
 
                 if(Vue.config.has_role("admin")) {
+                    if(!this.resource.stats.projects) return;
                     let group_ids = this.resource.stats.projects.map(p=>p._id);
                     this.$http.get('/project/', {params: {
                         find: JSON.stringify({
@@ -343,7 +346,6 @@ export default {
                         res.data.projects.forEach(project=>{
                             this.projects[project.group_id] = project;
                         });
-                        console.dir(res.data);
                     }).catch(console.error);
                 }
             }).catch(console.error);

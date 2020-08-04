@@ -717,7 +717,8 @@ export default {
                 instance_id: this.instance._id,
                 dataset_ids,
             }).then(res=>{
-                console.dir(res.data);
+                //console.dir(res.data);
+                this.$notify({text:'Datasets staged'});
             });
         },
 

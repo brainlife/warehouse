@@ -85,20 +85,6 @@ export default {
             this.preferrable_resources.unshift({ value: null, text: "(None)" });
             this.preferrable_resources.sort((a, b) => a.score > b.score);
 
-            //return this.$http.get('https://api.github.com/repos/' + this.app.github + '/branches', { headers: { Authorization: null } });
-            /*
-            return this.$http.get('app/info/'+this.app.github);
-        })
-        .then(res => {
-            console.dir(res.data);
-            this.github_tags = res.data.tags.map(b => {
-                return b.name;
-            });
-            this.github_branches = res.data.branches.map(b => {
-                return b.name;
-            });
-            */
-
             this.github_branch = this.value.github_branch || this.app.github_branch || 'master';
         })
         .catch(console.error);

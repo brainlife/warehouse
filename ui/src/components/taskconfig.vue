@@ -98,14 +98,12 @@ export default {
         },
         
         is_default: function(key) {
-            if(!this.appconfig[key]) {
-                //console.log(key, "not found in ", this.appconfig);
-                return;
-            }
+            if(!this.appconfig[key]) return;
             return (this.appconfig[key].default == this.taskconfig[key]);
         },
 
         get_default: function(key) {
+            if(!this.appconfig[key]) return "[removed?]";
             var d = this.appconfig[key].default;
             //console.dir(d);
             if(d === undefined) {

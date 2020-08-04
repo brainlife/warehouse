@@ -62,7 +62,6 @@ export default {
             })
         }})
         .then(res=>{
-            console.dir(res.data);
             if(res.data.length == 0) return;
             //in case there are multiple.. let's pick the first one
             let dataset = res.data[0];

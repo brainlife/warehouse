@@ -3,9 +3,11 @@
     <div class="page-content">
         <div class="header">
             <b-container style="position: relative;">
+                <!--
                 <div @click="back()" class="button button-page">
                     <icon name="angle-left" scale="1.5"/>
                 </div>
+                -->
                 <!--
                         inspiration
                         https://dataverse.harvard.edu/dataset.xhtml?persistentId=doi:10.7910/DVN/24301

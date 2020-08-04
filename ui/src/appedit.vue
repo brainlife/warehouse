@@ -615,7 +615,6 @@ export default {
                         }}).then(res=>{
                             this.app = res.data;
                             this.convert_config_to_ui();
-                            this.load_branches();
 
                             if(this.$route.params.mode == 'copy') {
                                 this.app.name += " - copy";
@@ -633,62 +632,7 @@ export default {
         });
     },
 
-    watch: {
-        "app.github"(newv, oldv) {
-            clearTimeout(debounce);
-            debounce = setTimeout(()=>{ 
-                this.load_branches();
-            }, 1000);
-        },
-    },
-
     methods: {
-        load_branches() {
-            if(!this.app.github) return;
-            console.log("loading branches", this.app.github);
-
-            /*
-            this.github_branches = null;
-            this.$http.get('https://api.github.com/repos/' + this.app.github + '/branches', 
-                { headers: { Authorization: null } })
-            .then(res=>{
-                this.github_branches = res.data.map(b => {
-                    return b.name;
-                });
-            }).catch(err=>{
-                this.github_branches = [];
-                console.error(err);
-            });
-
-            this.github_tags = null;
-            this.$http.get('https://api.github.com/repos/' + this.app.github + '/tags', 
-                { headers: { Authorization: null } })
-            .then(res=>{
-                this.github_tags = res.data.map(b => {
-                    return b.name;
-                });
-            }).catch(err=>{
-                this.github_tags = [];
-                console.error(err);
-            });
-            */
-
-            /*
-            this.github_branches = [];
-            this.github_tags = [];
-            this.$http.get("/app/info/"+this.app.github).then(res=>{
-                console.dir(res.data);
-                this.github_tags = res.data.tags.map(b => {
-                    return b.name;
-                });
-                this.github_branches = res.data.branches.map(b => {
-                    return b.name;
-                });
-            }).catch(err=>{
-                console.error(err);
-            });
-            */
-        },
         swap_inputs(first_idx, snd_idx) {
             let tmp = this.input_datasets[first_idx];
             Vue.set(this.input_datasets, first_idx, this.input_datasets[snd_idx]);

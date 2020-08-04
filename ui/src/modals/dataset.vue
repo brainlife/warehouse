@@ -577,8 +577,6 @@ export default {
                 }})
                 .then(res=>{
                     if(res.data.tasks.length == 1) {
-                        //console.log("found dtv! waiting for secondary");
-                        //console.dir(res.data.tasks);
                         this.dtv = res.data.tasks[0];
                         this.waitSecondaryArchive(this.dtv, (err, secondary)=>{
                             if(err) console.error(err);
@@ -833,7 +831,6 @@ export default {
                     if(task) {
                         //check to make sure we can actually download data from this task 
                         this.$http.get(Vue.config.amaretti_api+'/task/ls/'+task._id).then(res=>{
-                            console.dir(res);
                             this.$root.$emit("viewselecter.open", { datatype, task, subdir, files });
                         }).catch(err=>{
                             //couldn't access the task.. let's stage new task
@@ -884,8 +881,7 @@ export default {
                 }}).then(res=>{
                     let task = res.data.tasks[0];
                     if(task) {
-                        console.log("task that produced this data-object still exists... using it");
-                        //console.dir(task);
+                        //console.log("task that produced this data-object still exists... using it");
                         //look for dataset/files in case app was using deprecated filemapping
                         let output = task.config._outputs.find(output=>output.id == this.dataset.prov.output_id);
                         return cb(task, this.dataset.prov.subdir, output.files);

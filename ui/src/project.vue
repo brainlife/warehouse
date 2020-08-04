@@ -2,19 +2,15 @@
 <div v-if="selected && tabs.length > 0">
     <div class="page-header">
         <div style="float: right;">
-            <!--
-            <div @click="openneuro()" v-if="selected.openneuro" class="button">
-                <icon name="external-link-alt" scale="1.25"/>
-                OpenNeuro
-            </div>
-            -->
             <div @click="edit()" v-if="isadmin()" class="button">
                 <icon name="edit" scale="1.25"/>
             </div>
         </div>
+        <!--
         <div @click="back()" class="button button-page">
             <icon name="angle-left" scale="1.25"/>
         </div>
+        -->
         <h4>
             <projectaccess :access="selected.access" style="position: relative; top: -3px;"/> 
             {{selected.name}}

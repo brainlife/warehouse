@@ -1,14 +1,13 @@
 <template>
 
 <div class="sidemenu" v-if="showmenu">
-    <div @click="goindex()" class="logo">
-        <h3 class="title">b<span class="titlefollow">rainlife</span>
+    <div class="logo">
+        <div class="toggle" @click="$root.toggleSideMenu">
+            <icon name="chevron-left" scale="1.2"/>
+        </div>
+        <h3 class="title" @click="clickTitle">b<span class="titlefollow">rainlife</span>
             <icon name="cloud" class="titlecloud" scale="4"/>
         </h3>
-    </div>
-
-    <div class="toggle" @click="$root.toggleSideMenu">
-        <icon name="bars" scale="1.2"/>
     </div>
 
     <ul class="items">
@@ -172,8 +171,9 @@ export default {
         doc() {
             window.open("https://brainlife.io/docs/", "brainlife doc");
         },
-        goindex() {
-            document.location = "https://brainlife.io";
+        clickTitle() {
+            if(this.$root.sidemenuWide) document.location = "https://brainlife.io";
+            else this.$root.toggleSideMenu();
         },
         signout() {
             sessionStorage.setItem('auth_redirect', window.location); //TODO - un-tested.. as to if this gets back here
@@ -264,6 +264,9 @@ position: relative;
 transition: background-color 0.2s;
 transition: width 0.2s;
 }
+.items li:hover {
+width: 180px;
+}
 .sidewide .items li {
 width: 180px;
 }
@@ -340,6 +343,7 @@ overflow: hidden;
 padding: 8px 4px;
 color: #fff;
 font-size: 20pt;
+display: inline-block;
 }
 .panel-content {
 position: fixed;
@@ -370,13 +374,23 @@ padding: 10px;
 padding-bottom: 0px;
 }
 .toggle {
-padding: 10px;
-padding-top: 11px;
-width: 40px;
-opacity: 0.4;
+position: absolute;
+top: 0px;
+padding: 17px;
+right: 0px;
+opacity: 0;
 cursor: pointer;
+z-index: 1;
+transition: opacity 0.5s;
+display: none;
+}
+.sidewide .toggle {
+opacity: 0.5;
 }
 .toggle:hover {
 opacity: 1;
+}
+.sidewide .toggle {
+display: inherit;
 }
 </style>

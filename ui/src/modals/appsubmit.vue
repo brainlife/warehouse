@@ -534,6 +534,7 @@ export default {
             });
         },
 
+        /*
         request_notifications(instance, task_id) {
             var url = document.location.origin+document.location.pathname+"/process/"+instance._id;
 
@@ -548,11 +549,11 @@ export default {
                 },
             }).then(res=>{
                 console.log("requested notification");
-                console.dir(res.data);
             }).catch(err=>{
                 console.error(err);
             });
         }
+        */
     }
 }
 </script>

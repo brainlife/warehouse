@@ -8,9 +8,11 @@
                     <div style="float: right; z-index: 1; position: relative;">
                         <b-btn @click="edit" v-if="canedit" variant="secondary" size="sm"><icon name="edit"/> Edit</b-btn>
                     </div>
+                    <!--
                     <div @click="back()" class="button button-page" style="position: absolute; left: -30px;">
                         <icon name="angle-left" scale="1.5"/>
                     </div>
+                    -->
                     <h2 style="position: relative; top: -3px;">
                         <datatypetag :datatype="datatype" :trimname="!!(~datatype.name.indexOf('neuro/'))"/>
                     </h2>
@@ -266,7 +268,7 @@ export default {
                         }),
                         //populate: 'project',
                     }}).then(res=>{
-                        console.dir(res);
+                        //console.dir(res);
                         this.sample_datasets = res.data.datasets;
                     });
                 }

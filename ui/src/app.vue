@@ -12,9 +12,11 @@
     <div v-if="app" class="page-content">
         <div class="header">
             <b-container style="position: relative;">
+                <!--
                 <div @click="back()" class="button button-page">
                     <icon name="angle-left" scale="1.5"/>
                 </div>
+                -->
                 <b-row>
                     <b-col cols="9"><!--hide avatar when screen is narrow-->
                         <div style="float: right; position: relative; z-index: 3">
@@ -235,9 +237,9 @@
                             <table class="table table-sm">
                                 <thead style="background-color: #eee; font-size: 80%;">
                                     <tr>
-                                        <th style="padding-left: 20px;">Branch</th>
+                                        <th style="min-width: 100px; padding-left: 20px;">Branch</th>
                                         <th>Status</th>
-                                        <th><icon name="shield-alt"/></th>
+                                        <th style="min-width: 40px"><icon name="shield-alt"/></th>
                                         <th>Submitter</th>
                                         <th width="150px">Date</th>
                                     </tr>
@@ -557,17 +559,11 @@ export default {
             }
         },
 
-        /*
-        bibtex() {
-            document.location = '/api/warehouse/app/bibtex/'+this.app._id;
-        },
-        */
-
         find_by_id(list, id) {
             var item = list.find(it=>it.id == id);
             if(!item) {
                 console.error("failed to find_by_id", id);
-                console.dir(list);
+                console.error(list);
             }
             return item;
         },

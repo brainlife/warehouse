@@ -336,7 +336,7 @@ export default {
 
             }).catch(err=>{
                 this.loading_datasets = false;
-                console.dir(err);
+                console.error(err);
             });
         },
 

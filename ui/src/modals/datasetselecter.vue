@@ -223,8 +223,6 @@ export default {
                 var datasets = res.data.datasets;
                 
                 datasets.forEach(dataset => {
-                    //console.dir(dataset);
-                    
                     // create catalog of all datasets
                     this.alldatasets[dataset._id] = dataset;
                     
@@ -289,7 +287,7 @@ export default {
                 distinct: 'meta.subject',
             }}).then(res=>{
                 this.subjects = res.data;
-                console.dir(res.data);
+                //console.dir(res.data);
             });
         },
     },

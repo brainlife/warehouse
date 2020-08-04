@@ -79,6 +79,7 @@ import 'vue-awesome/icons/shield-alt.js'
 import 'vue-awesome/icons/times.js'
 import 'vue-awesome/icons/check.js'
 import 'vue-awesome/icons/check-square.js'
+import 'vue-awesome/icons/chevron-left.js'
 import 'vue-awesome/icons/chevron-right.js'
 import 'vue-awesome/icons/check-circle.js'
 import 'vue-awesome/icons/star.js'
@@ -285,7 +286,6 @@ if (Vue.config.jwt) {
 router.beforeEach(function (to, from, next) {
     if (to.matched.length == 0) {
         console.log("no match for router");
-        console.dir(to);
         document.location = "/404";
         return;
     }
@@ -389,7 +389,6 @@ new Vue({
                     members: [],
                     agreements: [],
                 });
-                //console.dir(res);
 
                 //we don't have good way of invalidating all projects loaded by the time we finish creating project.
                 //we need to reload page..

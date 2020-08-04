@@ -99,8 +99,6 @@ export default {
     
     methods: {
         editorInit(editor) {
-            console.log("initializing editor");
-
             require('brace/ext/language_tools')
 
             require('brace/mode/sh')
@@ -116,8 +114,6 @@ export default {
             require('brace/theme/chrome')
 
             require('brace/snippets/javascript')
-
-            //require('brace/theme/dawn')
 
             editor.container.style.lineHeight = 1.25;
             editor.renderer.updateFontSize();

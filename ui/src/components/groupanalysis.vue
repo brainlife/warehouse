@@ -267,7 +267,7 @@ export default {
                 break;
             default:
                 console.error("unknown task state");
-                console.dir(task.status); 
+                console.error(task.status); 
             } 
         },
 
@@ -292,7 +292,7 @@ export default {
             }).catch(err=>{
                 //TODO - should I give up eventually?
                 console.log("page not opened yet.. waiting?");
-                console.dir(err);
+                console.error(err);
                 setTimeout(()=>{
                     this.waitProxy(url, cb);
                 }, 1500);

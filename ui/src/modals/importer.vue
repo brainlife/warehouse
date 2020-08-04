@@ -67,7 +67,7 @@ export default {
 
     mounted() {
         this.$root.$on("importer.open", opt=>{
-            console.dir(opt);
+            //console.dir(opt);
             this.dataset = opt.dataset;
             this.subjects = opt.subjects;
 
