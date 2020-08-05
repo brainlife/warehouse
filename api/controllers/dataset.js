@@ -1095,7 +1095,7 @@ router.post('/stage', jwt({secret: config.express.pubkey}), (req, res, next)=>{
                     name : "Staging",
                     //desc : "archiving",
                     service : "brainlife/app-stage",
-                    service_branch: "1.1",
+                    //service_branch: "1.1", //let's just use master..
                     instance_id : req.body.instance_id,
                     preferred_resource_id: config.archive.storage_config.resource_id,
                     config: {
