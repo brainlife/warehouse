@@ -23,6 +23,9 @@
         <!--tck-->
         <secondaryTck v-else-if="output.datatype == '5907d922436ee50ffde9c549'" 
             :task="task" :output="output" :product="product"/>
+        <!--trk-->
+        <secondaryTck v-else-if="output.datatype == '5b956f6cd7b3f1e24e9121ce'" 
+            :task="task" :output="output" :product="product"/>
         <!--rois-->
         <secondaryRois v-else-if="output.datatype == '5be9ea0315a8683a39a1ebd9'" 
             :task="task" :output="output" :product="product"/>
