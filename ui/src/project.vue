@@ -131,40 +131,37 @@
 
                 <div class="box">
                     <b-row>
-                        <b-col>
+                        <b-col lg>
                             <span class="form-header">Admins</span>
                             <p style="height: 50px; margin-bottom: 3px;">
-                                <small class="text-muted">Update project details, share processes, and create rules / publications.</small>
+                                <small class="text-muted">An admin can update project details, share processes, and create rules / publications.</small>
                             </p>
                             <p v-for="c in selected.admins" :key="c._id" style="margin-bottom: 8px;">
-                                <contact :id="c"/>
+                                <contact :id="c" size="small"/>
                             </p>
                             <br>
                         </b-col>
 
-                        <b-col>
+                        <b-col lg>
                             <span class="form-header">Members</span>
                             <p style="height: 50px; margin-bottom: 3px;">
-                                <small class="text-muted">Read/Write access to data, share processes, and create rules / publications.</small>
+                                <small class="text-muted">A members has read/write access to data, share processes, and create rules / publications.</small>
                             </p>
                             <p v-for="c in selected.members" :key="c._id" style="margin-bottom: 8px;">
-                                <contact :id="c"/>
+                                <contact :id="c" size="small"/>
                             </p>
                             <p class="text-muted" v-if="selected.members.length == 0"><small>No Members</small></p>
                             <br>
                         </b-col>
 
-                        <b-col v-if="config.user && selected.access == 'private' && selected.guests && selected.guests.length > 0">
+                        <b-col lg v-if="config.user && selected.access == 'private' && selected.guests && selected.guests.length > 0">
                                 <span class="form-header">Guests</span>
                                 <p style="height: 50px; margin-bottom: 3px;">
-                                    <small class="text-muted">Read access to dataset.</small>
+                                    <small class="text-muted">A guest has read access to data.</small>
                                 </p>
                                 <p v-for="c in selected.guests" :key="c._id" style="margin-bottom: 8px;">
-                                    <contact :id="c"/>
+                                    <contact :id="c" size="small"/>
                                 </p>
-                                <!--
-                                <p class="text-muted" v-if="!selected.guests || selected.guests.length == 0"><small>No Guests</small></p>
-                                -->
                                 <br>
                         </b-col>
                     </b-row>
@@ -213,7 +210,7 @@
         
     </div>
 
-    <div v-if="tabs[tab].id == 'dataset'" style="margin-left: 40px; margin-top: 95px">
+    <div v-if="tabs[tab].id == 'dataset'" class="page-content">
         <b-alert show variant="secondary" v-if="selected.access != 'public' && !(ismember()||isadmin()||isguest())">For non public project, only the admin/members/guests of this project can access processes.</b-alert>
         <datasets :project="selected" :projects="projects" v-else :participants="participants"/>
     </div>

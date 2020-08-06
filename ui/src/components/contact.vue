@@ -30,10 +30,8 @@
 
 <script>
 import Vue from 'vue'
-//import md5 from 'md5'
 
 import authprofilecache from '@/mixins/authprofilecache'
-//import profilecache from '@/mixins/profilecache'
 
 const lib = require('@/lib'); //for avatar_url
 

@@ -3,7 +3,7 @@
 <div v-if="dataset" class="brainlife-modal-overlay">
     <b-container class="brainlife-modal">
         <div class="brainlife-modal-header">
-            <div class="brainlife-modal-header-buttons">
+            <div class="brainlife-modal-header-buttons" style="margin-left: 10px;">
                 <b-dropdown text="Download" v-if="dataset.storage" variant="outline-secondary" size="sm">
                     <b-dropdown-item @click="download">This Data-Object <small v-if="dataset.size">({{dataset.size|filesize}})</small></b-dropdown-item>
                     <b-dropdown-divider v-if="dataset.prov"/>
@@ -31,9 +31,9 @@
                     <icon name="times" scale="1.5"/>
                 </div>
             </div>
-            <h5 style="margin-top: 8px;">
+            <h5 style="margin-top: 8px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
                 <span v-if="dataset.meta" style="color: #999;">{{dataset.meta.subject}}</span>&nbsp;
-                <datatypetag v-if="dataset.datatype" :datatype="dataset.datatype" :tags="dataset.datatype_tags"></datatypetag>
+                <datatypetag v-if="dataset.datatype" :datatype="dataset.datatype" :tags="dataset.datatype_tags" style="font-size: 95%;"/>
             </h5>
         </div><!--header-->
 

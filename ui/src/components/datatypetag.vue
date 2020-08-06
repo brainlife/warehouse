@@ -1,8 +1,5 @@
 <template>
 <div v-if="ready" class="dt" :class="{'dt-clickable': clickable}" @click="click">
-    <!--
-    v-b-popover.hover.top.d1000.html="'<small>'+_datatype.desc+'</small>'" :title="'<small><b>'+_datatype.name+'</b></small>'">
-    -->
     <span class="dot" :style="{backgroundColor: color}"></span> {{name}}
     <div class="tags" v-if="tags" v-for="(tag, idx) in tags" :key="idx">
         <span v-if="tag && tag[0] == '!'" class="text-danger"><b-badge variant="danger">not</b-badge> {{tag.substring(1)}}</span>
@@ -43,8 +40,6 @@ export default {
     },
     
     mounted() {
-        //console.log("datatypetag mounted with datatype:");
-        //console.log(this.datatype);
         if(!this.datatype) return;
         this.init_id_or_object(this.datatype);
     },
@@ -52,7 +47,6 @@ export default {
     methods: {
         init_id_or_object(datatype) {
             if(typeof datatype == "string") {
-                //console.log("id given... loading ", datatype);
                 this.datatypecache(datatype, (err, datatype_obj)=>{
                     if(err) alert(err);
                     this.init_object(datatype_obj);
@@ -93,7 +87,6 @@ export default {
 
         click() {
             if(this.clickable) {
-                //console.log(this.$router.history.current.path);
                 this.$router.push('/datatypes/'+this._datatype._id);
             } 
         },
@@ -103,8 +96,7 @@ export default {
 
 <style scoped>
 .dt {
-    display: inline-block;
-    white-space: nowrap;
+    display: inline;
 }
 .dt-clickable {
     cursor: pointer;
@@ -122,13 +114,13 @@ export default {
     border-radius: 50%;
 }
 .tags {
-    display: inline-block;
+    display: inline;
     padding: 0px 5px;
     margin: 0px;
     background-color: #eee;
     color: #666;
 }
 .tags:not(:last-child) {
-    border-right: 1px solid #ccc;
+    border-right: 1px solid #0001;
 }
 </style>
