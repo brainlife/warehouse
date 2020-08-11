@@ -96,30 +96,43 @@ export default {
 
     mounted() {
         console.log("mounted tractprofile secondary ui");
-        if(this.product.meta.tensor_measures) {
+        console.dir(this.product.meta);
+        if(this.hasTensor()) {
             Vue.set(this.columns, 'fa', {show: false});
             Vue.set(this.columns, 'ad', {show: false});
             Vue.set(this.columns, 'md', {show: false});
             Vue.set(this.columns, 'rd', {show: false});
         }
 
-        if(this.product.meta.noddi_measures) {
+        if(this.hasNoddi()) {
             Vue.set(this.columns, 'ndi', {show: false});
             Vue.set(this.columns, 'isovf', {show: false});
             Vue.set(this.columns, 'odi', {show: false});
         }
+
+        if(this.hasDki()) {
+            Vue.set(this.columns, 'ga', {show: false});
+            Vue.set(this.columns, 'mk', {show: false});
+            Vue.set(this.columns, 'ak', {show: false});
+            Vue.set(this.columns, 'rk', {show: false});
+        }
+
         Vue.set(this.columns, 'xyz', {show: false});
 
-        if(this.product.meta.tensor_measures) {
+        if(this.hasTensor()) {
             this.columns.ad.show = true;
             this.columns.fa.show = true;
             this.columns.rd.show = true;
-            //this.columns.xyz.show = true;
-        } else if(this.product.meta.noddi_measures) {
+        } else if(this.hasNoddi()) {
             this.columns.ndi.show = true;
             this.columns.isovf.show = true;
             this.columns.odi.show = true;
+        } else if(this.hasDki()) {
+            this.columns.ga.show = true;
+            this.columns.mk.show = true;
+            this.columns.ak.show = true;
         } else {
+            console.dir(this.product.meta);
             console.error("odd.. either tensor or noddi should be set");
         }
 
@@ -158,23 +171,33 @@ export default {
     },
 
     methods: {
+
+        hasTensor() {
+            //fa, md, rd, ad
+            if(this.product.meta.tensor_measures) return true; //deprecated
+            if(this.product.meta.columns.includes("fa_1")) return true;
+            if(this.product.meta.columns.includes("fa_mean")) return true;
+            return false;
+        },
+
+        hasNoddi() {
+            //ndi, isovf, odi
+            if(this.product.meta.noddi_measures) return true; //deprecated
+            if(this.product.meta.columns.includes("ndi_1")) return true;
+            if(this.product.meta.columns.includes("ndi_mean")) return true;
+            return false;
+        },
+
+        hasDki() {
+            //ga, mk, ak, rk
+            if(this.product.meta.columns.includes("ga_1")) return true;
+            if(this.product.meta.columns.includes("ga_mean")) return true;
+            return false;
+        },
+
         hover(e) {
             let points = e.points[e.points.length-1];
             let pointNum = points.pointNumber;
-
-            //TODO - doesn't work yet..
-            /*
-            for(let path in this.plots) {
-                for(let col in this.plots[path]) {
-                    this.plots[path][col].data[0] = {
-                        x: [30],
-                        y: [0.5],
-                        mode: "text",
-                        text: [pointNum.toString()],
-                    }
-                }
-            } 
-            */
         },
 
         showHideTract(show, o) {
@@ -236,41 +259,77 @@ export default {
                 };
 
                 switch(header) {
-                case "fa_1":
+                //TENSOR measures
+                case "fa_1": //deprecated
+                case "fa_mean":
                     plot.layout.title = "Fractional Anisotropy (FA)";
                     plot.layout.yaxis.title.text = "normalized fraction of anisotropic component";
                     plots["fa"] = plot;
                     break;
-                case "ad_1":
+                case "ad_1": //deprecated
+                case "ad_mean":
                     plot.layout.title = "Axial Diffusivity (AD)";
-                    plot.layout.yaxis.title.text = "nm^2/msec";
+                    plot.layout.yaxis.title.text = "microm^2/msec";
                     plots["ad"] = plot;
                     break;
-                case "md_1":
+                case "md_1": //deprecated
+                case "md_mean":
                     plot.layout.title = "Mean Diffusivity (MD)";
-                    plot.layout.yaxis.title.text = "nm^2/msec";
+                    plot.layout.yaxis.title.text = "microm^2/msec";
                     plots["md"] = plot;
                     break;
-                case "rd_1":
+                case "rd_1": //deprecated
+                case "rd_mean":
                     plot.layout.title = "Radial Diffusivity (RD)";
-                    plot.layout.yaxis.title.text = "nm^2/msec";
+                    plot.layout.yaxis.title.text = "microm^2/msec";
                     plots["rd"] = plot;
                     break;
-                case "ndi_1":
+
+                //NODDI measures
+                case "ndi_1": //deprecated
+                case "ndi_mean":
                     plot.layout.title = "Neurite Density Index (NDI)";
                     plot.layout.yaxis.title.text = "intra-cellular volume fraction";
                     plots["ndi"] = plot;
                     break;
-                case "isovf_1":
+                case "isovf_1": //deprecated
+                case "isovf_mean":
                     plot.layout.title = "Isotropic Volume Fraction (ISOVF)";
                     plot.layout.yaxis.title.text = "extra-cellular volume fraction";
                     plots["isovf"] = plot;
                     break;
-                case "odi_1":
+                case "odi_1": //deprecated
+                case "odi_mean":
                     plot.layout.title = "Orientation Dispersion Index (ODI)";
                     plot.layout.yaxis.title.text = "relative dispersion of fiber orientation";
                     plots["odi"] = plot;
                     break;
+
+                //DKI measures
+                case "ga_mean":
+                    plot.layout.title = "Geodesic Anisotropy (GA)";
+                    plot.layout.yaxis.title.text = "normalized fraction of geodesic component";
+                    plots["ga"] = plot;
+                    break;
+
+                case "mk_mean":
+                    plot.layout.title = "Mean Kurtosis (MK)";
+                    plot.layout.yaxis.title.text = "microm^2/msec";
+                    plots["mk"] = plot;
+                    break;
+
+                case "ak_mean":
+                    plot.layout.title = "Axial Kurtosis (AK)";
+                    plot.layout.yaxis.title.text = "microm^2/msec";
+                    plots["ak"] = plot;
+                    break;
+
+                case "rk_mean":
+                    plot.layout.title = "Radial Kurtosis (RK)";
+                    plot.layout.yaxis.title.text = "microm^2/msec";
+                    plots["rk"] = plot;
+                    break;
+
                 case "x_coords":
                     x_coords = [];
                     y_coords = [];
@@ -312,15 +371,6 @@ export default {
                     line: { color: "transparent"},
                 })
                 plot.data.push({ x, y })
-
-                /*
-                plot.data.push({
-                    x: [30],
-                    y: [0.5],
-                    mode: "text",
-                    text: ["soichi"],
-                });
-                */
             });
 
             //create xyz graph
@@ -371,18 +421,9 @@ export default {
                             y: y_coords,
                             z: z_coords,
                             text,
-                            //textposition: "bottom center",
-                            //opacity: 1,
                             marker: {
                                 size: 2,
                             }
-                            /*
-                            line: {
-                                width: 6,
-                                color: 'red',
-                                reversescale: false
-                            }
-                            */
                         }
                     ],
                 };
