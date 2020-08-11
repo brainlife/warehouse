@@ -31,8 +31,10 @@ function canedit(user, rec, canwrite_project_ids) {
 
 //same code in ui::/src/modals/dataset.js
 function isimporttask(task) {
-    if(~task.service.indexOf("brainlife/validator-")) return true;
-    if(~task.service.indexOf("brain-life/validator-")) return true;
+    if(task.service) {
+        if(~task.service.indexOf("brainlife/validator-")) return true;
+        if(~task.service.indexOf("brain-life/validator-")) return true;
+    }
 
     //if no input, then must be import
     if(!task.deps && !task.deps_config) return true;
@@ -40,14 +42,6 @@ function isimporttask(task) {
         (task.deps_config && task.deps_config.length == 0)) return true;
 
     return false;
-
-    /*
-    return ( 
-    (task.deps_config.length == 0 && task.deps.length == 0) ||
-        ~task.service.indexOf("brainlife/validator-") ||
-        ~task.service.indexOf("brain-life/validator-")
-    );
-    */
 }
 
 function construct_dataset_query(body/*, project_ids*/) {
