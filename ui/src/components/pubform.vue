@@ -71,7 +71,7 @@
                 <br>
                 <p v-for="(set, idx) in release.sets">
                     <datatypetag :datatype="set.datatype" :tags="set.datatype_tags"/> 
-                    {{set.count}} datasets ({{set.size|filesize}})
+                    <span v-if="set.subjects && set.subjects.length == 0">{{set.count}} datasets ({{set.size|filesize}})</span>
                     <span v-if="set.add" @click="remove_set(release, idx)" style="opacity: 0.5;">
                         <icon name="trash" scale="0.9"/>
                     </span>
@@ -225,9 +225,6 @@ export default {
 
                 release.sets = release.sets.concat(sets); //TODO - dedupe this
                 this.$forceUpdate(); //to show new sets..
-
-                //console.log("got new datatypes");
-                //console.dir(sets);
             });
         },
 
