@@ -16,7 +16,11 @@ request.get({
     qs: {
         find: JSON.stringify({
             status: "failed",
-            service: "brainlife/app-archive",
+            service: {$in: [ 
+                "brainlife/app-archive", 
+                "brainlife/app-archive-secondary", 
+                "brainlife/app-stage"
+            ]},
             fail_date: {$gt: recent },
         }),
         select: 'status status_msg service fail_date user_id _group_id',

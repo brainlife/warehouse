@@ -320,17 +320,15 @@ function handle_task(task, cb) {
         //load task product for finished task
         next=>{
             if(task.status != "finished") return next();
-
             console.log("loading product for ", task._id, task.name);
-            rp.get({
-                url: config.amaretti.api+"/task/product", json: true,
-                qs: {
+            axios.get(config.amaretti.api+"/task/product", {
+                params: {
                     ids: [task._id],
                 },
                 headers: { authorization: "Bearer "+config.warehouse.jwt, }
-            }).then(data=>{
-                if(data.length == 1) {
-                    task_product = data[0].product;
+            }).then(res=>{
+                if(res.data.length == 1) {
+                    task_product = res.data[0].product;
                 }
                 next();
             }).catch(err=>{

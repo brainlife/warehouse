@@ -63,14 +63,6 @@ function construct_dataset_query(body/*, project_ids*/) {
         if(all.length > 0) query.datatype_tags["$all"] = all;
         if(nin.length > 0) query.datatype_tags["$nin"] = nin;
     }
-    
-    /*
-    //put things together
-    ands.push({$or: [
-        {project: {$in: canread_project_ids}},
-        {publications: {$gt:[]}}, //allow access for published dataset
-    ]});
-    */
     return query;
 }
 

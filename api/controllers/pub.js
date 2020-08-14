@@ -353,15 +353,17 @@ router.put('/:id', jwt({secret: config.express.pubkey}), (req, res, next)=>{
 function handle_release(release, project, cb) {
     async.eachSeries(release.sets, (set, next_set)=>{
         if(!set.add) return next_set();
-        logger.debug("------------------need to add!------------------------");
-        logger.debug(set);
-        
         let find = {
             project,
             removed: false,
             datatype: set.datatype._id,
             datatype_tags: set.datatype_tags,
         };
+        if(set.subjects.length > 0) {
+            find["meta.subject"] = {$in: set.subjects};
+        }
+        console.log("handling release");
+        console.log(JSON.stringify(find, null, 4));
 
         db.Datasets.update(find, {$addToSet: {publications: release._id}}, {multi: true}, next_set);
     }, cb);
