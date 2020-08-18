@@ -2,10 +2,9 @@
 
 const winston = require('winston');
 const async = require('async');
-const request = require('request');
+const request = require('request'); //replace with axios?
 const fs = require('fs');
 const redis = require('redis');
-const jsonwebtoken = require('jsonwebtoken');
 
 const config = require('../api/config');
 const logger = winston.createLogger(config.logger.winston);

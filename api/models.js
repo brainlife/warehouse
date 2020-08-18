@@ -2,7 +2,6 @@
 const amqp = require("amqp");
 const mongoose = require("mongoose");
 
-
 const config = require("./config");
 const common = require("./common"); //circular?
 
@@ -450,6 +449,9 @@ var datatypeSchema = mongoose.Schema({
             desc: String,
         }
     ],
+
+    //list of *unofficial* datatypes
+    _datatype_tags: [ String ],
 
     //name of ABCD service that is used to validate this data (if not set, user can't import this datatype via UI)
     validator: String, 

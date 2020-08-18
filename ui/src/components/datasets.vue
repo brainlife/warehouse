@@ -331,7 +331,7 @@ export default {
 
             //get number of subjects stored 
             this.$http.get('dataset/distinct', {params: {
-                find: JSON.stringify({$and: this.get_mongo_query()}),
+                find: JSON.stringify(this.get_mongo_query()),
                 distinct: 'meta.subject'
             }}).then(res=>{
                 this.total_subjects = res.data.length;
@@ -436,10 +436,10 @@ export default {
         },
 
         get_mongo_query() {
-			var finds = [
-                {removed: false},
-                {project: this.project._id},
-            ];
+			var finds = {
+                removed: false,
+                project: this.project._id,
+            };
 
             if(this.query) {
                 let ands = [];
@@ -473,7 +473,7 @@ export default {
                         ands.push({$or: compose_ors(q)});
                     }
                 });
-                finds.push({$and: ands});
+                finds["$and"] = ands;
             }
             return finds;
         },
@@ -503,12 +503,13 @@ export default {
                     "meta.subject": this.last_meta.subject,
                     "meta.session": {$gte: this.last_meta.session}
                 });
-                query.push({$or: or});
+                //query.push({$or: or});
+                query["$or"] = or;
             }
 
             this.$http.get('dataset', {
                 params: {
-                    find: JSON.stringify({$and: query}),
+                    find: JSON.stringify(query),
                     limit: 500,  //needs to be bigger than the largest dataset per subject x2 (bigger == slower for vue to render)
                     sort: 'meta.subject meta.session -create_date',
                     select: 'create_date datatype datatype_tags prov.task.name desc size tags meta.subject meta.session meta.run status removed project',

@@ -239,7 +239,7 @@
                                     <tr>
                                         <th style="min-width: 100px; padding-left: 20px;">Branch</th>
                                         <th>Status</th>
-                                        <th style="min-width: 40px"><icon name="shield-alt"/></th>
+                                        <th style="min-width: 80px"><icon name="shield-alt"/></th>
                                         <th>Submitter</th>
                                         <th width="150px">Date</th>
                                     </tr>

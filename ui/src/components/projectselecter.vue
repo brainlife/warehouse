@@ -71,39 +71,6 @@ export default {
             }
 
             this.query_projects(find);
-/*
-            if(this.datatype) {
-                let project_query = {
-                    datatype: this.datatype._id||this.datatype,
-                    removed: false,
-                    openneuro: {$exists: false}, //don't show openneuro psudo projects
-                } 
-
-                if(this.datatype_tags && this.datatype_tags.length > 0) {
-                    var ands = [];
-                    this.datatype_tags.forEach(tag=>{
-                        if(tag[0] == "!") ands.push({datatype_tags: {$ne: tag.substring(1)}});
-                        else ands.push({datatype_tags: tag});
-                    });
-                    project_query.$and = ands;
-                }
-
-                //query distinct project ids that has specified datasets
-                this.$http.get('dataset/distinct', {params: {
-                    find: JSON.stringify(project_query),
-                    distinct: 'project',
-                }}).then(res=>{
-                    var project_ids = res.data;
-                    find._id = {$in: project_ids};
-                    //TODO - if there are no project, not point of querying for datasets.
-                    //we should warn user that they can't execue this app until data derivative is generated
-                    this.query_projects(find);
-                });
-            } else {    
-                //no further query
-                this.query_projects(find);
-            }
-*/
         },
 
         query_projects(find) {

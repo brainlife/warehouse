@@ -132,7 +132,6 @@ export default {
 
         if(!this.pub.releases) this.$set(this.pub, 'releases', []);
         this.pub.releases.forEach(release=>{
-            //console.dir(release);
             release._create_date = (new Date(release.create_date)).toISOString().split('T')[0];
             if(!release.sets) release.sets = [];
 
@@ -141,6 +140,7 @@ export default {
             this.$http.get('dataset/inventory', { params: {
                 find: JSON.stringify({ 
                     //removed: false,
+                    project: this.project._id,
                     publications: release._id,
                 }),
             }})
@@ -176,7 +176,6 @@ export default {
                 for(var key in sets) {
                     sets[key].datatype = datatypes[sets[key].datatype];
                 } 
-                //this.$set(release, 'sets', Object.values(sets));
                 release.sets = Object.values(sets);
                 this.$forceUpdate();
             }).catch(console.error);

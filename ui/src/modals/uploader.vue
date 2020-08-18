@@ -63,8 +63,8 @@
             </b-form-group>
 
             <div class="gray-background">
-                <b-form-group horizontal label="Datatype Tags" v-if="available_dt_tags">
-                    <tageditor v-model="datatype_tags" :options="available_dt_tags" placeholder="(optional)"/>
+                <b-form-group horizontal label="Datatype Tags">
+                    <tageditor v-model="datatype_tags" :options="datatype.datatype_tags.map(entry=>entry.datatype_tag)" placeholder="(optional)"/>
                     <small>Datatype tags add context to the datatype. Datatype Tags must be specific for each datatype. 
                         Please consult the datatype detail page before setting any datatype tags.</small>
                 </b-form-group>
@@ -166,7 +166,7 @@ export default {
             datatypes: null, //registered datatypes (keyed by datatype_id)
 
             available_tags: null,
-            available_dt_tags: null,
+            //available_dt_tags: null,
 
             config: Vue.config,
         }
@@ -512,6 +512,7 @@ export default {
                 this.available_tags = res.data;
             });
 
+            /*
             //load available datatype tags
             this.$http.get('dataset/distinct', {params: {
                 distinct: 'datatype_tags',
@@ -519,6 +520,7 @@ export default {
             }}).then(res=>{
                 this.available_dt_tags = res.data;
             });            
+            */
         },
         editorInit(editor) {
             require('brace/mode/json')

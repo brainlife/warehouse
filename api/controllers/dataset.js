@@ -144,7 +144,6 @@ router.get('/', jwt({secret: config.express.pubkey, credentialsRequired: false})
                 if(req.query.single) {
                     return res.json(datasets[0]);
                 } else {
-                    //console.log("not single query");
                     res.json({ datasets, count, size, });
                 }
             });
@@ -158,27 +157,21 @@ router.get('/', jwt({secret: config.express.pubkey, credentialsRequired: false})
  * @apiDescription              Returns all dataset entries accessible to the user has access
  *
  * @apiParam {String} distinct  A field to pull distinct values (can't do multiple)
- * @apiParam {Object} [find]    Optional Mongo query to perform (you need to JSON.stringify)
+ * @apiParam {Object} find      Mongo query to perform (you need to JSON.stringify) - must include project
  * 
  * @apiHeader {String} authorization A valid JWT token "Bearer: xxxxx"
  *
  * @apiSuccess {Object}         List of distinct values
  */
 router.get('/distinct', jwt({secret: config.express.pubkey, credentialsRequired: false}), (req, res, next)=>{
-    var find = {};
-    if(req.query.find) {
-        find = JSON.parse(req.query.find);
-        cast_mongoid(find);
-    }
+    const find = JSON.parse(req.query.find);
+    if(!find.project) return next("please specify project query");
+    cast_mongoid(find);
     common.getprojects(req.user, function(err, canread_project_ids, canwrite_project_ids) {
         if(err) return next(err);
-        db.Datasets
-        .find({
-            $and: [
-                {project: {$in: canread_project_ids}},
-                find
-            ]
-        })
+        canread_project_ids = canread_project_ids.map(id=>id.toString());
+        if(!canread_project_ids.includes(find.project.toString())) return next("no read access to specified project:"+find.project);
+        db.Datasets.find(find)
         .distinct(req.query.distinct)
 		.exec((err, values)=>{
             if(err) return next(err);
@@ -203,27 +196,23 @@ function cast_mongoid(node) {
 /**
  * @apiGroup Dataset
  * @api {get} /dataset/inventory
- * @apiParam {Object} [find]    Optional Mongo query to perform (you need to JSON.stringify)
+ * @apiParam {Object} find      Mongo query to perform (you need to JSON.stringify) - project field must be set
  *                              Get counts of unique subject/datatype/datatype_tags. 
  * @apiSuccess {Object}         Object containing counts
  * 
  */
 //warning.. similar code in pub.js
 router.get('/inventory', jwt({secret: config.express.pubkey, credentialsRequired: false}), (req, res, next)=>{
-    var find = {};
-    if(req.query.find) {
-        find = JSON.parse(req.query.find);
-        cast_mongoid(find);
-    }
+    const find = JSON.parse(req.query.find);
+    if(!find.project) return next("please specify project query");
+    cast_mongoid(find);
     common.getprojects(req.user, function(err, canread_project_ids, canwrite_project_ids) {
         if(err) return next(err);
+        canread_project_ids = canread_project_ids.map(id=>id.toString());
+        if(!canread_project_ids.includes(find.project.toString())) return next("no read access to specified project:"+find.project);
+
         db.Datasets.aggregate()
-        .match({ 
-            $and: [
-                {project: {$in: canread_project_ids}},
-                find,
-            ]
-        })
+        .match(find)
         .group({_id: {
             "subject": "$meta.subject", 
             "datatype": "$datatype", 
@@ -415,8 +404,6 @@ This boutique descriptor that can be used to run the workflow used to generate t
             if(!node.label) continue; //"This Dataset" doesn't have label, and we don't need it (TODO make output link?)
 
             let app = apps.find(app=>app._id == node._app);
-            //console.dir(app);
-
             let id_parts = node.id.split(".");
             if(id_parts[0] == "dataset") {
                 input_dataset_ids.push(id_parts[1]);
@@ -449,7 +436,6 @@ This boutique descriptor that can be used to run the workflow used to generate t
                             if(!b_inputs.find(input=>input.id == k)) {
                                 if(!app.config[k]) {
                                     console.error(k+" is not defined in the app.config.. maybe config changed?");
-                                    console.dir(node);
                                 } else {
                                     let input_config = app.inputs.find(input=>input.id == app.config[k].input_id);
                                     if(!input_config) {
@@ -580,7 +566,6 @@ This boutique descriptor that can be used to run the workflow used to generate t
 
 let datatypes_cache = {};
 mongoose.connection.once('open', ()=>{
-    console.log("caching datatypes.. ");
     //TODO - invalidate eventually? or listen to update events?
     db.Datatypes.find({})
     .exec((err, _datatypes)=>{
@@ -619,27 +604,6 @@ function generate_prov(origin_dataset_id, cb) {
     function compose_label(task) {
         let label = task.service; //task.name is sometime like "brainlife.process"..
         if(task.service_branch) label += "("+task.service_branch+")";
-        /*
-        label+="\n"; //task.name is sometime like "brainlife.process"..
-        for(let id in task.config) {
-            if(id[0] == "_") continue; //ignore hidden config
-            let v = task.config[id];
-            if(v) {
-                v = v.toString(); //TODO in case it's number?
-                if(v.startsWith("../")) continue; //TODO - better way to grab only the non-dataset inputs?
-            }
-
-            //hide default config
-            if(task._app_config && task._app_config[id] && task._app_config[id].default == v) {
-                //console.log(id+" is default");
-                continue;//hide default
-            } 
-
-            label += id+":"+(v?v:'(null)')+"\n";
-        }
-        */
-        //console.dir(task.config);
-        //console.dir(task._app_config);
         return label;
     }
     
@@ -673,13 +637,6 @@ function generate_prov(origin_dataset_id, cb) {
         for(let key in task.config) {
             if(key.startsWith("_")) continue;
             _config[key] = task.config[key];
-
-            /*
-            //inject config spec
-            if(task._app_config && task._app_config[key]) {
-                _config[key].spec = task._app_config[key];
-            }
-            */
         }
         return _config;
     }
@@ -689,7 +646,6 @@ function generate_prov(origin_dataset_id, cb) {
         let _config = {};
         for(let key in task._app_config) {
             let config = task._app_config[key];
-            console.dir(key, config);
             if(config.type == "input") continue; 
             _config[key] = config.default;
         }
@@ -825,8 +781,6 @@ function generate_prov(origin_dataset_id, cb) {
             load_task(input.task_id, (err, dep_task)=>{
                 if(err) return next_dep(err);
 
-                //console.dir(input.task_id);
-                
                 //process uses app-stage to load input datasets
                 //instead of showing that, let's *skip* this node back to datasets that it loaded
                 //and load their tasks
@@ -958,7 +912,6 @@ router.post('/', jwt({secret: config.express.pubkey}), (req, res, cb)=>{
             logger.debug("submitting archive task");
             common.archive_task_outputs(req.user.sub.toString(), task, [output], (err, datasets, archive_task)=>{
                 if(err) return next(err);
-                console.dir(datasets[0]);
                 res.json(datasets[0]); //there should be only 1 dataset being archived via this API, so return [0]
             });
         },
@@ -982,10 +935,6 @@ router.post('/', jwt({secret: config.express.pubkey}), (req, res, cb)=>{
 router.post('/stage', jwt({secret: config.express.pubkey}), (req, res, next)=>{
     if(!req.body.instance_id) return next("instance_id is not set");
     if(!req.body.dataset_ids && !Array.isArray(req.body.dataset_ids)) return next("dataset_ids are not set");
-
-    //logger.debug("dataset/stage requested with instance_id:"+req.body.instance_id);
-    //logger.debug(req.body.dataset_ids);
-    //logger.debug(JSON.stringify(req.user));
 
     let datasets;
     let next_tid;
@@ -1061,19 +1010,8 @@ router.post('/stage', jwt({secret: config.express.pubkey}), (req, res, next)=>{
 
         //submit!
         async cb=>{
-            //console.log("issuing archiver jwt - that can run task on archiving resource");
             let jwt = await common.issue_archiver_jwt(req.user.sub);
 
-            /*
-            //TODO - we can't remove it too soon - the same staged job might be used by other task
-            //stage task is used as input to real *first* app that uses the data, so I believe we can 
-            //remove it shortly after it's stage.. remove in 7 days(?)
-            //TODO - if it's already staged, and another user request for the same datazet, should I just reuse it?
-            let remove_date = new Date();
-            remove_date.setDate(remove_date.getDate()+7); 
-            */
-
-            //console.log("submitting stage task");
             stage_task = await rp.post({
                 url: config.amaretti.api+"/task",
                 json: true,
@@ -1131,15 +1069,10 @@ router.post('/stage', jwt({secret: config.express.pubkey}), (req, res, next)=>{
                     authorization: "Bearer "+jwt,
                 }
             });
-
-            //console.log("reached the end");
-            //don't need to call cb() as this is an async function
         },
 
     ], err=>{
         if(err) return next(err);
-        //console.log("all done");
-        //console.dir(stage_task);
         res.json(stage_task);
     });
 });
@@ -1381,8 +1314,6 @@ router.get('/download/:id', jwt({
                     get_user_agreements(req.user.sub, authorization, (err, user_agreements)=>{
                         if(err) return next(err);
 
-                        //console.log("checking", user_agreements);
-
                         //make sure user has agreed to all agreements
                         let agreed = true;
                         project_agreements.forEach(agreement=>{
@@ -1435,7 +1366,6 @@ router.get('/download/safe/:id', jwt({
     }
 }), function(req, res, next) {
     var id = req.params.id;
-    //console.dir(req.user);
     if(!req.user || !req.user.scopes || !req.user.scopes.datasets) return res.status(404).json({message: "no datasets scope"});
     if(!~req.user.scopes.datasets.indexOf(id)) return res.status(404).json({message: "not authorized"});
     logger.debug("token check ok.. loading dataset info");

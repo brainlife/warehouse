@@ -61,7 +61,7 @@
                         </b-col>
                     </b-row>
 
-                    <p v-if="adhoc_datatype_tags.length > 0">
+                    <p v-if="datatype._datatype_tags.length > 0">
                         <small style="opacity: 0.7">The following adhoc(not officially recognized) datatype tags are used for some datasets.</small><br>
                         <span v-for="tag in adhoc_datatype_tags" :key="tag" style="background-color: #ddd; padding: 2px 5px; margin-right: 4px; margin-bottom: 4px; display: inline-block; opacity: 0.5;">{{tag}}</span>
                     </p>
@@ -246,19 +246,8 @@ export default {
                     this.apps = res.data.apps;
                 })
 
-                //load adhoc datatype_tags used for this datatype
                 let registered_datatype_tags = this.datatype.datatype_tags.map(entry=>entry.datatype_tag);
-                this.$http.get('dataset/distinct', {params: {
-                    distinct: 'datatype_tags',
-                    find: JSON.stringify({
-                        removed: false,
-                        datatype: this.datatype._id,
-                        datatype_tags: {$nin: registered_datatype_tags},
-                    }),
-                    
-                }}).then(res=>{
-                    this.adhoc_datatype_tags = res.data;
-                });
+                this.adhoc_datatype_tags = this.datatype._datatype_tags.filter(tag=>!registered_datatype_tags.includes(tag));
 
                 //load sample datasets
                 if(this.datatype.samples) {
