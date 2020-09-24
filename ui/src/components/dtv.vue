@@ -19,10 +19,13 @@
         <br>
         <small style="float: right;">{{task.service}} {{task.service_branch}} {{task._id}}</small>
         <div v-if="output.secondary_task" style="font-size: 90%;">
-            <small v-if="output.secondary_task.finish_date"><icon name="check" scale="0.6"/> <b>Secondary Output</b> Archived</small>
+            <small v-if="output.secondary_task.finish_date">
+                <icon name="check" scale="0.6"/> <b>Secondary Output</b> Archived
+            </small>
             <small v-else>
                 <statusicon :status="output.secondary_task.status"/>
-                {{output.secondary_task.status_msg}}</small>
+                {{output.secondary_task.status_msg}}
+            </small>
             <small>({{output.secondary_task._id}})</small>
         </div>
     </div>

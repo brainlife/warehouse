@@ -50,7 +50,7 @@
             </b-form-group>
 
             <b-form-group horizontal label="Session">
-                <b-input type="text" v-model="meta['session']"/>
+                <b-input type="text" v-model="meta['session']" placeholder="(optional)"/>
             </b-form-group>
 
             <b-form-group horizontal label="Description">

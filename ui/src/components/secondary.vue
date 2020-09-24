@@ -39,12 +39,14 @@
         <secondaryTractprofile v-else-if="output.datatype == '5965467cb09297d8d81bdbcd'" 
             :task="task" :output="output" :product="product"/>
 
+        <!--
         <div v-else>
             <b-alert show variant="secondary">
-                Unknown Datatype {{output.datatype}}<br>
+                No secondary data UI registered for {{output.datatype}}<br>
                 <pre>{{output}}</pre>
             </b-alert>
         </div>
+        -->
     </div>
 </div>
 </template>

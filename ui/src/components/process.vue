@@ -96,7 +96,7 @@
                                 <div v-if="output.dtv_task && output.dtv_task.status == 'finished'" style="display: inline-block;">
                                     <div class="button" title="Archive this output" 
                                         @click="open_archiver(output.dtv_task, output.dtv_task.config._outputs[0])">
-                                        <icon name="archive"/> Validated 
+                                        <icon name="archive" style="color: green;"/>
                                     </div>
                                 </div>
                                 <div v-else style="display: inline-block;">

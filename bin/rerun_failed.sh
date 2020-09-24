@@ -24,7 +24,7 @@ request.get({
             fail_date: {$gt: recent },
         }),
         select: 'status status_msg service fail_date user_id _group_id',
-        limit: 100,
+        limit: 500,
     },
 }, (err, res, body)=>{
     if(err) throw err;
@@ -43,6 +43,7 @@ request.get({
     }, err=>{
         if(err) throw err;
         console.log("all done for this batch", body.tasks.length);
+        process.exit(0);
     });
 });
 

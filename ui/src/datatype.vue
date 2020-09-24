@@ -117,12 +117,14 @@
                     </div>
                 </div>
 
+                <!--
                 <div class="box" v-if="datatype.bids && datatype.bids.maps.length > 0">
                     <span class="form-header">BIDS Export</span>
                     <p><small style="opacity: 0.7">The following file mapping is used to generate BIDS derivative exports.</small></p>
                     <div style="background-color: #f9f9f9; color: #bbb; padding: 5px"><b>{{datatype.bids.derivatives}}</b></div>
                     <pre>{{JSON.stringify(datatype.bids.maps, null, 4)}}</pre>
                 </div>
+                -->
 
                 <div class="box" v-if="datatype.validator">
                     <span class="form-header">Validator</span>
@@ -130,6 +132,56 @@
                     <p>
                         <a :href="'https://github.com/'+datatype.validator"><b>{{datatype.validator}}</b> <b-badge variant="secondary">{{datatype.validator_branch}}</b-badge></a>
                     </p>
+                </div>
+
+                <div class="box">
+                    <span class="form-header">Upload Hints</span>
+                    <p><small style="opacity: 0.7">You can upload your data in this datatype using <a href="https://brainlife.io/docs/cli/install/" target="cli">brainlife CLI</a>.</small></p>
+                    <pre>$ bl dataset upload --datatype {{datatype.name}} --project (project ID) --subject (subject name) \
+   <span v-for="file in datatype.files.filter(f=>f.required)" :key="file.id">--{{file.id}} (file path for {{file.id}}) </span></pre>
+
+                    <br>
+                    <p><small style="opacity: 0.7">(project ID) can be found in the URL when you open your project on brainlife.</small></p>
+                    <p><small style="opacity: 0.7">(subject name) can be any alphanumeric (no space) name for your subject.</small></p>
+                    <p><small style="opacity: 0.7">You can also set a session name by setting <b>--session (session name)</b></small></p>
+                    <br>
+
+                    <div>
+                        <p><small style="opacity: 0.7">You can/should upload metadata (JSON sidecar) along with your data if available. If you have a JSON file that looks like ...</small></p>
+                        <pre>{
+    "key1": "value1",
+    "key2": "value2"
+}</pre>
+                        <p><small style="opacity: 0.7">Then you can upload this sidecar to be associated with your data as metadata by </small></p>
+                        <pre>$ bl dataset upload --meta (path to the sidecar JSON) ...</pre>
+                        <br>
+                    </div>
+
+                    <div v-if="datatype.datatype_tags.length > 0">
+                        <p><small style="opacity: 0.7">You can add datatype tags by adding --datatype_tag options..</small></p>
+                        <pre>$ bl dataset upload <span v-for="tag in datatype.datatype_tags">--datatype_tag {{tag.datatype_tag}} </span> ...</pre>
+                        <br>
+                    </div>
+
+                    <div>
+                        <p><small style="opacity: 0.7">You can add data object tags by adding --tag options.</small></p>
+                        <pre>$ bl dataset upload --tag (tag1) --tag (tag2) ...</pre>
+                        <br>
+                    </div>
+
+                    <div v-if="datatype.validator">
+                        <p><small style="opacity: 0.7">You can also upload this datatype through Project > Archive > <b>Upload Data</b> page.</small></p>
+                        <br>
+                    </div>
+                    <div v-else>
+                        <p><small style="opacity: 0.7">
+                            We currently don't have a validator registered for this datatype. 
+                            Please make sure that the file content you are uploading has the correct data structure.
+                        </small></p>
+                        <br>
+                    </div>
+
+                    <p><small style="opacity: 0.7">Please run <b>bl dataset upload -h</b> for full list of options. You can also read <a href="https://brainlife.io/docs/cli/upload/" target="cli">CLI Upload document</a> for more detail.</small></p>
                 </div>
 
                 <div class="box">
