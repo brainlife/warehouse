@@ -276,6 +276,7 @@ function connect_dc(cb) {
 }
 
 //TODO - I should try connection queue agagin
+//only used to access datalad
 function connect_wrangler(cb) {
     var conn = new ssh2.Client();
     conn.on('ready', function() {
@@ -302,7 +303,7 @@ function connect_wrangler(cb) {
 
     conn.connect({
         username: "brlife",
-        host: "149.165.156.63", //wrangler
+        //host: "149.165.156.63", //wrangler
         host: "149.165.169.130", //wrangler2
         privateKey: fs.readFileSync(__dirname+'/brlife.id_rsa'),
         //passphrase: "somepass",  //what's the point?
@@ -311,6 +312,7 @@ function connect_wrangler(cb) {
     });
 }
 
+/*
 function get_wrangler_archive_path(dataset) {
     let _path = "/mnt/wrangler/dev-archive/";
     _path += dataset.project+"/";
@@ -318,7 +320,6 @@ function get_wrangler_archive_path(dataset) {
     console.log(_path);
     return _path;
 }
-
 exports.storage_systems.wrangler = {
     need_backup: true, //need_backup if it's our storage (not openneuro)
     test: cb=>{
@@ -416,27 +417,33 @@ exports.storage_systems.wrangler = {
         });
     }
 } 
+*/
 
 function get_osiris_archive_path(dataset) {
-    let _path = "/mnt/osiris/dev-archive/";
+    let _path = "/mnt/autofs/osiris/test-archive/";
+    if(!dataset) return _path;
     _path += dataset.project+"/";
     _path += dataset._id+".tar";
-    console.log(_path);
     return _path;
 }
 
 exports.storage_systems.osiris = {
     need_backup: true, //need_backup if it's our storage (not openneuro)
     test: cb=>{
+        fs.access(get_osiris_archive_path(), cb);
+        /*
         connect_wrangler((err, conn, sftp)=>{
             if(err) return cb(err);
             //TODO - check for osiris quota
             conn.end();
             cb();
         });
+        */
     }, 
 
     stat: (dataset, cb)=>{
+        fs.stat(get_osiris_archive_path(dataset), cb);
+        /*
         connect_wrangler((err, conn, sftp)=>{
             if(err) return cb(err);
             sftp.stat(get_osiris_archive_path(dataset), (err,stat)=>{
@@ -444,9 +451,11 @@ exports.storage_systems.osiris = {
                 cb(err, stat);
             });
         });
+        */
     },
 
     download: (dataset, cb)=>{
+        /*
         connect_wrangler((err, conn, sftp)=>{
             if (err) {
                 conn.end();
@@ -469,9 +478,14 @@ exports.storage_systems.osiris = {
                 cb(err, stream, filename);
             });
         });
+        */
+        let path = get_osiris_archive_path(dataset);
+        let filename = path.split("/").pop();
+        cb(null, fs.createReadStream(path), filename);
     },
 
     remove: (dataset, cb)=>{
+        /*
         connect_wrangler((err, conn, sftp)=>{
             console.log("got wrangler streams for remove");
             if(err) return cb(err);
@@ -497,6 +511,10 @@ exports.storage_systems.osiris = {
                 });
             });
         });
+        */
+        //not sure if I need to support this for osiris for not..
+        let path = get_osiris_archive_path(dataset);
+        fs.unlink(path, cb);
     }
 } 
 

@@ -64,9 +64,6 @@
                 <app :app="app" :clickable="false"/>
             </div>
             <div style="margin: 20px">
-                <!--<app :app="app" :compact="false" />-->
-
-                <!--input-->
                 <b-row v-for="(input, input_id) in inputs" :key="input_id" style="margin-bottom: 5px;">
                     <b-col cols="3">
                         <span style="opacity: 0.8">{{input_id}}</span>
@@ -104,16 +101,9 @@
                                         @click="input.selected.splice(idx, 1)" size="sm"><icon name="trash"/></div>
                                 </b-col>
                             </b-row>
-                            <!--
-                            <b-row v-if='input.multi'>
-                                <b-col cols="5">
-                                    <small v-if="input.desc" style="opacity: 0.8; white-space: pre-wrap;">{{input.desc}}</small>
-                                </b-col>
-                                <b-col cols="6" style="text-align:right;">
-                                    <b-button :size="'sm'" :variant="'secondary'" @click="input.selected.push(null)">Add Dataset</b-button>
-                                </b-col>
-                            </b-row>
-                            -->
+                            <p v-if="input.multi">
+                                <b-button variant="outline-secondary" size="sm" @click="selectAllAvailable(input)">Select All Staged</b-button>
+                            </p>
                             <small v-if="input.desc" style="opacity: 0.8; white-space: pre-wrap;">{{input.desc}}</small>
                         </b-form-group>
                     </b-col>
@@ -470,7 +460,13 @@ export default {
 
         //select all datasets that meets datatype requirement of 'input', that comes from task with name:task_name
         filter_datasets(input) {
-            return lib.filter_datasets(this.datasets, input);
+            let selectedIds = [];
+            if(input.selected) {
+                selectedIds = input.selected.filter(s=>Boolean(s)).map(s=>s.dataset.id);
+            }
+            return lib.filter_datasets(this.datasets, input).filter(d=>{
+                return !(selectedIds.includes(d.id));
+            });
         },
 
         wrap_with_label(datasets) {
@@ -592,6 +588,12 @@ export default {
             if(dataset.tags.length > 0) label +=' | '+dataset.tags; 
             return label;
         },
+
+        selectAllAvailable(input) {
+            input.selected = [];
+            let inputs = this.wrap_with_label(this.filter_datasets(input));
+            input.selected.push(...inputs);
+        }
     },
 } 
 </script>

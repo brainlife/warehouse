@@ -134,35 +134,29 @@
                         <b-col lg>
                             <span class="form-header">Admins</span>
                             <p style="height: 50px; margin-bottom: 3px;">
-                                <small class="text-muted">An admin can update project details, share processes, and create rules / publications.</small>
+                                <small class="text-muted">can update project details, share processes, and create rules / publications.</small>
                             </p>
-                            <p v-for="c in selected.admins" :key="c._id" style="margin-bottom: 8px;">
-                                <contact :id="c" size="small"/>
-                            </p>
+                            <contact v-for="c in selected.admins" :key="c._id" :id="c" size="small" style="line-height: 150%;"/>
                             <br>
                         </b-col>
 
                         <b-col lg>
                             <span class="form-header">Members</span>
                             <p style="height: 50px; margin-bottom: 3px;">
-                                <small class="text-muted">A members has read/write access to data, share processes, and create rules / publications.</small>
+                                <small class="text-muted">has read/write access to data, share processes, and create rules / publications.</small>
                             </p>
-                            <p v-for="c in selected.members" :key="c._id" style="margin-bottom: 8px;">
-                                <contact :id="c" size="small"/>
-                            </p>
+                            <contact v-for="c in selected.members" :key="c._id" :id="c" size="small" style="line-height: 150%;"/>
                             <p class="text-muted" v-if="selected.members.length == 0"><small>No Members</small></p>
                             <br>
                         </b-col>
 
                         <b-col lg v-if="config.user && selected.access == 'private' && selected.guests && selected.guests.length > 0">
-                                <span class="form-header">Guests</span>
-                                <p style="height: 50px; margin-bottom: 3px;">
-                                    <small class="text-muted">A guest has read access to data.</small>
-                                </p>
-                                <p v-for="c in selected.guests" :key="c._id" style="margin-bottom: 8px;">
-                                    <contact :id="c" size="small"/>
-                                </p>
-                                <br>
+                            <span class="form-header">Guests</span>
+                            <p style="height: 50px; margin-bottom: 3px;">
+                                <small class="text-muted">has read access to data.</small>
+                            </p>
+                            <contact v-for="c in selected.guests" :key="c._id" :id="c" size="small" style="line-height: 150%;"/>
+                            <br>
                         </b-col>
                     </b-row>
                 </div>
