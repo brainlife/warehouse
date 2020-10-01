@@ -405,7 +405,7 @@ function handle_task(task, cb) {
                 instance_id: task.instance_id,
                 "deps_config.task": task._id,
             }
-
+            console.dir(find);
             let tasks = await rp.get({
                 url: config.amaretti.api+"/task?find="+JSON.stringify(find)+"&limit=1",
                 json: true,
