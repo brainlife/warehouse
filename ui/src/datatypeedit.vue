@@ -316,6 +316,9 @@ export default {
                 return;
             }
 
+            //clean up some fields
+            this.datatype.validator = this.datatype.validator.trim();
+
             //validate
             let error = null;
             this.datatype.files.forEach(file=>{

@@ -593,6 +593,7 @@ export default {
             input.selected = [];
             let inputs = this.wrap_with_label(this.filter_datasets(input));
             input.selected.push(...inputs);
+            this.validate();
         }
     },
 } 

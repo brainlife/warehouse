@@ -180,8 +180,6 @@ exports.wait_task = function(req, task_id, cb) {
             break;
         default:
             logger.debug("wait_task detected failed task")
-            //console.dir(JSON.stringify(task, null, 4));
-            //consider all else as failed
             cb(task.status_msg);
         }
     });
