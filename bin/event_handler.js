@@ -358,10 +358,10 @@ function handle_task(task, cb) {
                 //check to make sure that the output is not already registered
                 async.eachSeries(task.config._outputs, async (output)=>{
                     let datatype = await db.Datatypes.findById(output.datatype);
-                    if(!isValidationTask(task) && datatype.validator) {
-                        //validator will handle archiving
-                        return; 
-                    }
+                    
+                    //if the output datatype has validator, then the validator will archive the output
+                    //unless of course, this task itself is an validator
+                    if(datatype.validator && !isValidationTask(task)) return;
 
                     let task_ids = [task._id];
                     if(task.follow_task_id) task_ids.push(task.follow_task_id);
@@ -405,7 +405,6 @@ function handle_task(task, cb) {
                 instance_id: task.instance_id,
                 "deps_config.task": task._id,
             }
-            console.dir(find);
             let tasks = await rp.get({
                 url: config.amaretti.api+"/task?find="+JSON.stringify(find)+"&limit=1",
                 json: true,
@@ -413,12 +412,20 @@ function handle_task(task, cb) {
                     authorization: "Bearer "+config.warehouse.jwt,
                 }
             });
+
             if(tasks.tasks.length) {
                 console.log("app-secondary already submitted");
                 return;
             }
 
-            let user_jwt = await common.issue_archiver_jwt(task.user_id);
+            console.log("issueing user_jwt for", task.user_id);
+            let user_jwt;
+            if(task.user_id == "warehouse") {
+                console.error("task.user_id set to warehouse! using warehouse jwt to issue archive_jwt");
+                user_jwt = config.warehouse.jwt;
+            } else {
+                user_jwt = await common.issue_archiver_jwt(task.user_id);
+            }
 
             //submit secondary archiver with just secondary deps
             console.log("submitting secondary output archiver");
