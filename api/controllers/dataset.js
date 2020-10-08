@@ -1017,11 +1017,8 @@ router.post('/stage', jwt({secret: config.express.pubkey}), (req, res, next)=>{
                 json: true,
                 body: {
                     name : "Staging",
-                    //desc : "archiving",
                     service : "brainlife/app-stage",
-                    //service_branch: "1.1", //let's just use master..
                     instance_id : req.body.instance_id,
-                    preferred_resource_id: config.archive.storage_config.resource_id,
                     config: {
                         datasets: datasets.map(d=>{
                             if(d.storage == "copy") {
@@ -1063,7 +1060,6 @@ router.post('/stage', jwt({secret: config.express.pubkey}), (req, res, next)=>{
                         }),
                     },
                     max_runtime: 1000*3600, //1 hour should be enough?
-                    //remove_date,
                 },
                 headers: {
                     authorization: "Bearer "+jwt,

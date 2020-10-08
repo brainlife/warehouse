@@ -322,7 +322,7 @@ exports.archive_task_outputs = async function(user_id, task, outputs, cb) {
                         remove_date,
 
                         //for slate?
-                        preferred_resource_id: storage_config.resource_id,
+                        //preferred_resource_id: storage_config.resource_id,
                     },
                     headers: {
                         authorization: "Bearer "+user_jwt,

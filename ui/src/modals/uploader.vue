@@ -11,9 +11,16 @@
         </b-form-group>
 
         <div v-if="datatype">
-           
+
             <div v-if="tasks.upload && tasks.upload.resource_id && tasks.upload.status == 'finished'">
-                <b-form-group horizontal v-if="datatype" v-for="file in files" :key="file.id" :class="{'gray-background': file.meta}">
+                <b-tabs v-model="subtype" v-if="datatype._id == '5c390505f9109beac42b00df'">
+                    <b-tab v-for="spec in dtSpecs[datatype._id]" :key="spec.datatype_tag" :title="spec.datatype_tag">
+                        <p>
+                            <small>{{datatype.datatype_tags.find(t=>t.datatype_tag == spec.datatype_tag).desc}}</small>
+                        </p>
+                    </b-tab>
+                </b-tabs>
+                <b-form-group horizontal v-for="file in files" :key="file.id" :class="{'gray-background': file.meta}">
                     <legend class="col-form-label pt-0" style="margin: 0; padding: 0">{{file.id+(file.ext?' ('+file.ext+')':'')+(file.required?' *':'')}}</legend>
                     <small>{{file.desc}}</small>
                     <div v-if="!file.uploaded && !file.progress">
@@ -35,13 +42,11 @@
                         <small>({{file.size|filesize}})</small>
                         <div class="button" @click="clearfile(file)" style="float: right;"><icon name="trash"/></div>
                     </div>
-    
                 </b-form-group>
             </div>
             <div v-else>
                 <b-form-group horizontal>
                     <p cass="text-muted">Preparing for file upload...  <icon name="cog" spin/></p>
-                    <!--<pre v-if="config.debug">{{tasks.upload}}</pre>-->
                 </b-form-group>
             </div>
  
@@ -124,11 +129,13 @@ import task from '@/components/task'
 import tageditor from '@/components/tageditor'
 import product from '@/components/product'
 import datatypetag from '@/components/datatypetag'
-//import datatypecache from '@/mixins/datatypecache'
+
+
+//TODO - maybe I should store this in datatype collection?
 
 //singleton instance to handle upload request
 export default {
-    //mixins: [ datatypecache ],
+
     components: { 
         pageheader, 
         task, 
@@ -137,6 +144,7 @@ export default {
         datatypetag,
         editor: require('vue2-ace-editor'),
     },
+
     data () {
         return {
             instance: null, //instance to upload things to
@@ -164,9 +172,50 @@ export default {
             validator_resource: null,
             
             datatypes: null, //registered datatypes (keyed by datatype_id)
+            subtype: 0, 
 
             available_tags: null,
-            //available_dt_tags: null,
+
+            dtSpecs: {
+                //fmap
+                "5c390505f9109beac42b00df": [
+                    {
+                        datatype_tag: "phasediff",
+                        files: [
+                            "phasediff", "phasediff_json",
+                            "phasediff", "phasediff_json",
+                            "magnitude1", "magnitude1_json",
+                            "magnitude2", "magnitude2_json", //optional
+                        ],
+                    },
+
+                    {
+                        datatype_tag: "2phasemag",
+                        files: [
+                            "phase1", "phase1_json",
+                            "phase2", "phase2_json",
+                            "magnitude1", "magnitude1_json",
+                            "magnitude2", "magnitude2_json",
+                        ],
+                    },
+
+                    {
+                        datatype_tag: "single",
+                        files: [
+                            "magnitude", "magnitude_json",
+                            "fieldmap", "fieldmap_json",
+                        ],
+                    },
+
+                    {
+                        datatype_tag: "pepolar",
+                        files: [
+                            "epi1", "epi1_json",
+                            "epi2", "epi2_json"
+                        ],
+                    },
+                ]
+            },
 
             config: Vue.config,
         }
@@ -190,6 +239,7 @@ export default {
                 "5ebe0bbbb969982124072325", //oct
                 "5907d922436ee50ffde9c549", //track/tck
                 "5b956f6cd7b3f1e24e9121ce", //track/trk
+                "5c390505f9109beac42b00df", //fmap
             ]}}),
         }}).then(res=>{
             this.datatypes = {};
@@ -226,6 +276,14 @@ export default {
             };
 
             if(!this.datatype) return null;
+
+            //fmap only show files that pertains to subtype
+            if(this.datatype._id == '5c390505f9109beac42b00df') {
+                console.dir(this.subtype);
+                let subtypeFiles = this.dtSpecs[this.datatype._id][this.subtype].files;
+                return [...this.datatype.files.filter(f=>subtypeFiles.includes(f.id)), sidecar];
+            } 
+
             return [...this.datatype.files, sidecar];
         },
     },
@@ -300,7 +358,7 @@ export default {
             var url = Vue.config.event_ws+"/subscribe?jwt="+Vue.config.jwt;
             this.ws = new ReconnectingWebSocket(url, null, {debug: Vue.config.debug, reconnectInterval: 3000});
             this.ws.onopen = (e)=>{
-                //console.log("websocket opened binding to wf.task", this.instance._id+".#");
+                console.log("websocket opened binding to wf.task", this.instance._id+".#");
                 this.ws.send(JSON.stringify({
                   bind: {
                     ex: "wf.task",
@@ -404,8 +462,8 @@ export default {
             file.type = f.type;
             file.progress = {};
 
-
             //axios has onUploadProgress cb.. I think I can switch to $http (see easybids)
+            /*
             var xhr = new XMLHttpRequest();
             file.xhr = xhr; //so that I can abort it if user wants to
             xhr.open("POST", Vue.config.wf_api+"/task/upload/"+this.tasks.upload._id+"?p="+encodeURIComponent(file.filename));
@@ -427,6 +485,24 @@ export default {
                 console.error(evt);
             });
             xhr.send(f);
+            */
+
+            let data = new FormData();
+            data.append("file", f);
+            //data.append("p", file.filename);
+            this.$http.post(Vue.config.wf_api+"/task/upload/"+this.tasks.upload._id+"?p="+encodeURIComponent(file.filename), data, {
+                onUploadProgress: evt=>{
+                    console.log("progress", evt);
+                    file.progress = {loaded: evt.loaded, total: evt.total};
+                    this.$forceUpdate();
+                }
+            }).then(res=>{
+                file.uploaded = true;
+                this.$forceUpdate();
+                console.log("file uploade complete", file);
+            }).catch(err=>{
+                console.error(err);
+            });
         },
 
         cancel() {
@@ -467,7 +543,8 @@ export default {
                     }
                 }]
             };
-            this.datatype.files.forEach(file=>{
+
+            this.files.forEach(file=>{
                 if(!file.local_filename) return; //not set.. optional?
                 config[file.id] = "../"+this.tasks.upload._id+"/"+file.filename;
             });
@@ -481,7 +558,7 @@ export default {
                 deps_config: [ {task: this.tasks.upload._id} ], 
             }).then(res=>{
                 console.log("submitted validation task");
-                console.log(this.datatype.validator, this.datatype.valdiator_branch);
+                console.log(this.datatype.validator, this.datatype.validator_branch);
                 this.tasks.validation = res.data.task;
             }, res=>{
                 console.error(res);
@@ -511,16 +588,6 @@ export default {
             }}).then(res=>{
                 this.available_tags = res.data;
             });
-
-            /*
-            //load available datatype tags
-            this.$http.get('dataset/distinct', {params: {
-                distinct: 'datatype_tags',
-                find: JSON.stringify({project: this.project._id, datatype: this.datatype._id}),
-            }}).then(res=>{
-                this.available_dt_tags = res.data;
-            });            
-            */
         },
         editorInit(editor) {
             require('brace/mode/json')

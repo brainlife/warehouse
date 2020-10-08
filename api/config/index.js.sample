@@ -163,7 +163,7 @@ exports.archive = {
     //storage_default: "wrangler",  
     storage_default: "osiris",  
     storage_config: {
-        resource_id: "59ea931df82bb308c0197c3d", //wrangler-nfs server
+        //resource_id: "59ea931df82bb308c0197c3d", //"Archiver" (set to "Stager" on production!)
     },
     gid: 137, //warehouse group enabled to access storage service
 }

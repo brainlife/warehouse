@@ -475,7 +475,7 @@ export default {
         },
 
         open_archiver(task, output) {
-            this.$root.$emit('archiver.show', {task, output});
+            this.$root.$emit('archiver.show', {task, output, project: this.project._id});
         },
 
         readHash() {
