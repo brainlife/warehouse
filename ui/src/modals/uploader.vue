@@ -462,44 +462,21 @@ export default {
             file.type = f.type;
             file.progress = {};
 
-            //axios has onUploadProgress cb.. I think I can switch to $http (see easybids)
-            /*
-            var xhr = new XMLHttpRequest();
-            file.xhr = xhr; //so that I can abort it if user wants to
-            xhr.open("POST", Vue.config.wf_api+"/task/upload/"+this.tasks.upload._id+"?p="+encodeURIComponent(file.filename));
-            xhr.setRequestHeader("Authorization", "Bearer "+Vue.config.jwt);
-            xhr.upload.addEventListener("progress", (evt)=>{
-                file.progress = {loaded: evt.loaded, total: evt.total};
-                this.$forceUpdate();
-            }, false);
-            xhr.addEventListener("load", (evt)=>{
-                if(evt.target.status == "200") {
-                    file.uploaded = true;
-                    this.$forceUpdate();
-                    console.log("file uploade complete", file);
-                } else {
-                    var msg = JSON.parse(evt.target.response);
-                }
-            }, false);
-            xhr.addEventListener("error", (evt)=>{
-                console.error(evt);
-            });
-            xhr.send(f);
-            */
-
             let data = new FormData();
             data.append("file", f);
-            //data.append("p", file.filename);
-            this.$http.post(Vue.config.wf_api+"/task/upload/"+this.tasks.upload._id+"?p="+encodeURIComponent(file.filename), data, {
+            file.cancel = this.$http.CancelToken.source();
+            this.$http.post(Vue.config.wf_api+"/task/upload2/"+this.tasks.upload._id+"?p="+encodeURIComponent(file.filename), data, {
+                cancelToken: file.cancel.token,
                 onUploadProgress: evt=>{
-                    console.log("progress", evt);
                     file.progress = {loaded: evt.loaded, total: evt.total};
                     this.$forceUpdate();
                 }
             }).then(res=>{
                 file.uploaded = true;
                 this.$forceUpdate();
-                console.log("file uploade complete", file);
+                if(file.size != res.data.attrs.size) {
+                    this.$notify({ type: 'error', text: 'Failed to upload the entire file. filesie: '+file.size+' received filesize: '+res.data.attrs.size });
+                }
             }).catch(err=>{
                 console.error(err);
             });
@@ -572,7 +549,7 @@ export default {
         },
 
         cancelupload: function(file) {
-            file.xhr.abort();
+            file.cancel.cancel();
             this.clearfile(file);
         },
 
