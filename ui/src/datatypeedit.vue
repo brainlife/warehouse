@@ -321,6 +321,9 @@ export default {
 
             //validate
             let error = null;
+            if(this.datatype.validator.length > 0 && !this.datatype.validator.startsWith("brainlife/validator-")) {
+                error = "validator must starts with brainlife/validator-";
+            }
             this.datatype.files.forEach(file=>{
                 if(file.id.includes(".")) {
                     error = "datatype file ID("+file.id+") must not contains .";
@@ -332,6 +335,8 @@ export default {
                     error = "please specify either filename or dirname for each files (not both)";
                 }
             });
+
+
             if(error) {
                 this.$notify({type: "error", text: error});
                 this.submitting = false;

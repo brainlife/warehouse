@@ -11,7 +11,9 @@
         </b-form-group>
 
         <div v-if="datatype">
-
+            <p>
+                <small>{{datatype.desc}}</small>
+            </p>
             <div v-if="tasks.upload && tasks.upload.resource_id && tasks.upload.status == 'finished'">
                 <b-tabs v-model="subtype" v-if="datatype._id == '5c390505f9109beac42b00df'">
                     <b-tab v-for="spec in dtSpecs[datatype._id]" :key="spec.datatype_tag" :title="spec.datatype_tag">
