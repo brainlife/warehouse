@@ -307,31 +307,29 @@ exports.archive_task_outputs = async function(user_id, task, outputs, cb) {
                 let remove_date = new Date();
                 remove_date.setDate(remove_date.getDate()+1); //remove in 1 day
                 if(noSubdirs) subdirs = undefined;
-                let archive_task = await rp.post({
-                    url: config.amaretti.api+"/task",
-                    json: true,
-                    body: {
-                        deps_config: [ {task: task._id, subdirs } ],
-                        service: "brainlife/app-archive",
-                        service_branch: "1.1",
-                        instance_id: task.instance_id,
-                        config: {
-                            datasets: dataset_configs,
-                        },
-                        max_runtime: 1000*3600, //1 hour should be enough for most..
-                        remove_date,
-
-                        //for slate?
-                        //preferred_resource_id: storage_config.resource_id,
+                console.log("submitting app-archive");
+                let archive_task_res = await axios.post(config.amaretti.api+"/task", {
+                    deps_config: [ {task: task._id, subdirs } ],
+                    service: "brainlife/app-archive",
+                    service_branch: "1.1",
+                    instance_id: task.instance_id,
+                    config: {
+                        datasets: dataset_configs,
                     },
+                    max_runtime: 1000*3600, //1 hour should be enough for most..
+                    remove_date,
+
+                    //for slate?
+                    //preferred_resource_id: storage_config.resource_id,
+                },{
                     headers: {
                         authorization: "Bearer "+user_jwt,
                     }
                 });
 
                 //note: archive_task_id is set by event_handler while setting other things like status, desc, status_msg, etc..
-                logger.info("submitted archive_task:"+archive_task.task._id);
-                cb(null, datasets, archive_task.task);
+                logger.info("submitted archive_task:"+archive_task_res.data.task._id);
+                cb(null, datasets, archive_task_res.data.task);
             } catch(err) {
                 cb(err);
             }
@@ -589,21 +587,23 @@ exports.doi_put_url = function(doi, url, cb) {
 //TODO - update cache from amqp events
 let cached_contacts = {};
 exports.cache_contact = function(cb) {
-    request({
-        url: config.auth.api+"/profile/list", json: true,
-        qs: {
+    axios.get(config.auth.api+"/profile/list", {
+        params: {
             limit: 5000, //TODO -- really!?
         },
         headers: { authorization: "Bearer "+config.warehouse.jwt }, //config.auth.jwt is deprecated
-    }, (err, res, body)=>{
-        if(err) return logger.error(err);
-        if(res.statusCode != 200) logger.error("couldn't cache auth profiles. code:"+res.statusCode);
+    }).then(res=>{
+        if(res.status != 200) logger.error("couldn't cache auth profiles. code:"+res.status);
         else {
-            body.profiles.forEach(profile=>{
+            res.data.profiles.forEach(profile=>{
                 cached_contacts[profile.sub] = profile;
             });
+            console.log("cached profile len:", res.data.profiles.length);
             if(cb) cb();
         }
+    }).catch(err=>{
+        if(cb) cb(err);
+        else console.error(err);
     });
 }
 
@@ -946,19 +946,18 @@ exports.update_project_stats = async function(project, cb) {
 }
 
 exports.update_rule_stats = function(rule_id, cb) {
-    request.get({
-        url: config.amaretti.api+"/task", json: true,
-        qs: {
+    axios.get(config.amaretti.api+"/task", {
+        params: {
             find: JSON.stringify({'config._rule.id': rule_id, status: {$ne: "removed"}}),
             select: 'status', 
             limit: 3000,
         },
         headers: { authorization: "Bearer "+config.warehouse.jwt, },
-    }, (err, _res, body)=>{
-        if(err) return cb(err);
-        if(!body.tasks) return cb(body);
+    }).then(res=>{
+        let tasks = res.data.tasks;
+        if(!tasks) return cb(body);
         let stats = {}
-        body.tasks.forEach(task=>{
+        tasks.forEach(task=>{
             if(stats[task.status] === undefined) stats[task.status] = 0;
             stats[task.status]+=1;
         });
@@ -967,7 +966,7 @@ exports.update_rule_stats = function(rule_id, cb) {
             let sub = "warehouse";
             exports.publish("rule.update."+sub+"."+rule.project+"."+rule._id, rule)
         });
-    });
+    }).catch(cb);
 }
 
 exports.dataset_to_filename = function(dataset) {

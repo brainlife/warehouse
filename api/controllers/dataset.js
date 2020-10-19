@@ -6,8 +6,7 @@ const winston = require('winston');
 const jwt = require('express-jwt');
 const jsonwebtoken = require('jsonwebtoken');
 const async = require('async');
-const request = require('request');
-const rp = require('request-promise-native');
+const axios = require('axios');
 const meter = require('stream-meter');
 const mongoose = require('mongoose');
 const archiver = require('archiver');
@@ -587,18 +586,15 @@ function generate_prov(origin_dataset_id, cb) {
     //starting from the dataset ID specified, walk back through dataset prov & task deps all the way to the 
     //original input datasets
     function load_task(id, cb) {
-        request.get({
-            url: config.amaretti.api+"/task/"+id,
-            json: true,
-        }, (err, _res, task)=>{
-            if(err) return cb(err);
+        axios.get(config.amaretti.api+"/task/"+id).then(res=>{
+            let task = res.data;
             if(!task.config || !task.config._app) return cb(null, task); //no _app set.. can't load app info
             db.Apps.findById(task.config._app, 'config', (err, app)=>{
                 if(err) return cb(err);
                 task._app_config = app.config;
                 cb(null, task);
             });
-        });
+        }).catch(cb);
     }
 
     function compose_label(task) {
@@ -870,20 +866,17 @@ router.post('/', jwt({secret: config.express.pubkey}), (req, res, cb)=>{
     async.series([
         //get the task to archive and check project
         next=>{
-            request.get({
-                url: config.amaretti.api+"/task/"+req.body.task_id, json: true,
+            axios.get(config.amaretti.api+"/task/"+req.body.task_id, {
                 headers: { authorization: req.headers.authorization, }
-            }, (err, _res, _task)=>{
-                if(err) return next(err);
-                task = _task;
-                if(_res.statusCode != 200) return next("failed to load task "+req.body.task_id);
+            }).then(_res=>{
+                task = _res.data;
+                if(_res.status != 200) return next("failed to load task "+req.body.task_id);
                 const gids = req.user.gids||[];
                 if(task.user_id != req.user.sub && !~gids.indexOf(task._group_id)) return next("you don't own this task or member of a group "+task._group_id);
                 if(!task.resource_id) return next("resource_id not set");
                 if(task.status != "finished") return next("task not in finished state");
-                
                 next();
-            });
+            }).catch(next);
         },
 
         //request archive
@@ -938,7 +931,6 @@ router.post('/stage', jwt({secret: config.express.pubkey}), (req, res, next)=>{
 
     let datasets;
     let next_tid;
-    let stage_task; 
 
     let unique_dataset_ids = [...new Set(req.body.dataset_ids)];
 
@@ -984,13 +976,11 @@ router.post('/stage', jwt({secret: config.express.pubkey}), (req, res, next)=>{
         //TODO - shouldn't we check for user agreement?
 
         cb=>{
-            request.get({
-                url: config.amaretti.api+'/task', 
-                json: true,
+            axios.get(config.amaretti.api+'/task', {
                 headers: {
                     authorization: req.headers.authorization, 
                 },
-                qs: {
+                params: {
                     find: JSON.stringify({
                         instance_id: req.body.instance_id,
                         status: {$ne: "removed"},
@@ -999,77 +989,90 @@ router.post('/stage', jwt({secret: config.express.pubkey}), (req, res, next)=>{
                     select: 'config._tid', //I just need max _tid
                     limit: 1000, //should be enough.. for now 
                 },
-            }, (err, _res, body)=>{
-                next_tid = body.tasks.reduce((m,v)=>{ 
+            }).then(res=>{
+                next_tid = res.data.tasks.reduce((m,v)=>{ 
                     if(v.config._tid && v.config._tid > m) return v.config._tid;
                     return m;
                 }, 0) + 1;
                 cb();
-            });
+            }).catch(cb);
         },
 
         //submit!
         async cb=>{
             let jwt = await common.issue_archiver_jwt(req.user.sub);
 
+            let _config = {
+                datasets: datasets.map(d=>{
+                    if(d.storage == "copy") {
+                        return {
+                            //this dataset is a copy of an original dataset.
+                            //we need to stage the original, but output to this dataset id (outdir)
+                            id: d.storage_config.dataset_id, //(TODO - is this really set?)
+                            outdir: d._id,
+
+                            project: d.storage_config.project,
+                            storage: d.storage_config.storage,
+                            storage_config: d.storage_config.storage_config,
+                        }
+                    } else {
+                        return {
+                            id: d.id,
+
+                            project: d.project,
+                            storage: d.storage,
+                            storage_config: d.storage_config,
+                        }
+                    }
+                }),
+                _tid: next_tid,
+                _outputs: datasets.map(d=>{
+                    let subdir = d._id;
+                    return {
+                        id: d._id,
+                        datatype: d.datatype,
+                        meta: d.meta,
+                        tags: d.tags,
+                        datatype_tags: d.datatype_tags,
+                        
+                        subdir,
+                        dataset_id: d._id, //TODO - id or dataset_id.. what's the difference? which one should I use?
+
+                        project: d.project,
+                    }
+                }),
+            }
+
+            /*
             stage_task = await rp.post({
-                url: config.amaretti.api+"/task",
                 json: true,
                 body: {
+                },
+                headers: {
+                    authorization: "Bearer "+jwt,
+                }
+            });
+            */
+            let postres = await axios({
+                method: "post",
+                url: config.amaretti.api+"/task",
+                data: {
                     name : "Staging",
                     service : "brainlife/app-stage",
                     instance_id : req.body.instance_id,
-                    config: {
-                        datasets: datasets.map(d=>{
-                            if(d.storage == "copy") {
-                                return {
-                                    //this dataset is a copy of an original dataset.
-                                    //we need to stage the original, but output to this dataset id (outdir)
-                                    id: d.storage_config.dataset_id, //(TODO - is this really set?)
-                                    outdir: d._id,
-
-                                    project: d.storage_config.project,
-                                    storage: d.storage_config.storage,
-                                    storage_config: d.storage_config.storage_config,
-                                }
-                            } else {
-                                return {
-                                    id: d.id,
-
-                                    project: d.project,
-                                    storage: d.storage,
-                                    storage_config: d.storage_config,
-                                }
-                            }
-                        }),
-                        _tid: next_tid,
-                        _outputs: datasets.map(d=>{
-                            let subdir = d._id;
-                            return {
-                                id: d._id,
-                                datatype: d.datatype,
-                                meta: d.meta,
-                                tags: d.tags,
-                                datatype_tags: d.datatype_tags,
-                                
-                                subdir,
-                                dataset_id: d._id, //TODO - id or dataset_id.. what's the difference? which one should I use?
-
-                                project: d.project,
-                            }
-                        }),
-                    },
+                    config: _config,
                     max_runtime: 1000*3600, //1 hour should be enough?
                 },
                 headers: {
                     authorization: "Bearer "+jwt,
                 }
             });
+            console.log("submitted stage request");
+            res.json(postres.data);
         },
 
     ], err=>{
         if(err) return next(err);
-        res.json(stage_task);
     });
 });
 
@@ -1124,6 +1127,7 @@ router.put('/:id', jwt({secret: config.express.pubkey}), (req, res, next)=>{
 
 function stream_dataset(dataset, req, res, next) {
     var system = config.storage_systems[dataset.storage];
+    if(!system) return next("no such storage:"+dataset.storage);
     var stat_timer = setTimeout(function() {
         logger.debug("timeout while calling stat on "+dataset.storage);
         next("stat timeout - filesystem maybe offline today:"+dataset.storage);
@@ -1220,13 +1224,14 @@ function get_user_agreements(sub, authorization, cb) {
     if(cache[sub]) return cb(null, cache[sub]);
 
     //need to load from the source..
-    request.get({ 
-        url: config.auth.api+"/profile/"+sub, json: true, headers: { authorization }
-    }, (err, _res, user)=>{
+    axios.get(config.auth.api+"/profile/"+sub, {
+        headers: { authorization }
+    }).then(res=>{
+        let user = res.data;
         let obj = user.profile.private.agreements;
-        cb(err, obj);
         cache[sub] = obj;
-    });
+        cb(null, obj);
+    }).catch(cb);
 }
 
 //TODO - since I can't let <a> pass jwt token via header, I have to expose it via URL.

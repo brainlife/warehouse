@@ -6,7 +6,6 @@ const jwt = require('express-jwt');
 const winston = require('winston');
 const async = require('async');
 const request = require('request');
-//const rp = require('request-promise-native');
 const axios = require('axios');
 
 const config = require('../config');

@@ -46,7 +46,7 @@ function run() {
         report.app_counts = apps.length;
         async.eachSeries(apps, handle_app, err=>{
             if(err) logger.error(err);
-            logger.info("done or failed - sleeping for 3 hours");
+            console.log("done going through all apps sleeping.....");
             setTimeout(run, 1000*3600*3);
         });
 	});
@@ -139,7 +139,10 @@ function handle_app(app, cb) {
             app.save(next);
         },
 
-    ], cb);
+    ], err=>{
+        if(err) console.error(err);
+        cb(); //let it continue
+    });
 }
 
 

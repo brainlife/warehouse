@@ -4,7 +4,6 @@ const express = require('express');
 const router = express.Router();
 const jwt = require('express-jwt');
 const winston = require('winston');
-const request = require('request');
 const async = require('async');
 
 const config = require('../config');

@@ -108,27 +108,27 @@ router.post('/', jwt({secret: config.express.pubkey}), function(req, res, next) 
     if(!req.body.admins) req.body.admins = [];
     if(!req.body.admins.includes(req.user.sub.toString())) req.body.admins.push(req.user.sub);
 
-	//create a new group
-	request.post({ url: config.auth.api+"/group", headers: { authorization: req.headers.authorization }, json: true,
-		body: {
-			name: new Date().getTime(), //TODO - better name?
+    //create a new group
+    request.post({ url: config.auth.api+"/group", headers: { authorization: req.headers.authorization }, json: true,
+        body: {
+            name: new Date().getTime(), //TODO - better name?
             desc: req.body.desc,
-			admins: req.body.admins,
-			members: req.body.members,
-		}
-	}, (err, _res, body)=>{
-		if(err) return next(err);
+            admins: req.body.admins,
+            members: req.body.members,
+        }
+    }, (err, _res, body)=>{
+        if(err) return next(err);
 
         //now update the warehouse project
-		var project = new db.Projects(req.body);
-		project.group_id = body.group.id;
-		project.save(err=>{
-			if (err) return next(err); 
-			project = JSON.parse(JSON.stringify(project));
+        var project = new db.Projects(req.body);
+        project.group_id = body.group.id;
+        project.save(err=>{
+            if (err) return next(err); 
+            project = JSON.parse(JSON.stringify(project));
             common.publish("project.create."+req.user.sub+"."+project._id, {})
-			res.json(project);
-		});
-	});
+            res.json(project);
+        });
+    });
 });
 
 /**

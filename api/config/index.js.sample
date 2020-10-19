@@ -420,7 +420,7 @@ exports.storage_systems.wrangler = {
 */
 
 function get_osiris_archive_path(dataset) {
-    let _path = "/mnt/autofs/osiris/test-archive/";
+    let _path = "/mnt/autofs/osiris/dev-archive/";
     if(!dataset) return _path;
     _path += dataset.project+"/";
     _path += dataset._id+".tar";
