@@ -79,7 +79,8 @@ export default {
                         let title = "brainlife";
                         let output = this.task.config._outputs.find(output=>output.subdir == this.subdir);
                         if(output) {
-                            title = output.meta.subject + " "+output.datatype_tags.join(" ");
+                            title = output.meta.subject;
+                            if(output.datatype_tags) title += " "+output.datatype_tags.join(" ");
                         }
 
                         let remove_date = new Date();

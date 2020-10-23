@@ -84,7 +84,12 @@ router.get('/:projectid', jwt({secret: config.express.pubkey}), (req, res, next)
 /**
  * @apiGroup Participant
  * @api {put} /participant/:projectid
- *                              Replace participants info
+ *                              Upsert participants(subjects) and columns info
+ *
+ * @apiParam {Object[]} [subjects]    
+ *                              List of objects containing subject phenotype
+ * @apiParam {Object} [columns] 
+ *                              An object containing BIDS participants column info
  *
  * @apiHeader {String} authorization 
  *                              A valid JWT token "Bearer: xxxxx"
@@ -98,10 +103,11 @@ router.put('/:projectid', jwt({secret: config.express.pubkey}), (req, res, next)
             return res.status(401).end("you are not an administartor nor member of this project");
 
         let set = { 
-            project,
-            subjects: req.body.subjects,
-            columns: req.body.columns,
+            project, //WHY?
         };
+        //TODO validate?
+        if(req.body.subjects) set.subjects = req.body.subjects;
+        if(req.body.columns) set.columns = req.body.columns;
         db.Participants.updateOne({project}, {$set: set}, {new: true, upsert: true}, (err, participants)=>{
             if(err) return next(err);
             common.publish("participant.update."+req.user.sub+"."+project._id, req.body);

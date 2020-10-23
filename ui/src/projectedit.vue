@@ -127,7 +127,7 @@
                 </b-col>
             </b-row>
 
-            <b-row v-if="participants">
+            <b-row v-if="participants !== undefined">
                 <b-col cols="3">
                     <span class="form-header">Participants Info</span>
                 </b-col> 
