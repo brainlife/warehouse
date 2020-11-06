@@ -250,8 +250,8 @@ if (process.env.NODE_ENV == "development") {
     Vue.config.debug = true;
     
     //do crosssite auth between localhost and dev1 auth
-    Vue.config.auth_signin = "https://dev1.soichi.us/auth#!/signin?app=localhost";
-    Vue.config.auth_signout = "https://dev1.soichi.us/auth#!/signout?app=localhost";
+    Vue.config.auth_signin = "https://dev1.soichi.us/auth#!/signin?app=dev";
+    Vue.config.auth_signout = "https://dev1.soichi.us/auth#!/signout?app=dev";
 
     //intercept jwt sent via url parameter
     var urlParams = new URLSearchParams(window.location.search);
@@ -261,10 +261,13 @@ if (process.env.NODE_ENV == "development") {
     }
 }
 
+// warning - jwt_decode just decode any jwt token. it doesn't validate it
+// so we can't really trust that user is who they say they are on the client side.
+// we just assume that user is trustworthy on the client side and pass jwt to 
+// server so that we can do a real jwt validation there
 function jwt_decode_brainlife(jwt) {
     Vue.config.user = jwt_decode(jwt);
     Vue.config.jwt = jwt;
-    //Vue.config.profile = res.data; //depreacted.. use user.profile
     
     //auth service should return sub in string format, but currently it doesn't..
     //let's just covert it to string 

@@ -33,21 +33,16 @@
             <!--start of dataset list-->
             <div v-for="(page, page_idx) in pages" v-if="datatypes" :key="page_idx" style="font-size: 12px;">
                 <div v-if="page_info[page_idx] && !page_info[page_idx].visible" :style="{'height': page_info[page_idx].height+'px'}">
-                    <!--show empty div to speed up rendering if it's outside the view-->
-                    <!--{{page_idx}} {{page_info[page_idx]}}-->
                 </div>
                 <b-row class="subjects" v-for="(datasets, group) in page" :key="group" :ref="'sub-'+group" v-else>
-                    <b-col cols="2" class="subject-column">
+                    <b-col cols="2" class="subject-column truncate">
                         <strong>{{group}}</strong>
 
-                        <div class="participants" v-if="participants">
+                        <div class="participants truncate" v-if="participants">
                             <span v-if="participants" v-for="(v, k) in participants[datasets._subject]" :key="k">
                                 <small>{{k}}</small> {{v}}
                             </span>
                         </div>
-                        <!--
-                        <span class="participants-edit" @click="editParticipants(datasets._subject)"><icon name="edit" /> Participant Info</span>
-                        -->
                     </b-col>
                     <b-col cols="10">
                         <div v-for="dataset in datasets" :key="dataset._id" @click="open(dataset._id)" class="dataset clickable" 
@@ -937,9 +932,6 @@ color: white;
 width: 100%;
 }
 .participants {
-white-space: nowrap;
-overflow: hidden;
-text-overflow: ellipsis;
 font-size: 90%;
 }
 .subject-column {

@@ -85,16 +85,16 @@
     </div><!--meta-->
 
     <div v-if="mode == 'validate' && tasks.validation">
-
-        <h5 v-if="tasks.validation.status == 'finished' 
+        <b v-if="tasks.validation.status == 'finished' 
             && tasks.validation.product 
-            && tasks.validation.product.errors.length == 0">Registering Data...  <icon name="cog" spin/></h5>
+            && tasks.validation.product.errors.length == 0">Registering Data...  <icon name="cog" spin/></b>
         <task :task="tasks.validation" v-if="tasks.validation.status != 'finished'"/>
 
         <!-- 
             TODO - We can only abort archive if validation finishes and it has an error 
             We might want to give user option to proceed with warning?
         -->
+	<b-alert show variant="danger" v-if="tasks.validation.status == 'finished' && !tasks.validation.product">Validator didn't generate product.json. Please check task: {{tasks.validation._id}}</b-alert>
         <div v-if="tasks.validation.status == 'finished' && tasks.validation.product && tasks.validation.product.errors.length > 0">
             <h5>Errors</h5>
             <b-alert show variant="danger" v-for="(error, idx) in tasks.validation.product.errors" :key="idx">

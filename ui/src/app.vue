@@ -181,7 +181,7 @@
                                             {{resource.status}}
                                             <span class="score">Score {{resource.score}}</span>
                                         </div>
-                                        <div v-else-if="resource.score == 0" class="resource-status bg-warning">
+                                        <div v-else-if="resource.detail.running >= resource.detail.maxtask" class="resource-status bg-warning">
                                             <icon name="hourglass" style="position: relative; top: -3px;"/>
                                             Busy
                                             <span class="score">Score {{resource.score}}</span>
@@ -664,5 +664,4 @@ left: -30px;
 z-index: 1;
 opacity: 0.6;
 }
-
 </style>

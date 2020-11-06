@@ -244,6 +244,8 @@ export default {
                 files: [],
                 samples: [],
                 uis: [ "5be75b31e15a02914a4be8f0" ], //(show fileviewer by default)
+                validator: "",
+                validator_branch: "",
             },
 
             uis: [], //list of all UIs
@@ -272,12 +274,12 @@ export default {
                 find: JSON.stringify({_id: this.$route.params.id})
             }}).then(res=>{
                 this.datatype = res.data.datatypes[0];
-                //if(!this.da.agreements) Vue.set(this.project, "agreements", []); //backward compatibility
                 if(this.datatype.bids) {
                     this.datatype._bids = JSON.stringify(this.datatype.bids, null, 4);
                 } else {
                     this.datatype._bids = "";
                 }
+		if(!this.datatype.validator) this.datatype.validator = "";
 
                 //unpopulate uis
                 this.datatype.uis = this.datatype.uis.map(ui=>ui._id);
@@ -321,7 +323,7 @@ export default {
 
             //validate
             let error = null;
-            if(this.datatype.validator.length > 0 && !this.datatype.validator.startsWith("brainlife/validator-")) {
+            if(this.datatype.validator && !this.datatype.validator.startsWith("brainlife/validator-")) {
                 error = "validator must starts with brainlife/validator-";
             }
             this.datatype.files.forEach(file=>{
