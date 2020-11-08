@@ -127,7 +127,7 @@ router.get('/', jwt({secret: config.express.pubkey, credentialsRequired: false})
             });
 
             //count and get total size
-            cast_mongoid(query);
+            common.cast_mongoid(query);
             db.Datasets.aggregate()
             .match(query)
             .group({_id: null, count: {$sum: 1}, size: {$sum: "$size"} })
@@ -165,7 +165,7 @@ router.get('/', jwt({secret: config.express.pubkey, credentialsRequired: false})
 router.get('/distinct', jwt({secret: config.express.pubkey, credentialsRequired: false}), (req, res, next)=>{
     const find = JSON.parse(req.query.find);
     if(!find.project) return next("please specify project query");
-    cast_mongoid(find);
+    common.cast_mongoid(find);
     common.getprojects(req.user, function(err, canread_project_ids, canwrite_project_ids) {
         if(err) return next(err);
         canread_project_ids = canread_project_ids.map(id=>id.toString());
@@ -179,19 +179,6 @@ router.get('/distinct', jwt({secret: config.express.pubkey, credentialsRequired:
     });
 });
 
-//mongoose doesn't cast object id on aggregate pipeline .. https://github.com/Automattic/mongoose/issues/1399
-//somewhat futile attempt to convert all string that looks like objectid to objectid.
-//mongoose.Types.ObjectId.isValid byitself doesn't work (https://github.com/Automattic/mongoose/issues/1959#issuecomment-97583033) 
-//const checkForHexRegExp = new RegExp("^[0-9a-fA-F]{24}$");
-function cast_mongoid(node) {
-    for(var k in node) {
-        var v = node[k];
-        if(v === null) continue;
-        if(typeof v == 'string' && mongoose.Types.ObjectId.isValid(v) && v.length == 24) node[k] = mongoose.Types.ObjectId(v);
-        if(typeof v == 'object') cast_mongoid(v); //recurse
-    }
-}
-
 /**
  * @apiGroup Dataset
  * @api {get} /dataset/inventory
@@ -204,7 +191,7 @@ function cast_mongoid(node) {
 router.get('/inventory', jwt({secret: config.express.pubkey, credentialsRequired: false}), (req, res, next)=>{
     const find = JSON.parse(req.query.find);
     if(!find.project) return next("please specify project query");
-    cast_mongoid(find);
+    common.cast_mongoid(find);
     common.getprojects(req.user, function(err, canread_project_ids, canwrite_project_ids) {
         if(err) return next(err);
         canread_project_ids = canread_project_ids.map(id=>id.toString());

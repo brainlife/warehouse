@@ -30,14 +30,10 @@ router.get('/', jwt({secret: config.express.pubkey, credentialsRequired: false})
     //console.log("project get recieved--------------------------------------------");
     var find = {};
     if(req.query.find) find = JSON.parse(req.query.find);
+    //common.cast_mongoid(find);
+
     var skip = req.query.skip||0;
     let limit = req.query.limit||100;
-
-    /*
-    if(req.query.datatypes) {
-        find['stats.datasets.datatypes_detail.type'] = {$in: req.query.datatypes}
-    }
-    */
 
     //always load user_id so that we can compute canedit properly
     var select = null;
@@ -61,6 +57,9 @@ router.get('/', jwt({secret: config.express.pubkey, credentialsRequired: false})
     } else {
         find.access = "public"; //guest can only see public projects
     }
+
+    //console.log("hello");
+    //console.dir(find.$and[0].$and[0]);
 
     db.Projects.find(find)
     .select(select)

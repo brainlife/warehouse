@@ -119,7 +119,7 @@ router.get('/:task_id/*', jwt({
 
         //ok looks good.. 
         const follow_task_id = task.deps_config[0].task;
-        const prefix = "/mnt/secondary/"+task._group_id+"/"+task.instance_id+"/"+follow_task_id;
+        const prefix = config.groupanalysis.secondaryDir+"/"+task._group_id+"/"+task.instance_id+"/"+follow_task_id;
 
         //make sure path looks safe
         const clean_p = path.resolve(prefix+"/"+p);
