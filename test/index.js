@@ -1,5 +1,6 @@
 
 const assert = require('assert');
+//const axios = require('axios');
 
 describe.skip('/health', function() {
     it('should return ok', function() {
@@ -14,7 +15,7 @@ describe.skip('/health', function() {
     });
 });
 
-describe('openneuro', function() {
+describe.skip('openneuro', function() {
     const openneuro = require('../api/openneuro');
     //this.timeout(4000);
     describe('list_datasets', function() {
@@ -25,6 +26,17 @@ describe('openneuro', function() {
                 console.log(datasets.length, cursor);
                 done();
             });
+        });
+    });
+});
+
+describe('workflows', ()=>{
+    const app = require('../api/app');
+    it('list', done=>{
+        app.enumerateWorkflows("58d15dece13a50849b258842", (err, workflows)=>{ //LiFE
+            if(err) return done(err);
+            console.log(JSON.stringify(workflows, null, 4));
+            done();
         });
     });
 });

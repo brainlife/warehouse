@@ -554,7 +554,6 @@ export default {
 
         load_secondary() {
             //see the secondary output archive diagram to understand this
-            console.log("loading secondary");
             if(this.dataset.prov.task.follow_task_id) {
                 this.dtv = this.dataset.prov.task;
                 this.waitSecondaryArchive(this.dataset.prov.task, (err, secondary)=>{

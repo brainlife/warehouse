@@ -175,7 +175,26 @@ exports.geocode = {
 //group analysis 
 exports.groupanalysis = {
     gid: 3,
-    secondaryDir: "/mnt/secondary", // group id / task id
+   
+    secondaryDir: "/user/shayashi/brainlife/dev-secondary", 
+    getSecondaryDownloadStream(path, cb) {
+        connect_osiris((err, conn, sftp)=>{
+            if(err) return cb(err);
+            conn.exec("cat "+path, (err, stream)=>{
+                stream.on('error', err=>{
+                    console.error("stream failed but train has already left the station", err);
+                });
+                stream.on('close', code=>{
+                    conn.end();
+                });
+                //I believe listening to stream is required for close event to fire..?
+                stream.stderr.on('data', data=>{
+                    console.error(data.toString());
+                });
+                cb(err, stream);
+            });
+        });
+    },
 }
 
 const js_config = require(__dirname+'/jetstream');
@@ -276,7 +295,7 @@ function connect_dc(cb) {
 }
 
 //TODO - I should try connection queue agagin
-//only used to access datalad
+//(not used anymore)
 function connect_wrangler(cb) {
     var conn = new ssh2.Client();
     conn.on('ready', function() {
@@ -307,6 +326,40 @@ function connect_wrangler(cb) {
         host: "149.165.169.130", //wrangler2
         privateKey: fs.readFileSync(__dirname+'/brlife.id_rsa'),
         //passphrase: "somepass",  //what's the point?
+        keepaliveInterval: 10*1000, //default 0 (disabled)
+        //keepaliveCountMax: 30, //default 3 (https://github.com/mscdex/ssh2/issues/367)
+    });
+}
+
+//TODO - I should try connection queue agagin
+function connect_osiris(cb) {
+    var conn = new ssh2.Client();
+    conn.on('ready', function() {
+        console.log("connected to osiris - opening sftp stream also");
+        conn.sftp((err, sftp)=>{
+            if(err) return cb(err);
+            if(cb) cb(null, conn, sftp);
+            cb = null;
+        });
+    });
+    conn.on('end', function() {
+        console.log("osiris connection ended");
+    });
+    conn.on('close', function() {
+        console.log("osiris connection closed");
+    });
+    conn.on('error', function(err) {
+        console.error("osiris connectionn error:"+err);
+        //we want to return connection error to caller, but error could fire after ready event is called.
+        //like timeout, or abnormal disconnect, etc..  need to prevent calling cb twice!
+        if(cb) cb(err);
+        cb = null;
+    });
+
+    conn.connect({
+        username: "shayashi",
+        host: "msu-xfer01.osris.org",
+        privateKey: fs.readFileSync(__dirname+'/brlife.id_rsa'),
         keepaliveInterval: 10*1000, //default 0 (disabled)
         //keepaliveCountMax: 30, //default 3 (https://github.com/mscdex/ssh2/issues/367)
     });
@@ -420,7 +473,7 @@ exports.storage_systems.wrangler = {
 */
 
 function get_osiris_archive_path(dataset) {
-    let _path = "/mnt/autofs/osiris/dev-archive/";
+    let _path = "/user/shayashi/brainlife/dev-archive/";
     if(!dataset) return _path;
     _path += dataset.project+"/";
     _path += dataset._id+".tar";
@@ -430,40 +483,48 @@ function get_osiris_archive_path(dataset) {
 exports.storage_systems.osiris = {
     need_backup: true, //need_backup if it's our storage (not openneuro)
     test: cb=>{
-        fs.access(get_osiris_archive_path(), cb);
-        /*
-        connect_wrangler((err, conn, sftp)=>{
+        connect_osiris((err, conn, sftp)=>{
             if(err) return cb(err);
-            //TODO - check for osiris quota
-            conn.end();
-            cb();
+            sftp.stat(get_osiris_archive_path(), (err,stats)=>{
+                conn.end();
+                //TODO - check what's in stat?
+                /*
+0|warehous | Stats {
+0|warehous |   mode: 17896,
+0|warehous |   permissions: 17896,
+0|warehous |   uid: 100097,
+0|warehous |   gid: 1000455,
+0|warehous |   size: 10,
+0|warehous |   atime: 1586896386,
+0|warehous |   mtime: 1605024163
+0|warehous | }
+                */
+                cb(err);
+            });
         });
-        */
+        //fs.access(get_osiris_archive_path(), cb);
     }, 
 
     stat: (dataset, cb)=>{
-        fs.stat(get_osiris_archive_path(dataset), cb);
-        /*
-        connect_wrangler((err, conn, sftp)=>{
+        //fs.stat(get_osiris_archive_path(dataset), cb);
+        connect_osiris((err, conn, sftp)=>{
             if(err) return cb(err);
             sftp.stat(get_osiris_archive_path(dataset), (err,stat)=>{
                 conn.end();
                 cb(err, stat);
             });
         });
-        */
     },
 
     download: (dataset, cb)=>{
-        /*
-        connect_wrangler((err, conn, sftp)=>{
+        connect_osiris((err, conn, sftp)=>{
             if (err) {
                 conn.end();
                 return cb(err);
             }
             let path = get_osiris_archive_path(dataset);
             let filename = path.split("/").pop();
-            console.debug(["loading...", path, filename]);
+            //console.debug(["loading...", path, filename]);
             conn.exec("cat "+path, (err, stream)=>{
                 stream.on('error', err=>{
                     console.error("stream failed but train has already left the station", err);
@@ -478,16 +539,15 @@ exports.storage_systems.osiris = {
                 cb(err, stream, filename);
             });
         });
-        */
+        /*
         let path = get_osiris_archive_path(dataset);
         let filename = path.split("/").pop();
         cb(null, fs.createReadStream(path), filename);
+        */
     },
 
     remove: (dataset, cb)=>{
-        /*
-        connect_wrangler((err, conn, sftp)=>{
-            console.log("got wrangler streams for remove");
+        connect_osiris((err, conn, sftp)=>{
             if(err) return cb(err);
             let _path = get_osiris_archive_path(dataset);
             conn.exec("rm -f "+_path, (err, stream)=>{
@@ -511,10 +571,11 @@ exports.storage_systems.osiris = {
                 });
             });
         });
-        */
+        /*
         //not sure if I need to support this for osiris for not..
         let path = get_osiris_archive_path(dataset);
         fs.unlink(path, cb);
+        */
     }
 } 
 

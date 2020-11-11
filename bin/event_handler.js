@@ -452,6 +452,7 @@ function handle_task(task, cb) {
         },
 
         //update secondary archive index
+        /*
         next=>{
             if(task.status != "finished" || task.service != "brainlife/app-archive-secondary") {
                 return next();
@@ -463,6 +464,7 @@ function handle_task(task, cb) {
 
             next();
         },
+        */
 
         //report archive status back to user through dataset_config
         next=>{

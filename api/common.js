@@ -785,6 +785,7 @@ exports.update_dataset_stats = async function(project_id, cb) {
 //TODO - this function list *all* secondary archives. maybe I should filter out archives that didn't 
 //get archived into data-object archive? I think the easier way to do this is to store secondary archive info 
 //on each archived dataset. I can then just query all that and dump ot. 
+/*
 exports.update_secondary_index = async function(project) {
     //console.log("updating secondary output index file for project", project._id);
     let participants = await db.Participants.findOne({project}).lean();
@@ -866,6 +867,7 @@ exports.update_secondary_index = async function(project) {
     console.log("storing index.json", path);
     fs.writeFileSync(path, JSON.stringify(index, null, 4));
 }
+*/
 
 exports.update_project_stats = async function(project, cb) {
     try {

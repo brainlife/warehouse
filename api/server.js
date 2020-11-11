@@ -6,6 +6,7 @@ const compression = require('compression');
 const cors = require('cors');
 const nocache = require('nocache');
 
+//const common = require('./common');
 const config = require('./config');
 const db = require('./models');
 
@@ -48,7 +49,6 @@ exports.app = app;
 exports.start = function(cb) {
     var port = process.env.PORT || config.express.port || '8081';
     var host = process.env.HOST || config.express.host || 'localhost';
-    console.debug("initializing database...");
     db.init((err)=>{
         if(err) return cb(err);
         var server = app.listen(port, host, function() {

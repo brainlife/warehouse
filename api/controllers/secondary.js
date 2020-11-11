@@ -123,18 +123,23 @@ router.get('/:task_id/*', jwt({
 
         //make sure path looks safe
         const clean_p = path.resolve(prefix+"/"+p);
+        console.debug("clean_p", clean_p);
+        console.debug("prefix", prefix);
         if(!clean_p.startsWith(prefix)) return next("invalid path");
 
-        const readstream = fs.createReadStream(clean_p);
-        readstream.pipe(res);   
-        readstream.on('error', err=>{
-            console.error("failed to pipe", err);
-            next(err); 
-        });
-        res.on('finish', ()=>{
-            common.publish("secondary.download."+req.user.sub+"."+task._group_id+"."+task._id, {headers: req.headers, path: clean_p});
-        });
+        //const readstream = fs.createReadStream(clean_p);
+        config.groupanalysis.getSecondaryDownloadStream(clean_p, (err, readstream)=>{
+            if(err) return next(err);
 
+            readstream.pipe(res);   
+            readstream.on('error', err=>{
+                console.error("failed to pipe", err);
+                next(err); 
+            });
+            res.on('finish', ()=>{
+                common.publish("secondary.download."+req.user.sub+"."+task._group_id+"."+task._id, {headers: req.headers, path: clean_p});
+            });
+        });
     }).catch(err=>{
         next(err);
     });

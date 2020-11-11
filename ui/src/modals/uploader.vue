@@ -332,7 +332,7 @@ export default {
 
         findOrCreateInstance() {
             let name = "upload."+this.project.group_id;
-            this.$http.get(Vue.config.wf_api+'/instance?find='+JSON.stringify({ name })).then(res=>{
+            this.$http.get(Vue.config.amaretti_api+'/instance?find='+JSON.stringify({ name })).then(res=>{
                 if(res.data.instances.length > 0) { 
                     //console.log("reusing instance");
                     //console.dir(res.data);
@@ -342,7 +342,7 @@ export default {
                 }
 
                 //console.log("creating new instance");
-                this.$http.post(Vue.config.wf_api+'/instance', {
+                this.$http.post(Vue.config.amaretti_api+'/instance', {
                     name,
                     group_id: this.project.group_id,
                 }).then(res=>{
@@ -411,7 +411,7 @@ export default {
 
         prep_upload() {
             //find resource that I can run validator
-            this.$http.get(Vue.config.wf_api+'/resource/best/', {params: {
+            this.$http.get(Vue.config.amaretti_api+'/resource/best/', {params: {
                 service: this.datatype.validator,
             }}).then(res=>{
                 if(!res.data.resource) { 
@@ -421,7 +421,7 @@ export default {
                 this.validator_resource = res.data.resource;
 
                 //submit noop to upload files on the resource where validator can run
-                return this.$http.post(Vue.config.wf_api+'/task', {
+                return this.$http.post(Vue.config.amaretti_api+'/task', {
                     instance_id: this.instance._id,
                     name: "upload",
                     service: "brainlife/app-noop", //TODO - I should rename to app-upload?
@@ -467,7 +467,7 @@ export default {
             let data = new FormData();
             data.append("file", f);
             file.cancel = this.$http.CancelToken.source();
-            this.$http.post(Vue.config.wf_api+"/task/upload2/"+this.tasks.upload._id+"?p="+encodeURIComponent(file.filename), data, {
+            this.$http.post(Vue.config.amaretti_api+"/task/upload2/"+this.tasks.upload._id+"?p="+encodeURIComponent(file.filename), data, {
                 cancelToken: file.cancel.token,
                 onUploadProgress: evt=>{
                     file.progress = {loaded: evt.loaded, total: evt.total};
@@ -528,12 +528,13 @@ export default {
                 config[file.id] = "../"+this.tasks.upload._id+"/"+file.filename;
             });
 
-            this.$http.post(Vue.config.wf_api+'/task', {
+            this.$http.post(Vue.config.amaretti_api+'/task', {
                 instance_id: this.instance._id,
                 name: "Upload", 
                 service: this.datatype.validator,
                 service_branch: this.datatype.validator_branch,
                 config,
+                follow_task_id: this.tasks.upload._id,
                 deps_config: [ {task: this.tasks.upload._id} ], 
             }).then(res=>{
                 console.log("submitted validation task");

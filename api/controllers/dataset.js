@@ -110,8 +110,8 @@ router.get('/', jwt({secret: config.express.pubkey, credentialsRequired: false})
         .limit(+limit)
         .skip(+skip)
         .sort(req.query.sort)
-		.lean()
-		.exec((err, datasets)=>{
+        .lean()
+        .exec((err, datasets)=>{
             if(err) return next(err);
             
             //check project access
@@ -172,7 +172,7 @@ router.get('/distinct', jwt({secret: config.express.pubkey, credentialsRequired:
         if(!canread_project_ids.includes(find.project.toString())) return next("no read access to specified project:"+find.project);
         db.Datasets.find(find)
         .distinct(req.query.distinct)
-		.exec((err, values)=>{
+        .exec((err, values)=>{
             if(err) return next(err);
             res.json(values);
         });
@@ -196,7 +196,6 @@ router.get('/inventory', jwt({secret: config.express.pubkey, credentialsRequired
         if(err) return next(err);
         canread_project_ids = canread_project_ids.map(id=>id.toString());
         if(!canread_project_ids.includes(find.project.toString())) return next("no read access to specified project:"+find.project);
-
         db.Datasets.aggregate()
         .match(find)
         .group({_id: {
@@ -562,7 +561,8 @@ mongoose.connection.once('open', ()=>{
     });
 });
 
-//TODO - I should split the algorithms to 2 parts
+//TODO - I should split the algorithms to 2 parts 
+//DEPRECATE by api.provGraph?
 //first part to generate a full provenance graph which might be too verbose - noisy but a complete picture (no defer)
 //second part to simplify the graph so that users can make sense of it (it could even be done at the UI side)
 function generate_prov(origin_dataset_id, cb) {
@@ -1030,16 +1030,6 @@ router.post('/stage', jwt({secret: config.express.pubkey}), (req, res, next)=>{
                 }),
             }
 
-            /*
-            stage_task = await rp.post({
-                json: true,
-                body: {
-                },
-                headers: {
-                    authorization: "Bearer "+jwt,
-                }
-            });
-            */
             let postres = await axios({
                 method: "post",
                 url: config.amaretti.api+"/task",
@@ -1421,8 +1411,8 @@ router.post('/downscript', jwt({secret: config.express.pubkey, credentialsRequir
         .skip(+skip)
         .limit(+limit)
         .sort('meta.subject')
-		.lean()
-		.exec((err, datasets)=>{
+        .lean()
+        .exec((err, datasets)=>{
             if(err) return next(err);
 
             let script = `#!/bin/bash\n
