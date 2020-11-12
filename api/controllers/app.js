@@ -196,6 +196,7 @@ router.post('/', jwt({secret: config.express.pubkey}), (req, res, next)=>{
             common.update_appinfo(app, cb);
         },
 
+        /* let's do this async so we can monitor datacite situation 
         //mint doi
         cb=>{
             logger.debug("minting doi");
@@ -205,6 +206,7 @@ router.post('/', jwt({secret: config.express.pubkey}), (req, res, next)=>{
                 cb();
             });
         },
+        */
 
         //save app (and generate _id)
         cb=>{
@@ -216,6 +218,7 @@ router.post('/', jwt({secret: config.express.pubkey}), (req, res, next)=>{
             });
         },
 
+        /*
         //store doi meta
         cb=>{
             logger.debug("posting metadata for doi");
@@ -227,6 +230,7 @@ router.post('/', jwt({secret: config.express.pubkey}), (req, res, next)=>{
                 common.doi_put_url(app.doi, url, cb);
             });
         },
+        */
     ], err=>{
         if(err) return next(err);
         app = JSON.parse(JSON.stringify(app));

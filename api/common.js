@@ -532,10 +532,20 @@ exports.compose_pub_datacite_metadata = function(pub) {
 }
 
 exports.get_next_app_doi = function(cb) {
+    //console.log("querying for next doi")
+    db.Apps.find({}).select("doi").sort("-doi").limit(1).exec().then(recs=>{
+        let rec = recs[0];
+        let doi_tokens = rec.doi.split(".");
+        let num = parseInt(doi_tokens[doi_tokens.length-1])+1;
+        //console.debug("next doi token will be", num);
+        cb(null, config.datacite.prefix+"app."+num);
+    }).catch(cb);
+    /*
     db.Apps.countDocuments({doi: {$exists: true}}).exec((err, count)=>{
         if(err) return cb(err);
         cb(null, config.datacite.prefix+"app."+count);
     });
+    */
 }
 
 //https://support.datacite.org/v1.1/docs/mds-2
@@ -587,6 +597,7 @@ exports.doi_put_url = function(doi, url, cb) {
 //TODO - update cache from amqp events
 let cached_contacts = {};
 exports.cache_contact = function(cb) {
+    console.debug("cachign contacts");
     axios.get(config.auth.api+"/profile/list", {
         params: {
             limit: 5000, //TODO -- really!?
@@ -598,7 +609,7 @@ exports.cache_contact = function(cb) {
             res.data.profiles.forEach(profile=>{
                 cached_contacts[profile.sub] = profile;
             });
-            console.log("cached profile len:", res.data.profiles.length);
+            //console.log("cached profile len:", res.data.profiles.length);
             if(cb) cb();
         }
     }).catch(err=>{

@@ -2,7 +2,7 @@
 
 const winston = require('winston');
 const async = require('async');
-const request = require('request'); //replace with axios?
+const axios = require('axios');
 const fs = require('fs');
 const redis = require('redis');
 
@@ -58,15 +58,14 @@ function handle_app(app, cb) {
     async.series([
         //caching serviceinfo
         next=>{
-            request.get({
-                url: config.amaretti.api+"/service/info", json: true,
+            axios.get(config.amaretti.api+"/service/info", {
                 headers: { authorization: "Bearer "+config.warehouse.jwt },  //config.auth.jwt is deprecated
-                qs: {
+                params: {
                     service: app.github,
                 }
-            }, (err, res, info)=>{
-                if(err) return next(err);
-                if(res.statusCode != 200) return next("couldn't obtain service stats "+res.statusCode);
+            }).then(res=>{
+                if(res.status != 200) return next("couldn't obtain service stats "+res.status);
+                let info = res.data;
                 if(!info) {
                     console.error("service info not set for ", app.github);
                     return next();
@@ -80,15 +79,14 @@ function handle_app(app, cb) {
                 app.stats.requested =  info.counts.requested,
 
                 next();
-            });
+            }).catch(next);
         },
         
         //list shared resources that are registered to this app
         next=>{
-            request.get({
-                url: config.amaretti.api+"/resource", json: true,
+            axios.get(config.amaretti.api+"/resource", {
                 headers: { authorization: "Bearer "+config.warehouse.jwt },  //config.auth.jwt is deprecated
-                qs: {
+                params: {
                     find: JSON.stringify({
                         gids: 1, //shared globally
                         active: true,
@@ -99,24 +97,20 @@ function handle_app(app, cb) {
                     }),
                     select: '_id name',
                 }
-            }, (err, res, data)=>{
-                if(err) return next(err);
-                if(res.statusCode != 200) return next("couldn't obtain service stats "+res.statusCode);
-                app.stats.resources = data.resources.map(resource=>{
+            }).then(res=>{
+                if(res.status != 200) return next("couldn't obtain service stats "+res.status);
+                app.stats.resources = res.data.resources.map(resource=>{
                     return {
                         resource_id: resource._id,
                         name: resource.name,
                     }
                 });
-
                 app.markModified('stats');
                 common.update_appinfo(app, next);
-            });
-
+            }).catch(next);
         },
 
-        //make sure doi is issued (shouldn't be needed anymore.. 
-        //but in case it failes to issue doi when the app is registered?)
+        //issue doi
         next=>{
             if(app.doi) return next();
             logger.debug("minting doi");
@@ -124,7 +118,6 @@ function handle_app(app, cb) {
                 if(err) return next(err);
                 app.doi = doi;
                 let metadata = common.compose_app_datacite_metadata(app);
-                //console.log(JSON.stringify(metadata, null, 4));
                 common.doi_post_metadata(metadata, err=>{
                     if(err) return next(err);
                     let url = config.warehouse.url+"/app/"+app._id;  
@@ -133,6 +126,23 @@ function handle_app(app, cb) {
             });
         },
 
+        //check doi
+        next=>{
+            let url = "https://doi.org/"+app.doi;
+            console.log("checking doi", url);
+            if(config.debug) url = "https://doi.org/10.25663/brainlife.app.448";
+            axios.get(url).then(res=>{
+                if(!res.status == 200) return next(app.doi+" "+res.status)
+                console.log(app.doi+" is good");
+                next();
+            }).catch(err=>{
+                console.dir(err.message);
+                console.dir(err.status);
+                //TODO - enable this once I know for sure that this doesn't create problem
+                //app.doi = undefined
+                next();
+            });
+        },
 
         //now save the app
         next=>{

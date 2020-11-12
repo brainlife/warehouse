@@ -30,12 +30,32 @@ describe.skip('openneuro', function() {
     });
 });
 
-describe('workflows', ()=>{
+describe.skip('workflows', ()=>{
     const app = require('../api/app');
     it('list', done=>{
         app.enumerateWorkflows("58d15dece13a50849b258842", (err, workflows)=>{ //LiFE
             if(err) return done(err);
             console.log(JSON.stringify(workflows, null, 4));
+            done();
+        });
+    });
+});
+
+describe('common', ()=>{
+
+    const common = require('../api/common');
+    const models = require('../api/models');
+    it('get_next_app_doi', function(done) {
+        models.init(err=>{
+            done(err);
+        })
+    });
+    it('get_next_app_doi', function(done) {
+        this.timeout(5000);
+
+        common.get_next_app_doi((err, doi)=>{
+            if(err) return done(err);
+            console.log(doi);
             done();
         });
     });
