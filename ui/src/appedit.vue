@@ -567,15 +567,17 @@ export default {
     },
 
     mounted: function() {
-        //TODO - can we use datatype cache?
+
+        //load datatype catalog
         this.$http.get('datatype').then(res=>{
             this.datatypes = {};
             res.data.datatypes.forEach(type=>{
                 this.datatypes[type._id] = type;
-                type._tags = [];
+                type._tags = type.datatype_tags.map(t=>t.datatype_tag);
+                console.log(type.name, type._tags);
             });
 
-            //load datatype_tags from all apps -- TODO - this is super inefficient!
+            //also load datatype_tags from all apps -- TODO - this is super inefficient!
             this.$http.get('app', {params: {
                 select: 'inputs outputs',
                 limit: 500, //TODO - this is not sustailable

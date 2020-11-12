@@ -186,7 +186,7 @@
                                             Busy
                                             <span class="score">Score {{resource.score}}</span>
                                         </div>
-                                        <div v-else-if="resource.id == preferred_resource._id" class="resource-status bg-success" title="This resource will be used to execute this App.">
+                                        <div v-else-if="preferred_resource && resource.id == preferred_resource._id" class="resource-status bg-success" title="This resource will be used to execute this App.">
                                             <icon name="thumbs-up" style="position: relative; top: -3px;"/>
                                             <!--Best-->
                                             <span class="score">Score {{resource.score}}</span>

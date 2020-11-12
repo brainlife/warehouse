@@ -473,7 +473,7 @@ exports.storage_systems.wrangler = {
 */
 
 function get_osiris_archive_path(dataset) {
-    let _path = "/user/shayashi/brainlife/dev-archive/";
+    let _path = "/user/shayashi/brainlife/dev-archive/"; //not the same as secondary
     if(!dataset) return _path;
     _path += dataset.project+"/";
     _path += dataset._id+".tar";
