@@ -57,6 +57,12 @@
                         <p style="opacity: 0.8">
                             {{app.desc_override||app.desc}}
                         </p>
+                        <b-tabs class="brainlife-tab" v-model="tab">
+                            <b-tab title="Detail"/>
+                            <b-tab title="README"/>
+                            <b-tab title="Recent Jobs"/>
+                            <b-tab title="Disqus"/>
+                        </b-tabs>
                     </b-col>
                     <b-col cols="3">
                         <appavatar :app="app" style="margin-bottom: 20px;"/>
@@ -67,11 +73,10 @@
         </div><!--header-->
 
         <b-container>
-            <!-- detail -->
-            <div v-if="tab_index == 0">
-                <b-row>
-
-                    <b-col cols="9">
+            <b-row>
+                <b-col cols="9">
+                    <!-- detail -->
+                    <div v-if="tab == 0">
 
                         <b-card v-if="app.deprecated_by" no-body style="margin-bottom: 10px">
                             <span slot="header">
@@ -157,6 +162,26 @@
                             <br>
                         </div>
 
+                        <div>
+                            <span class="form-header">Configuration</span>
+                            <div v-for="(config, key) in app.config" :for="key">
+                                <div v-if="config.type != 'input'">
+                                    <icon name="chevron-right" scale="0.6"/> <b>{{key}}</b>: {{config.type}} <span v-if="config.default" style="opacity: 0.5;"> = {{config.default}}</span><br>
+                                    <div v-if="config.options">
+                                        <ul>
+                                            <li v-for="(o, idx) in config.options" :key="idx">
+                                                {{o.label}}
+                                                <small>{{o.desc}}</small> <b-badge v-if="o.value == config.default">Default</b-badge>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                    <p>
+                                        <small>{{config.desc}}</small>
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+
                         <div v-if="resources_considered" class="box" style="padding: 20px">
                             <span class="form-header">Computing Resources</span>
                             <b-alert show variant="secondary" v-if="resources_considered.length == 0" style="margin-bottom: 10px;">
@@ -222,18 +247,19 @@
                                 </b-col>
                             </b-row>
                         </div>
+                    </div><!--tab0-->
 
-                        <div v-if="readme" class="box" style="padding: 20px">
+                    <div v-if="tab == 1">
+                        <div v-if="readme">
                             <p style="float: right;"><small class="text-muted">From github repo / README.md</small></p>
-                            <span class="form-header">README</span><br>
                             <vue-markdown :source="readme" class="readme"></vue-markdown>
                         </div>
+                        <div v-else>No README</div>
+                    </div>
 
-                        <div v-if="tasks.length > 0" class="box">
-                            <div style="padding: 20px; padding-bottom: 0;">
-                                <span class="form-header">Recent Jobs</span>
-                                <p style="opacity: 0.7; font-size: 80%;">Only showing up to 30 most recent jobs</p>
-                            </div>
+                    <div v-if="tab == 2">
+                        <div v-if="tasks.length > 0">
+                            <p style="opacity: 0.7; font-size: 80%;">Showing up to 30 most recent jobs</p>
                             <table class="table table-sm">
                                 <thead style="background-color: #eee; font-size: 80%;">
                                     <tr>
@@ -271,86 +297,89 @@
                                 </tr>
                             </table>
                         </div>
+                        <div v-else>
+                            No recent jobs.
+                        </div>
 
+                    </div><!--tab1-->
+
+                    <div v-if="tab == 3">
                         <vue-disqus shortname="brain-life" :identifier="app._id"/>
-                    </b-col>
+                    </div>
 
-                    <b-col cols="3">
-                        <p v-if="app.doi || app.stats">
-                            <doibadge :doi="app.doi" v-if="app.doi"/>
-                        </p>
+                </b-col>
+                <b-col cols="3">
+                    <p v-if="app.doi || app.stats">
+                        <doibadge :doi="app.doi" v-if="app.doi"/>
+                    </p>
 
-                        <p title="Registration Date">
-                            <b-badge pill v-if="app.create_date" class="bigpill">
-                                <icon name="calendar" style="opacity: 0.4;"/>&nbsp;&nbsp;&nbsp;<small>Registerd</small>&nbsp;&nbsp;{{new Date(app.create_date).toLocaleDateString()}}
-                            </b-badge>
-                        </p>
+                    <p title="Registration Date">
+                        <b-badge pill v-if="app.create_date" class="bigpill">
+                            <icon name="calendar" style="opacity: 0.4;"/>&nbsp;&nbsp;&nbsp;<small>Registerd</small>&nbsp;&nbsp;{{new Date(app.create_date).toLocaleDateString()}}
+                        </b-badge>
+                    </p>
 
-                        <p v-if="app.stats && app.stats.users" title="Users who executed this App">
-                            <b-badge pill class="bigpill">
-                                <icon name="user-cog" style="opacity: 0.4;"/>&nbsp;&nbsp;&nbsp;{{app.stats.users}}&nbsp;&nbsp;<small>Users</small>
-                            </b-badge>
-                        </p>
+                    <p v-if="app.stats && app.stats.users" title="Users who executed this App">
+                        <b-badge pill class="bigpill">
+                            <icon name="user-cog" style="opacity: 0.4;"/>&nbsp;&nbsp;&nbsp;{{app.stats.users}}&nbsp;&nbsp;<small>Users</small>
+                        </b-badge>
+                    </p>
 
-                        <p v-if="app.stats && app.stats.requested" title="Number of time this App was requested">
-                            <b-badge pill class="bigpill">
-                                <icon name="play" style="opacity: 0.4;"/>&nbsp;&nbsp;&nbsp;{{app.stats.requested}}&nbsp;&nbsp;<small>Requests</small>
-                            </b-badge>
-                        </p>
+                    <p v-if="app.stats && app.stats.requested" title="Number of time this App was requested">
+                        <b-badge pill class="bigpill">
+                            <icon name="play" style="opacity: 0.4;"/>&nbsp;&nbsp;&nbsp;{{app.stats.requested}}&nbsp;&nbsp;<small>Requests</small>
+                        </b-badge>
+                    </p>
 
-                        <p title="Average Runtime">
-                            <b-badge pill v-if="app.stats && app.stats.runtime_mean" class="bigpill">
-                                <icon name="clock" style="opacity: 0.4;"/>&nbsp;&nbsp;&nbsp;{{avg_runtime(app.stats.runtime_mean, app.stats.runtime_std)}}
-                            </b-badge>
-                        </p>
+                    <p title="Average Runtime">
+                        <b-badge pill v-if="app.stats && app.stats.runtime_mean" class="bigpill">
+                            <icon name="clock" style="opacity: 0.4;"/>&nbsp;&nbsp;&nbsp;{{avg_runtime(app.stats.runtime_mean, app.stats.runtime_std)}}
+                        </b-badge>
+                    </p>
 
-                        <!--<span class="form-header">Topics</span>-->
-                        <p style="line-height: 250%;">
-                            <b-badge v-for="tag in app.tags" :key="tag" class="topic">{{tag}}</b-badge>
-                        </p>
+                    <!--<span class="form-header">Topics</span>-->
+                    <p style="line-height: 250%;">
+                        <b-badge v-for="tag in app.tags" :key="tag" class="topic">{{tag}}</b-badge>
+                    </p>
 
-                        <div class='altmetric-embed' 
-                            data-badge-type='medium-donut' 
-                            data-badge-details="right" 
-                            :data-doi="app.doi" 
-                            data-hide-no-mentions="true"/>
+                    <div class='altmetric-embed' 
+                        data-badge-type='medium-donut' 
+                        data-badge-details="right" 
+                        :data-doi="app.doi" 
+                        data-hide-no-mentions="true"/>
 
-                        <p v-if="app.stats && app.stats.success_rate" v-b-tooltip.hover.d1000.right title="finished/(failed+finished). Same request could be re-submitted / rerun.">
-                            <!--<span class="form-header">Success Rate</span>-->
-                            <svg width="70" height="70">
-                                <circle :r="140/(2*Math.PI)" cx="35" cy="35" fill="transparent" stroke="#666" stroke-width="15"/>
-                                <circle :r="140/(2*Math.PI)" cx="35" cy="35" fill="transparent" stroke="#28a745" stroke-width="15" 
-                                    :stroke-dasharray="app.stats.success_rate*(140/100)+' '+(100-app.stats.success_rate)*(140/100)" stroke-dashoffset="-105"/>
-                            </svg>
-                            <b>{{app.stats.success_rate.toFixed(1)}}%</b> <span style="opacity: 0.5">Success Rate</span>
-                        </p>
-                       
-                        <!--
-                        <p style="opacity: 0.8;">
-                            <table v-if="serviceinfo">
-                                <tr>
-                                    <th style="width: 80%; opacity: 0.8"><icon name="caret-right"/> Users</th>
-                                    <th style="width: 25px;"><span class="text-success"><statusicon status="finished" scale="0.8"/></span></th>
-                                    <th style="width: 25px;"><span class="text-danger"><statusicon status="failed" scale="0.8"/></span></th>
-                                </tr>
-                                <tr v-for="(info, user) in serviceinfo.user" :key="user">
-                                    <td><contact :id="user" size="small"/></td>
-                                    <td>
-                                        <b class="text-success">{{info.finished||0}}</b>
-                                    </td>
-                                    <td>
-                                        <b class="text-danger">{{info.failed||0}}</b>
-                                    </td>
-                                </tr>
-                            </table>
-                        </p>
-                        -->
-                        
-                    </b-col>
-
-                </b-row>
-            </div>
-
+                    <p v-if="app.stats && app.stats.success_rate" v-b-tooltip.hover.d1000.right title="finished/(failed+finished). Same request could be re-submitted / rerun.">
+                        <!--<span class="form-header">Success Rate</span>-->
+                        <svg width="70" height="70">
+                            <circle :r="140/(2*Math.PI)" cx="35" cy="35" fill="transparent" stroke="#666" stroke-width="15"/>
+                            <circle :r="140/(2*Math.PI)" cx="35" cy="35" fill="transparent" stroke="#28a745" stroke-width="15" 
+                                :stroke-dasharray="app.stats.success_rate*(140/100)+' '+(100-app.stats.success_rate)*(140/100)" stroke-dashoffset="-105"/>
+                        </svg>
+                        <b>{{app.stats.success_rate.toFixed(1)}}%</b> <span style="opacity: 0.5">Success Rate</span>
+                    </p>
+                   
+                    <!--
+                    <p style="opacity: 0.8;">
+                        <table v-if="serviceinfo">
+                            <tr>
+                                <th style="width: 80%; opacity: 0.8"><icon name="caret-right"/> Users</th>
+                                <th style="width: 25px;"><span class="text-success"><statusicon status="finished" scale="0.8"/></span></th>
+                                <th style="width: 25px;"><span class="text-danger"><statusicon status="failed" scale="0.8"/></span></th>
+                            </tr>
+                            <tr v-for="(info, user) in serviceinfo.user" :key="user">
+                                <td><contact :id="user" size="small"/></td>
+                                <td>
+                                    <b class="text-success">{{info.finished||0}}</b>
+                                </td>
+                                <td>
+                                    <b class="text-danger">{{info.failed||0}}</b>
+                                </td>
+                            </tr>
+                        </table>
+                    </p>
+                    -->
+                </b-col>
+            </b-row>
             <br>
             <br>
             <br>
@@ -401,7 +430,7 @@ export default {
 
             selfurl: document.location.href,
 
-            tab_index: 0,
+            tab: 0,
 
             tasks: [], //recent tasks submitted
             serviceinfo: null,
