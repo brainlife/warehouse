@@ -110,17 +110,19 @@ router.get('/apps/:releaseid', (req, res, next)=>{
     .group({
         _id: { 
             app: "$prov.task.config._app", 
-            service: "$prov.task.service"
+            service: "$prov.task.service",
+            service_branch: "$prov.task.service_branch"
         }
     })
     .project({
         _id: 0, 
         app: "$_id.app", 
         service: "$_id.service",
-        //service_branch: "$_id.service_branch",
+        service_branch: "$_id.service_branch",
     })
     .exec((err, recs)=>{
         if(err) return next(err);
+        console.dir(recs);
         
         //load apps used
         let app_ids = [];
@@ -129,7 +131,7 @@ router.get('/apps/:releaseid', (req, res, next)=>{
             _id: {$in: app_ids},
             projects: [], //only show *public* apps
         })
-        .populate(req.query.populate || '')
+        //.populate(req.query.populate || '')
         .exec((err, apps)=>{
             if(err) return next(err);
 
@@ -152,6 +154,7 @@ router.get('/apps/:releaseid', (req, res, next)=>{
                 }
             });
 
+            //sort by app name
             populated.sort((a,b)=>{
                 return a.app.name.localeCompare(b.app.name);  
             });

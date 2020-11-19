@@ -136,9 +136,10 @@ function handle_app(app, cb) {
                 console.log(app.doi+" is good");
                 next();
             }).catch(err=>{
-                console.dir(err.message);
-                console.dir(err.status);
-                //TODO - enable this once I know for sure that this doesn't create problem
+                console.error(err.message);
+                console.error(err.status);
+                //what if we have temporarly glitch on doi.org? this is too dangerous
+                //TODO - I should set the *last* date that doi worked, and if it's been too long, then we should reset it (or notify us to manually reset it)
                 //app.doi = undefined
                 next();
             });

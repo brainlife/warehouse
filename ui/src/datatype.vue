@@ -137,7 +137,7 @@
                 <div class="box">
                     <span class="form-header">Upload Hints</span>
                     <p><small style="opacity: 0.7">You can upload your data in this datatype using <a href="https://brainlife.io/docs/cli/install/" target="cli">brainlife CLI</a>.</small></p>
-                    <pre>$ bl dataset upload --datatype {{datatype.name}} --project (project ID) --subject (subject name) \
+                    <pre>$ bl data upload --datatype {{datatype.name}} --project (project ID) --subject (subject name) \
    <span v-for="file in datatype.files.filter(f=>f.required)" :key="file.id">--{{file.id}} (file path for {{file.id}}) </span></pre>
 
                     <br>
@@ -153,19 +153,19 @@
     "key2": "value2"
 }</pre>
                         <p><small style="opacity: 0.7">Then you can upload this sidecar to be associated with your data as metadata by </small></p>
-                        <pre>$ bl dataset upload --meta (path to the sidecar JSON) ...</pre>
+                        <pre>$ bl data upload --meta (path to the sidecar JSON) ...</pre>
                         <br>
                     </div>
 
                     <div v-if="datatype.datatype_tags.length > 0">
                         <p><small style="opacity: 0.7">You can add datatype tags by adding --datatype_tag options..</small></p>
-                        <pre>$ bl dataset upload <span v-for="tag in datatype.datatype_tags">--datatype_tag {{tag.datatype_tag}} </span> ...</pre>
+                        <pre>$ bl data upload <span v-for="tag in datatype.datatype_tags">--datatype_tag {{tag.datatype_tag}} </span> ...</pre>
                         <br>
                     </div>
 
                     <div>
                         <p><small style="opacity: 0.7">You can add data object tags by adding --tag options.</small></p>
-                        <pre>$ bl dataset upload --tag (tag1) --tag (tag2) ...</pre>
+                        <pre>$ bl data upload --tag (tag1) --tag (tag2) ...</pre>
                         <br>
                     </div>
 
@@ -181,7 +181,7 @@
                         <br>
                     </div>
 
-                    <p><small style="opacity: 0.7">Please run <b>bl dataset upload -h</b> for full list of options. You can also read <a href="https://brainlife.io/docs/cli/upload/" target="cli">CLI Upload document</a> for more detail.</small></p>
+                    <p><small style="opacity: 0.7">Please run <b>bl data upload -h</b> for full list of options. You can also read <a href="https://brainlife.io/docs/cli/upload/" target="cli">CLI Upload document</a> for more detail.</small></p>
                 </div>
 
                 <div class="box">

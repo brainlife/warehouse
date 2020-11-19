@@ -4,11 +4,6 @@
         <div class="header">
             <b-container style="position: relative;">
                 <!--
-                <div @click="back()" class="button button-page">
-                    <icon name="angle-left" scale="1.5"/>
-                </div>
-                -->
-                <!--
                         inspiration
                         https://dataverse.harvard.edu/dataset.xhtml?persistentId=doi:10.7910/DVN/24301
                         https://searchworks.stanford.edu/view/rt034xr8593
@@ -39,12 +34,6 @@
             <!-- detail -->
             <div v-if="tab_index == 0">
                 <div class="rightside">
-                    <!--
-                    <p>
-                        <h3 class="brainlife-logo">brainlife.io</h3>
-                    </p>
-                    -->
-
                     <doibadge :doi="pub.doi" style="margin-bottom: 20px;"/>
                     <p>
                         <b-badge pill class="bigpill">
@@ -54,31 +43,39 @@
                     <p>
                         <div class='altmetric-embed' data-badge-type='donut' data-badge-details="right" data-hide-no-mentions="false" :data-doi="pub.doi||config.debug_doi"/>
                     </p>
-                    <p> <span class="form-header">Topics</span> </p>
-                    <p style="line-height: 190%;">
+
+                    <p style="line-height: 190%;" v-if="pub.tags.length > 0"> 
+                        <span class="form-header">Topics</span> 
                         <b-badge v-for="topic in pub.tags" :key="topic" class="topic">{{topic}}</b-badge>
                     </p>
                 </div><!--rightside-->
                 <div class="main">
-                    <div class="box">
-                        <b-row>
-                            <b-col>
-                                <span class="form-header">Authors</span>
-                                <br>
-                                <p v-for="contact in pub.authors" :key="contact._id">
+                    <b-row>
+                        <b-col cols="2">
+                            <span class="form-header">Authors</span>
+                        </b-col>
+                        <b-col col="10">
+                            <p>
+                                <span v-for="contact in pub.authors" :key="contact._id">
                                     <contact :fullname="contact.fullname" :email="contact.email"></contact>
-                                </p>
-                            </b-col>
-                            <b-col v-if="pub.contributors.length > 0">
-                                <span class="form-header">Contributors</span>
-                                <br>
-                                <p v-for="contact in pub.contributors" :key="contact._id">
-                                    <contact :fullname="contact.fullname" :email="contact.email"></contact>
-                                </p>
-                            </b-col>
-                        </b-row>
+                                </span>
+                            </p>
+                        </b-col>
+                    </b-row>
 
-                    </div>
+                    <b-row v-if="pub.contributors.length > 0">
+                        <b-col cols="2">
+                            <span class="form-header">Contributors</span>
+                        </b-col>
+                        <b-col cols="10">
+                            <p>
+                                <span v-for="contact in pub.contributors" :key="contact._id">
+                                    <contact :fullname="contact.fullname" :email="contact.email"></contact>
+                                </span>
+                            </p>
+                        </b-col>
+                    </b-row>
+
                     <div v-if="pub.readme" class="box">
                         <vue-markdown :source="pub.readme" class="readme"></vue-markdown>
                     </div>  
@@ -130,10 +127,6 @@
                             <p><small class="text-muted">This publication is hosted in the following Brainlife project</small></p>
                             <a href="javascript:void(0)" @click="openproject(pub.project._id)"><h5><icon name="shield-alt"/> {{pub.project.name}}</h5></a>
                             <p class="text">{{pub.project.desc}}</p>
-                            <!--
-                            <p><small class="text-muted">This publication was created from the following project.</small></p>
-                            <projectcard :project="pub.project"/>
-                            -->
                             <br>
                         </b-col>
                     </b-row>
@@ -156,6 +149,33 @@
 
             <div v-if="tab_index > 0">
                 <!-- release -->
+                <div class="box">
+                    <p>The following Apps were used to generate the data in this release.</p>
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>DOI</th>
+                                <th>Github</th>
+                                <th>Branch</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr v-for="rec in apps" :key="rec.app.doi">
+                                <td>{{rec.app.name}}</td>
+                                <td><a :href="'https://doi.org/'+rec.app.doi" :target="'doi_'+rec.app.doi">{{rec.app.doi}}</a></td>
+                                <td><a :href="'https://github.com/'+rec.service" :target="'github_'+rec.service">{{rec.service}}</a></td>
+                                <td>{{rec.service_branch||'master'}}</td>
+                                <!--
+                                <div style="margin-right: 10px; margin-bottom: 10px; position: relative;">
+                                    <app :app="rec.app" height="270px" :branch="rec.service_branch||'master'"></app>
+                                </div>
+                                -->
+                            </tr>
+                        </tbody>
+                    </table>
+                </div><!--box-->
+
                 <p style="opacity: 0.7; float: right;"><span style="opacity: 0.5">Released on</span> <time>{{new Date(release.create_date).toLocaleDateString()}}</time></p>
 
                 <div v-if="dataset_groups">
@@ -196,7 +216,7 @@
                                                 <tags :tags="dataset.tags"/>
                                                 <div style="float: right; width: 90px; text-align: right">{{new Date(dataset.create_date).toLocaleDateString()}}</div>
                                                 <div style="float: right; width: 90px;"><span v-if="dataset.size" class="text-muted">{{dataset.size|filesize}}</span>&nbsp;</div>
-                                                <div style="float: right; width: 90px;"><span v-if="dataset.download_count" class="text-muted"><icon name="download"/> {{dataset.download_count}} times</span>&nbsp;</div>
+                                                <div style="float: right; width: 90px;"><span v-if="dataset.download_count" class="text-muted"><icon name="download" scale="0.6"/> {{dataset.download_count}} times</span>&nbsp;</div>
                                                 <!--<td>{{dataset.storage}}</td>-->
                                             </b-list-group-item>
                                         </b-list-group>
@@ -207,45 +227,15 @@
                     </b-row>
                 </div>
 
-                <hr>
-
-                <!--apps-->
-                <div>
-                    <p style="opacity: 0.8;">
-                        The following Apps were used to generate the files in this release.
-                    </p>
-                    <div v-for="rec in apps" :key="rec.app.doi" style="width: 33%; float: left;">
-                        <div style="margin-right: 10px; margin-bottom: 10px; position: relative;">
-                            <app :app="rec.app" height="270px" :branch="rec.service_branch||'master'"></app>
-                        </div>
-                    </div>
-                    <br clear="both">
-                    <br>
-                </div>
-
-                <!--citations-->
-                <div>
-                    <p style="opacity: 0.8;">
-                        Please use the following citations to cite these Apps.
-                    </p>
-                    <div class="box">
-                        <div v-for="rec in apps" :key="rec.app.doi">
-                            <citation :doi="rec.app.doi"/>
-                        </div>
-                    </div>
-                    <br>
-                </div>
-
                 <!--resource usage TODO.. let's show all resources used by the project on the detail page for now
+                <hr>
                 <div v-for="resource in pub.project.stats.resources">
                     {{resource.name}}
                     {{resource.desc}}
                     {{resource.citation}}
                 </div>
                 -->
-            </div>
-
-
+            </div><!--release-->
         </b-container>
         <br>
         <br>
@@ -534,6 +524,13 @@ margin-right: 220px;
 float: right;
 width: 200px;
 }
+.release-main {
+margin-right: 420px;
+}
+.release-rightside {
+float: right;
+width: 400px;
+}
 @media only screen and (max-width: 800px) {
     .main {
         margin-right: 0;
@@ -579,6 +576,9 @@ width: 100%;
 margin-top: 5px;
 margin-bottom: 5px;
 margin-left: 28px;
+}
+.dataset {
+font-size: 85%;
 }
 .dataset:hover {
 cursor: pointer;
