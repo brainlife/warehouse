@@ -17,375 +17,416 @@
                     <icon name="angle-left" scale="1.5"/>
                 </div>
                 -->
-                <b-row>
-                    <b-col cols="9"><!--hide avatar when screen is narrow-->
-                        <div style="float: right; position: relative; z-index: 3">
-                            <a :href="'https://github.com/'+app.github" :target="app.github"><span class="button" title="github"><icon name="brands/github" scale="1.25"/></span></a>
-                           
-                            <span class="button" @click="go('/app/'+app._id+'/edit')" v-if="app._canedit" title="Edit"><icon name="edit" scale="1.25"/></span>                
-                            <b-dropdown size="sm" variant="link" toggle-class="text-decoration-none" no-caret>
-                                <template v-slot:button-content style="padding: 0px;">
-                                    <span class="button"><icon name="ellipsis-v" scale="1.25"/></span>
-                                </template>
-                                <b-dropdown-item @click="copy()" v-if="app._canedit" title="Copy" style="opacity: 0.7;">
-                                    <icon name="copy" scale="1.25" style="width: 20px"/>&nbsp;&nbsp;&nbsp;Clone
-                                </b-dropdown-item>
-                                <b-dropdown-item @click="remove()" v-if="app._canedit" title="Remove" style="opacity: 0.7;">
-                                    <icon name="trash" scale="1.25" style="width: 20px"/>&nbsp;&nbsp;&nbsp;Remove
-                                </b-dropdown-item>
-                                <b-dropdown-item @click="download_app()" style="opacity: 0.7;">
-                                    <icon name="download" scale="1.25" style="width: 20px"/>&nbsp;&nbsp;&nbsp;Download
-                                </b-dropdown-item>
-                                <b-dropdown-item @click="show_badge_url('/app/'+app._id+'/badge')" style="opacity: 0.7;" >
-                                    <icon name="certificate" scale="1.25" style="width: 20px"/>&nbsp;&nbsp;&nbsp;Generate Badge
-                                </b-dropdown-item>
-                            </b-dropdown>
-                            <b-btn @click="execute" variant="primary" size="sm" style="margin-top: 3px;"><icon name="play"/>&nbsp;&nbsp;&nbsp;<b>Execute</b></b-btn>    
- 
-                        </div>
-                
-                        <h5 style="margin-bottom: 3px;">
-                            <b-badge v-if="app.projects && app.projects.length > 0" variant="secondary" title="Private App">
-                                <icon name="lock" scale="0.8"/>
-                            </b-badge>
-                            {{app.name}}
-                        </h5>
-                        <h6 style="opacity: 0.8;">
-                            <a target="github" :href="'https://github.com/'+app.github+'/tree/'+(app.github_branch||'master')" style="color: gray;">{{app.github}}</a>
-                            <small><b-badge variant="secondary" v-if="app.github_branch" style="position: relative; top: -2px"><icon name="code-branch" scale="0.6"/> {{app.github_branch}}</b-badge></small>
-                        </h6>
-                        <p style="opacity: 0.8">
-                            {{app.desc_override||app.desc}}
-                        </p>
-                        <b-tabs class="brainlife-tab" v-model="tab">
-                            <b-tab title="Detail"/>
-                            <b-tab title="README"/>
-                            <b-tab title="Recent Jobs"/>
-                            <b-tab title="Disqus"/>
-                        </b-tabs>
-                    </b-col>
-                    <b-col cols="3">
-                        <appavatar :app="app" style="margin-bottom: 20px;"/>
-                    </b-col>
-                </b-row>
+                <div style="float: right; position: relative; z-index: 3">
+                    <a :href="'https://github.com/'+app.github" :target="app.github"><span class="button" title="github"><icon name="brands/github" scale="1.25"/></span></a>
+                   
+                    <span class="button" @click="go('/app/'+app._id+'/edit')" v-if="app._canedit" title="Edit"><icon name="edit" scale="1.25"/></span>                
+                    <b-dropdown size="sm" variant="link" toggle-class="text-decoration-none" no-caret>
+                        <template v-slot:button-content style="padding: 0px;">
+                            <span class="button"><icon name="ellipsis-v" scale="1.25"/></span>
+                        </template>
+                        <b-dropdown-item @click="copy()" v-if="app._canedit" title="Copy" style="opacity: 0.7;">
+                            <icon name="copy" scale="1.25" style="width: 20px"/>&nbsp;&nbsp;&nbsp;Clone
+                        </b-dropdown-item>
+                        <b-dropdown-item @click="remove()" v-if="app._canedit" title="Remove" style="opacity: 0.7;">
+                            <icon name="trash" scale="1.25" style="width: 20px"/>&nbsp;&nbsp;&nbsp;Remove
+                        </b-dropdown-item>
+                        <b-dropdown-item @click="download_app()" style="opacity: 0.7;">
+                            <icon name="download" scale="1.25" style="width: 20px"/>&nbsp;&nbsp;&nbsp;Download
+                        </b-dropdown-item>
+                        <b-dropdown-item @click="show_badge_url('/app/'+app._id+'/badge')" style="opacity: 0.7;" >
+                            <icon name="certificate" scale="1.25" style="width: 20px"/>&nbsp;&nbsp;&nbsp;Generate Badge
+                        </b-dropdown-item>
+                    </b-dropdown>
+                    <b-btn @click="execute" variant="primary" size="sm" style="margin-top: 3px;"><icon name="play"/>&nbsp;&nbsp;&nbsp;<b>Execute</b></b-btn>    
+
+                </div>
+       
+
+                <h5>
+                    <b-badge v-if="app.projects && app.projects.length > 0" variant="secondary" title="Private App">
+                        <icon name="lock" scale="0.8"/>
+                    </b-badge>
+                    {{app.name}}
+                </h5>
+
+                <h6 style="opacity: 0.8;">
+                    <a target="github" :href="'https://github.com/'+app.github+'/tree/'+(app.github_branch||'master')" style="color: gray;">{{app.github}}</a>
+                    <small><b-badge variant="secondary" v-if="app.github_branch" style="position: relative; top: -2px"><icon name="code-branch" scale="0.6"/> {{app.github_branch}}</b-badge></small>
+                </h6>
+
+                <b-tabs class="brainlife-tab" v-model="tab">
+                    <b-tab>
+                        <template v-slot:title>Detail</template>
+                    </b-tab>
+                    <b-tab>
+                        <template v-slot:title>README</template>
+                    </b-tab>
+                    <b-tab>
+                        <template v-slot:title>
+                            Recent Jobs
+                            <span style="opacity: 0.6; font-size: 80%" v-if="tasks.length > 0">{{tasks.length}}</span>
+                        </template>
+                    </b-tab>
+                    <b-tab>
+                        <template v-slot:title>Disqus</template>
+                    </b-tab>
+                </b-tabs>
             </b-container>
             <b-alert :show="app.removed" variant="secondary">This App has been removed.</b-alert>
         </div><!--header-->
 
-        <b-container>
-            <b-row>
-                <b-col cols="9">
-                    <!-- detail -->
-                    <div v-if="tab == 0">
+        <!-- detail -->
+        <div v-if="tab == 0">
+            <div style="background-color: white; padding-top: 15px; border-bottom: 1px solid #ddd;">
+                <b-container>
+                    <b-card v-if="app.deprecated_by" no-body style="margin-bottom: 10px">
+                        <span slot="header">
+                            <icon name="regular/calendar-times"/> This App has been deprecated by the following App
+                        </span>
+                        <app :appid="app.deprecated_by"/>
+                    </b-card>
 
-                        <b-card v-if="app.deprecated_by" no-body style="margin-bottom: 10px">
-                            <span slot="header">
-                                <icon name="regular/calendar-times"/> This App has been deprecated by the following App
-                            </span>
-                            <app :appid="app.deprecated_by"/>
-                        </b-card>
+                    <div style="border-bottom: 1px solid #eee; margin-bottom: 10px;">
+                        <appavatar :app="app" style="float: right; position: relative; top: -15px; margin-left: 15px;" width="150" height="150"/>
 
-                        <!--input/output-->
-                        <p><small class="text-muted">This App uses the following input/output datatypes</small></p>
-                        <div style="position: relative;">
-                            <b-row>
-                                <!--input-->
-                                <b-col style="padding-bottom: 10px;">
-                                    <div style="height: 100%; border: 2px solid #007bff;">
-                                        <div style="background-color: rgba(0,123,255,0.8); padding: 5px 15px; font-weight: bold; color: white;">Input</div>
-                                        <b-alert show variant="primary" v-if="!app.inputs || app.inputs.length == 0">No Input</b-alert>
-                                        <div v-if="app.inputs && app.inputs.length > 0" style="padding: 5px">
-                                            <div v-for="input in app.inputs" :key="input.id" class="io-card">
-                                                <small style="opacity: 0.5; float: right;">{{input.id}}</small><!--internal output id-->
-                                                <datatype :datatype="input.datatype" :datatype_tags="input.datatype_tags">
-                                                    <template slot="tag_extra">
-                                                        <span v-if="input.multi" style="opacity: 0.8">(multi)</span>
-                                                        <b-badge v-if="input.optional" style="opacity: 0.8">optional</b-badge>
-                                                        <p v-if="input.desc" style="margin-bottom: 0px; font-size: 80%;">{{input.desc}}</p>
-                                                    </template>
-                                                </datatype>
-                                            </div>
-                                        </div>
+                        <!--badges-->
+                        <p style="line-height: 250%;">
+                            <doibadge :doi="app.doi" v-if="app.doi"/>
+
+                            <b-badge pill v-if="app.create_date" class="bigpill" title="Registration Date">
+                                <icon name="calendar" style="opacity: 0.4;"/>&nbsp;&nbsp;&nbsp;<small>Registerd</small>&nbsp;&nbsp;{{new Date(app.create_date).toLocaleDateString()}}
+                            </b-badge>
+
+                            <b-badge pill class="bigpill" v-if="app.stats && app.stats.users" title="Users who executed this App">
+                                <icon name="user-cog" style="opacity: 0.4;"/>&nbsp;&nbsp;&nbsp;{{app.stats.users}}&nbsp;&nbsp;<small>Users</small>
+                            </b-badge>
+
+                            <b-badge pill class="bigpill" v-if="app.stats && app.stats.requested" title="Number of time this App was requested">
+                                <icon name="play" style="opacity: 0.4;"/>&nbsp;&nbsp;&nbsp;{{app.stats.requested}}&nbsp;&nbsp;<small>Requests</small>
+                            </b-badge>
+
+                            <b-badge pill v-if="app.stats && app.stats.runtime_mean" class="bigpill" title="Average Runtime">
+                                <icon name="clock" style="opacity: 0.4;"/>&nbsp;&nbsp;&nbsp;{{avg_runtime(app.stats.runtime_mean, app.stats.runtime_std)}}
+                            </b-badge>
+                        </p>
+                        <p> {{app.desc_override||app.desc}} </p>
+
+                        <!--<span class="form-header">Topics</span>-->
+                        <p style="line-height: 250%;">
+                            <b-badge v-for="tag in app.tags" :key="tag" class="topic">{{tag}}</b-badge>
+                        </p>
+                    </div>
+
+                    <!--detail header-->
+                    <b-row>
+                        <b-col>
+                            <p v-if="app.stats && app.stats.success_rate" v-b-tooltip.hover.d1000.right title="finished/(failed+finished). Same request could be re-submitted / rerun.">
+                                <svg width="70" height="70">
+                                    <circle :r="140/(2*Math.PI)" cx="35" cy="35" fill="transparent" stroke="#666" stroke-width="15"/>
+                                    <circle :r="140/(2*Math.PI)" cx="35" cy="35" fill="transparent" stroke="#28a745" stroke-width="15" 
+                                        :stroke-dasharray="app.stats.success_rate*(140/100)+' '+(100-app.stats.success_rate)*(140/100)" stroke-dashoffset="-105"/>
+                                </svg>
+                                <b>{{app.stats.success_rate.toFixed(1)}}%</b> <span style="opacity: 0.5">Success Rate</span>
+                            </p>
+                        </b-col>
+                        <b-col>
+                            <div class='altmetric-embed' 
+                                data-badge-type='medium-donut' 
+                                data-badge-details="right" 
+                                :data-doi="app.doi" 
+                                data-hide-no-mentions="true"/>
+                        </b-col>
+                    </b-row>
+                </b-container>
+            </div>
+
+            <b-container>
+                <br>
+                <!--input/output-->
+                <p><small class="text-muted">This App uses the following input/output datatypes</small></p>
+                <div style="position: relative;">
+                    <b-row>
+                        <!--input-->
+                        <b-col style="padding-bottom: 10px;">
+                            <div style="height: 100%; border: 2px solid #007bff;">
+                                <div style="background-color: rgba(0,123,255,0.8); padding: 5px 15px; font-weight: bold; color: white;">Input</div>
+                                <b-alert show variant="primary" v-if="!app.inputs || app.inputs.length == 0">No Input</b-alert>
+                                <div v-if="app.inputs && app.inputs.length > 0" style="padding: 5px">
+                                    <div v-for="input in app.inputs" :key="input.id" class="io-card">
+                                        <small style="opacity: 0.5; float: right;">{{input.id}}</small><!--internal output id-->
+                                        <datatype :datatype="input.datatype" :datatype_tags="input.datatype_tags">
+                                            <template slot="tag_extra">
+                                                <span v-if="input.multi" style="opacity: 0.8">(multi)</span>
+                                                <b-badge v-if="input.optional" style="opacity: 0.8">optional</b-badge>
+                                                <p v-if="input.desc" style="margin-bottom: 0px; font-size: 80%;">{{input.desc}}</p>
+                                            </template>
+                                        </datatype>
                                     </div>
-                                </b-col>
-
-                                <!--output-->
-                                <b-col style="margin-bottom: 10px;">
-                                    <icon name="arrow-right" style="position: absolute; top: 50%; left: -10px; opacity: 0.5" scale="1.5"/>
-                                    <div style="height: 100%; border: 2px solid #28a745;">
-                                        <div style="background-color: rgba(40,167,69,0.8); padding: 5px 15px; font-weight: bold; color: white;">Output</div>
-                                        <b-alert show variant="success" v-if="!app.outputs || app.outputs.length == 0">No Output</b-alert>
-                                        <div v-if="app.outputs && app.outputs.length > 0" style="padding: 5px;">
-                                            <div v-for="output in app.outputs" :key="output.id" class="io-card">
-                                                <small style="opacity: 0.5; float: right;">{{output.id}}</small><!--internal output id-->
-                                                <datatype :datatype="output.datatype" 
-                                                        :datatype_tags="output.datatype_tags" 
-                                                        :tag_pass="output.datatype_tags_pass">
-                                                    <template slot="tag_extra">
-                                                        <span v-if="output.datatype_tags_pass" title="tag pass through from this input dataset">+ <b>{{output.datatype_tags_pass}}</b></span>
-                                                        <p v-if="output.desc" style="margin-bottom: 0px; font-size: 80%;">{{output.desc}}</p>
-                                                    </template>
-                                                </datatype>
-                                                <small style="position: relative" v-if="output.output_on_root && output.files"> 
-                                                    <b>Output Mapping</b>
-                                                    <!--<pre v-highlightjs v-if="output.files"><code class="json hljs">{{output.files}}</code></pre>-->
-                                                    <editor v-if="output.files" v-bind:value="JSON.stringify(output.files, null, 4)" @init="editorInit" lang="json" theme="chrome"></editor>
-                                                </small>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </b-col>
-                            </b-row>
-                            <br>
-                        </div><!--input/ouput-->
-
-                        <div v-if="app.projects && app.projects.length > 0">
-                            <span class="form-header">Projects</span>
-                            <p><small class="text-muted">Only the members of the following project(s) can view and execute this App.</small></p>
-                            <div v-for="project in app.projects" :key="project._id" class="project-card" @click="go('/project/'+project._id)">
-                                <b-row>
-                                    <b-col cols="2">
-                                        <projectavatar :project="project" :height="50" :width="50"/>
-                                    </b-col>
-                                    <b-col>
-                                        <b>{{project.name}}</b>
-                                        <p style="margin-bottom: 0px; color: gray;" class="text">{{project.desc}}</p>
-                                    </b-col>
-                                </b-row>
-                            </div>
-                            <br>
-                        </div>
-
-                        <div v-if="app.retry">
-                            <span class="form-header">Retry</span>
-                            <p>If this App fails, it will automatically be rerun up to <b>{{app.retry}}</b> times.</p>
-                            <br>
-                        </div>
-
-                        <div>
-                            <span class="form-header">Configuration</span>
-                            <div v-for="(config, key) in app.config" :for="key">
-                                <div v-if="config.type != 'input'">
-                                    <icon name="chevron-right" scale="0.6"/> <b>{{key}}</b>: {{config.type}} <span v-if="config.default" style="opacity: 0.5;"> = {{config.default}}</span><br>
-                                    <div v-if="config.options">
-                                        <ul>
-                                            <li v-for="(o, idx) in config.options" :key="idx">
-                                                {{o.label}}
-                                                <small>{{o.desc}}</small> <b-badge v-if="o.value == config.default">Default</b-badge>
-                                            </li>
-                                        </ul>
-                                    </div>
-                                    <p>
-                                        <small>{{config.desc}}</small>
-                                    </p>
                                 </div>
                             </div>
-                        </div>
+                        </b-col>
 
-                        <div v-if="resources_considered" class="box" style="padding: 20px">
-                            <span class="form-header">Computing Resources</span>
-                            <b-alert show variant="secondary" v-if="resources_considered.length == 0" style="margin-bottom: 10px;">
-                                This App is not registered to run on any resource that you have access to. 
-                            </b-alert>
-                            <b-alert show variant="secondary" v-else-if="!preferred_resource" style="margin-bottom: 10px;">
-                                This App can not run on any resources that you have access to at the moment.
-                            </b-alert>
-                            <b-alert show variant="secondary" v-else-if="shared_resources.length == 0" style="margin-bottom: 10px;">
-                                This App is only enabled on your private resource(s). Other users may not be able to run this App.
-                            </b-alert>
-                            <p v-else>
-                                <small class="text-muted">This App can run on the following resources.</small>
+                        <!--output-->
+                        <b-col style="margin-bottom: 10px;">
+                            <icon name="arrow-right" style="position: absolute; top: 50%; left: -10px; opacity: 0.5" scale="1.5"/>
+                            <div style="height: 100%; border: 2px solid #28a745;">
+                                <div style="background-color: rgba(40,167,69,0.8); padding: 5px 15px; font-weight: bold; color: white;">Output</div>
+                                <b-alert show variant="success" v-if="!app.outputs || app.outputs.length == 0">No Output</b-alert>
+                                <div v-if="app.outputs && app.outputs.length > 0" style="padding: 5px;">
+                                    <div v-for="output in app.outputs" :key="output.id" class="io-card">
+                                        <small style="opacity: 0.5; float: right;">{{output.id}}</small><!--internal output id-->
+                                        <datatype :datatype="output.datatype" 
+                                                :datatype_tags="output.datatype_tags" 
+                                                :tag_pass="output.datatype_tags_pass">
+                                            <template slot="tag_extra">
+                                                <span v-if="output.datatype_tags_pass" title="tag pass through from this input dataset">+ <b>{{output.datatype_tags_pass}}</b></span>
+                                                <p v-if="output.desc" style="margin-bottom: 0px; font-size: 80%;">{{output.desc}}</p>
+                                            </template>
+                                        </datatype>
+                                        <small style="position: relative" v-if="output.output_on_root && output.files"> 
+                                            <b>Output Mapping</b>
+                                            <!--<pre v-highlightjs v-if="output.files"><code class="json hljs">{{output.files}}</code></pre>-->
+                                            <editor v-if="output.files" v-bind:value="JSON.stringify(output.files, null, 4)" @init="editorInit" lang="json" theme="chrome"></editor>
+                                        </small>
+                                    </div>
+                                </div>
+                            </div>
+                        </b-col>
+                    </b-row>
+                    <br>
+                </div><!--input/ouput-->
+
+                <div v-if="app.projects && app.projects.length > 0">
+                    <span class="form-header">Projects</span>
+                    <p><small class="text-muted">Only the members of the following project(s) can view and execute this App.</small></p>
+                    <div v-for="project in app.projects" :key="project._id" class="project-card" @click="go('/project/'+project._id)">
+                        <b-row>
+                            <b-col cols="2">
+                                <projectavatar :project="project" :height="50" :width="50"/>
+                            </b-col>
+                            <b-col>
+                                <b>{{project.name}}</b>
+                                <p style="margin-bottom: 0px; color: gray;" class="text">{{project.desc}}</p>
+                            </b-col>
+                        </b-row>
+                    </div>
+                    <br>
+                </div>
+
+                <div v-if="app.retry">
+                    <span class="form-header">Retry</span>
+                    <p>If this App fails, it will automatically be rerun up to <b>{{app.retry}}</b> times.</p>
+                    <br>
+                </div>
+
+                <div class="box" style="padding: 20px">
+                    <span class="form-header">Configuration</span>
+                    <div v-for="(config, key) in app.config" :for="key">
+                        <div v-if="config.type != 'input'">
+                            <icon name="chevron-right" scale="0.6"/> <b>{{key}}</b>: {{config.type}} <span v-if="config.default" style="opacity: 0.5;"> = {{config.default}}</span><br>
+                            <div v-if="config.options">
+                                <ul>
+                                    <li v-for="(o, idx) in config.options" :key="idx">
+                                        {{o.label}}
+                                        <small>{{o.desc}}</small> <b-badge v-if="o.value == config.default">Default</b-badge>
+                                    </li>
+                                </ul>
+                            </div>
+                            <p>
+                                <small>{{config.desc}}</small>
                             </p>
+                        </div>
+                    </div>
+                </div>
 
-                            <b-row>
-                                <b-col cols="6" v-for="resource in resources_considered" :key="resource._id">
-                                    <div class="resource-area" v-b-popover.hover.d1000="resource.config.desc+'\n\n'+resource.detail.msg+'\nstatus:'+resource.status" :title="null">
-                                        <resource :resource="resource"/>
-                                        <div v-if="resource.status != 'ok'" class="resource-status bg-danger">
-                                            <icon name="exclamation" style="position: relative; top: -3px;"/>
-                                            {{resource.status}}
-                                            <span class="score">Score {{resource.score}}</span>
-                                        </div>
-                                        <div v-else-if="resource.detail.running >= resource.detail.maxtask" class="resource-status bg-warning">
-                                            <icon name="hourglass" style="position: relative; top: -3px;"/>
-                                            Busy
-                                            <span class="score">Score {{resource.score}}</span>
-                                        </div>
-                                        <div v-else-if="preferred_resource && resource.id == preferred_resource._id" class="resource-status bg-success" title="This resource will be used to execute this App.">
-                                            <icon name="thumbs-up" style="position: relative; top: -3px;"/>
-                                            <!--Best-->
-                                            <span class="score">Score {{resource.score}}</span>
-                                        </div>
-                                        <div v-else class="resource-status" style="color: #888;">        
-                                            <span class="score">Score {{resource.score}}</span>
-                                        </div>
-                                    </div>
-                                </b-col>
-                            </b-row>
+                <div v-if="resources_considered" class="box" style="padding: 20px">
+                    <span class="form-header">Computing Resources</span>
+                    <b-alert show variant="secondary" v-if="resources_considered.length == 0" style="margin-bottom: 10px;">
+                        This App is not registered to run on any resource that you have access to. 
+                    </b-alert>
+                    <b-alert show variant="secondary" v-else-if="!preferred_resource" style="margin-bottom: 10px;">
+                        This App can not run on any resources that you have access to at the moment.
+                    </b-alert>
+                    <b-alert show variant="secondary" v-else-if="shared_resources.length == 0" style="margin-bottom: 10px;">
+                        This App is only enabled on your private resource(s). Other users may not be able to run this App.
+                    </b-alert>
+                    <p v-else>
+                        <small class="text-muted">This App can run on the following resources.</small>
+                    </p>
+
+                    <b-row>
+                        <b-col cols="6" v-for="resource in resources_considered" :key="resource._id">
+                            <div class="resource-area" v-b-popover.hover.d1000="resource.config.desc+'\n\n'+resource.detail.msg+'\nstatus:'+resource.status" :title="null">
+                                <resource :resource="resource"/>
+                                <div v-if="resource.status != 'ok'" class="resource-status bg-danger">
+                                    <icon name="exclamation" style="position: relative; top: -3px;"/>
+                                    {{resource.status}}
+                                    <span class="score">Score {{resource.score}}</span>
+                                </div>
+                                <div v-else-if="resource.detail.running >= resource.detail.maxtask" class="resource-status bg-warning">
+                                    <icon name="hourglass" style="position: relative; top: -3px;"/>
+                                    Busy
+                                    <span class="score">Score {{resource.score}}</span>
+                                </div>
+                                <div v-else-if="preferred_resource && resource.id == preferred_resource._id" class="resource-status bg-success" title="This resource will be used to execute this App.">
+                                    <icon name="thumbs-up" style="position: relative; top: -3px;"/>
+                                    <!--Best-->
+                                    <span class="score">Score {{resource.score}}</span>
+                                </div>
+                                <div v-else class="resource-status" style="color: #888;">        
+                                    <span class="score">Score {{resource.score}}</span>
+                                </div>
+                            </div>
+                        </b-col>
+                    </b-row>
+                    <br>
+                </div><!--resource_considered-->
+
+                <div class="box" style="padding: 20px">
+                    <b-row>
+                        <b-col>
+                            <span class="form-header">Maintaners</span>
+                            <p style="height: 30px;"><small class="text-muted">List of users who currently maintains this App.</small></p>
+                            <p v-for="c in app.admins" :key="c._id">
+                                <contact :id="c"/>
+                            </p>
                             <br>
-                        </div><!--resource_considered-->
-        
-                        <div class="box" style="padding: 20px">
-                            <b-row>
-                                <b-col>
-                                    <span class="form-header">Maintaners</span>
-                                    <p style="height: 30px;"><small class="text-muted">List of users who currently maintains this App.</small></p>
-                                    <p v-for="c in app.admins" :key="c._id">
-                                        <contact :id="c"/>
-                                    </p>
-                                    <br>
-                                </b-col>
-                                <b-col>
-                                    <div v-if="app.contributors.length > 0">
-                                        <span class="form-header">Contributors</span>
-                                        <p style="height: 30px;"><small class="text-muted">List of code contributors.({{app.github}}).</small></p>
-                                        <p v-for="dev in app.contributors" :key="dev._id">
-                                            <contact :fullname="dev.name" :email="dev.email"/>
-                                        </p>
-                                        <br>
-                                    </div>
-                                </b-col>
-                            </b-row>
-                        </div>
-                    </div><!--tab0-->
+                        </b-col>
+                        <b-col>
+                            <div v-if="app.contributors.length > 0">
+                                <span class="form-header">Contributors</span>
+                                <p style="height: 30px;"><small class="text-muted">List of code contributors.({{app.github}}).</small></p>
+                                <p v-for="dev in app.contributors" :key="dev._id">
+                                    <contact :fullname="dev.name" :email="dev.email"/>
+                                </p>
+                                <br>
+                            </div>
+                        </b-col>
+                    </b-row>
+                </div>
+            </b-container>
+        </div><!--tab0-->
 
-                    <div v-if="tab == 1">
-                        <div v-if="readme">
-                            <p style="float: right;"><small class="text-muted">From github repo / README.md</small></p>
-                            <vue-markdown :source="readme" class="readme"></vue-markdown>
-                        </div>
-                        <div v-else>No README</div>
-                    </div>
+        <div v-if="tab == 1">
+            <b-container>
+                <br>
+                <div v-if="readme">
+                    <p style="float: right;"><small class="text-muted">From github repo / README.md</small></p>
+                    <vue-markdown :source="readme" class="readme"></vue-markdown>
+                </div>
+                <div v-else>No README</div>
+            </b-container>
+        </div>
 
-                    <div v-if="tab == 2">
-                        <div v-if="tasks.length > 0">
-                            <p style="opacity: 0.7; font-size: 80%;">Showing up to 30 most recent jobs</p>
-                            <table class="table table-sm">
-                                <thead style="background-color: #eee; font-size: 80%;">
-                                    <tr>
-                                        <th style="min-width: 100px; padding-left: 20px;">Branch</th>
-                                        <th>Status</th>
-                                        <th style="min-width: 80px"><icon name="shield-alt"/></th>
-                                        <th>Submitter</th>
-                                        <th width="150px">Date</th>
-                                    </tr>
-                                </thead>
-                                <tr v-for="task in tasks" :key="task._id">
-                                    <td style="padding-left: 20px;">
-                                        <b-badge variant="light">{{task.service_branch}}</b-badge>
-                                    </td>
-                                    <td>
-                                        <span class="status-color" :class="task.status" style="padding: 3px" :title="task.status">
-                                            <statusicon :status="task.status" /> 
-                                            <!--<span style="text-transform: uppercase;" >{{task.status}}</span>-->
-                                        </span>
-                                        <small>{{task.status_msg}}</small>
-                                        <small style="font-size: 70%">{{task._id}}</small>
-                                    </td>
-                                    <td>
-                                        <small>{{task._group_id}}</small>
-                                    </td>
-                                    <td>
-                                        <contact :id="task.user_id" size="small"/>
-                                    </td>
-                                    <td>
-                                        <small v-if="task.status == 'requested'"><time>Requested <timeago :datetime="task.request_date" :auto-update="1"/></time></small>
-                                        <small v-else-if="task.status == 'running'"><time>Started <timeago :datetime="task.start_date" :auto-update="1"/></time></small>
-                                        <small v-else-if="task.status == 'finished'"><time>Finished <timeago :datetime="task.finish_date" :auto-update="1"/></time></small>
-                                        <small v-else-if="task.status == 'failed'"><time>Failed <timeago :datetime="task.fail_date" :auto-update="1"/></time></small>
-                                    </td>
-                                </tr>
-                            </table>
-                        </div>
-                        <div v-else>
-                            No recent jobs.
-                        </div>
-
-                    </div><!--tab1-->
-
-                    <div v-if="tab == 3">
-                        <vue-disqus shortname="brain-life" :identifier="app._id"/>
-                    </div>
-
-                </b-col>
-                <b-col cols="3">
-                    <p v-if="app.doi || app.stats">
-                        <doibadge :doi="app.doi" v-if="app.doi"/>
-                    </p>
-
-                    <p title="Registration Date">
-                        <b-badge pill v-if="app.create_date" class="bigpill">
-                            <icon name="calendar" style="opacity: 0.4;"/>&nbsp;&nbsp;&nbsp;<small>Registerd</small>&nbsp;&nbsp;{{new Date(app.create_date).toLocaleDateString()}}
-                        </b-badge>
-                    </p>
-
-                    <p v-if="app.stats && app.stats.users" title="Users who executed this App">
-                        <b-badge pill class="bigpill">
-                            <icon name="user-cog" style="opacity: 0.4;"/>&nbsp;&nbsp;&nbsp;{{app.stats.users}}&nbsp;&nbsp;<small>Users</small>
-                        </b-badge>
-                    </p>
-
-                    <p v-if="app.stats && app.stats.requested" title="Number of time this App was requested">
-                        <b-badge pill class="bigpill">
-                            <icon name="play" style="opacity: 0.4;"/>&nbsp;&nbsp;&nbsp;{{app.stats.requested}}&nbsp;&nbsp;<small>Requests</small>
-                        </b-badge>
-                    </p>
-
-                    <p title="Average Runtime">
-                        <b-badge pill v-if="app.stats && app.stats.runtime_mean" class="bigpill">
-                            <icon name="clock" style="opacity: 0.4;"/>&nbsp;&nbsp;&nbsp;{{avg_runtime(app.stats.runtime_mean, app.stats.runtime_std)}}
-                        </b-badge>
-                    </p>
-
-                    <!--<span class="form-header">Topics</span>-->
-                    <p style="line-height: 250%;">
-                        <b-badge v-for="tag in app.tags" :key="tag" class="topic">{{tag}}</b-badge>
-                    </p>
-
-                    <div class='altmetric-embed' 
-                        data-badge-type='medium-donut' 
-                        data-badge-details="right" 
-                        :data-doi="app.doi" 
-                        data-hide-no-mentions="true"/>
-
-                    <p v-if="app.stats && app.stats.success_rate" v-b-tooltip.hover.d1000.right title="finished/(failed+finished). Same request could be re-submitted / rerun.">
-                        <!--<span class="form-header">Success Rate</span>-->
-                        <svg width="70" height="70">
-                            <circle :r="140/(2*Math.PI)" cx="35" cy="35" fill="transparent" stroke="#666" stroke-width="15"/>
-                            <circle :r="140/(2*Math.PI)" cx="35" cy="35" fill="transparent" stroke="#28a745" stroke-width="15" 
-                                :stroke-dasharray="app.stats.success_rate*(140/100)+' '+(100-app.stats.success_rate)*(140/100)" stroke-dashoffset="-105"/>
-                        </svg>
-                        <b>{{app.stats.success_rate.toFixed(1)}}%</b> <span style="opacity: 0.5">Success Rate</span>
-                    </p>
-                   
-                    <!--
-                    <p style="opacity: 0.8;">
-                        <table v-if="serviceinfo">
+        <div v-if="tab == 2">
+            <b-container>
+                <br>
+                <div v-if="tasks.length > 0">
+                    <p style="opacity: 0.7; font-size: 80%;">Showing up to 30 most recent jobs</p>
+                    <table class="table table-sm">
+                        <thead style="background-color: #eee; font-size: 80%;">
                             <tr>
-                                <th style="width: 80%; opacity: 0.8"><icon name="caret-right"/> Users</th>
-                                <th style="width: 25px;"><span class="text-success"><statusicon status="finished" scale="0.8"/></span></th>
-                                <th style="width: 25px;"><span class="text-danger"><statusicon status="failed" scale="0.8"/></span></th>
+                                <th style="min-width: 100px; padding-left: 20px;">Branch</th>
+                                <th>Status</th>
+                                <th style="min-width: 80px"><icon name="shield-alt"/></th>
+                                <th>Submitter</th>
+                                <th width="150px">Date</th>
                             </tr>
-                            <tr v-for="(info, user) in serviceinfo.user" :key="user">
-                                <td><contact :id="user" size="small"/></td>
-                                <td>
-                                    <b class="text-success">{{info.finished||0}}</b>
-                                </td>
-                                <td>
-                                    <b class="text-danger">{{info.failed||0}}</b>
-                                </td>
-                            </tr>
-                        </table>
-                    </p>
-                    -->
-                </b-col>
-            </b-row>
-            <br>
-            <br>
-            <br>
-            <br>
-            <br>
-        </b-container>
+                        </thead>
+                        <tr v-for="task in tasks" :key="task._id">
+                            <td style="padding-left: 20px;">
+                                <b-badge variant="light">{{task.service_branch}}</b-badge>
+                            </td>
+                            <td>
+                                <span class="status-color" :class="task.status" style="padding: 3px" :title="task.status">
+                                    <statusicon :status="task.status" /> 
+                                    <!--<span style="text-transform: uppercase;" >{{task.status}}</span>-->
+                                </span>
+                                <small>{{task.status_msg}}</small>
+                                <small style="font-size: 70%">{{task._id}}</small>
+                            </td>
+                            <td>
+                                <small>{{task._group_id}}</small>
+                            </td>
+                            <td>
+                                <contact :id="task.user_id" size="small"/>
+                            </td>
+                            <td>
+                                <small v-if="task.status == 'requested'"><time>Requested <timeago :datetime="task.request_date" :auto-update="1"/></time></small>
+                                <small v-else-if="task.status == 'running'"><time>Started <timeago :datetime="task.start_date" :auto-update="1"/></time></small>
+                                <small v-else-if="task.status == 'finished'"><time>Finished <timeago :datetime="task.finish_date" :auto-update="1"/></time></small>
+                                <small v-else-if="task.status == 'failed'"><time>Failed <timeago :datetime="task.fail_date" :auto-update="1"/></time></small>
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+                <div v-else>
+                    No recent jobs.
+                </div>
+            </b-container>
+        </div><!--tab1-->
+
+        <div v-if="tab == 3">
+            <b-container>
+                <br>
+                <vue-disqus shortname="brain-life" :identifier="app._id"/>
+            </b-container>
+        </div>
+        <!--
+        <b-col cols="3">
+            <p v-if="app.doi || app.stats">
+                <doibadge :doi="app.doi" v-if="app.doi"/>
+            </p>
+
+            <p title="Registration Date">
+                <b-badge pill v-if="app.create_date" class="bigpill">
+                    <icon name="calendar" style="opacity: 0.4;"/>&nbsp;&nbsp;&nbsp;<small>Registerd</small>&nbsp;&nbsp;{{new Date(app.create_date).toLocaleDateString()}}
+                </b-badge>
+            </p>
+
+            <p v-if="app.stats && app.stats.users" title="Users who executed this App">
+                <b-badge pill class="bigpill">
+                    <icon name="user-cog" style="opacity: 0.4;"/>&nbsp;&nbsp;&nbsp;{{app.stats.users}}&nbsp;&nbsp;<small>Users</small>
+                </b-badge>
+            </p>
+
+            <p v-if="app.stats && app.stats.requested" title="Number of time this App was requested">
+                <b-badge pill class="bigpill">
+                    <icon name="play" style="opacity: 0.4;"/>&nbsp;&nbsp;&nbsp;{{app.stats.requested}}&nbsp;&nbsp;<small>Requests</small>
+                </b-badge>
+            </p>
+
+            <p title="Average Runtime">
+                <b-badge pill v-if="app.stats && app.stats.runtime_mean" class="bigpill">
+                    <icon name="clock" style="opacity: 0.4;"/>&nbsp;&nbsp;&nbsp;{{avg_runtime(app.stats.runtime_mean, app.stats.runtime_std)}}
+                </b-badge>
+            </p>
+
+            <p style="line-height: 250%;">
+                <b-badge v-for="tag in app.tags" :key="tag" class="topic">{{tag}}</b-badge>
+            </p>
+
+            <div class='altmetric-embed' 
+                data-badge-type='medium-donut' 
+                data-badge-details="right" 
+                :data-doi="app.doi" 
+                data-hide-no-mentions="true"/>
+
+            <p v-if="app.stats && app.stats.success_rate" v-b-tooltip.hover.d1000.right title="finished/(failed+finished). Same request could be re-submitted / rerun.">
+                <svg width="70" height="70">
+                    <circle :r="140/(2*Math.PI)" cx="35" cy="35" fill="transparent" stroke="#666" stroke-width="15"/>
+                    <circle :r="140/(2*Math.PI)" cx="35" cy="35" fill="transparent" stroke="#28a745" stroke-width="15" 
+                        :stroke-dasharray="app.stats.success_rate*(140/100)+' '+(100-app.stats.success_rate)*(140/100)" stroke-dashoffset="-105"/>
+                </svg>
+                <b>{{app.stats.success_rate.toFixed(1)}}%</b> <span style="opacity: 0.5">Success Rate</span>
+            </p>
+        </b-col>
+        -->
+        <br>
+        <br>
+        <br>
+        <br>
     </div><!--page-content-->
 </div>
 </template>
@@ -627,9 +668,8 @@ top: 0px;
 
 .header {
 background-color: white;
-margin-bottom: 30px;
 padding: 15px 0px 0px 0px;
-border-bottom: 1px solid #eee;
+border-bottom: 1px solid #ddd;
 position: sticky;
 top: 0;
 z-index: 5;/*has to be above vue-ace line number*/

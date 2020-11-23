@@ -357,52 +357,46 @@ exports.update_appinfo = function(app, cb) {
 
 exports.load_github_detail = function(service_name, cb) {
     if(!config.github) return cb("no github config");
-    request("https://api.github.com/repos/"+service_name, { json: true, headers: {
+    let headers = {
+        'Authorization': 'token '+config.github.access_token,
+        'User-Agent': 'brainlife',
+        
         //needed to get topic (which is currently in preview mode..)
         //https://developer.github.com/v3/repos/#list-all-topics-for-a-repository
-        'Authorization': 'token '+config.github.access_token,
-        'User-Agent': 'brain-life/warehouse',
         'Accept': "application/vnd.github.mercy-preview+json", 
-    }}, function(err, _res, git) {
-        if(err) return cb(err);
-        if(_res.statusCode != 200) {
-            logger.error(_res.body);
-            return cb("failed to query requested repo. code:"+_res.statusCode);
+    }
+    axios.get("https://api.github.com/repos/"+service_name, { headers }).then(res=>{
+        let git = res.data;
+        if(res.status != 200) {
+            logger.error(res);
+            return cb("failed to query requested repo. code:"+res.status);
         }
-        //logger.debug(_res.headers);
 
         logger.debug("loading contributors");
-        request("https://api.github.com/repos/"+service_name+"/contributors", { json: true, headers: {
-            'Authorization': 'token '+config.github.access_token,
-            'User-Agent': 'brain-life/warehouse',
-        }}, function(err, _res, cons) {
-            if(err) return cb(err);
-            if(_res.statusCode != 200) {
-                logger.error(_res.body);
-                return cb("failed to query requested repo. code:"+_res.statusCode);
+        axios.get("https://api.github.com/repos/"+service_name+"/contributors", { headers }).then(res=>{
+            let cons = res.data;
+            if(res.status != 200) {
+                logger.error(res);
+                return cb("failed to query requested repo. code:"+res.status);
             }
 
             logger.debug("loading contributor details")
             let con_details = [];
             async.eachSeries(cons, (con, next_con)=>{
-                request(con.url, { json: true, headers: {
-                    'Authorization': 'token '+config.github.access_token,
-                    'User-Agent': 'brain-life/warehouse',
-                } }, function(err, _res, detail) {
-                    if(err) return next_con(err);
-                    if(_res.statusCode != 200) {
-                        logger.error(_res.body);
-                        return next_con("failed to load user detail:"+_res.statusCode);
+                axios.get(con.url, { headers }).then(res=>{
+                    let detail = res.data;
+                    if(res.status != 200) {
+                        logger.error(res);
+                        return next_con("failed to load user detail:"+res.status);
                     }
-                    //logger.debug(_res.headers);
                     con_details.push(detail);
                     next_con();
-                });
+                }).catch(next_con);
             }, err=>{
-                cb(null, git, con_details);
+                cb(err, git, con_details);
             });
-        });
-    });
+        }).catch(cb);
+    }).catch(cb)
 }
 
 exports.compose_app_datacite_metadata = function(app) {
