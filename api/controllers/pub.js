@@ -94,73 +94,23 @@ router.get('/datasets-inventory/:releaseid', (req, res, next)=>{
     });
 });
 
+//TODO - cache this in publication record?
 /**
- * @apiGroup Publications
+ * @apiGroup Publications 
  * @api {get} /pub/apps/:releaseid
  *                              Enumerate applications used to generate datasets
- *
  * @apiSuccess {Object[]}       Application objects
  * 
  */
-router.get('/apps/:releaseid', (req, res, next)=>{
-    db.Datasets.aggregate()
-    .match({
+router.get('/apps/:releaseid', async (req, res, next)=>{
+    try {
+        let apps = await common.aggregateDatasetsByApps({
             publications: mongoose.Types.ObjectId(req.params.releaseid) 
-    })
-    .group({
-        _id: { 
-            app: "$prov.task.config._app", 
-            service: "$prov.task.service",
-            service_branch: "$prov.task.service_branch"
-        }
-    })
-    .project({
-        _id: 0, 
-        app: "$_id.app", 
-        service: "$_id.service",
-        service_branch: "$_id.service_branch",
-    })
-    .exec((err, recs)=>{
-        if(err) return next(err);
-        console.dir(recs);
-        
-        //load apps used
-        let app_ids = [];
-        recs.forEach(rec=>{ if(rec.app) app_ids.push(rec.app); });
-        db.Apps.find({
-            _id: {$in: app_ids},
-            projects: [], //only show *public* apps
-        })
-        //.populate(req.query.populate || '')
-        .exec((err, apps)=>{
-            if(err) return next(err);
-
-            //make it easier to lookup apps
-            let app_obj = {};
-            apps.forEach(app=>{
-                app_obj[app._id] = app;
-            });
-
-            //now populate apps
-            let populated = [];
-            recs.forEach(rec=>{
-                if(rec.app) {
-                    rec.app = app_obj[rec.app];
-                    if(!rec.app) {
-                        logger.error("dataset(%s) is set to use invalid app id(%s)", rec._id, rec.app);
-                    } else {
-                        populated.push(rec);
-                    }
-                }
-            });
-
-            //sort by app name
-            populated.sort((a,b)=>{
-                return a.app.name.localeCompare(b.app.name);  
-            });
-            res.json(populated);
         });
-    });
+        res.json(apps);
+    } catch(err) {
+        next(err);
+    }
 });
 
 /**

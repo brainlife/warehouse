@@ -373,11 +373,8 @@ router.delete('/:id', jwt({secret: config.express.pubkey}), (req, res, next)=>{
  *                              A valid JWT token "Bearer: xxxxx"
  */
 router.get('/info/:org/:name', jwt({secret: config.express.pubkey}), async (req, res, next)=>{
-
     let service = req.params.org+"/"+req.params.name; //TODO validate?
-
     try {
-        
         let branches = [];
         let page = 1;
         while(true) {

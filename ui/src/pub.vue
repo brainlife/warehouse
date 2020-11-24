@@ -151,9 +151,9 @@
                 <!-- release -->
                 <div class="box">
                     <p>The following Apps were used to generate the data in this release.</p>
-                    <table class="table">
+                    <table class="table table-sm">
                         <thead>
-                            <tr>
+                            <tr style="font-size: 80%;">
                                 <th>Name</th>
                                 <th>DOI</th>
                                 <th>Github</th>
@@ -164,7 +164,7 @@
                             <tr v-for="rec in apps" :key="rec.app.doi">
                                 <td>{{rec.app.name}}</td>
                                 <td><a :href="'https://doi.org/'+rec.app.doi" :target="'doi_'+rec.app.doi">{{rec.app.doi}}</a></td>
-                                <td><a :href="'https://github.com/'+rec.service" :target="'github_'+rec.service">{{rec.service}}</a></td>
+                                <td><a :href="'https://github.com/'+rec.service+'/tree/'+(rec.service_branch||'master')" :target="'github_'+rec.service">{{rec.service}}</a></td>
                                 <td>{{rec.service_branch||'master'}}</td>
                                 <!--
                                 <div style="margin-right: 10px; margin-bottom: 10px; position: relative;">
@@ -262,9 +262,13 @@ export default {
 
     components: { 
         projectavatar, 
-        contact, VueMarkdown, license, 
-        datatypetag, tags, 
-        app, citation,
+        contact, 
+        VueMarkdown, 
+        license, 
+        datatypetag, 
+        tags, 
+        app, 
+        citation,
         doibadge, 
     },
 

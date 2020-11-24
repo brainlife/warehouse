@@ -169,7 +169,34 @@
 
                 <div class="box" v-if="participants && Object.keys(participants).length > 0">
                     <span class="form-header">Participants Info</span>     
-                    <p><small>participants info provides information for each subject and can be used for the group analysis.</small></p>                        <participants :subjects="participants" :columns="participants_columns" style="max-height: 500px; overflow: auto;"/>
+                    <p><small>Participants info provides information for each subject and can be used for the group analysis.</small></p>                        
+                    <participants :subjects="participants" :columns="participants_columns" style="max-height: 500px; overflow: auto;"/>
+                </div>
+
+                <div class="box" v-if="selected.stats.apps && selected.stats.apps.length > 0">
+                    <span class="form-header">App Usage</span>     
+                    <p><small>Data archived in this project was generated using the following set of Apps</small></p>                        
+                    <table class="table table-sm">
+                        <thead>
+                            <tr style="font-size: 80%;">
+                                <th>Name</th>
+                                <th>DOI</th>
+                                <th>Github</th>
+                                <th>Branch</th>
+                                <th>Count</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr v-for="rec in selected.stats.apps" :key="rec._id">
+                                <td>{{rec.name}}</td>
+                                <td><a :href="'https://doi.org/'+rec.doi" :target="'doi_'+rec.doi">{{rec.doi}}</a></td>
+                                <td><a :href="'https://github.com/'+rec.service+'/tree/'+(rec.service_branch||'master')" :target="'github_'+rec.service">{{rec.service}}</a></td>
+                                <td>{{rec.service_branch||'master'}}</td>
+                                <td>{{rec.count}}</td>
+                            </tr>
+                        </tbody>
+                    </table>
+
                 </div>
 
                 <div v-if="resource_usage && total_walltime > 3600*1000" class="box">      
@@ -183,13 +210,20 @@
                             :watchShallow="true"/>
                 </div>
 
-                <div v-if="resource_citations.length > 0" class="box">
-                    <span class="form-header">Resource Citations</span>
+                <div v-if="selected.stats.apps.length > 0">
+                    <span class="form-header">Citations</span>
+                    <p><small>Please use the following citations to cite the Apps used by this project.</small></p>
+                    <p v-for="app in selected.stats.apps" :key="app._id">
+                        <icon name="caret-right"/> <b>{{app.name}}</b><br>
+                        <citation :doi="app.doi"/> 
+                    </p>
+                </div>
+
+                <div v-if="resource_citations.length > 0">
                     <p><small>Please use the following citations to cite the resources used by this project.</small></p>
                     <p v-for="(resource_citation, idx) in resource_citations" :key="idx">
                         <icon name="caret-right"/> <b>{{resource_citation.resource.name}}</b><br>
-                        <small>{{resource_citation.resource.config.desc}}</small>
-                        <br>
+                        <!--<small>{{resource_citation.resource.config.desc}}</small>-->
                         <i>{{resource_citation.citation}}</i>
                     </p>
                 </div>
@@ -261,6 +295,7 @@ import { Plotly } from 'vue-plotly'
 import newtaskModal from '@/modals/newtask'
 import datatypeselecterModal from '@/modals/datatypeselecter'
 import ReconnectingWebSocket from 'reconnectingwebsocket'
+import citation from '@/components/citation'
 
 let ps;
 
@@ -291,6 +326,7 @@ export default {
         newtaskModal, 
         datatypeselecterModal, 
         stateprogress,
+        citation,
     },
 
     data () {

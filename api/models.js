@@ -119,7 +119,7 @@ var projectSchema = mongoose.Schema({
             others: Number,  //probably empty, or null
         },
 
-        //resource uage stats updated by projectinfo > common.update_project_stats
+        //resource uage stats updated by common.update_project_stats
         resources: [{
             resource_id: String, //amaretti resource_id
 
@@ -129,9 +129,25 @@ var projectSchema = mongoose.Schema({
             citation: String,
 
             service: String, //amaretti service (github)
-            //app_id: {type: mongoose.Schema.Types.ObjectId, ref: "Apps"},
             count: Number, //number of time this app/resource pair appears for stored datasets
             total_walltime: Number, //msec for total walltime 
+        }],
+
+        //app usage stats updated by common.update_project_stats
+        apps: [{
+            app: {type: mongoose.Schema.Types.ObjectId, ref: "Apps"},
+
+            //for quick reference
+            name: String,
+            doi: String,
+            
+            //service/branch used
+            service: String,
+            service_branch: String,
+            count: Number, //number of time this app was executed
+
+            //TODO - does dataset prov store this somewhere?
+            //total_walltime: Number, //msec for total walltime spent for this app
         }],
 
         //count of pipeline rules (updated by common.update_project_stats)
@@ -318,7 +334,6 @@ var datasetSchema = mongoose.Schema({
         //
         ///////////////////////////////////////
     },
-
 
     //product.json content for this dataset (new) - might be subset of task.product
     product: mongoose.Schema.Types.Mixed,

@@ -875,6 +875,7 @@ exports.update_secondary_index = async function(project) {
 */
 
 exports.update_project_stats = async function(project, cb) {
+    console.log("updateing project stats project:", project._id)
     try {
         let counts = await rp.get({
             url: config.amaretti.api+"/instance/count", json: true,
@@ -897,6 +898,20 @@ exports.update_project_stats = async function(project, cb) {
             if(rec._id.active) rules.active = rec.count;
             else rules.inactive = rec.count;
         });
+
+        let recs = await exports.aggregateDatasetsByApps({project:project._id}, false)
+        let app_stats = [];
+        recs.forEach(rec=>{
+            app_stats.push({
+                app: rec.app._id,
+                name: rec.app.name,
+                doi: rec.app.doi,
+
+                service: rec.service,
+                service_branch: rec.service_branch,
+                count: rec.count,
+            });
+        })
 
         //TODO query task/resource_service_count api
         let resource_usage = await rp.get({
@@ -939,6 +954,7 @@ exports.update_project_stats = async function(project, cb) {
         let newproject = await db.Projects.findOneAndUpdate({_id: project._id}, {$set: {
             "stats.rules": rules, 
             "stats.resources": resource_stats, 
+            "stats.apps": app_stats, 
             "stats.publications": publications,
             "stats.instances": instance_counts,
         }}, {new: true});
@@ -1081,5 +1097,70 @@ exports.list_users = async ()=>{
         if(user.times && new Date(user.times.register) > week_ago) lists.recent.push(user);
     });
     return lists;
+}
+
+//set populateApps to true if you want to replace app(id) with actual App objects
+exports.aggregateDatasetsByApps = (query)=>{
+    return new Promise((resolve, reject)=>{
+        db.Datasets.aggregate()
+        .match(query)
+        .group({
+            _id: { 
+                app: "$prov.task.config._app", 
+                service: "$prov.task.service",
+                service_branch: "$prov.task.service_branch"
+            },
+            count: {$sum: 1},
+        })
+        .project({
+            _id: 0, 
+            app: "$_id.app", 
+            count: "$count",
+            service: "$_id.service",
+            service_branch: "$_id.service_branch",
+        })
+        .exec((err, recs)=>{
+            if(err) return reject(err);
+
+            //if(!populateApps) return resolve(recs);
+            
+            //load apps used
+            let app_ids = [];
+            recs.forEach(rec=>{ if(rec.app) app_ids.push(rec.app); });
+            db.Apps.find({
+                _id: {$in: app_ids},
+                projects: [], //only show *public* apps
+            })
+            //.populate(req.query.populate || '')
+            .exec((err, apps)=>{
+                if(err) return reject(err);
+
+                //make it easier to lookup apps
+                let app_obj = {};
+                apps.forEach(app=>{
+                    app_obj[app._id] = app;
+                });
+
+                //now populate apps
+                let populated = [];
+                recs.forEach(rec=>{
+                    if(rec.app) {
+                        rec.app = app_obj[rec.app];
+                        if(!rec.app) {
+                            logger.error("dataset(%s) is set to use invalid app id(%s)", rec._id, rec.app);
+                        } else {
+                            populated.push(rec);
+                        }
+                    }
+                });
+
+                //sort by app name
+                populated.sort((a,b)=>{
+                    return a.app.name.localeCompare(b.app.name);  
+                });
+                resolve(populated);
+            });
+        });
+    });
 }
 

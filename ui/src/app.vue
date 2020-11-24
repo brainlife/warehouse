@@ -80,13 +80,6 @@
         <div v-if="tab == 0">
             <div style="background-color: white; padding-top: 15px; border-bottom: 1px solid #ddd;">
                 <b-container>
-                    <b-card v-if="app.deprecated_by" no-body style="margin-bottom: 10px">
-                        <span slot="header">
-                            <icon name="regular/calendar-times"/> This App has been deprecated by the following App
-                        </span>
-                        <app :appid="app.deprecated_by"/>
-                    </b-card>
-
                     <div style="border-bottom: 1px solid #eee; margin-bottom: 10px;">
                         <appavatar :app="app" style="float: right; position: relative; top: -15px; margin-left: 15px;" width="150" height="150"/>
 
@@ -143,6 +136,13 @@
 
             <b-container>
                 <br>
+                <b-card v-if="app.deprecated_by" no-body style="margin-bottom: 10px">
+                    <span slot="header">
+                        <icon name="regular/calendar-times"/> This App has been deprecated by the following App
+                    </span>
+                    <app :appid="app.deprecated_by"/>
+                </b-card>
+
                 <!--input/output-->
                 <p><small class="text-muted">This App uses the following input/output datatypes</small></p>
                 <div style="position: relative;">
