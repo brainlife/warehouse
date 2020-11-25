@@ -210,7 +210,7 @@
                             :watchShallow="true"/>
                 </div>
 
-                <div v-if="selected.stats.apps.length > 0">
+                <div v-if="selected.stats.apps && selected.stats.apps.length > 0">
                     <span class="form-header">Citations</span>
                     <p><small>Please use the following citations to cite the Apps used by this project.</small></p>
                     <p v-for="app in selected.stats.apps" :key="app._id">

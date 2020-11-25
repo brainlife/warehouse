@@ -927,6 +927,9 @@ exports.update_project_stats = async function(project, cb) {
 
         //load resource details to be merged into the resource_usage info
         let resource_ids = resource_usage.map(raw=>raw._id.resource_id);
+
+        //dedupe resource_ids
+        resource_ids = [...new Set(resource_ids)];
         let {resources} = await rp.get({
             url: config.amaretti.api+"/resource", json: true,
             qs: {
