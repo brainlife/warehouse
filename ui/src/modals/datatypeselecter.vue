@@ -12,7 +12,7 @@
                                 <b-form-checkbox v-model="stat.include"/>
                             </b-col>
                             <b-col>
-                                <datatypetag :datatype="datatypes[datatype_id]" :tags="JSON.parse(tags_s)"/>
+                                <datatypetag :datatype="datatypes[datatype_id]" :tags="JSON.parse(tags_s)" :clickable="false"/>
                             </b-col>
                             <!--
                             <b-col>
@@ -21,6 +21,14 @@
                             -->
                             <b-col>
                                  <b>{{stat.count}}</b> <span style="opacity: 0.8">datasets</span> ({{stat.size|filesize}})
+                            </b-col>
+                        </b-row>
+
+                        <!--additional filter-->
+                        <b-row v-if="stat.include">
+                            <b-col cols="1"></b-col>
+                            <b-col>
+                                <tageditor v-model="stat.tags" placeholder="Enter object tags to filter (leave empty to select all. can use !negative tags)"/>
                             </b-col>
                         </b-row>
                     </div>
@@ -43,9 +51,13 @@
 
 import Vue from 'vue'
 import datatypetag from '@/components/datatypetag'
+import tageditor from '@/components/tageditor'
 
 export default {
-    components: { datatypetag },
+    components: { 
+        datatypetag,
+        tageditor,
+    },
     data() {
         return {
             ready: false,
@@ -84,6 +96,7 @@ export default {
                             count: stat.count,
                             size: stat.size,
                             subjects: this.subjects,
+                            tags: stat.tags,
                         });
                     }
                 }

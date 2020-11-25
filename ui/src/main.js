@@ -231,7 +231,7 @@ Vue.config.productionTip = false;
 Vue.config.debug_doi = "10.25663/bl.p.3"; //o3d publication
 Vue.config.plotly = {
     font: {
-        font: '-apple-system,BlinkMacSystemFont,Segoe UI,Helvetica,Arial,sans-serif,Apple Color Emoji,Segoe UI Emoji',
+        font: 'Arial,sans-serif,Apple Color Emoji,Segoe UI Emoji',
         size: 11,
     },
 };

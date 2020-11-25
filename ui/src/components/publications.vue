@@ -5,7 +5,7 @@
         <b>{{pubs.length}}</b> Publications
     </div>
     -->
-    <div class="page-content">
+    <div class="page-content" ref="scrolled">
         <div v-if="editing" style="background-color: white; padding: 20px; padding-top: 10px;">
             <pubform :pub="editing" :project="project" @submit="save" @cancel="cancel"/>
         </div>
@@ -163,6 +163,7 @@ export default {
                     this.$router.replace('/project/'+this.project._id+'/pub/');
                     this.editing = null;
                     this.$notify("Successfully updated!");
+                    this.$refs.scrolled.scrollTop = 0;
                 }).catch(res=>{
                     this.$notify({type: 'error', text: res.data});
                 });
@@ -192,6 +193,7 @@ export default {
         cancel() {
             //console.log("cancel");
             this.$router.replace("/project/"+this.project._id+"/pub/");
+            this.$refs.scrolled.scrollTop = 0;
             this.editing = false;
         },
     },

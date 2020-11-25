@@ -178,7 +178,7 @@
                     <p><small>Data archived in this project was generated using the following set of Apps</small></p>                        
                     <table class="table table-sm">
                         <thead>
-                            <tr style="font-size: 80%;">
+                            <tr>
                                 <th>Name</th>
                                 <th>DOI</th>
                                 <th>Github</th>
@@ -213,8 +213,8 @@
                 <div v-if="selected.stats.apps && selected.stats.apps.length > 0">
                     <span class="form-header">Citations</span>
                     <p><small>Please use the following citations to cite the Apps used by this project.</small></p>
-                    <p v-for="app in selected.stats.apps" :key="app._id">
-                        <icon name="caret-right"/> <b>{{app.name}}</b><br>
+                    <p v-for="app in uniqueApps" :key="app._id">
+                        <icon name="robot" style="opacity: 0.5;"/> <b>{{app.name}}</b><br>
                         <citation :doi="app.doi"/> 
                     </p>
                 </div>
@@ -222,7 +222,7 @@
                 <div v-if="resource_citations.length > 0">
                     <p><small>Please use the following citations to cite the resources used by this project.</small></p>
                     <p v-for="(resource_citation, idx) in resource_citations" :key="idx">
-                        <icon name="caret-right"/> <b>{{resource_citation.resource.name}}</b><br>
+                        <icon name="server" style="opacity: 0.5;"/> <b>{{resource_citation.resource.name}}</b><br>
                         <!--<small>{{resource_citation.resource.config.desc}}</small>-->
                         <i>{{resource_citation.citation}}</i>
                     </p>
@@ -373,6 +373,22 @@ export default {
                 this.$router.replace("/project/"+this.selected._id+"/"+this.tabs[this.tab].id);
             }
         },
+    },
+
+    computed: {
+        uniqueApps() {
+            if(!this.selected ||
+                !this.selected.stats ||
+                !this.selected.stats.apps) return [];
+            let dois = [];
+            let apps = [];
+            this.selected.stats.apps.forEach(app=>{
+                if(dois.includes(app.doi)) return;
+                dois.push(app.doi);
+                apps.push(app);
+            });
+            return apps;
+        }
     },
 
     mounted() {

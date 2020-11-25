@@ -310,11 +310,31 @@ function handle_release(release, project, cb) {
             project,
             removed: false,
             datatype: set.datatype._id,
-            datatype_tags: set.datatype_tags,
         };
+        if(set.datatype_tags.length > 0) {
+            find.datatype_tags = {$all: set.datatype_tags};
+        }
+
         if(set.subjects.length > 0) {
             find["meta.subject"] = {$in: set.subjects};
         }
+        if(set.tags && set.tags.length > 0) {
+            let all = [];
+            let nin = [];
+            set.tags.forEach(tag=>{ 
+                if(tag[0] == "!") {
+                    nin.push(tag.substring(1));
+                } else {
+                    all.push(tag);
+                }
+            });
+            find.tags = {};
+            if(all.length > 0) find.tags["$all"] = all;
+            if(nin.length > 0) find.tags["$nin"] = nin;
+        }
+
+        console.dir(find);
+
         console.log("handling release");
         console.log(JSON.stringify(find, null, 4));
 

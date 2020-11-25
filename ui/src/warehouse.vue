@@ -161,6 +161,9 @@ table.info th {
 table.info td {
     padding: 10px;
 }
+.table-sm th, .table-sm td {
+    font-size: 90%;
+}
 
 #warehouse .table thead th {
     opacity: 0.8;

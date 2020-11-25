@@ -153,7 +153,7 @@
                     <p>The following Apps were used to generate the data in this release.</p>
                     <table class="table table-sm">
                         <thead>
-                            <tr style="font-size: 80%;">
+                            <tr>
                                 <th>Name</th>
                                 <th>DOI</th>
                                 <th>Github</th>
@@ -166,11 +166,6 @@
                                 <td><a :href="'https://doi.org/'+rec.app.doi" :target="'doi_'+rec.app.doi">{{rec.app.doi}}</a></td>
                                 <td><a :href="'https://github.com/'+rec.service+'/tree/'+(rec.service_branch||'master')" :target="'github_'+rec.service">{{rec.service}}</a></td>
                                 <td>{{rec.service_branch||'master'}}</td>
-                                <!--
-                                <div style="margin-right: 10px; margin-bottom: 10px; position: relative;">
-                                    <app :app="rec.app" height="270px" :branch="rec.service_branch||'master'"></app>
-                                </div>
-                                -->
                             </tr>
                         </tbody>
                     </table>
