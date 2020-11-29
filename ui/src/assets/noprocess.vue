@@ -1,8 +1,9 @@
 <template>
-<div style="overflow-y: auto; position: fixed; top: 95px; bottom: 0;">
+<div>
     <b-alert show variant="secondary">
         Only the admins or members of this project can access processes. Please contact the project admins to give you access.
     </b-alert>
+    <!-- NEEDS TO BE UPDATED
     <div style="margin: 20px;">
         <h4>How can I analyze dataset on this project?</h4>
         <b-card>
@@ -11,19 +12,18 @@
                     <h5>1. Create Private Project</h5>
                     <p>This project is read-only. Please create a new project to analyze the datasets in this
                     project.
-                    <p>To create a new project, go to the main projects page by clicking the <b>&lt;</b> button at the top of this page. 
-                        Once on the main brainlife.io/projects page click the <b-btn style="border-radius: 40%;" size="sm" variant="secondary"><icon name="plus"/></b-btn> button
-                        (see bottom right corner).</p>
+                    <p>To create a new project, go to the main projects page, then click "New Project" button at the bottom right corner of the page.</p>
                 </b-list-group-item>
 
                 <b-list-group-item>
                     <iframe width="444" height="250" style="float: right; margin-left: 20px;"
                         src="https://www.youtube.com/embed/u9Qlh0-iaAk" frameborder="0" 
                         allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
-                    <h5>2. Analyze Single Subject</h5>
-                    <p>You can test run several brainlife.io/apps on a few subjects.</p>
+                    <h5>2. Analyze a few Subjects</h5>
+                    <p>You should test run several Apps on a few subjects before bulk processing the entire subjects.</p>
                     <p>
-                        To do so, look under the <b>Archive</b> tab on this page. Select a few datasets from a single subject by clicking the checkbox next to each DataType. 
+                        To do so, look under the <b>Archive</b> tab on your new project. 
+                        Select data objects from a single subject by clicking the checkbox next to each DataType. 
                         Then click <b><icon name="play"/> Stage to process</b> button to open <i>Stage Datasets</i> modal 
                         where you can select your own project to stage selected dataset to. Click Submit to create a new process.
                     </p>
@@ -50,6 +50,7 @@
             </b-card-text>
         </b-card>
     </div>
+    -->
 </div>
 </template>
 

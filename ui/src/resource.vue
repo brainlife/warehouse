@@ -4,12 +4,7 @@
         <div v-if="!resource" class="loading">Loading ...</div>
         <div v-else>
             <div class="header header-sticky">
-                <b-container  style="position: relative;">
-                    <!--
-                    <div @click="back()" class="button button-page">
-                        <icon name="angle-left" scale="1.5"/>
-                    </div>
-                    -->
+                <b-container style="position: relative;">
                     <div style="float: right; margin-left: 20px; margin-bottom: 20px;">
                         <b-btn size="sm" @click="test" variant="success" v-if="resource._canedit && !testing" title="Test">Test</b-btn>
                         <b-btn size="sm" v-if="testing" title="Test" disabled><icon name="cog" :spin="true"/> Testing ... </b-btn>
@@ -20,52 +15,57 @@
                         <b-badge v-if="!resource.gids || resource.gids.length == 0" variant="secondary" title="Private resource"><icon name="lock" scale="0.9"/></b-badge>
                         {{resource.name}}
                     </h5>
-                    <p style="opacity: 0.6">{{resource.config.desc}}</p>
+                    <h6 style="opacity: 0.5;">
+                        {{resource.config.username}}@{{resource.config.hostname}}
+                    </h6>
 
-                    <p>
-                        <statustag :status="resource.status" style="font-size: 150%"/>
-                        <span style="padding-left: 15px; opacity: 0.3; font-size: 85%;">
-                            Tested <timeago :datetime="resource.status_update" :auto-update="1"/>
-                        </span>
-                        <pre v-if="resource.status != 'ok'" style="max-height: 300px; overflow: auto; color: #dc3545">{{resource.status_msg}}</pre>
-                    </p>
+                    <b-tabs class="brainlife-tab" v-model="tab">
+                        <b-tab>
+                            <template v-slot:title>Detail</template>
+                        </b-tab>
+                        <b-tab>
+                            <template v-slot:title>
+                                Apps
+                                <span style="opacity: 0.6; font-size: 80%">{{resource.config.services.length}}</span>
+                            </template>
+                        </b-tab>
+                        <b-tab>
+                            <template v-slot:title>
+                                Recent Jobs
+                                <span style="opacity: 0.6; font-size: 80%" v-if="tasks.length > 0">{{tasks.length}}</span>
+                            </template>
+                        </b-tab>
+                        <b-tab v-if="projects">
+                            <template v-slot:title>Projects</template>
+                        </b-tab>
+                    </b-tabs>
                 </b-container>
             </div>
-            <br>
-            <b-container>
-                <div class="card">
-                    <div style="padding: 20px">
-                        <span class="form-header">Apps</span>
-                        <small>The following services are enabled to run on this resource</small>
-                    </div>
-                    <table class="table table-sm">
-                        <thead>
-                            <tr style="background-color: #eee;">
-                                <th style="padding-left: 20px">Github repos <small>(priority score)</small></th>
-                                <th style="padding-right: 20px;">Total Requests <small style="float: right">success rate</small></th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr v-for="service in resource.config.services" :key="service.name">
-                                <td style="padding-left: 20px">
-                                    {{service.name}}
-                                    <small>({{service.score}})</small>
-                                </td>
-                                <td style="padding-right: 20px;">
-                                    <div v-if="resource.stats && resource.stats.services && resource.stats.services[service.name]">
-                                        <span>{{resource.stats.services[service.name].running}}</span>
-                                        <!--
-                                        <stateprogress :states="{'finished': resource.stats.services[service.name].finished, 'failed': resource.stats.services[service.name].failed}" style="margin-right: 125px;"/>
-                                        -->
-                                        <small style="float: right;">{{success_rate(service.name)}}</small>
-                                    </div>
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
 
-                <div class="card" style="padding: 20px">
+            <div v-if="tab == 0">
+                <!--Detail-->
+                <div style="background-color: white; padding-top: 15px; border-bottom: 1px solid #ddd;">
+                    <b-container>
+                        <img v-if="resource.avatar" :src="resource.avatar" style="float: right; position: relative; top: -15px; margin-left: 15px;" width="150px" height="150px">
+                        <p>
+                            <b-badge pill class="bigpill">
+                                <icon name="calendar" style="opacity: 0.4;"/> <small>Registered</small>&nbsp;&nbsp;{{new Date(resource.create_date).toLocaleDateString()}}
+                            </b-badge>
+                        </p>
+                        <p>{{resource.config.desc||'no description'}}</p>
+                        <p style="margin-bottom: 0;">
+                            <statustag :status="resource.status" style="font-size: 150%"/>
+                            <span style="padding-left: 15px; opacity: 0.7;">
+                                Tested <timeago :datetime="resource.status_update" :auto-update="1"/>
+                            </span>
+                            <pre v-if="resource.status != 'ok'" style="max-height: 300px; overflow: auto; color: #dc3545">{{resource.status_msg}}</pre>
+                        </p>
+                        <br clear="both">
+                    </b-container>
+                </div>
+                <b-container>
+                    <br>
+                    <!--
                     <b-row>
                         <b-col cols="2">
                             <span class="form-header">Login Host</span>
@@ -76,17 +76,7 @@
                             </p>
                         </b-col>
                     </b-row>
-
-                    <b-row>
-                        <b-col cols="2">
-                            <span class="form-header">Workdir</span>
-                        </b-col>
-                        <b-col>
-                            <p class="">
-                                <pre>{{resource.config.workdir}}</pre>
-                            </p>
-                        </b-col>
-                    </b-row>
+                    -->
 
                     <b-row v-if="resource.config.io_hostname">
                         <b-col cols="2">
@@ -134,14 +124,24 @@
                             </p>
                         </b-col>
                     </b-row>
+
+                    <b-row>
+                        <b-col cols="2">
+                            <span class="form-header">Workdir</span>
+                        </b-col>
+                        <b-col>
+                            <p class="">
+                                <pre>{{resource.config.workdir}}</pre>
+                            </p>
+                        </b-col>
+                    </b-row>
+
                     <b-row v-if="resource.envs && Object.keys(resource.envs).length > 0">
                         <b-col cols="2">
                             <span class="form-header">ENVs</span>
                         </b-col>
                         <b-col>
-                            <p class="">
-                                <pre>{{resource.envs}}</pre>
-                            </p>
+                            <editor v-bind:value="JSON.stringify(resource.envs, null, 4)" @init="editorInit" lang="json" height="250"/>
                         </b-col>
                     </b-row>
 
@@ -155,13 +155,62 @@
                             </p>
                         </b-col>
                     </b-row>
-                </div><!--card-->
 
-                <div class="card">
-                    <div style="padding: 20px">
-                        <span class="form-header">Recent Jobs</span>
+                    <hr>
+                    <p style="opacity: 0.7;">
+                        <icon name="calendar"/> Updated on {{new Date(resource.update_date).toLocaleDateString()}}
+                    </p>
+                    <p style="opacity: 0.7;">
+                        <icon name="calendar"/> Last OK date {{new Date(resource.lastok_date).toLocaleDateString()}}
+                    </p>
+
+                    <div v-if="config.debug">
+                        <pre>{{resource}}</pre>
+                        <pre>{{usage_data}}</pre>
                     </div>
-                    <Plotly v-if="usage_data" :data="usage_data" :layout="usage_layout" style="background-color: #f6f6f6;"/>
+                </b-container>
+            </div>
+            <div v-if="tab == 1">
+                <!--apps-->
+                <b-container>
+                    <br>
+                    <p>
+                        <small>The following services are enabled to run on this resource</small>
+                    </p>
+                    <table class="table table-sm">
+                        <thead>
+                            <tr style="background-color: #eee;">
+                                <th style="padding-left: 20px">Github repos <small>(priority score)</small></th>
+                                <th style="padding-right: 20px;">Total Requests <small style="float: right">success rate</small></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr v-for="service in resource.config.services" :key="service.name">
+                                <td style="padding-left: 20px">
+                                    {{service.name}}
+                                    <small>({{service.score}})</small>
+                                </td>
+                                <td style="padding-right: 20px;">
+                                    <div v-if="resource.stats && resource.stats.services && resource.stats.services[service.name]">
+                                        <span>{{resource.stats.services[service.name].running}}</span>
+                                        <!--
+                                        <stateprogress :states="{'finished': resource.stats.services[service.name].finished, 'failed': resource.stats.services[service.name].failed}" style="margin-right: 125px;"/>
+                                        -->
+                                        <small style="float: right;">{{success_rate(service.name)}}</small>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </b-container>
+            </div>
+            <div v-if="tab == 2">
+                <!--recent jobs-->
+                <b-container>
+                    <br>
+                    <p>
+                        <Plotly v-if="usage_data" :data="usage_data" :layout="usage_layout" style="background-color: #fff;"/>
+                    </p>
                     <table class="table table-sm">
                         <thead>
                             <tr style="background-color: #eee;">
@@ -206,14 +255,16 @@
                     </table>
                     <p style="padding-left: 20px; opacity: 0.7; font-size: 80%;">Only showing up to 30 most recent jobs</p>
 
-               </div><!--card / recentjobs-->
-
-               <div class="card" v-if="projects" style="padding: 20px">
-                    <span class="form-header">Projects</span>
+                </b-container>
+            </div>
+            <div v-if="tab == 3">
+                <!--projects-->
+                <b-container>
+                    <br>
                     <p>
                         <small>This resource has been used to analyze datasets on the following projects (only showing >10 hours of usage)</small>
                     </p>
-                    <div>
+                    <div style="background-color: white">
                         <b-row style="margin-bottom: 8px; opacity: 0.7; background-color: #eee; padding: 5px;">
                             <b-col cols="6">Project Name</b-col>
                             <b-col>Admin </b-col>
@@ -235,24 +286,8 @@
                             </b-row>
                         </div>
                     </div>
-                </div><!--card-->
-
-               <hr>
-                <p style="opacity: 0.7;">
-                    <icon name="calendar"/> Created on {{new Date(resource.create_date).toLocaleDateString()}}
-                </p>
-                <p style="opacity: 0.7;">
-                    <icon name="calendar"/> Updated on {{new Date(resource.update_date).toLocaleDateString()}}
-                </p>
-                <p style="opacity: 0.7;">
-                    <icon name="calendar"/> Last OK date {{new Date(resource.lastok_date).toLocaleDateString()}}
-                </p>
-
-                <div v-if="config.debug">
-                    <pre>{{resource}}</pre>
-                    <pre>{{usage_data}}</pre>
-                </div>
-            </b-container>
+                </b-container>
+            </div>
         </div>
     </div>
 </div>
@@ -274,7 +309,16 @@ import stateprogress from '@/components/stateprogress'
 
 export default {
     components: { 
-        pageheader, app, contact, tags, statustag, statusicon, stateprogress, Plotly,
+        pageheader, 
+        app, 
+        contact, 
+        tags, 
+        statustag, 
+        statusicon, 
+        stateprogress, 
+        Plotly,
+
+        editor: require('vue2-ace-editor'),
     },
 
     data () {
@@ -287,6 +331,8 @@ export default {
             projects: null, //list of all projects and some basic info (only admin can load this)
             usage_data: null, 
             usage_layout: null, 
+
+            tab: 0,
 
             testing: false,
             config: Vue.config,
@@ -417,7 +463,14 @@ export default {
                 this.resource.status_update = new Date();
                 this.$notify({type: "error", text: err.response.data.message});
             });
-         },
+        },
+
+        editorInit(editor) {
+            require('brace/mode/json')
+            editor.container.style.lineHeight = 1.25;
+            editor.renderer.updateFontSize();
+            editor.setReadOnly(true);
+        },
 
         edit() {
             //this.editing = true;
@@ -458,15 +511,14 @@ font-size: 17pt;
 font-weight: bold;
 }
 .header {
-padding: 10px;
 background-color: white;
-border-bottom: 1px solid #eee;
+padding: 15px 0 0 0;
+border-bottom: 1px solid #ddd;
 }
 .header-sticky {
 position: sticky;
 top: 0px;
 z-index: 1;
-box-shadow: 0 0 1px #ccc;
 }
 code.json {
 background-color: white;
@@ -502,6 +554,9 @@ opacity: 0.6;
 .card {
     margin-bottom: 20px;
     border: none;
+}
+.table {
+    background-color: white;
 }
 .table th {
 border: none;

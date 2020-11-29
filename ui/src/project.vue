@@ -239,17 +239,24 @@
     </div>
 
     <div v-if="tabs[tab].id == 'dataset'" class="page-content">
-        <b-alert show variant="secondary" v-if="selected.access != 'public' && !(ismember()||isadmin()||isguest())">For non public project, only the admin/members/guests of this project can access processes.</b-alert>
+        <b-alert show variant="secondary" v-if="selected.access != 'public' && !(ismember()||isadmin()||isguest())">
+            For non public project, only the admin/members/guests of this project can access processes.
+        </b-alert>
         <datasets :project="selected" :projects="projects" v-else :participants="participants"/>
     </div>
 
     <div v-if="tabs[tab].id == 'process'" class="page-content">
-        <noprocess v-if="!(ismember()||isadmin())"/>
+        <!--<noprocess v-if="!(ismember()||isadmin())"/>-->
+        <b-alert show variant="secondary" v-if="!(ismember()||isadmin())">
+            Only the admins or members of this project can access processes. Please contact the project admins to give you access.
+        </b-alert>
         <processes :project="selected" v-else/>
     </div>
 
     <div v-if="tabs[tab].id == 'pipeline'" class="page-content">
-        <b-alert show variant="secondary" v-if="!(ismember()||isadmin())">Only the admins or members of this project can access pipelines. Please contact the project admin to give you access.</b-alert>
+        <b-alert show variant="secondary" v-if="!(ismember()||isadmin())">
+            Only the admins or members of this project can access pipelines. Please contact the project admin to give you access.
+        </b-alert>
         <pipelines :project="selected" v-else/>
     </div>
 
@@ -285,7 +292,7 @@ import publications from '@/components/publications'
 import pipelines from '@/components/pipelines'
 import agreements from '@/components/agreements'
 import stateprogress from '@/components/stateprogress'
-import noprocess from '@/assets/noprocess'
+//import noprocess from '@/assets/noprocess'
 import resource from '@/components/resource'
 import datatypetag from '@/components/datatypetag'
 import participants from '@/components/participants'
@@ -319,7 +326,7 @@ export default {
 
         'groupAnalysis': ()=> import('@/components/groupanalysis'),
 
-        noprocess, 
+        //noprocess, 
         resource, 
         Plotly,
 
