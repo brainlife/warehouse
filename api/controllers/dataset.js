@@ -1650,8 +1650,11 @@ router.post('/finalize-upload', jwt({secret: config.express.pubkey}), (req, res,
     //things to be prepared
     let task;
     let project;
-    let archive_task;
     let validator_task;
+
+    //only set if there is no validator
+    //let dataset; 
+    let archive_task;
 
     async.series([
         
@@ -1755,10 +1758,11 @@ router.post('/finalize-upload', jwt({secret: config.express.pubkey}), (req, res,
             //project_id: project._id,
             //datatype: datatype._id,
 
-            archive_task, //only set if there is no validator
             validator_task, //only set if there is a validator
 
-            status: "ok",
+            //only set if there is no validator
+            archive_task,
+            //dataset,
         });
     });
 });

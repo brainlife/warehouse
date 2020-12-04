@@ -314,6 +314,7 @@ exports.archive_task_outputs = async function(user_id, task, outputs, cb) {
                 if(noSubdirs) subdirs = undefined;
                 console.log("submitting app-archive");
                 let archive_task_res = await axios.post(config.amaretti.api+"/task", {
+                    name: "archive",
                     deps_config: [ {task: task._id, subdirs } ],
                     service: "brainlife/app-archive",
                     service_branch: "1.1",
