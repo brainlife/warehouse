@@ -204,7 +204,6 @@ function handle_task(task, cb) {
 
     //handle event
     async.series([
-
         //submit output validators
         next=>{
             if(task.status != "finished" || !task.config || !task.config._outputs ||  
@@ -352,7 +351,7 @@ function handle_task(task, cb) {
                     }
                 }
 
-                logger.info("handling task outputs - archiver");
+                //logger.info("handling task outputs - submitting archiver");
                 let outputs = [];
 
                 //check to make sure that the output is not already registered

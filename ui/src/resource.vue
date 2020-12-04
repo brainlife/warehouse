@@ -518,7 +518,7 @@ border-bottom: 1px solid #ddd;
 .header-sticky {
 position: sticky;
 top: 0px;
-z-index: 1;
+z-index: 5; /*to clear editor linenumbers*/
 }
 code.json {
 background-color: white;

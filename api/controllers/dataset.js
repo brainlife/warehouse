@@ -868,8 +868,6 @@ router.post('/', jwt({secret: config.express.pubkey}), (req, res, cb)=>{
 
         //request archive
         next=>{
-            if(!task.config) task.config = {};
-            
             //find output
             let output;
             if(task.config._outputs) {
@@ -1621,6 +1619,146 @@ router.post('/copy', jwt({secret: config.express.pubkey}), (req, res, next)=>{
                 });
                 res.json(docs);
             });
+        });
+    });
+});
+
+/**
+ * @apiGroup Dataset
+ * @api {post} /dataset/finalize-upload
+ *                              Finalize data upload
+ * @apiDescription              Submit validate/archive request and register new data object
+ *
+ * @apiParam {String} task      Task ID to archive
+ * @apiParam {String} subdir    Sub directory where the data is uploaded to 
+ * @apiParam {String} datatype  Datatype ID of the new object
+ * @apiParam {String} desc      Description for the new object
+ * @apiParam {String[]} datatype_tags  
+ *                              Datatype tags to add
+ * @apiParam {String[]} tags
+ *                              Data object tags
+ * @apiParam {Object} meta      Metadata to add
+ *
+ * @apiHeader {String} authorization 
+ *                                  A valid JWT token "Bearer: xxxxx"
+*/
+router.post('/finalize-upload', jwt({secret: config.express.pubkey}), (req, res, next)=>{
+    if(!req.body.task) return next("task(id) is not set");
+    if(!req.body.subdir) return next("subdir is not set");
+    if(!req.body.datatype) return next("datatype(id) is not set");
+
+    //things to be prepared
+    let task;
+    let project;
+    let archive_task;
+    let validator_task;
+
+    async.series([
+        
+        //load task and check access
+        next=>{
+            axios.get(config.amaretti.api+"/task/"+req.body.task, {
+                headers: { authorization: req.headers.authorization, }
+            }).then(_res=>{
+                task = _res.data;
+                if(_res.status != 200) return next("failed to load task "+req.body.task);
+                const gids = req.user.gids||[];
+                if(task.user_id != req.user.sub && !~gids.indexOf(task._group_id)) 
+                    return next("you don't own this task or member of a group "+task._group_id);
+                next();
+            }).catch(next);
+        },
+        
+        //load project
+        next=>{
+            db.Projects.findOne({group_id: task._group_id}, (err, _project)=>{
+                if(err) return next(err);
+                if(!_project) return next("can't find project with group_id:"+instance.group_id);
+                project = _project;
+                next();
+            });
+        },
+
+        //load datatype detail
+        next=>{
+            db.Datatypes.findById(req.body.datatype, (err, _datatype)=>{
+                if(err) return next(err);
+                if(!_datatype) return next("datatype(id) is not set");
+                datatype = _datatype;
+                next();
+            });
+        },
+
+        //submit validator (or register directly from upload task)
+        next=>{
+            let output = {
+                id: "upload",
+                datatype: datatype._id,
+                datatype_tags: req.body.datatype_tags||[],
+                meta: req.body.meta||{},
+                tags: req.body.tags||[],
+                desc: req.body.desc,
+
+                archive: {
+                    project: project._id,
+                    desc: req.body.desc,
+                },
+            }
+
+            if(datatype.validator) {
+                console.log("submitting validator (as admin)");
+
+                //construct config
+                let _config = {}
+                datatype.files.forEach(file => {
+                    //if(!files[file.id]) return; //not set.. probably optional
+                    _config[file.id] = "../" + task._id + "/upload/" + (file.filename||file.dirname);
+                });
+                output.subdir = "output"; //validator always output to output directory
+                _config._outputs = [output];
+
+                axios.post(config.amaretti.api+"/task", {
+                    instance_id: task.instance_id,
+                    name: "__dtv",
+                    service: datatype.validator,
+                    service_branch: datatype.validator_branch,
+                    config: _config,
+                    deps_config: [ {task: task._id } ],
+
+                    follow_task_id: task._id, 
+                    user_id: req.user.sub,
+                },{ 
+                    headers: { authorization: "Bearer "+config.warehouse.jwt }
+                }).then(res=>{
+                    if(res.status != 200) return next("validation task submission failed");
+                    validator_task = res.data.task;
+                    next();
+                }).catch(next);
+            } else {
+                //no validator.. let's register directly from uploader
+                output.subdir = "upload"; //cli always upload to upload directory
+                common.archive_task_outputs(req.user.sub.toString(), task, [output], (err, datasets, _archive_task)=>{
+                    if(err) return next(err);
+                    //there should be only 1 dataset being archived via this API, so return [0]
+                    //dataset = datasets[0];
+                    archive_task = _archive_task
+                    next();
+                });
+            }
+        },
+
+    ], err=>{
+        if(err) return next(err);
+
+        res.json({
+            //task_id: task._id,
+            //project_id: project._id,
+            //datatype: datatype._id,
+
+            archive_task, //only set if there is no validator
+            validator_task, //only set if there is a validator
+
+            status: "ok",
         });
     });
 });

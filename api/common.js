@@ -64,10 +64,14 @@ exports.getprojects = function(user, cb) {
 //check if user has access to all projects in (write access) projects_id
 exports.validate_projects = function(user, project_ids, cb) {
     if(!project_ids) return cb(); //no project, no checking necessary
+
+    //need to be all strings
+    project_ids = project_ids.map(id=>id.toString());
+
     exports.getprojects(user, (err, canread_project_ids, canwrite_project_ids)=>{
         if(err) return cb(err);
 
-        //need to convert all ids to string..
+        //need to be all strings
         canwrite_project_ids = canwrite_project_ids.map(id=>id.toString());
 
         //iterate each ids to see if user has access
@@ -117,7 +121,7 @@ function register_dataset(task, output, product, cb) {
                 follow_task_id: task.follow_task_id, //for _dtv
 
                 name: task.name,
-                config: task.config,
+                config: task.config||{},
                 service: task.service,
                 service_branch: task.service_branch,
 
@@ -243,7 +247,7 @@ exports.archive_task_outputs = async function(user_id, task, outputs, cb) {
     outputs.forEach(output=>{
         if(output.archive && !~project_ids.indexOf(output.archive.project)) project_ids.push(output.archive.project);
     });
-    
+
     //handles multiple output datasets, but they should all belong to the same project.
     //if not, app-archive will fail..
     if(project_ids.length == 0) return cb(); //nothing to archive?
@@ -264,6 +268,7 @@ exports.archive_task_outputs = async function(user_id, task, outputs, cb) {
             //only archive output that has archive requested
             if(!output.archive) return next_output();
 
+            console.debug("registering dataset for task", task._id);
             register_dataset(task, output, products[output.id], async (err, dataset)=>{
                 if(err) return next_output(err);
                 if(!dataset) return next_output(); //couldn't register, or already registered
@@ -786,93 +791,6 @@ exports.update_dataset_stats = async function(project_id, cb) {
         else logger.error(err);
     }
 }
-
-//TODO - this function list *all* secondary archives. maybe I should filter out archives that didn't 
-//get archived into data-object archive? I think the easier way to do this is to store secondary archive info 
-//on each archived dataset. I can then just query all that and dump ot. 
-/*
-exports.update_secondary_index = async function(project) {
-    //console.log("updating secondary output index file for project", project._id);
-    let participants = await db.Participants.findOne({project}).lean();
-    
-    //migrate
-    if(participants && participants.rows) {
-        console.log("renaming rows to subjects (rows are deprecated now)");
-        participants.subjects = participants.rows;
-        delete participants.rows;
-    }
-
-    //now load the index
-    const _res = await axios.get(config.amaretti.api+'/task', {
-        params: {
-            //select: 'config.validator_task._id config.validator_task.follow_task_id instance_id',
-            select: 'config instance_id',
-            find: JSON.stringify({
-                'finish_date': {$exists: true},
-                'service': 'brainlife/app-archive-secondary',
-                '_group_id': project.group_id,
-            }),
-            limit: 20000, //TODO.. how scalable is this!?
-        },
-        headers: { authorization: "Bearer "+config.warehouse.jwt },
-    });
-
-    let validator_ids = _res.data.tasks.map(task=>task.config.validator_task._id);
-    let datatype_ids = [];
-    _res.data.tasks.forEach(task=>{
-        let id = task.config.validator_task.config._outputs[0].datatype;
-        if(!datatype_ids.includes(id)) datatype_ids.push(id);
-    });
-
-    //lookup datatype names
-    let datatypes = await db.Datatypes.find({_id: {$in: datatype_ids}}, {name:1,desc:1,files:1}).lean();
-    let datatypes_obj = {};
-    datatypes.forEach(rec=>{
-        datatypes_obj[rec._id] = rec;
-    });
-
-    let sectasks = _res.data.tasks.map(task=>{
-        let output = task.config.validator_task.config._outputs[0];
-        return {
-            //group_id: project.group_id,
-            //instance_id: task.instance_id,
-            //follow_task_id: task.config.validator_task.follow_task_id,
-            //validator_task_id: task.config.validator_task._id,
-            //output_id: output.id,
-            //datatype_id: output.datatype,
-            datatype: datatypes_obj[output.datatype],
-            meta: output.meta,
-            tags: output.tags,
-            datatype_tags: output.datatype_tags,
-
-            path: task.instance_id+"/"+task.config.validator_task.follow_task_id+"/"+output.id+"/secondary",
-        }
-    });
-
-    //merge sectasks into participants.subjects
-    let index = {
-        //project,
-        subjects: {},
-    };
-    if(participants) {
-        index.columns = participants.columns;
-        for(let subject in participants.subjects) {
-            if(!index.subjects[subject]) index.subjects[subject] = {}
-            index.subjects[subject].phenotype = participants.subjects[subject];
-        }
-    }
-    sectasks.forEach(sectask=>{
-        let subject = sectask.meta.subject;
-        if(!index.subjects[subject]) index.subjects[subject] = {}
-        if(!index.subjects[subject].items) index.subjects[subject].items = [];
-        index.subjects[subject].items.push(sectask);
-    });
-
-    const path = config.groupanalysis.secondaryDir+"/"+project.group_id+"/index.json";
-    console.log("storing index.json", path);
-    fs.writeFileSync(path, JSON.stringify(index, null, 4));
-}
-*/
 
 exports.update_project_stats = async function(project, cb) {
     console.log("updateing project stats project:", project._id)

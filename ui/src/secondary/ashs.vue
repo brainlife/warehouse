@@ -1,52 +1,59 @@
 <template>
 <div>
-    <b-row>
-        <b-col v-for="(image, idx) in images" :key="idx">
-            <b>{{image.name}}</b><br>
-            <a target="download" :href="image.url">
-                <img :src="image.url"/>
+    <b-tabs small lazy>
+        <b-tab v-for="png in pngs" :key="png" :title="png">
+            <a :href="fullpath(png+'.png')" :target="png">
+                <img :src="fullpath(png+'.png')" width="100%"/>
             </a>
-        </b-col>
-        <!--
-        <b-col>
-            <b>x</b><br>
-            <img :src="config.api+'/secondary/'+task._id+'/'+output.id+'/secondary/qa_seg_multiatlas_corr_nogray_left_qa.png?at='+config.jwt"/>
-        </b-col>
-        <b-col>
-            <b>y</b><br>
-            <img :src="config.api+'/secondary/'+task._id+'/'+output.id+'/secondary/qa_seg_multiatlas_corr_nogray_right_qa.png?at='+config.jwt"/>
-        </b-col>
-        -->
-    </b-row>
-    <!-- metadata can be accessed via product.meta
-    {{product}}
-    -->
+        </b-tab>
+    </b-tabs>
 </div>
 </template>
 
 <script>
 import Vue from 'vue'
 import axios from 'axios'
+
 export default {
     props: ['task', 'output', 'product'],
-    components: {
-    },
+    components: {},
     data() {
         return {
-            images: [],
+            pngs: [
+                "bc_left",
+                "bc_right",
+                "masv_left",
+                "masv_right",
+                "final_left",
+                "final_right",
+                "gray_left",
+                "gray_right",
+                "qa_seg_bootstrap_corr_usegray_left_qa",
+                "qa_seg_bootstrap_corr_usegray_right_qa",
+                "qa_seg_multiatlas_corr_usegray_left_qa",
+                "qa_seg_multiatlas_corr_usegray_right_qa",
+                "qa_registration_left_qa",
+                "qa_registration_right_qa",
+                "qa_seg_bootstrap_heur_left_qa",
+                "qa_seg_bootstrap_heur_right_qa",
+                "qa_seg_bootstrap_corr_nogray_left_qa",
+                "qa_seg_bootstrap_corr_nogray_right_qa",
+                "qa_seg_multiatlas_corr_nogray_left_qa",
+                "qa_seg_multiatlas_corr_nogray_right_qa",
+                "qa_seg_multiatlas_heur_left_qa",
+                "qa_seg_multiatlas_heur_right_qa",
+                //summary.tex
+            ],
             config: Vue.config,
         }
     },
+    methods: {
+        fullpath(filename) {
+            const base = Vue.config.api+'/secondary/'+this.task._id+'/'+this.output.id+'/secondary/';
+            return base+'qa/'+filename+'?at='+Vue.config.jwt;
+        }
+    },
     mounted() {
-        const base = Vue.config.api+'/secondary/'+this.task._id+'/'+this.output.id+'/secondary/';
-        this.images.push({
-            name: "Left",
-            url: base+'qa_seg_multiatlas_corr_nogray_left_qa.png?at='+Vue.config.jwt,
-        });
-        this.images.push({
-            name: "Right",
-            url: base+'qa_seg_multiatlas_corr_nogray_right_qa.png?at='+Vue.config.jwt,
-        });
     },
 }
 </script>

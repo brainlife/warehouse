@@ -553,8 +553,10 @@ export default {
         },
 
         load_secondary() {
+            console.log("loading secondary");
             //see the secondary output archive diagram to understand this
             if(this.dataset.prov.task.follow_task_id) {
+                console.log("waiting for secondary archive");
                 this.dtv = this.dataset.prov.task;
                 this.waitSecondaryArchive(this.dataset.prov.task, (err, secondary)=>{
                     if(err) console.error(err);
@@ -575,6 +577,7 @@ export default {
                     limit: 1,
                 }})
                 .then(res=>{
+                    console.dir(res.data.tasks)
                     if(res.data.tasks.length == 1) {
                         this.dtv = res.data.tasks[0];
                         this.waitSecondaryArchive(this.dtv, (err, secondary)=>{
@@ -696,9 +699,11 @@ export default {
         load_archive_task() {
             if(!this.dataset || !this.dataset.archive_task_id) return; //no task_id
             this.$http.get(Vue.config.amaretti_api+'/task/'+this.dataset.archive_task_id).then(res=>{
-                //console.log("loaded archive_task_id");
                 Vue.set(this.dataset, 'archive_task', res.data)
-                setTimeout(this.load_archive_task, 5000)
+                if(res.data.status != "finished" && res.data.status != "failed") {
+                    console.log("polling archive task update", res.data.status)
+                    setTimeout(this.load_archive_task, 5000)
+                }
             });
         },
 
@@ -863,7 +868,7 @@ export default {
                 limit: 1,
             }}).then(res=>{
                 let task = res.data.tasks[0];
-                if(task) {
+                if(task && task.config._outputs) {
                     console.log("found previously staged task !"+this.dataset._id);
                     let output = task.config._outputs.find(output=>output.dataset_id == this.dataset._id);
                     return cb(task, output.subdir);
@@ -879,7 +884,7 @@ export default {
                     }),
                 }}).then(res=>{
                     let task = res.data.tasks[0];
-                    if(task) {
+                    if(task && task.config._outputs) {
                         //console.log("task that produced this data-object still exists... using it");
                         //look for dataset/files in case app was using deprecated filemapping
                         let output = task.config._outputs.find(output=>output.id == this.dataset.prov.output_id);

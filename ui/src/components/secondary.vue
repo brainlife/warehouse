@@ -38,6 +38,9 @@
         <!--tractprofile-->
         <secondaryTractprofile v-else-if="output.datatype == '5965467cb09297d8d81bdbcd'" 
             :task="task" :output="output" :product="product"/>
+        <!--ashs-->
+        <secondaryAshs v-else-if="output.datatype == '5e4c47041eafffca2efa3545'" 
+            :task="task" :output="output" :product="product"/>
 
         <!--
         <div v-else>
@@ -80,6 +83,7 @@ export default {
         'secondaryWmc': ()=> import('@/secondary/wmc'),
         'secondaryFreesurfer': ()=> import('@/secondary/freesurfer'),
         'secondaryTractprofile': ()=> import('@/secondary/tractprofile'),
+        'secondaryAshs': ()=> import('@/secondary/ashs'),
     },
     watch: {
         /*

@@ -362,7 +362,7 @@ var datasetSchema = mongoose.Schema({
 
     //list of publications that this datasets is published under (point to releases ID under publications)
     publications: [{type: mongoose.Schema.Types.ObjectId, ref: 'Releases', index: true}],
-});
+}, {minimize: false}); //to keep empty config{} from disappearing
 
 datasetSchema.post('validate', function() {
     //normalize meta fields that needs to be in string 
