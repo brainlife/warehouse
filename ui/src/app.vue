@@ -259,6 +259,7 @@
                         <b-col cols="6" v-for="resource in resources_considered" :key="resource._id">
                             <div class="resource-area" v-b-popover.hover.d1000="resource.config.desc+'\n\n'+resource.detail.msg+'\nstatus:'+resource.status" :title="null">
                                 <resource :resource="resource"/>
+                                <!--<pre style="font-size:70%; padding: 0 15px; opacity: 0.8; margin-bottom: 10px;">{{resource.detail.msg}}</pre>-->
                                 <div v-if="resource.status != 'ok'" class="resource-status bg-danger">
                                     <icon name="exclamation" style="position: relative; top: -3px;"/>
                                     {{resource.status}}
@@ -266,11 +267,14 @@
                                 </div>
                                 <div v-else-if="resource.detail.running >= resource.detail.maxtask" class="resource-status bg-warning">
                                     <icon name="hourglass" style="position: relative; top: -3px;"/>
-                                    Busy
-                                    <span class="score">Score {{resource.score}}</span>
+                                    &nbsp;
+                                    <b>Busy</b>
+                                    <!-- <span class="score">Score {{resource.score}}</span>-->
                                 </div>
                                 <div v-else-if="preferred_resource && resource.id == preferred_resource._id" class="resource-status bg-success" title="This resource will be used to execute this App.">
                                     <icon name="thumbs-up" style="position: relative; top: -3px;"/>
+                                    &nbsp;
+                                    <b>BEST</b>
                                     <!--Best-->
                                     <span class="score">Score {{resource.score}}</span>
                                 </div>
