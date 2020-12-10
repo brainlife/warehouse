@@ -51,6 +51,9 @@
                             <b-badge pill class="bigpill">
                                 <icon name="calendar" style="opacity: 0.4;"/> <small>Registered</small>&nbsp;&nbsp;{{new Date(resource.create_date).toLocaleDateString()}}
                             </b-badge>
+                            <b-badge pill class="bigpill" title="Number of tasks currently running on this resource">
+                                <icon name="play" style="opacity: 0.4;"/>&nbsp;&nbsp;&nbsp;{{tasksRunning.length}}&nbsp;&nbsp;<small>Running / {{resource.config.maxtask}} max</small>
+                            </b-badge>
                         </p>
                         <p>{{resource.config.desc||'no description'}}</p>
                         <p style="margin-bottom: 0;">
@@ -78,17 +81,6 @@
                     </b-row>
                     -->
 
-                    <b-row v-if="resource.config.io_hostname">
-                        <b-col cols="2">
-                            <span class="form-header">IO Hostname</span>
-                        </b-col>
-                        <b-col>
-                            <p>
-                                <pre class="">{{resource.config.io_hostname}}</pre> 
-                                <small>Optional hostname used to transfer data in and out of this resource</small>
-                            </p>
-                        </b-col>
-                    </b-row>
                     <b-row>
                         <b-col cols="2">
                             <span class="form-header">Owner</span>
@@ -100,6 +92,28 @@
                         </b-col>
                     </b-row>
 
+                    <b-row>
+                        <b-col cols="2">
+                            <span class="form-header">Execution Counts</span>
+                        </b-col>
+                        <b-col>
+                            <p>
+                                <Plotly v-if="usage_data" :data="usage_data" :layout="usage_layout" style="background-color: #fff;"/>
+                            </p>
+                        </b-col>
+                    </b-row>
+
+                    <b-row v-if="resource.config.io_hostname">
+                        <b-col cols="2">
+                            <span class="form-header">IO Hostname</span>
+                        </b-col>
+                        <b-col>
+                            <p>
+                                <pre class="">{{resource.config.io_hostname}}</pre> 
+                                <small>Optional hostname used to transfer data in and out of this resource</small>
+                            </p>
+                        </b-col>
+                    </b-row>
                     <b-row v-if="resource.gids && resource.gids.length > 0">
                         <b-col cols="2">
                             <span class="form-header">Groups</span>
@@ -120,7 +134,7 @@
                         </b-col>
                         <b-col>
                             <p style="opacity: 0.6;">
-                               Up to <b>{{resource.config.maxtask}}</b> concurrent tasks will be submitted on this resource
+                               Up to <b>{{resource.config.maxtask}}</b> concurrent tasks can be submitted on this resource
                             </p>
                         </b-col>
                     </b-row>
@@ -166,6 +180,7 @@
 
                     <div v-if="config.debug">
                         <pre>{{resource}}</pre>
+                        <pre>{{tasks}}</pre>
                         <pre>{{usage_data}}</pre>
                     </div>
                 </b-container>
@@ -208,9 +223,6 @@
                 <!--recent jobs-->
                 <b-container>
                     <br>
-                    <p>
-                        <Plotly v-if="usage_data" :data="usage_data" :layout="usage_layout" style="background-color: #fff;"/>
-                    </p>
                     <table class="table table-sm">
                         <thead>
                             <tr style="background-color: #eee;">
@@ -325,7 +337,9 @@ export default {
         return {
             resource: null, 
             //groups: null,
-            tasks: [], //currently running tasks
+
+            tasks: [],  //recent jobs 
+            tasksRunning: [],  //jobs currently running
 
             //report: null,
             projects: null, //list of all projects and some basic info (only admin can load this)
@@ -398,6 +412,7 @@ export default {
 
             this.$http.get(Vue.config.amaretti_api+'/resource/tasks/'+this.$route.params.id).then(res=>{
                 this.tasks = res.data.recent;
+                this.tasksRunning = this.tasks.filter(t=>{t.status == "running" || t.status == "running_sync"});
             }).catch(console.error);
 
             this.$http.get(Vue.config.amaretti_api+'/resource/usage/'+this.$route.params.id).then(res=>{

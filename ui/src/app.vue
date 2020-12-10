@@ -262,7 +262,8 @@
                                 <!--<pre style="font-size:70%; padding: 0 15px; opacity: 0.8; margin-bottom: 10px;">{{resource.detail.msg}}</pre>-->
                                 <div v-if="resource.status != 'ok'" class="resource-status bg-danger">
                                     <icon name="exclamation" style="position: relative; top: -3px;"/>
-                                    {{resource.status}}
+                                    &nbsp;
+                                    <b>{{resource.status}}</b>
                                     <span class="score">Score {{resource.score}}</span>
                                 </div>
                                 <div v-else-if="resource.detail.running >= resource.detail.maxtask" class="resource-status bg-warning">
