@@ -1,8 +1,6 @@
 <template>
-<img :style="imgstyle" 
-    v-lazy="project.avatar || 'https://api.adorable.io/avatars/'+width+'/'+project._id+'.png'" 
-    :width="width" :height="height">
-</img>
+<!--<img :style="imgstyle" v-lazy="project.avatar || 'https://api.adorable.io/avatars/'+width+'/'+project._id+'.png'" :width="width" :height="height">-->
+<img :style="imgstyle" v-lazy="project.avatar || 'https://avatars.dicebear.com/api/gridy/'+project._id+'.svg'" :width="width" :height="height"/>
 </template>
 
 <script>
@@ -10,29 +8,11 @@ export default {
     computed: {
         imgstyle: function() {
             let styles = {};
-            /*
-            if(this.width>100) {
-                //styles.border = "3px solid white";
-                //styles.boxShadow = "1px 1px 5px rgba(0,0,0,0.4)";
-            }
-            */
             if(!this.project.avatar) {
-                styles.filter = "saturate(40%) opacity(40%)";
+                styles.filter = "saturate(50%) opacity(50%)";
             }
             return styles;
         }
-    },
-    watch: {
-        /*
-        project: {
-            handler() {
-                console.log("project updated", this.project._id);
-                //if(this.project && this.project.avatar) this.avatar = this.project.avatar;
-                this.$forceUpdate();
-            },
-            deep: true
-        }
-        */
     },
         
     props: {

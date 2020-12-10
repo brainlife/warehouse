@@ -253,7 +253,7 @@
                             </td>
                         </tr>
                     </table>
-                    <p style="padding-left: 20px; opacity: 0.7; font-size: 80%;">Only showing up to 30 most recent jobs</p>
+                    <p style="padding-left: 20px; opacity: 0.7; font-size: 80%;">Only showing up to 100 most recent jobs</p>
 
                 </b-container>
             </div>

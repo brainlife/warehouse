@@ -9,14 +9,10 @@
                         https://searchworks.stanford.edu/view/rt034xr8593
                         https://chemrxiv.org/articles/Repurposing_Therapeutics_for_the_Wuhan_Coronavirus_nCov-2019_Supercomputer-Based_Docking_to_the_Viral_S_Protein_and_Human_ACE2_Interface/11871402/3
                 -->
-                <div class="rightside">
-                    <projectavatar :project="pub.project" :height="125" :width="125"/>
-                </div>
-                <div class="main" style="background-color: white;"><!--hide avatar when screen is narrow-->
+                <div style="background-color: white;"><!--hide avatar when screen is narrow-->
                     <h4 style="color: #666; margin-bottom: 5px;">
                         {{pub.name}} 
                     </h4>
-                    <p style="opacity: 0.7; min-height: 60px; max-height: 105px; overflow-y: auto; margin-bottom: 0px">{{pub.desc}}</p>
                     
                     <b-tabs class="brainlife-tab" v-model="tab_index">
                         <b-tab title="Detail"/>
@@ -25,132 +21,149 @@
                         </b-tab>
                     </b-tabs>
                 </div>
+                <b-alert :show="pub.removed" variant="secondary">This publication has been removed</b-alert>
             </b-container>
         </div><!--header-->
 
-        <!--main content-->
-        <b-container>
-            <b-alert :show="pub.removed" variant="secondary">This publication has been removed</b-alert>
-            <!-- detail -->
-            <div v-if="tab_index == 0">
-                <div class="rightside">
-                    <doibadge :doi="pub.doi" style="margin-bottom: 20px;"/>
-                    <p>
+        <!-- detail -->
+        <div v-if="tab_index == 0">
+            <div style="background-color: white; padding-top: 15px; border-bottom: 1px solid #ddd;">
+                <b-container>
+                    <div style="border-bottom: 1px solid #eee; margin-bottom: 10px;">
+                        <projectavatar :project="pub.project" :height="125" :width="125" style="float: right; position: relative; top: -15px; margin-left: 15px;"/>
+                        <doibadge :doi="pub.doi" style="margin-bottom: 20px;"/>
                         <b-badge pill class="bigpill">
                             <icon name="calendar" style="opacity: 0.4;"/>&nbsp;&nbsp;&nbsp;<small>Published</small>&nbsp;&nbsp;<time>{{new Date(pub.create_date).toLocaleDateString()}}</time>
                         </b-badge>
-                    </p>
-                    <p>
-                        <div class='altmetric-embed' data-badge-type='donut' data-badge-details="right" data-hide-no-mentions="false" :data-doi="pub.doi||config.debug_doi"/>
-                    </p>
+                        <p>{{pub.desc}}</p>
 
-                    <p style="line-height: 190%;" v-if="pub.tags.length > 0"> 
-                        <span class="form-header">Topics</span> 
-                        <b-badge v-for="topic in pub.tags" :key="topic" class="topic">{{topic}}</b-badge>
-                    </p>
-                </div><!--rightside-->
-                <div class="main">
-                    <b-row>
-                        <b-col cols="2">
-                            <span class="form-header">Authors</span>
-                        </b-col>
-                        <b-col col="10">
-                            <p>
-                                <span v-for="contact in pub.authors" :key="contact._id">
-                                    <contact :fullname="contact.fullname" :email="contact.email"></contact>
-                                </span>
-                            </p>
-                        </b-col>
-                    </b-row>
-
-                    <b-row v-if="pub.contributors.length > 0">
-                        <b-col cols="2">
-                            <span class="form-header">Contributors</span>
-                        </b-col>
-                        <b-col cols="10">
-                            <p>
-                                <span v-for="contact in pub.contributors" :key="contact._id">
-                                    <contact :fullname="contact.fullname" :email="contact.email"></contact>
-                                </span>
-                            </p>
-                        </b-col>
-                    </b-row>
-
-                    <div v-if="pub.readme" class="box">
-                        <vue-markdown :source="pub.readme" class="readme"></vue-markdown>
-                    </div>  
-
-                    <b-row>
-                        <b-col cols="2">
-                            <span class="form-header">Citation</span>
-                        </b-col>
-                        <b-col cols="10">
-                            <p>
-                                <small class="text-muted">Citation for this publiction. Please see citation section under each release for App specific citations. </small>
-                            </p>
-                            <citation :doi="pub.doi||config.debug_doi"/>
-                            <br>
-                        </b-col>
-                   </b-row>  
-
-                   <b-row v-if="pub.fundings.length > 0">
-                        <b-col cols="2">
-                            <span class="form-header">Funded By</span>
-                        </b-col>
-                        <b-col>
-                            <ul style="list-style: none; padding: 0px;">
-                                <li v-for="funding in pub.fundings" :key="funding._id" class="funder">
-                                    <div v-if="funding.funder == 'NSF'" class="funder-label bg-success">NSF</div>
-                                    <div v-else-if="funding.funder == 'NIH'" class="funder-label bg-info">NIH</div>
-                                    <div v-else class="funder-label bg-warning">{{funding.funder}}</div>
-                                    {{funding.id}}
-                                </li>
-                            </ul>
-                        </b-col>
-                    </b-row>
-                    <b-row>
-                        <b-col cols="2">
-                            <span class="form-header">License</span>
-                        </b-col>
-                        <b-col>
-                            <p><small class="text-muted">Datasets are published with the following license.</small></p>
-                            <license :id="pub.license"/>
-                            <br>
-                        </b-col>
-                    </b-row> 
-
-                    <b-row>
-                        <b-col cols="2">
-                            <span class="form-header">Project</span>
-                        </b-col>
-                        <b-col>
-                            <p><small class="text-muted">This publication is hosted in the following Brainlife project</small></p>
-                            <a href="javascript:void(0)" @click="openproject(pub.project._id)"><h5><icon name="shield-alt"/> {{pub.project.name}}</h5></a>
-                            <p class="text">{{pub.project.desc}}</p>
-                            <br>
-                        </b-col>
-                    </b-row>
-                
-                    <div v-if="resource_citations.length > 0" class="box">
-                        <span class="form-header">Resource Citations</span>
-                        <p><small>Datasets published on this dataset are computed on the following resources.</small></p>
-                        <p v-for="resource_citation in resource_citations">
-                            <icon name="caret-right"/> <b>{{resource_citation.resource.name}}</b>
-                            <small>{{resource_citation.resource.config.desc}}</small>
-                            <br>
-                            <i>{{resource_citation.citation}}</i>
+                        <p style="line-height: 250%;" v-if="pub.tags.length > 0"> 
+                            <b-badge v-for="topic in pub.tags" :key="topic" class="topic">{{topic}}</b-badge>
                         </p>
                     </div>
-
-                    <hr>
-                    <vue-disqus shortname="brain-life" :identifier="pub._id"/>
-                </div><!-- main-->
+                    <b-row>
+                        <b-col>
+                            <div class='altmetric-embed' data-badge-type='donut' data-badge-details="right" data-hide-no-mentions="false" :data-doi="pub.doi||config.debug_doi"/>
+                        </b-col>
+                    </b-row>
+                </b-container>
+                <br clear="right">
             </div>
+            <b-container>
+                <br>
+                <b-row>
+                    <b-col cols="2">
+                        <span class="form-header">Authors</span>
+                    </b-col>
+                    <b-col col="10">
+                        <p>
+                            <span v-for="contact in pub.authors" :key="contact._id">
+                                <contact :fullname="contact.fullname" :email="contact.email"></contact>
+                            </span>
+                        </p>
+                        <br>
+                    </b-col>
+                </b-row>
 
-            <div v-if="tab_index > 0">
+                <b-row v-if="pub.contributors.length > 0">
+                    <b-col cols="2">
+                        <span class="form-header">Contributors</span>
+                    </b-col>
+                    <b-col cols="10">
+                        <p>
+                            <span v-for="contact in pub.contributors" :key="contact._id">
+                                <contact :fullname="contact.fullname" :email="contact.email"></contact>
+                            </span>
+                        </p>
+                        <br>
+                    </b-col>
+                </b-row>
+
+                <b-row v-if="pub.readme">
+                    <b-col cols="2">
+                        <span class="form-header">README</span>
+                    </b-col>
+                    <b-col cols="10">
+                        <vue-markdown :source="pub.readme" class="readme"></vue-markdown>
+                        <br>
+                    </b-col>
+                </b-row>  
+
+                <b-row>
+                    <b-col cols="2">
+                        <span class="form-header">Citation</span>
+                    </b-col>
+                    <b-col cols="10">
+                        <p>
+                            <small class="text-muted">Citation for this publiction. Please see citation section under each release for App specific citations. </small>
+                        </p>
+                        <citation :doi="pub.doi||config.debug_doi"/>
+                        <br>
+                    </b-col>
+               </b-row>  
+
+               <b-row v-if="pub.fundings.length > 0">
+                    <b-col cols="2">
+                        <span class="form-header">Funded By</span>
+                    </b-col>
+                    <b-col>
+                        <ul style="list-style: none; padding: 0px;">
+                            <li v-for="funding in pub.fundings" :key="funding._id" class="funder">
+                                <div v-if="funding.funder == 'NSF'" class="funder-label bg-success">NSF</div>
+                                <div v-else-if="funding.funder == 'NIH'" class="funder-label bg-info">NIH</div>
+                                <div v-else class="funder-label bg-warning">{{funding.funder}}</div>
+                                {{funding.id}}
+                            </li>
+                        </ul>
+                    </b-col>
+                </b-row>
+                <b-row>
+                    <b-col cols="2">
+                        <span class="form-header">License</span>
+                    </b-col>
+                    <b-col>
+                        <p><small class="text-muted">Datasets are published with the following license.</small></p>
+                        <license :id="pub.license"/>
+                        <br>
+                    </b-col>
+                </b-row> 
+
+                <b-row>
+                    <b-col cols="2">
+                        <span class="form-header">Project</span>
+                    </b-col>
+                    <b-col>
+                        <p><small class="text-muted">This publication is hosted in the following Brainlife project</small></p>
+                        <a href="javascript:void(0)" @click="openproject(pub.project._id)"><h5><icon name="shield-alt"/> {{pub.project.name}}</h5></a>
+                        <p class="text">{{pub.project.desc}}</p>
+                        <br>
+                    </b-col>
+                </b-row>
+            
+                <div v-if="resource_citations.length > 0" class="box">
+                    <span class="form-header">Resource Citations</span>
+                    <p><small>Datasets published on this dataset are computed on the following resources.</small></p>
+                    <p v-for="resource_citation in resource_citations">
+                        <icon name="caret-right"/> <b>{{resource_citation.resource.name}}</b>
+                        <small>{{resource_citation.resource.config.desc}}</small>
+                        <br>
+                        <i>{{resource_citation.citation}}</i>
+                    </p>
+                </div>
+
+                <hr>
+                <vue-disqus shortname="brain-life" :identifier="pub._id"/>
+            </b-container>
+        </div>
+
+        <div v-if="tab_index > 0">
+            <b-container>
+                <br>
                 <!-- release -->
                 <div class="box">
-                    <p>The following Apps were used to generate the data in this release.</p>
+                    <p>
+                    The following Apps were used to generate the data in this release.<br>
+                    </p>
                     <table class="table table-sm">
                         <thead>
                             <tr>
@@ -169,6 +182,7 @@
                             </tr>
                         </tbody>
                     </table>
+                    <small>You can copy and paste this table into Google doc to edit it</small>
                 </div><!--box-->
 
                 <p style="opacity: 0.7; float: right;"><span style="opacity: 0.5">Released on</span> <time>{{new Date(release.create_date).toLocaleDateString()}}</time></p>
@@ -221,17 +235,8 @@
                         </b-col>
                     </b-row>
                 </div>
-
-                <!--resource usage TODO.. let's show all resources used by the project on the detail page for now
-                <hr>
-                <div v-for="resource in pub.project.stats.resources">
-                    {{resource.name}}
-                    {{resource.desc}}
-                    {{resource.citation}}
-                </div>
-                -->
-            </div><!--release-->
-        </b-container>
+            </b-container>
+        </div>
         <br>
         <br>
     </div><!--page-content-->
@@ -516,9 +521,6 @@ color: white;
 .page-content {
 top: 0px;
 }
-.main {
-margin-right: 220px;
-}
 .rightside {
 float: right;
 width: 200px;
@@ -531,9 +533,6 @@ float: right;
 width: 400px;
 }
 @media only screen and (max-width: 800px) {
-    .main {
-        margin-right: 0;
-    }
     .rightside {
         width: 100%;
         float: inherit;
@@ -542,12 +541,11 @@ width: 400px;
 
 .header {
 background-color: white;
-margin-bottom: 30px;
 padding: 15px 0px 0px 0px;
 border-bottom: 1px solid #eee;
 position: sticky;
 top: 0px;
-z-index: 1;
+z-index: 5;/*has to be above vue-ace line number*/
 }
 .topic {
 padding: 6px; 

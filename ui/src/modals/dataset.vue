@@ -549,6 +549,8 @@ export default {
         load_product() {
             this.$http.get('dataset/product/'+this.dataset._id).then(res=>{
                 this.product = res.data.product;
+            }).catch(err=>{
+                console.error(err);
             });
         },
 
@@ -810,7 +812,8 @@ export default {
                 this.$set(this.dataset, '_pubs', res.data.pubs);
             }).catch(err=>{
                 console.error(err);
-                this.$notify({type: 'error', text: err});
+                //not all user have access to all data.. so let's ignore if that's the case
+                //this.$notify({type: 'error', text: err});
             });
         },
 

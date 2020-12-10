@@ -338,6 +338,7 @@ function connect_osiris(cb) {
         console.log("connected to osiris - opening sftp stream also");
         conn.sftp((err, sftp)=>{
             if(err) return cb(err);
+            console.log("sftp opened");
             if(cb) cb(null, conn, sftp);
             cb = null;
         });
@@ -358,119 +359,13 @@ function connect_osiris(cb) {
 
     conn.connect({
         username: "shayashi",
-        host: "msu-xfer01.osris.org",
+        //host: "msu-xfer01.osris.org", //Timed out while waiting for handshake?
+        host: "um-xfer01.osris.org", 
         privateKey: fs.readFileSync(__dirname+'/brlife.id_rsa'),
         keepaliveInterval: 10*1000, //default 0 (disabled)
         //keepaliveCountMax: 30, //default 3 (https://github.com/mscdex/ssh2/issues/367)
     });
 }
-
-/*
-function get_wrangler_archive_path(dataset) {
-    let _path = "/mnt/wrangler/dev-archive/";
-    _path += dataset.project+"/";
-    _path += dataset._id+".tar";
-    console.log(_path);
-    return _path;
-}
-exports.storage_systems.wrangler = {
-    need_backup: true, //need_backup if it's our storage (not openneuro)
-    test: cb=>{
-        connect_wrangler((err, conn, sftp)=>{
-            if(err) return cb(err);
-            console.log("loading quota.info from wrangler homedir.. should be created by cron..");
-            let stream = sftp.createReadStream("/mnt/wrangler/my-quota", {encoding: "ascii"});
-            let content = "";
-            stream.on('readable', function() {
-                //could be called multiple times..
-                let chunk;
-                while (null !== (chunk = stream.read())) {
-                    content += chunk.toString();
-                }
-            });
-            stream.on('end', ()=>{
-                conn.end();
-                //parse quota content
-                let lines = content.split("\n");
-                if(lines[0] != "Disk quotas for user hayashis (uid 833400):") {
-                    return cb("quota info looks odd.. "+content);
-                }
-                let stats = lines[3].trim().split(/[ ]+/);
-                let disk_used = parseInt(stats[0]);
-                let disk_quota = parseInt(stats[2]);
-                let files_used = parseInt(stats[4]);
-                let files_quota = parseInt(stats[6]);
-                if(disk_used / disk_quota > 0.85) return cb("disk >85% used");
-                if(files_used / files_quota > 0.85) return cb("files >85% used");
-                cb();
-            });
-        });
-    }, 
-
-    stat: (dataset, cb)=>{
-        connect_wrangler((err, conn, sftp)=>{
-            if(err) return cb(err);
-            sftp.stat(get_wrangler_archive_path(dataset), (err,stat)=>{
-                conn.end();
-                cb(err, stat);
-            });
-        });
-    },
-
-    download: (dataset, cb)=>{
-        connect_wrangler((err, conn, sftp)=>{
-            if (err) {
-                conn.end();
-                return cb(err);
-            }
-            let path = get_wrangler_archive_path(dataset);
-            let filename = path.split("/").pop();
-            console.debug(["loading...", path, filename]);
-            conn.exec("cat "+path, (err, stream)=>{
-                stream.on('error', err=>{
-                    console.error("stream failed but train has already left the station", err);
-                });
-                stream.on('close', code=>{
-                    conn.end();
-                });
-                //I believe listening to stream is required for close event to fire..?
-                stream.stderr.on('data', data=>{
-                    console.error(data.toString());
-                });
-                cb(err, stream, filename);
-            });
-        });
-    },
-
-    remove: (dataset, cb)=>{
-        connect_wrangler((err, conn, sftp)=>{
-            console.log("got wrangler streams for remove");
-            if(err) return cb(err);
-            let _path = get_wrangler_archive_path(dataset);
-            conn.exec("rm -f "+_path, (err, stream)=>{
-                if(err) {
-                    conn.end();
-                    return cb(err);
-                }
-                stream.on('error', err=>{
-                    console.error(err);
-                });
-                stream.on('close', (code, signal)=>{
-                    conn.end(); 
-                    if(code == 0) return cb(null);
-                    else cb("rm failed with code:"+code);
-                });
-                stream.on('data', data=>{
-                    console.log(data.toString());
-                });
-                stream.stderr.on('data', data=>{
-                    console.error(data.toString());
-                });
-            });
-        });
-    }
-} 
-*/
 
 function get_osiris_archive_path(dataset) {
     let _path = "/user/shayashi/brainlife/dev-archive/"; //not the same as secondary
@@ -517,19 +412,23 @@ exports.storage_systems.osiris = {
     },
 
     download: (dataset, cb)=>{
+        console.log("osiris/download called");
         connect_osiris((err, conn, sftp)=>{
-            if (err) {
-                conn.end();
-                return cb(err);
-            }
+            //console.log("------------------------");
+            //console.log(err);
+            //console.log(conn);
+            //console.log(sftp);
+            if(err) return cb(err);
             let path = get_osiris_archive_path(dataset);
             let filename = path.split("/").pop();
             //console.debug(["loading...", path, filename]);
+            console.log("streaming from", path)
             conn.exec("cat "+path, (err, stream)=>{
                 stream.on('error', err=>{
                     console.error("stream failed but train has already left the station", err);
                 });
                 stream.on('close', code=>{
+                    console.log("stream clsoed.. closing connection");
                     conn.end();
                 });
                 //I believe listening to stream is required for close event to fire..?
