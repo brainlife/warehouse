@@ -967,15 +967,28 @@ exports.users_general = async ()=>{
     return users.profiles;
 }
 
-//mongoose doesn't cast object id on aggregate pipeline .. https://github.com/Automattic/mongoose/issues/1399
-//somewhat futile attempt to convert all string that looks like objectid to objectid.
-//mongoose.Types.ObjectId.isValid byitself doesn't work (https://github.com/Automattic/mongoose/issues/1959#issuecomment-97583033) 
-//const checkForHexRegExp = new RegExp("^[0-9a-fA-F]{24}$");
+
 exports.cast_mongoid = function(node) {
+    //mongoose doesn't cast object id on aggregate pipeline .. https://github.com/Automattic/mongoose/issues/1399
+    //somewhat futile attempt to convert all string that looks like objectid to objectid.
+    //mongoose.Types.ObjectId.isValid by itself doesn't work (https://github.com/Automattic/mongoose/issues/1959#issuecomment-97583033) 
+    //const checkForHexRegExp = new RegExp("^[0-9a-fA-F]{24}$");
+    function isObjectIdValid(id) {
+        if (mongoose.Types.ObjectId.isValid(id)) {
+            if (String(new mongoose.Types.ObjectId(id)) === id) {
+                return true;
+            } else {
+                return false
+            }
+        } else {
+            return false
+        }  
+    }
+
     for(var k in node) {
         var v = node[k];
         if(v === null) continue;
-        if(mongoose.Types.ObjectId.isValid(v)) {
+        if(isObjectIdValid(v)) {
             node[k] = mongoose.Types.ObjectId(v);
         } else if(typeof v == 'object') exports.cast_mongoid(v); //recurse
     }
