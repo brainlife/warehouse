@@ -330,7 +330,7 @@
                     <table class="table table-sm">
                         <thead style="background-color: #eee; font-size: 80%;">
                             <tr>
-                                <th style="min-width: 100px; padding-left: 20px;">Branch</th>
+                                <th style="min-width: 100px;">Branch</th>
                                 <th>Status</th>
                                 <th style="min-width: 80px"><!--<icon name="shield-alt"/>-->Project</th>
                                 <th>Resource</th>
@@ -339,7 +339,7 @@
                             </tr>
                         </thead>
                         <tr v-for="task in tasks" :key="task._id">
-                            <td style="padding-left: 20px;">
+                            <td>
                                 <b-badge variant="light">{{task.service_branch}}</b-badge>
                             </td>
                             <td>
@@ -352,8 +352,9 @@
                             </td>
                             <td>
                                 <span v-if="task._project">{{task._project.name}}</span>
-                                <span v-else style="opacity: 0.7;">(Private)</span>
-                                <!--<small>{{task._group_id}}</small>-->
+                                <span v-else style="opacity: 0.7;">(Private)
+                                    <small><icon name="id-badge"/> {{task._group_id}}</small>
+                                </span>
                             </td>
                             <td>
                                 <span v-if="task._resource">{{task._resource.name}}</span>
@@ -582,12 +583,12 @@ export default {
                         group_id: {$in: gids},
                     });
                     this.$http.get("/project", {params: {find: project_find, select: 'name group_id'}}).then(res=>{
-                        this.projects = {};
+                        let projects = {};
                         res.data.projects.forEach(project=>{
-                            this.projects[project.group_id] = project;
+                            projects[project.group_id] = project;
                         });
                         this.tasks.forEach(task=>{
-                            task._project = this.projects[task._group_id];
+                            task._project = projects[task._group_id];
                         });
                     });
                     

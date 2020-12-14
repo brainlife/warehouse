@@ -226,7 +226,7 @@
                     <table class="table table-sm">
                         <thead>
                             <tr style="background-color: #eee;">
-                                <th style="padding-left: 20px; width: 100px;">Group</th>
+                                <th style="min-width: 100px;">Project</th>
                                 <th>Status</th>
                                 <th>Submitter</th>
                                 <th>Date</th>
@@ -234,8 +234,11 @@
                             </tr>
                         </thead>
                         <tr v-for="task in tasks" :key="task._id">
-                            <td style="width: 70px; padding-left: 20px;">
-                                <small><icon name="id-badge"/> {{task._group_id}}</small><br>
+                            <td>
+                                <span v-if="task._project">{{task._project.name}}</span>
+                                <span v-else style="opacity: 0.7;">(Private) 
+                                    <small><icon name="id-badge"/> {{task._group_id}}</small>
+                                </span>
                             </td>
                             <td>
                                 <span class="status-color" :class="task.status" style="padding: 3px;" :title="task.status">
@@ -413,6 +416,21 @@ export default {
             this.$http.get(Vue.config.amaretti_api+'/resource/tasks/'+this.$route.params.id).then(res=>{
                 this.tasks = res.data.recent;
                 this.tasksRunning = this.tasks.filter(t=>{t.status == "running" || t.status == "running_sync"});
+
+                //resolve project names
+                let gids = this.tasks.map(task=>task._group_id);
+                let project_find = JSON.stringify({
+                    group_id: {$in: gids},
+                });
+                this.$http.get("/project", {params: {find: project_find, select: 'name group_id'}}).then(res=>{
+                    let projects = {};
+                    res.data.projects.forEach(project=>{
+                        projects[project.group_id] = project;
+                    });
+                    this.tasks.forEach(task=>{
+                        task._project = projects[task._group_id];
+                    });
+                });
             }).catch(console.error);
 
             this.$http.get(Vue.config.amaretti_api+'/resource/usage/'+this.$route.params.id).then(res=>{
