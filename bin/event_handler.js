@@ -391,7 +391,8 @@ function handle_task(task, cb) {
             } else next();
         },
         
-        //submit secondary output archiver
+        //submit secondary output archiver for finished validation task
+        /*
         async next=>{
             if(task.status != "finished" || !isValidationTask(task)) {
                 return;
@@ -449,6 +450,115 @@ function handle_task(task, cb) {
             console.log("submitted! "+newtask._id);
             //console.log(JSON.stringify(newtask, null, 4));
         },
+        */
+
+        //submit secondary archiver
+        async next=>{
+            if(task.status != "finished") {// || !isValidationTask(task)) {
+                return;
+            }
+
+            //see what needs to be archived to secondary
+            let requests = [];
+            let subdirs = [];
+            async.eachSeries(task.config._outputs, async (output)=>{
+                let datatype = await db.Datatypes.findById(output.datatype);
+                if(datatype.groupAnalysis || isValidationTask(task)) {
+                    let conf = {
+                        src: "../"+task._id+"/"+output.id,
+
+                        //destination
+                        group_id: task._group_id,
+                        instance_id: task.instance_id,
+                        task_id: task._id,
+                        subdir: output.id,
+                        
+                        //path: null,
+                    }
+
+                    //validation task organize things in a unique way
+                    if(isValidationTask(task)) {
+                        //TODO - shouldn't I check the result of the validation before going ahead with archive?
+                        
+                        subdirs.push("secondary"); //validator always output secondary output under ./secondary
+                        
+                        //secondary output are placed directly
+                        conf.src = "../"+task._id;
+                        conf.task_id = task.deps_config[0].task; //use the task id of the parent
+
+                        conf.validator = true; //used to let UI know that this was output from validator
+                    } else {
+                        subdirs.push(output.id);
+                    }
+                    requests.push(conf);
+
+                }
+            }, async err=>{
+                if(err) {
+                    console.error(err);
+                    return;
+                }
+
+                if(requests.length == 0) return;
+                console.log("we need to archive the following secondary output")
+                console.dir(requests);
+
+                //see if we already submitted secondary archiver for this task
+                console.log("checking to see if we already submitted app-archive-secondary");
+                let find = {
+                    service: "brainlife/app-archive-secondary",
+                    instance_id: task.instance_id,
+                    "deps_config.task": task._id,
+                }
+                let tasks = await rp.get({
+                    url: config.amaretti.api+"/task?find="+JSON.stringify(find)+"&limit=1",
+                    json: true,
+                    headers: {
+                        authorization: "Bearer "+config.warehouse.jwt,
+                    }
+                });
+
+                if(tasks.tasks.length) {
+                    console.log("app-secondary already submitted");
+                    return;
+                }
+
+                console.log("issueing user_jwt for", task.user_id);
+                let user_jwt;
+                if(task.user_id == "warehouse") {
+                    console.error("task.user_id set to warehouse! using warehouse jwt to issue archive_jwt");
+                    user_jwt = config.warehouse.jwt;
+                } else {
+                    user_jwt = await common.issue_archiver_jwt(task.user_id);
+                }
+
+                //submit secondary archiver with just secondary deps
+                console.log("submitting secondary output archiver");
+                let remove_date = new Date();
+                remove_date.setDate(remove_date.getDate()+1); //remove in 1 day
+                let newtask = await rp.post({
+                    url: config.amaretti.api+"/task", json: true,
+                    body: Object.assign(find, {
+                        deps_config: [ {task: task._id, subdirs} ],
+                        config: {
+                            requests, 
+                            //validator_task: task, //deprecated by requests
+                            //app_task_id: task.follow_task_id, //the main app task (used to query secondary archive task)
+                        },
+                        remove_date,
+                        //user_id: task.user_id, 
+                    }),
+                    headers: {
+                        //authorization: "Bearer "+config.warehouse.jwt,
+                        authorization: "Bearer "+user_jwt,
+                    }
+                });
+                console.log("submitted! "+newtask._id);
+                //console.log(JSON.stringify(newtask, null, 4));
+
+            });
+        },
+
 
         //update secondary archive index
         /*

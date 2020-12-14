@@ -23,10 +23,10 @@
             </div>
             <div style="margin-left: 45px; margin-right: 5px; padding-bottom: 4px; position: relative;">
                 <div style="float: right;">
-                    <div class="button" :id="'popover'+task.config._tid" @click="openinfo">
+                    <div class="button" :id="'popover'+task._id" @click="openinfo">
                         <icon name="chart-area"/>
                     </div>
-                    <b-popover :target="'popover'+task.config._tid" triggers="hover">
+                    <b-popover :target="'popover'+task._id" triggers="hover">
                         <template slot="title"><span class="text-muted"><small>ID</small> {{task._id}}</span></template>
                         <p>
                             <contact :id="task.user_id" size="small"/>

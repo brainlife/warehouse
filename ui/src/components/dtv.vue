@@ -6,7 +6,9 @@
         -->
         <timeago class="text-muted" style="float: right" :datetime="task.finish_date" :auto-update="10"/>
         <span v-if="task.product && task.product.errors.length == 0 && task.product.warnings.length == 0" style="opacity: 0.5;">
-            <icon name="check" scale="0.8"/> <b style="opacity: 0.8">Validated</b><br> Found no issues
+            <icon name="check" scale="0.8"/> <b style="opacity: 0.8">Validated</b>
+            <small>by {{task.service}} {{task.service_branch}} <small>{{task._id}}</small></small>
+            <br> Found no issues
         </span>
         <div v-if="task.product" style="margin-bottom: 5px;">
             <b-alert show v-for="(error, idx) in task.product.errors" :key="idx" variant="danger" class="dtv-alert"><b>Error</b> {{error}}</b-alert>
@@ -16,17 +18,15 @@
 
         <secondary v-if="secondary && product" :task="task" :output="output" :product="product" :secondary="secondary"/>
 
-        <br>
-        <small style="float: right;">{{task.service}} {{task.service_branch}} {{task._id}}</small>
         <div v-if="output.secondary_task" style="font-size: 90%;">
-            <small v-if="output.secondary_task.finish_date">
-                <icon name="check" scale="0.6"/> <b>Secondary Output</b> Archived
-            </small>
-            <small v-else>
+            <span v-if="output.secondary_task.finish_date">
+                Ready for Group Analysis
+            </span>
+            <span v-else>
                 <statusicon :status="output.secondary_task.status"/>
                 {{output.secondary_task.status_msg}}
-            </small>
-            <small>({{output.secondary_task._id}})</small>
+            </span>
+            <small style="opacity: 0.5; font-size:70%;">{{output.secondary_task._id}}</small>
         </div>
     </div>
     <task v-else :task="task"/>
@@ -39,6 +39,7 @@ import product from '@/components/product'
 import secondary from '@/components/secondary'
 import task from '@/components/task'
 import secondaryWaiter from '@/mixins/secondarywaiter'
+import statusicon from '@/components/statusicon'
 
 import axios from 'axios'
 
@@ -50,6 +51,7 @@ export default {
         secondary,
         product,
         task,
+        statusicon,
     },
 
     data() {

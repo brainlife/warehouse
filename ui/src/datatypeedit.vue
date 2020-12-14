@@ -203,6 +203,17 @@
                 </b-col>
             </b-row>
 
+            <b-row>
+                <b-col cols="3">
+                    <span class="form-header">Group Analysis</span>
+                </b-col> 
+                <b-col cols="9">
+                    <input type="checkbox" v-model="datatype.groupAnalysis"> (experimental )This datatype will be available for group analysis.</input>
+                    <small>The maximum amount of data will be limited to 64MB per data object</small>
+                    <br>
+                </b-col>
+            </b-row>
+
             <div class="page-footer">
                 <b-container>
                     <b-button variant="secondary" @click="cancel">Cancel</b-button>
@@ -246,6 +257,8 @@ export default {
                 uis: [ "5be75b31e15a02914a4be8f0" ], //(show fileviewer by default)
                 validator: "",
                 validator_branch: "",
+
+                groupAnalysis: false,
             },
 
             uis: [], //list of all UIs

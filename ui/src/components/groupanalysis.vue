@@ -8,6 +8,13 @@
     </div>
     <div v-else-if="ready" class="page-content">
         <div class="list" style="background-color: white;">
+            <p>
+                Once you complete your subject level processing, you can run group analysis on the derived data.
+            </p>
+            <p>
+                To launch a group analysis, select a group analysis App from the list of available group analysis Apps below,
+                TODO..
+            </p>
 
             <h4>Existing Analysis</h4>
             <div>

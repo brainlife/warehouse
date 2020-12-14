@@ -1,6 +1,8 @@
 <template>
 <div v-if="ready" class="dt" :class="{'dt-clickable': clickable}" @click="click">
-    <span class="dot" :style="{backgroundColor: color}"></span> {{name}}
+    <icon v-if="_datatype.groupAnalysis" name="dot-circle" :style="{color}" scale="1" class="dot"/>
+    <icon v-else name="circle" :style="{color}" scale="1" class="dot"/>
+    <!--<span class="dot" :style="{backgroundColor: color}"></span>--> {{name}}
     <div class="tags" v-if="tags" v-for="(tag, idx) in tags" :key="idx">
         <span v-if="tag && tag[0] == '!'" class="text-danger"><b-badge variant="danger">not</b-badge> {{tag.substring(1)}}</span>
         <span v-else>{{tag}}</span>
@@ -106,8 +108,6 @@ export default {
 }
 .dot {
     display: inline-block;
-    position: relative;
-    top: 0.1em;
     color: white;
     height: 0.8em;
     width: 0.8em;

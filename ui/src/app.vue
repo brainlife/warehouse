@@ -39,9 +39,7 @@
                         </b-dropdown-item>
                     </b-dropdown>
                     <b-btn @click="execute" variant="primary" size="sm" style="margin-top: 3px;"><icon name="play"/>&nbsp;&nbsp;&nbsp;<b>Execute</b></b-btn>    
-
                 </div>
-       
 
                 <h5>
                     <b-badge v-if="app.projects && app.projects.length > 0" variant="secondary" title="Private App">
@@ -334,7 +332,8 @@
                             <tr>
                                 <th style="min-width: 100px; padding-left: 20px;">Branch</th>
                                 <th>Status</th>
-                                <th style="min-width: 80px"><icon name="shield-alt"/></th>
+                                <th style="min-width: 80px"><!--<icon name="shield-alt"/>-->Project</th>
+                                <th>Resource</th>
                                 <th>Submitter</th>
                                 <th width="150px">Date</th>
                             </tr>
@@ -352,7 +351,13 @@
                                 <small style="font-size: 70%">{{task._id}}</small>
                             </td>
                             <td>
-                                <small>{{task._group_id}}</small>
+                                <span v-if="task._project">{{task._project.name}}</span>
+                                <span v-else style="opacity: 0.7;">(Private)</span>
+                                <!--<small>{{task._group_id}}</small>-->
+                            </td>
+                            <td>
+                                <span v-if="task._resource">{{task._resource.name}}</span>
+                                <span v-else style="opacity: 0.7;">(Private)</span>
                             </td>
                             <td>
                                 <contact :id="task.user_id" size="small"/>
@@ -453,7 +458,10 @@ import doibadge from '@/components/doibadge'
 import resource from '@/components/resource'
 import statusicon from '@/components/statusicon'
 
+import resource_cache from '@/mixins/resource_cache'
+
 export default {
+    mixins: [ resource_cache ],
     components: { 
         contact, 
         tags, datatype, appavatar,
@@ -560,6 +568,29 @@ export default {
 
                 this.$http.get(Vue.config.amaretti_api+'/task/recent', {params: {service: this.app.github}}).then(res=>{
                     this.tasks = res.data.recent;
+
+                    //lookup resource names
+                    this.tasks.forEach(task=>{
+                        this.resource_cache(task.resource_id, (err, resource)=>{
+                            task._resource = resource;
+                        });
+                    });
+
+                    //resolve project names
+                    let gids = this.tasks.map(task=>task._group_id);
+                    let project_find = JSON.stringify({
+                        group_id: {$in: gids},
+                    });
+                    this.$http.get("/project", {params: {find: project_find, select: 'name group_id'}}).then(res=>{
+                        this.projects = {};
+                        res.data.projects.forEach(project=>{
+                            this.projects[project.group_id] = project;
+                        });
+                        this.tasks.forEach(task=>{
+                            task._project = this.projects[task._group_id];
+                        });
+                    });
+                    
                 }).catch(console.error);
 
                 this.$http.get(Vue.config.amaretti_api+'/service/info', {params: {service: this.app.github}}).then(res=>{
@@ -662,6 +693,14 @@ export default {
 
             editor.setShowPrintMargin(true);
         },
+
+        /*
+        getResourceName(resource_id) {
+            this.resource_cache(resource_id, (err, resource)=>{
+                return resource.name;
+            });
+        },
+        */
     },
 }
 </script>
@@ -673,7 +712,7 @@ top: 0px;
 
 .header {
 background-color: white;
-padding: 15px 0px 0px 0px;
+padding: 15px 0 0 0;
 border-bottom: 1px solid #ddd;
 position: sticky;
 top: 0;

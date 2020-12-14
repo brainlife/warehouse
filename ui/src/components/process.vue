@@ -158,18 +158,12 @@
                             <pre style="max-height: 300px; background-color: #eee;">{{JSON.stringify(output.meta, null, 4)}}</pre>
                         </b-collapse>
 
-                        <dtv :task="output.dtv_task" :output="output" v-if="output.dtv_task"/>
 
-                        <!--
-                        <div class="subinfo" v-if="output.secondary_task">
-                            <div class="subtitle">Seconary Output Archiver</div>
-                            <small v-if="output.secondary_task.finish_date"><icon name="check"/> Archived</small>
-                            <small v-else>
-                                <statusicon :status="output.secondary_task.status"/>
-                                {{output.secondary_task.status_msg}}</small>
-                            <small>({{output.secondary_task._id}})</small>
-                        </div>
-                        -->
+                        <dtv :task="output.dtv_task" :output="output" v-if="output.dtv_task"/>
+                        <span v-if="!output.dtv_task && output.secondary_task" title="Ready for group analysis" style="opacity: 0.5;">
+                            &nbsp;<icon name="thumbs-up" scale="0.7"/>
+                        </span>
+
                     </div><!--output-->
 
                     <!-- 
@@ -416,15 +410,39 @@ export default {
             Vue.set(output, 'dtv_task', dtv_task);
         },
 
+        //store the secondary_task object under the task that produced it.
+        //there are two app-archive-secondary tasks. 
+        //  1. validator/secondary output (mainly used to create UI content)
+        //  2. content from the datatype with groupAnalysis enabled
+
         set_secondary_task(secondary_task) {
             if(!this.tasks) return;
-            let dtv_task = secondary_task.config.validator_task;
-            if(!dtv_task.follow_task_id) return; 
-            let task = this.tasks.find(task=>task._id == dtv_task.follow_task_id);
-            if(!task) return; //for dev?
-            let output_id = dtv_task.config._outputs[0].id;
-            let output = task.config._outputs.find(out=>out.id == output_id);
-            Vue.set(output, 'secondary_task', secondary_task);
+            if(secondary_task.config.validator_task) {
+                //validator_task is deprecated (remove eventually)
+                let dtv_task = secondary_task.config.validator_task;
+                if(!dtv_task.follow_task_id) return; 
+                let task = this.tasks.find(task=>task._id == dtv_task.follow_task_id);
+                if(!task) return; //for dev?
+                let output_id = dtv_task.config._outputs[0].id;
+                let output = task.config._outputs.find(out=>out.id == output_id);
+                Vue.set(output, 'secondary_task', secondary_task);
+            } else {
+                secondary_task.config.requests.forEach(request=>{
+
+                    //we really care about case 2
+                    if(request.validator) return;
+
+                    //find the task that this output belongs to
+                    let task = this.tasks.find(task=>task._id == request.task_id)
+                    if(!task) return; //maybe removed?
+
+                    //find the output that this output belongs to (subdir should be the output_id)
+                    let output = task.config._outputs.find(out=>out.id == request.subdir);
+
+                    //now I can set it to the output
+                    Vue.set(output, 'secondary_task', secondary_task);
+                });
+            }
         },
 
         updatedesc() {

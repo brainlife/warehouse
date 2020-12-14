@@ -3,25 +3,47 @@
     <div class="page-content">
         <div v-if="!datatype" class="loading">Loading ...</div>
         <div v-else>
-            <div class="header header-sticky">
+            <div class="header">
                 <b-container style="position: relative;">
                     <div style="float: right; z-index: 1; position: relative;">
                         <b-btn @click="edit" v-if="canedit" variant="secondary" size="sm"><icon name="edit"/> Edit</b-btn>
                     </div>
-                    <!--
-                    <div @click="back()" class="button button-page" style="position: absolute; left: -30px;">
-                        <icon name="angle-left" scale="1.5"/>
-                    </div>
-                    -->
-                    <h2 style="position: relative; top: -3px;">
-                        <datatypetag :datatype="datatype" :trimname="!!(~datatype.name.indexOf('neuro/'))"/>
+                    <h2>
+                        <!--<datatypetag :datatype="datatype" :trimname="!!(~datatype.name.indexOf('neuro/'))"/>-->
+                        <datatypetag :datatype="datatype" :trimname="false"/>
                     </h2>
-                    <p style="opacity: 0.6">{{datatype.desc}}</p>
+
+                    <b-tabs class="brainlife-tab" v-model="tab">
+                        <b-tab>
+                            <template v-slot:title>Detail</template>
+                        </b-tab>
+                        <b-tab>
+                            <template v-slot:title>README</template>
+                        </b-tab>
+                        <b-tab>
+                            <template v-slot:title>Samples</template>
+                        </b-tab>
+                        <b-tab>
+                            <template v-slot:title>Apps</template>
+                        </b-tab>
+                    </b-tabs>
                 </b-container>
-            </div>
-            <br>
-            <b-container>
-                <div class="box">
+            </div><!--header-->
+
+            <div v-if="tab == 0">
+                <div style="background-color: white; padding-top: 15px; border-bottom: 1px solid #ddd;">
+                    <b-container>
+                        <b-alert show variant="secondary" v-if="datatype.groupAnalysis">The data be used for group analysis</b-alert>
+                        <p style="line-height: 250%;">
+                            <b-badge pill v-if="datatype.create_date" class="bigpill" title="Registration Date">
+                                <icon name="calendar" style="opacity: 0.4;"/>&nbsp;&nbsp;&nbsp;<small>Registerd</small>&nbsp;&nbsp;{{new Date(datatype.create_date).toLocaleDateString()}}
+                            </b-badge>
+                        </p>
+                        <p style="opacity: 0.6">{{datatype.desc}}</p>
+                    </b-container>
+                </div><!--sub header-->
+                <b-container>
+                    <br>
                     <span class="form-header">Files/Dirs</span>
                     <p><small style="opacity: 0.7">The following files/dirs are expected to be part of this datatype</small></p>
                     <div v-for="file in datatype.files" :key="file.id" style="background-color: white; padding: 8px; margin-bottom: 1px;">
@@ -40,101 +62,87 @@
                             </b-col>
                         </b-row>
                     </div>
-                </div>
 
-                <div v-if="datatype.readme" class="box">
-                    <span class="form-header">README</span>
-                    <p v-if="!datatype.readme" style="opacity: 0.7">No README</p>
-                    <vue-markdown v-else :source="datatype.readme" class="readme"/>
-                </div>
+                    <br>
+                    <div class="box">
+                        <span class="form-header">Admins</span>
+                        <p><small style="opacity: 0.7">Users who are responsible for this datatype.</small></p>
+                        <div>
+                            <p v-if="!datatype.admins || datatype.admins.length == 0" style="opacity: 0.8">No admins</p>
+                            <p v-for="admin in datatype.admins" :key="admin._id">
+                                <contact :id="admin"/>
+                            </p>
+                        </div>
+                    </div>
 
-                <div class="box">
-                    <span class="form-header">Datatype Tags</span>
-                    <p v-if="datatype.datatype_tags.length > 0"><small style="opacity: 0.7">The following datatype tags are used for this datatype.</small></p>
-                    <p v-else><small style="opacity: 0.7">No officially registered datatype tags</small></p>
-                    <b-row v-for="(entry, idx) in datatype.datatype_tags" :key="idx" style="margin-bottom: 10px;">
-                        <b-col cols="3">
-                            <span style="background-color: #ddd; padding: 2px 5px; display: inline-block;">{{entry.datatype_tag}}</span>
-                        </b-col>
-                        <b-col cols="9">
-                            <small>{{entry.desc}}</small>
-                        </b-col>
-                    </b-row>
+                    <div class="box" v-if="datatype.validator">
+                        <span class="form-header">Validator</span>
+                        <p><small style="opacity: 0.7">The following validator service is used to validate/normalize when a data object of this datatype is imported by Brainlife UI.</small></p>
+                        <p>
+                            <a :href="'https://github.com/'+datatype.validator"><b>{{datatype.validator}}</b> <b-badge variant="secondary">{{datatype.validator_branch}}</b-badge></a>
+                        </p>
+                    </div>
 
-                    <p v-if="datatype._datatype_tags.length > 0">
-                        <small style="opacity: 0.7">The following adhoc(not officially recognized) datatype tags are used for some datasets.</small><br>
-                        <span v-for="tag in adhoc_datatype_tags" :key="tag" style="background-color: #ddd; padding: 2px 5px; margin-right: 4px; margin-bottom: 4px; display: inline-block; opacity: 0.5;">{{tag}}</span>
-                    </p>
-                </div>
 
-                <div v-if="sample_datasets.length > 0" class="box">
-                    <span class="form-header">Sample Data</span>
-                    <p>
-                        <small style="opacity: 0.7;">Please use the following data objects are template.</small>
-                    </p>
-                    <div v-for="dataset in sample_datasets" :key="dataset._id" class="sample-dataset" @click="open_sample_dataset(dataset)">
-                        <b-row>
-                            <b-col cols="6">
-                                <datatypetag :datatype="datatype" :tags="dataset.datatype_tags"/>
+                    <div class="box">
+                        <span class="form-header">Datatype Tags</span>
+                        <p v-if="datatype.datatype_tags.length > 0"><small style="opacity: 0.7">The following datatype tags are used for this datatype.</small></p>
+                        <p v-else><small style="opacity: 0.7">No officially registered datatype tags</small></p>
+                        <b-row v-for="(entry, idx) in datatype.datatype_tags" :key="idx" style="margin-bottom: 10px;">
+                            <b-col cols="3">
+                                <span style="background-color: #ddd; padding: 2px 5px; display: inline-block;">{{entry.datatype_tag}}</span>
                             </b-col>
-                            <b-col>
-                                {{dataset.meta.subject}} <span v-if="dataset.meta.session">{{dataset.meta.session}}</span> <small>{{dataset.desc}}</small>
-                                <!-- <span style="float: right"><b>From</b> {{dataset.project.name}}</span> -->
-                                <tags :tags="dataset.tags"/>
+                            <b-col cols="9">
+                                <small>{{entry.desc}}</small>
+                            </b-col>
+                        </b-row>
+
+                        <p v-if="datatype._datatype_tags.length > 0">
+                            <small style="opacity: 0.7">The following adhoc(not officially recognized) datatype tags are used for some data objects.</small><br>
+                            <span v-for="tag in adhoc_datatype_tags" :key="tag" style="background-color: #ddd; padding: 2px 5px; margin-right: 4px; margin-bottom: 4px; display: inline-block; opacity: 0.5;">{{tag}}</span>
+                        </p>
+                    </div>
+
+                    <div class="box">
+                        <span class="form-header">Visualizers</span>
+                        <p v-if="datatype.uis.length == 0" style="opacity: 0.8;">No visualizer</p>
+                        <p v-else><small style="opacity: 0.7">The following visualizers can be used to visualize this datatype</small></p>
+                        <b-row>
+                            <b-col :cols="3" class="ui" v-for="ui in datatype.uis" :key="ui._id">
+                                <b-card 
+                                    :header-bg-variant="ui.docker?'success':'dark'" 
+                                    header-text-variant="white" 
+                                    :header="ui.name" 
+                                    class="card" 
+                                    @click="openvis(ui)"
+                                    style="max-width: 25rem; margin-bottom: 20px;"
+                                    :img-src="ui.avatar"> 
+                                    <p class="card-text">{{ui.desc}}</p>
+                                </b-card>
                             </b-col>
                         </b-row>
                     </div>
-                </div>
-
-                <div class="box">
-                    <span class="form-header">Visualizers</span>
-                    <p v-if="datatype.uis.length == 0" style="opacity: 0.8;">No visualizer</p>
-                    <p v-else><small style="opacity: 0.7">The following visualizers can be used to visualize this datatype</small></p>
-                    <b-row>
-                        <b-col :cols="3" class="ui" v-for="ui in datatype.uis" :key="ui._id">
-                            <b-card 
-                                :header-bg-variant="ui.docker?'success':'dark'" 
-                                header-text-variant="white" 
-                                :header="ui.name" 
-                                class="card" 
-                                @click="openvis(ui)"
-                                style="max-width: 25rem; margin-bottom: 20px;"
-                                :img-src="ui.avatar"> 
-                                <p class="card-text">{{ui.desc}}</p>
-                            </b-card>
-                        </b-col>
-                    </b-row>
-                </div>
-
-                <div class="box">
-                    <span class="form-header">Admins</span>
-                    <p><small style="opacity: 0.7">Users who are responsible for this datatype.</small></p>
-                    <div>
-                        <p v-if="!datatype.admins || datatype.admins.length == 0" style="opacity: 0.8">No admins</p>
-                        <p v-for="admin in datatype.admins" :key="admin._id">
-                            <contact :id="admin"/>
-                        </p>
+                    <!--
+                    <div class="box" v-if="datatype.bids && datatype.bids.maps.length > 0">
+                        <span class="form-header">BIDS Export</span>
+                        <p><small style="opacity: 0.7">The following file mapping is used to generate BIDS derivative exports.</small></p>
+                        <div style="background-color: #f9f9f9; color: #bbb; padding: 5px"><b>{{datatype.bids.derivatives}}</b></div>
+                        <pre>{{JSON.stringify(datatype.bids.maps, null, 4)}}</pre>
                     </div>
-                </div>
+                    -->
+                </b-container>
+            </div>
 
-                <!--
-                <div class="box" v-if="datatype.bids && datatype.bids.maps.length > 0">
-                    <span class="form-header">BIDS Export</span>
-                    <p><small style="opacity: 0.7">The following file mapping is used to generate BIDS derivative exports.</small></p>
-                    <div style="background-color: #f9f9f9; color: #bbb; padding: 5px"><b>{{datatype.bids.derivatives}}</b></div>
-                    <pre>{{JSON.stringify(datatype.bids.maps, null, 4)}}</pre>
-                </div>
-                -->
+            <div v-if="tab == 1">
+                <b-container>
+                    <br>
+                    <div v-if="datatype.readme">
+                        <vue-markdown :source="datatype.readme" class="readme"/>
+                    </div>
+                    <div v-else style="opacity: 0.5;">No README</div>
 
-                <div class="box" v-if="datatype.validator">
-                    <span class="form-header">Validator</span>
-                    <p><small style="opacity: 0.7">The following validator service is used to validate/normalize when a dataset of this datatype is imported by Brainlife UI.</small></p>
-                    <p>
-                        <a :href="'https://github.com/'+datatype.validator"><b>{{datatype.validator}}</b> <b-badge variant="secondary">{{datatype.validator_branch}}</b-badge></a>
-                    </p>
-                </div>
-
-                <div class="box">
+                    <!--upload hint-->
+                    <hr>
                     <span class="form-header">Upload Hints</span>
                     <p><small style="opacity: 0.7">You can upload your data in this datatype using <a href="https://brainlife.io/docs/cli/install/" target="cli">brainlife CLI</a>.</small></p>
                     <pre>$ bl data upload --datatype {{datatype.name}} --project (project ID) --subject (subject name) \
@@ -181,15 +189,43 @@
                         <br>
                     </div>
 
-                    <p><small style="opacity: 0.7">Please run <b>bl data upload -h</b> for full list of options. You can also read <a href="https://brainlife.io/docs/cli/upload/" target="cli">CLI Upload document</a> for more detail.</small></p>
-                </div>
+                    <p>
+                        <small style="opacity: 0.7">
+                            Please run <b>bl data upload -h</b> for full list of options. 
+                            You can also read <a href="https://brainlife.io/docs/cli/upload/" target="cli">CLI Upload document</a> for more detail.
+                        </small>
+                    </p>
 
-                <div class="box">
-                    <span class="form-header">Apps</span>
-            
+                </b-container>
+            </div>
+
+            <div v-if="tab == 2">
+                <b-container>
+                    <br>
+                    <div v-if="sample_datasets.length > 0" class="box">
+                        <div v-for="dataset in sample_datasets" :key="dataset._id" class="sample-dataset" @click="open_sample_dataset(dataset)">
+                            <b-row>
+                                <b-col cols="6">
+                                    <datatypetag :datatype="datatype" :tags="dataset.datatype_tags"/>
+                                </b-col>
+                                <b-col>
+                                    {{dataset.meta.subject}} <span v-if="dataset.meta.session">{{dataset.meta.session}}</span> <small>{{dataset.desc}}</small>
+                                    <!-- <span style="float: right"><b>From</b> {{dataset.project.name}}</span> -->
+                                    <tags :tags="dataset.tags"/>
+                                </b-col>
+                            </b-row>
+                        </div>
+                    </div>
+                    <small v-else>No sample data object is registered. Please contact the administrator for this datatype.</small>
+                </b-container>
+            </div>
+
+            <div v-if="tab == 3">
+                <b-container>
+                    <br>
                     <p v-if="output_apps.length == 0"><small>No App uses this datatype as output.</small></p>
                     <p v-else>
-                        <small>The following Apps outputs datasets in this datatype.</small>
+                        <small>The following Apps outputs data in this datatype.</small>
                     </p>
                     <div class="apps-container" style="border-left: 4px solid rgb(40, 167, 69); padding-left: 15px;">
                         <app v-for="app in output_apps" :key="app._id" :app="app" class="app" height="270px"/>
@@ -198,14 +234,13 @@
 
                     <p v-if="input_apps.length == 0"><small>No App uses this datatype as input.</small></p>
                     <p v-else>
-                        <small>The following Apps uses datasets in this datatype for input.</small>
+                        <small>The following Apps uses data in this datatype for input.</small>
                     </p>
                     <div class="apps-container" style="border-left: 4px solid rgb(0, 123, 255); padding-left: 15px;">
                         <app v-for="app in input_apps" :key="app._id" :app="app" class="app" height="270px"/>
                     </div>
-                </div>
-
-            </b-container>
+                </b-container>
+            </div>
         </div>
     </div>
 </div>
@@ -243,6 +278,8 @@ export default {
             
             //editing: false, 
             config: Vue.config,
+
+            tab: 0,
         }
     },
 
@@ -405,15 +442,12 @@ font-size: 17pt;
 font-weight: bold;
 }
 .header {
-padding: 10px;
 background-color: white;
-border-bottom: 1px solid #eee;
-}
-.header-sticky {
+padding: 15px 0 0 0;
+border-bottom: 1px solid #ddd;
 position: sticky;
 top: 0px;
-z-index: 1;
-box-shadow: 0 0 1px #ccc;
+z-index: 5;/*has to be above vue-ace line number*/
 }
 
 .apps-container {

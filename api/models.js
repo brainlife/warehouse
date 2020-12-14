@@ -490,6 +490,9 @@ var datatypeSchema = mongoose.Schema({
     //published dataset that can be used as a sample dataset
     samples: [{type: mongoose.Schema.Types.ObjectId, ref: 'Datasets'}],
 
+    //data will be used for group analysis
+    groupAnalysis: { type: Boolean, default: false}, 
+
     create_date: { type: Date, default: Date.now },
 });
 exports.Datatypes = mongoose.model('Datatypes', datatypeSchema);

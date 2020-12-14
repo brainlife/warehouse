@@ -73,7 +73,7 @@ export default {
         console.log("datatype loaded");
         this.$http.get('datatype', {params: {
             sort: 'name',
-            select: 'name desc admins files',
+            select: 'name desc admins files groupAnalysis',
         }})
         .then(res=>{
             this.datatypes = res.data.datatypes;
