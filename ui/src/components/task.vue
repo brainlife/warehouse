@@ -100,18 +100,6 @@
     <!--task details-->
     <div class="status-color" :class="task.status" style="padding-left: 3px;">
         <div style="background-color: #fafafa; color: #333; position: relative;">
-            <!--
-            <div class="note" v-if="task.desc || editing_desc !== null">
-                <div v-if="task.desc && editing_desc === null" @click="editing_desc = task.desc" class="note-text">
-                    <vue-markdown :source="task.desc" class="readme" style="margin: 0px 5px;"/>
-                </div>
-                <div v-if="editing_desc !== null" style="position: relative;">
-                    <div class="button" @click="editing_desc = null" style="position: absolute; top: 0; right: 0px; background-color: #666; margin: 5px;"><icon name="times"/></div>
-                    <b-form-textarea ref="desc_editor" v-model="editing_desc" placeholder="Enter Notes in Markdown" :rows="3" style="background-color: #f0f0f0; border: none; border-radius: 0;"/>
-                </div>
-            </div>
-            -->
-
             <div v-if="task.service != 'soichih/sca-product-raw' && task.service != 'brainlife/app-stage'">
                 <taskconfig :task="task" style="padding: 10px;"/>
             </div>
@@ -164,7 +152,6 @@ import taskconfig from '@/components/taskconfig'
 import contact from '@/components/contact'
 
 let resource_cache = {};
-//let desc_debounce = null;
 
 export default {
     props: ['task'],
@@ -178,8 +165,6 @@ export default {
                 input: true,
             },
             show_masked_config: false,
-            //editing_desc: null,
-            //desc: null,
 
             resource: null,
 
@@ -194,13 +179,6 @@ export default {
                 this.load_resource_info(this.task.resource_id);
             }
         },
-        /*
-        editing_desc(nv, ov) {
-            if(nv == null || ov == null) return;
-            clearTimeout(desc_debounce);
-            desc_debounce = setTimeout(this.update_desc, 2000);
-        },
-        */
     },
 
     mounted() {
@@ -304,17 +282,6 @@ export default {
                 console.error(err); 
             });
         },
-
-        /*
-        update_desc() {
-            this.$http.put(Vue.config.wf_api+'/task/'+this.task._id, {desc: this.editing_desc})
-            .then(res=>{
-                this.$notify({text: "Note successfully updated", type: 'success'});
-            }).catch(err=>{
-                console.error(err); 
-            });
-        },
-        */
 
         openinfo() {
             this.$root.$emit("taskinfo.open", {task: this.task, resource: this.resource});

@@ -81,7 +81,7 @@ export default {
             }
             path += "#"+btoa(JSON.stringify(uiconfig));
 
-            window.open(path, this.opt.task._id, "width=1200,height=801,menubar=no"); //chrome opens window with 799 pixels if I specify 800.. why!?
+            window.open(path, this.opt.task._id+"."+this.opt.subdir, "width=1200,height=801,menubar=no"); //chrome opens window with 799 pixels if I specify 800.. why!?
         }
     }
 }

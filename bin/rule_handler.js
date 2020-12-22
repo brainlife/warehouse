@@ -566,14 +566,15 @@ function handle_rule(rule, cb) {
             
             //get tasks submitted.. and compute next _tid
             next=>{
+                console.log("querying taskfor instance", instance._id)
                 request.get({
                     url: config.amaretti.api+"/task", json: true,
                     headers: { authorization: "Bearer "+jwt },
                     qs: {
                         find: JSON.stringify({
                             instance_id: instance._id,
-                            service: { $not: { $regex: "^brainlife/validator-"} }, //don't use validator task output
-                            //need to include removed ones for correrct tid
+                            //service: { $not: { $regex: "^brainlife/validator-"} }, //don't use validator task output
+                            //need to include removed ones for correct tid
                         }),
                         limit: 1000, //big enough right?
                     },
@@ -583,6 +584,7 @@ function handle_rule(rule, cb) {
                         return next(body);
                     }
                     body.tasks.forEach(task=>{
+                        //console.log("task", task._id, task.service)
                         tasks[task._id] = task;
                     });
 
@@ -627,6 +629,7 @@ function handle_rule(rule, cb) {
                         var task = null;
                         if(input.prov && input.prov.task && input.prov.task._id) task = tasks[input.prov.task._id];
                         if(isalive(task)) {
+                            console.log("found the task ", task)
                             rlogger.debug("found the task generated the input dataset for output:"+input.prov.output_id);
 
                             //find output from task

@@ -180,6 +180,7 @@ exports.groupanalysis = {
     getSecondaryDownloadStream(path, cb) {
         connect_osiris((err, conn, sftp)=>{
             if(err) return cb(err);
+            //TODO - why not use the sftp?
             conn.exec("cat "+path, (err, stream)=>{
                 stream.on('error', err=>{
                     console.error("stream failed but train has already left the station", err);
@@ -193,6 +194,17 @@ exports.groupanalysis = {
                 });
                 cb(err, stream);
             });
+        });
+    },
+
+    getSecondaryUploadStream(path, cb) {
+        connect_osiris((err, conn, sftp)=>{
+            if(err) return cb(err);
+            let stream = sftp.createWriteStream(path);
+            stream.on('close', code=>{
+                conn.end();
+            });
+            cb(null, stream);
         });
     },
 }

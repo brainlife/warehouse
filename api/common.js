@@ -3,7 +3,6 @@
 const request = require('request');
 const rp = require('request-promise-native');
 
-const winston = require('winston');
 const tmp = require('tmp');
 const mkdirp = require('mkdirp');
 const path = require('path');
@@ -16,7 +15,6 @@ const amqp = require("amqp"); //switch to amqplib?
 const axios = require('axios');
 
 const config = require('./config');
-const logger = winston.createLogger(config.logger.winston);
 const db = require('./models');
 const mongoose = require('mongoose');
 
@@ -162,7 +160,7 @@ function register_dataset(task, output, product, cb) {
 
 //wait for a task to terminate .. finish/fail/stopped/removed
 exports.wait_task = function(req, task_id, cb) {
-    logger.info("waiting for task to finish id:"+task_id);
+    console.debug("waiting for task to finish id:"+task_id);
     request.get({
         url: config.amaretti.api+"/task/"+task_id,
         json: true,
@@ -183,7 +181,7 @@ exports.wait_task = function(req, task_id, cb) {
             }, 2000);
             break;
         default:
-            logger.debug("wait_task detected failed task")
+            console.debug("wait_task detected failed task")
             cb(task.status_msg);
         }
     });
@@ -334,7 +332,7 @@ exports.archive_task_outputs = async function(user_id, task, outputs, cb) {
                 });
 
                 //note: archive_task_id is set by event_handler while setting other things like status, desc, status_msg, etc..
-                logger.info("submitted archive_task:"+archive_task_res.data.task._id);
+                console.debug("submitted archive_task:"+archive_task_res.data.task._id);
                 cb(null, datasets, archive_task_res.data.task);
             } catch(err) {
                 cb(err);
@@ -374,25 +372,25 @@ exports.load_github_detail = function(service_name, cb) {
     axios.get("https://api.github.com/repos/"+service_name, { headers }).then(res=>{
         let git = res.data;
         if(res.status != 200) {
-            logger.error(res);
+            console.error(res);
             return cb("failed to query requested repo. code:"+res.status);
         }
 
-        logger.debug("loading contributors");
+        console.debug("loading contributors");
         axios.get("https://api.github.com/repos/"+service_name+"/contributors", { headers }).then(res=>{
             let cons = res.data;
             if(res.status != 200) {
-                logger.error(res);
+                console.error(res);
                 return cb("failed to query requested repo. code:"+res.status);
             }
 
-            logger.debug("loading contributor details")
+            console.debug("loading contributor details")
             let con_details = [];
             async.eachSeries(cons, (con, next_con)=>{
                 axios.get(con.url, { headers }).then(res=>{
                     let detail = res.data;
                     if(res.status != 200) {
-                        logger.error(res);
+                        console.error(res);
                         return next_con("failed to load user detail:"+res.status);
                     }
                     con_details.push(detail);
@@ -414,7 +412,7 @@ exports.compose_app_datacite_metadata = function(app) {
     app.admins.forEach(sub=>{
         let contact = cached_contacts[sub];
         if(!contact) {
-            logger.debug("missing contact", sub);
+            console.debug("missing contact", sub);
             return;
         }
         //TODO - add <nameIdentifier nameIdentifierScheme="ORCID">12312312131</nameIdentifier>
@@ -460,7 +458,6 @@ exports.compose_app_datacite_metadata = function(app) {
           <description descriptionType="Other">${xmlescape(app.desc_override||app.desc)}</description>
       </descriptions>
     </resource>`;
-    //logger.debug(metadata);
     return metadata;
 }
 
@@ -479,7 +476,7 @@ exports.compose_pub_datacite_metadata = function(pub) {
     pub.authors.forEach(sub=>{
         let contact = cached_contacts[sub];
         if(!contact) {
-            logger.debug("missing contact", sub);
+            console.debug("missing contact", sub);
             return;
         }
         //TODO - add <nameIdentifier nameIdentifierScheme="ORCID">12312312131</nameIdentifier>
@@ -490,7 +487,7 @@ exports.compose_pub_datacite_metadata = function(pub) {
     pub.contributors.forEach(sub=>{
         let contact = cached_contacts[sub];
         if(!contact) {
-            logger.debug("missing contact", sub);
+            console.debug("missing contact", sub);
             return;
         }
         //TODO - add <nameIdentifier nameIdentifierScheme="ORCID">12312312131</nameIdentifier>
@@ -540,19 +537,12 @@ exports.get_next_app_doi = function(cb) {
         //console.debug("next doi token will be", num);
         cb(null, config.datacite.prefix+"app."+num);
     }).catch(cb);
-    /*
-    db.Apps.countDocuments({doi: {$exists: true}}).exec((err, count)=>{
-        if(err) return cb(err);
-        cb(null, config.datacite.prefix+"app."+count);
-    });
-    */
 }
 
 //https://support.datacite.org/v1.1/docs/mds-2
 //create new doi and register metadata (still needs to set url once it's minted)
 exports.doi_post_metadata = function(metadata, cb) {
     //register!
-    //logger.debug("registering doi metadata");
     request.post({
         url: config.datacite.api+"/metadata",
         auth: {
@@ -563,13 +553,13 @@ exports.doi_post_metadata = function(metadata, cb) {
         body: metadata,
     }, (err, res, body)=>{
         if(err) return cb(err); 
-        logger.debug('metadata registration:', res.statusCode, body);
+        console.debug('metadata registration:', res.statusCode, body);
         if(res.statusCode == 201) return cb(); //good!
 
         //consider all else failed!
-        logger.error("failed to post metadata to datacite");
-        logger.error(config.datacite.api+"/metadata");
-        logger.error("user %s", config.datacite.username);
+        console.error("failed to post metadata to datacite");
+        console.error(config.datacite.api+"/metadata");
+        console.error("user %s", config.datacite.username);
         return cb(body);
     });
 }
@@ -588,7 +578,7 @@ exports.doi_put_url = function(doi, url, cb) {
         body: "doi="+doi+"\nurl="+url,
     }, (err, res, body)=>{
         if(err) return cb(err); 
-        logger.debug('url registration:', res.statusCode, body);
+        console.debug('url registration:', res.statusCode, body);
         if(res.statusCode != 201) return cb(body);
         cb(null);
     });
@@ -604,7 +594,7 @@ exports.cache_contact = function(cb) {
         },
         headers: { authorization: "Bearer "+config.warehouse.jwt }, //config.auth.jwt is deprecated
     }).then(res=>{
-        if(res.status != 200) logger.error("couldn't cache auth profiles. code:"+res.status);
+        if(res.status != 200) console.error("couldn't cache auth profiles. code:"+res.status);
         else {
             res.data.profiles.forEach(profile=>{
                 cached_contacts[profile.sub] = profile;
@@ -643,7 +633,7 @@ exports.split_product = function(task_product, outputs) {
     //create global product (everything except output.id keys)
     let global_product = Object.assign({}, task_product); //copy
     if(!Array.isArray(outputs)) {
-        logger.error("broken outputs info");
+        console.error("broken outputs info");
         return {};
     }
     outputs.forEach(output=>{
@@ -715,7 +705,7 @@ exports.get_amqp_connection = function(cb) {
 
 exports.disconnect_amqp = function(cb) {
     if(amqp_conn) {
-        logger.debug("disconnecting from amqp");
+        console.debug("disconnecting from amqp");
         amqp_conn.setImplOptions({reconnect: false}); //https://github.com/postwait/node-amqp/issues/462
         amqp_conn.disconnect();
     }
@@ -725,10 +715,10 @@ exports.disconnect_amqp = function(cb) {
 exports.wait_for_event = function(exchange, key, cb) {
     exports.get_amqp_connection((err, conn)=>{
         if(err) {
-            logger.error("failed to obtain amqp connection");
+            console.error("failed to obtain amqp connection");
             return cb(err);
         }
-        logger.info("amqp connection ready.. creating exchanges");
+        console.debug("amqp connection ready.. creating exchanges");
         conn.queue('', q=>{
             q.bind(exchange, key, ()=>{
                 q.subscribe((message, header, deliveryInfo, messageObject)=>{
@@ -741,7 +731,7 @@ exports.wait_for_event = function(exchange, key, cb) {
 }
 
 exports.update_dataset_stats = async function(project_id, cb) {
-    logger.debug("updating dataset stats project:%s", project_id);
+    console.debug("updating dataset stats project:%s", project_id);
     project_id = mongoose.Types.ObjectId(project_id);
 
     try {
@@ -789,8 +779,129 @@ exports.update_dataset_stats = async function(project_id, cb) {
         if(cb) cb(null, doc);
     } catch(err) {
         if(cb) cb(err);
-        else logger.error(err);
+        else console.error(err);
     }
+}
+
+exports.update_secondary_index = async function(project) {
+    console.log("updating secondary output index file for project", project._id);
+    let participants = await db.Participants.findOne({project}).lean();
+
+    //migrate
+    if(participants && participants.rows) {
+        console.log("renaming rows to subjects (rows are deprecated now)");
+        participants.subjects = participants.rows;
+        delete participants.rows;
+    }
+
+    //now load the index
+    const _res = await axios.get(config.amaretti.api+'/task', {
+        params: {
+            select: 'config instance_id',
+            find: JSON.stringify({
+                'finish_date': {$exists: true},
+                'service': 'brainlife/app-archive-secondary',
+                '_group_id': project.group_id,
+            }),
+            limit: 20000, //TODO.. how scalable is this!?
+        },
+        headers: { authorization: "Bearer "+config.warehouse.jwt },
+    });
+
+    /*
+    //let validator_ids = _res.data.tasks.map(task=>task.config.validator_task._id);
+    let datatype_ids = [];
+    _res.data.tasks.forEach(task=>{
+        let id = task.config.requests.config._outputs[0].datatype;
+        if(!datatype_ids.includes(id)) datatype_ids.push(id);
+    });
+
+    //lookup datatype names
+    let datatypes = await db.Datatypes.find({_id: {$in: datatype_ids}}, {name:1,desc:1,files:1}).lean();
+    let datatypes_obj = {};
+    datatypes.forEach(rec=>{
+        datatypes_obj[rec._id] = rec;
+    });
+    */
+
+    /*
+    let sectasks = _res.data.tasks.map(task=>{
+        let output = task.config.validator_task.config._outputs[0];
+        return {
+            datatype: datatypes_obj[output.datatype],
+            meta: output.meta,
+            tags: output.tags,
+            datatype_tags: output.datatype_tags,
+
+            path: task.instance_id+"/"+task.config.validator_task.follow_task_id+"/"+output.id+"/secondary",
+        }
+    });
+    */
+
+    //merge sectasks into participants.subjects
+    let index = {
+        //project,
+        //subjects: {},
+        objects: [],
+        participants,
+    };
+
+    /*
+    if(participants) {
+        index.columns = participants.columns;
+        for(let subject in participants.subjects) {
+            if(!index.subjects[subject]) index.subjects[subject] = {}
+            index.subjects[subject].phenotype = participants.subjects[subject];
+        }
+    }
+    */
+
+    //merge all output requests into a single list
+    _res.data.tasks.forEach(task=>{
+        if(!task.config.requests) return; //old format?
+        task.config.requests.forEach(request=>{
+            if(!request.datatype) return; //should only happen on dev
+            
+            //pull information out of request and store things that users care
+            index.objects.push({
+                path: request.instance_id+"/"+request.task_id+"/"+request.subdir,
+
+                instance_id: request.instance_id,
+                task_id: request.task_id,
+                subdir: request.subdir,
+
+                create_date: request.create_date,
+
+                datatype: {
+                    id: request.datatype._id,
+                    name: request.datatype.name,
+                    desc: request.datatype.desc,
+                    files: request.datatype.files,
+                },
+                desc: request.output.desc,
+                datatype_tags: request.output.datatype_tags,
+                tags: request.output.tags,
+                meta: request.output.meta,
+            })
+        });
+    });
+
+    //organize outputs into different subjects
+    /*
+    sectasks.forEach(sectask=>{
+        let subject = sectask.meta.subject;
+        if(!index.subjects[subject]) index.subjects[subject] = {}
+        if(!index.subjects[subject].items) index.subjects[subject].items = [];
+        index.subjects[subject].items.push(sectask);
+    });
+    */
+
+    const path = config.groupanalysis.secondaryDir+"/"+project.group_id+"/index.json";
+    config.groupanalysis.getSecondaryUploadStream(path, (err, stream)=>{
+        console.log("storing index.json", path);
+        stream.write(JSON.stringify(index, null, 4));
+        stream.end();
+    })
 }
 
 exports.update_project_stats = async function(project, cb) {
@@ -818,7 +929,7 @@ exports.update_project_stats = async function(project, cb) {
             else rules.inactive = rec.count;
         });
 
-        let recs = await exports.aggregateDatasetsByApps({project:project._id}, false)
+        let recs = await exports.aggregateDatasetsByApps({project:project._id})
         let app_stats = [];
         recs.forEach(rec=>{
             app_stats.push({
@@ -881,12 +992,11 @@ exports.update_project_stats = async function(project, cb) {
             "stats.instances": instance_counts,
         }}, {new: true});
 
-        //logger.debug("all done for updating project stats");
         if(cb) cb(null, newproject);
 
     } catch (err) {
         if(cb) cb(err);
-        else logger.error(err);
+        else consolele.error(err);
     }
 }
 
@@ -1034,8 +1144,7 @@ exports.list_users = async ()=>{
     return lists;
 }
 
-//set populateApps to true if you want to replace app(id) with actual App objects
-exports.aggregateDatasetsByApps = (query)=>{
+exports.aggregateDatasetsByApps = query=>{
     return new Promise((resolve, reject)=>{
         db.Datasets.aggregate()
         .match(query)
@@ -1057,11 +1166,11 @@ exports.aggregateDatasetsByApps = (query)=>{
         .exec((err, recs)=>{
             if(err) return reject(err);
 
-            //if(!populateApps) return resolve(recs);
-            
             //load apps used
             let app_ids = [];
-            recs.forEach(rec=>{ if(rec.app) app_ids.push(rec.app); });
+            recs.forEach(rec=>{ 
+                if(rec.app) app_ids.push(rec.app); 
+            });
             db.Apps.find({
                 _id: {$in: app_ids},
                 projects: [], //only show *public* apps
@@ -1080,9 +1189,10 @@ exports.aggregateDatasetsByApps = (query)=>{
                 let populated = [];
                 recs.forEach(rec=>{
                     if(rec.app) {
+
                         rec.app = app_obj[rec.app];
                         if(!rec.app) {
-                            logger.error("dataset(%s) is set to use invalid app id(%s)", rec._id, rec.app);
+                            console.error("dataset(%s) is set to use invalid app id(%s)", rec._id, rec.app);
                         } else {
                             populated.push(rec);
                         }

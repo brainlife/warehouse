@@ -261,6 +261,7 @@ export default {
                 break;
             case "stop_requested":
             case "stopped":
+            case "failed":
                 //rerun
                 this.$http.put(Vue.config.amaretti_api+"/task/rerun/"+task._id).then(res=>{
                     if(res.status == 200) {
@@ -273,7 +274,7 @@ export default {
                 this.jump(task);
                 break;
             default:
-                console.error("unknown task state");
+                console.error("unknown task state:"+task.status);
                 console.error(task.status); 
             } 
         },

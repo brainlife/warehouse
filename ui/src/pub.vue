@@ -31,10 +31,12 @@
                 <b-container>
                     <div style="border-bottom: 1px solid #eee; margin-bottom: 10px;">
                         <projectavatar :project="pub.project" :height="125" :width="125" style="float: right; position: relative; top: -15px; margin-left: 15px;"/>
-                        <doibadge :doi="pub.doi" style="margin-bottom: 20px;"/>
-                        <b-badge pill class="bigpill">
-                            <icon name="calendar" style="opacity: 0.4;"/>&nbsp;&nbsp;&nbsp;<small>Published</small>&nbsp;&nbsp;<time>{{new Date(pub.create_date).toLocaleDateString()}}</time>
-                        </b-badge>
+                        <p>
+                            <doibadge :doi="pub.doi"/>
+                            <b-badge pill class="bigpill">
+                                <icon name="calendar" style="opacity: 0.4;"/>&nbsp;&nbsp;&nbsp;<small>Published</small>&nbsp;&nbsp;<time>{{new Date(pub.create_date).toLocaleDateString()}}</time>
+                            </b-badge>
+                        </p>
                         <p>{{pub.desc}}</p>
 
                         <p style="line-height: 250%;" v-if="pub.tags.length > 0"> 
@@ -98,7 +100,18 @@
                             <small class="text-muted">Citation for this publiction. Please see citation section under each release for App specific citations. </small>
                         </p>
                         <citation :doi="pub.doi||config.debug_doi"/>
+
+                        <div v-if="resource_citations.length > 0">
+                            <p><small>Published data objects are computed on the following resources.</small></p>
+                            <p v-for="resource_citation in resource_citations">
+                                <icon name="caret-right"/> <b>{{resource_citation.resource.name}}</b>
+                                <small>{{resource_citation.resource.config.desc}}</small>
+                                <br>
+                                <i>{{resource_citation.citation}}</i>
+                            </p>
+                        </div>
                         <br>
+
                     </b-col>
                </b-row>  
 
@@ -122,7 +135,7 @@
                         <span class="form-header">License</span>
                     </b-col>
                     <b-col>
-                        <p><small class="text-muted">Datasets are published with the following license.</small></p>
+                        <p><small class="text-muted">Published data is released under the following license.</small></p>
                         <license :id="pub.license"/>
                         <br>
                     </b-col>
@@ -140,17 +153,6 @@
                     </b-col>
                 </b-row>
             
-                <div v-if="resource_citations.length > 0" class="box">
-                    <span class="form-header">Resource Citations</span>
-                    <p><small>Datasets published on this dataset are computed on the following resources.</small></p>
-                    <p v-for="resource_citation in resource_citations">
-                        <icon name="caret-right"/> <b>{{resource_citation.resource.name}}</b>
-                        <small>{{resource_citation.resource.config.desc}}</small>
-                        <br>
-                        <i>{{resource_citation.citation}}</i>
-                    </p>
-                </div>
-
                 <hr>
                 <vue-disqus shortname="brain-life" :identifier="pub._id"/>
             </b-container>
@@ -190,7 +192,7 @@
                 <div v-if="dataset_groups">
                     <span class="button" @click="downscript({})">
                         <b>{{total.subjects}}</b> Subjects <span style="opacity: 0.2">|</span> 
-                        <b>{{total.count}} Datasets</b> <span v-if="total.size"> ({{total.size|filesize}} Total)</span>
+                        <b>{{total.count}} objects</b> <span v-if="total.size"> ({{total.size|filesize}} Total)</span>
                         <icon name="download" scale="0.8" style="opacity: 0.5; position: relative; top: -2px;"/> 
                     </span>
                 </div>
@@ -215,7 +217,7 @@
                                         <datatypetag :datatype="datatypes[datatype_id]" :tags="JSON.parse(datatype_tags_s)" :clickable="false"/>
                                         &nbsp;
                                         <!--<span class="text-muted">{{datatypes[datatype_id].desc}}</span>-->
-                                        <small class="text-muted" style="float: right;">{{block.count}} datasets <span v-if="block.size">{{block.size|filesize}}</span></small>
+                                        <small class="text-muted" style="float: right;">{{block.count}} objects <span v-if="block.size">{{block.size|filesize}}</span></small>
                                     </div>
                                     <transition name="fadeHeight">
                                         <b-list-group class="datasets" v-if="block.show && block.datasets">

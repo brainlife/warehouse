@@ -191,7 +191,11 @@ table.info td {
     background-color: #2693ff;
     cursor: pointer;
 }
+.fa-icon {
+    vertical-align: middle !important;
+}
 
+/*
 .fa-icon {
     position: relative;
     top: -0.1em;
@@ -199,6 +203,7 @@ table.info td {
 .button-fixed .fa-icon {
     top: 0;
 }
+*/
 
 .button {
     display: inline-block;
@@ -373,28 +378,28 @@ line-height: 175%;
 }
 
 .readme img {
-max-width: 100%;
+    max-width: 100%;
 }
 .readme pre {
-background-color: #f6f8fa;
-padding: 10px;
-margin-bottom: 15px;
+    background-color: #f6f8fa;
+    padding: 10px;
+    margin-bottom: 15px;
 }
 .readme h1 {
-font-size: 1.3rem;
+    font-size: 1.3rem;
 }
 .readme h2 {
-font-size: 1.2rem;
+    font-size: 1.2rem;
 }
 .readme h3,
 .readme h4,
 .readme h5,
 .readme h6 {
-font-size: 1.1rem;
+    font-size: 1.1rem;
 }
 
 pre {
-margin-bottom: 0px;
+    margin-bottom: 0px;
 }
 
 /*default vue-animate.css effect is too slow*/
@@ -406,173 +411,177 @@ margin-bottom: 0px;
           animation-fill-mode: both; 
 }
 .github {
-opacity: 0.7;
-font-size: 90%;
-margin-bottom: 2px;
+    opacity: 0.7;
+    font-size: 90%;
+    margin-bottom: 2px;
 }
 
 /*perfectscrollbar mod*/
 .ps .ps__rail-y:hover,
 .ps .ps__rail-y:focus,
 .ps .ps__rail-y.ps--clicking  {
-background-color: transparent;
-opacity: 0.9;
+    background-color: transparent;
+    opacity: 0.9;
 }
 .ps__thumb-y {
-width: 11px;
+    width: 11px;
 }
 .search-box {
-position: fixed;
-top: 6px;
-padding-left: 10px;
-right: 0px;
-left: 40px;
-transition: left 0.2s;
+    position: fixed;
+    top: 6px;
+    padding-left: 10px;
+    right: 0px;
+    left: 40px;
+    transition: left 0.2s;
 }
 .search-box .input {
-font-size: 120%;
-background-color: #fff6;
-border: none;
-transition: background-color 0.5s, color 0.5s;
-padding-left: 45px;
+    font-size: 120%;
+    background-color: #fff6;
+    border: none;
+    transition: background-color 0.5s, color 0.5s;
+    padding-left: 45px;
 }
 
 .search-box .input:focus,
 .search-box .input:not([value=""]) {
-color: gray;
-box-shadow: none;
+    color: gray;
+    box-shadow: none;
 }
 
 .search-box .search-icon {
-position: absolute;
-top: 7px;
-left: 20px;
-z-index: -1;
-transition: color 0.5s;
+    position: absolute;
+    top: 7px;
+    left: 20px;
+    z-index: -1;
+    transition: color 0.5s;
 }
 .search-box .clear-search {
-position: absolute;
-top: 5px;
-right: 20px;
-z-index: 1;
-transition: color 0.5s;
-opacity: 0.4;
-cursor: pointer;
+    position: absolute;
+    top: 5px;
+    right: 20px;
+    z-index: 1;
+    transition: color 0.5s;
+    opacity: 0.4;
+    cursor: pointer;
 }
 .search-box .input::placeholder {
-font-weight: bold;
+    font-weight: bold;
 }
 
 .search-box .search-icon,
 .search-box .input::placeholder {
-color: black;
-opacity: 0.3;
+    color: black;
+    opacity: 0.3;
 }
 .search-box .input:focus::placeholder {
-opacity: 0;
+    opacity: 0;
 }
 .input:focus ~ .search-icon,
 .input:not([value=""]) ~ .search-icon {
-color: gray;
-z-index: 2;
+    color: gray;
+    z-index: 2;
 }
 
 .btn-outline-info.active,
 .btn-outline-info:hover,
 .bg-info {
-background-color: #50bfff !important;
+    background-color: #50bfff !important;
 }
+
 .btn-outline-info {
-color: #50bfff;
+    color: #50bfff;
 }
 
 .splitter {
-position: fixed;
-top: 0px;
-bottom: 0px;
-width: 10px;
-cursor: ew-resize;
-background-color: #eee;
-transition: background-color 0.3s;
+    position: fixed;
+    top: 0px;
+    bottom: 0px;
+    width: 10px;
+    cursor: ew-resize;
+    background-color: #eee;
+    transition: background-color 0.3s;
 }
 .splitter:hover {
-background-color: #ddd;
+    background-color: #ddd;
 }
 
 .bigpill {
-background-color: white; 
-text-transform: uppercase; 
-border: 1px solid #ddd; 
-padding: 4px 15px; 
-opacity: 0.7;
-color: black;
-height: 26px;
+    background-color: white; 
+    text-transform: uppercase; 
+    border: 1px solid #ddd; 
+    padding: 4px 15px; 
+    opacity: 0.7;
+    color: black;
+    height: 26px;
 }
 .bigpill svg {
-min-height: 16px;
+    min-height: 16px;
 }
+
+/*
 .badge-pill {
-padding-top: .5em;
+    padding-top: .5em;
 }
+*/
 
 .scroll-shadow {
-/*https://stackoverflow.com/questions/9333379/check-if-an-elements-content-is-overflowing*/
-background:
-/* Shadow covers */
-linear-gradient(white 30%, rgba(255,255,255,0)),
-linear-gradient(rgba(255,255,255,0), white 70%) 0 100%,
+    /*https://stackoverflow.com/questions/9333379/check-if-an-elements-content-is-overflowing*/
+    background:
+    /* Shadow covers */
+    linear-gradient(white 30%, rgba(255,255,255,0)),
+    linear-gradient(rgba(255,255,255,0), white 70%) 0 100%,
 
-/* Shadows */
-radial-gradient(50% 0, farthest-side, rgba(0,0,0,.3), rgba(0,0,0,0)),
-radial-gradient(50% 100%,farthest-side, rgba(0,0,0,.3), rgba(0,0,0,0)) 0 100%;
+    /* Shadows */
+    radial-gradient(50% 0, farthest-side, rgba(0,0,0,.3), rgba(0,0,0,0)),
+    radial-gradient(50% 100%,farthest-side, rgba(0,0,0,.3), rgba(0,0,0,0)) 0 100%;
 
-background:
-/* Shadow covers */
-linear-gradient(white 30%, rgba(255,255,255,0)),
-linear-gradient(rgba(255,255,255,0), white 70%) 0 100%,
+    background:
+    /* Shadow covers */
+    linear-gradient(white 30%, rgba(255,255,255,0)),
+    linear-gradient(rgba(255,255,255,0), white 70%) 0 100%,
 
-/* Shadows */
-radial-gradient(farthest-side at 50% 0, rgba(0,0,0,.3), rgba(0,0,0,0)),
-radial-gradient(farthest-side at 50% 100%, rgba(0,0,0,.3), rgba(0,0,0,0)) 0 100%;
+    /* Shadows */
+    radial-gradient(farthest-side at 50% 0, rgba(0,0,0,.3), rgba(0,0,0,0)),
+    radial-gradient(farthest-side at 50% 100%, rgba(0,0,0,.3), rgba(0,0,0,0)) 0 100%;
 
-background-repeat: no-repeat;
-background-color: white;
-background-size: 100% 40px, 100% 40px, 100% 14px, 100% 14px;
+    background-repeat: no-repeat;
+    background-color: white;
+    background-size: 100% 40px, 100% 40px, 100% 14px, 100% 14px;
 
-/* Opera doesn't support this in the shorthand */
-background-attachment: local, local, scroll, scroll;
+    /* Opera doesn't support this in the shorthand */
+    background-attachment: local, local, scroll, scroll;
 }
 
 .btn-primary {
-background-color: #2693ff;
-border-color: #2693ff90;
+    background-color: #2693ff;
+    border-color: #2693ff90;
 }
 
 .status-color.finished {
-color: white;
-background-color: #28a745;
+    color: white;
+    background-color: #28a745;
 }
 .status-color.failed {
-color: white;
-background-color: #c00;
+    color: white;
+    background-color: #c00;
 }
 .status-color.running_sync,
 .status-color.running {
-color: white;
-background-color: #007bff;
+    color: white;
+    background-color: #007bff;
 }
 .status-color.waiting {
-color: white;
-background-color: #50bfff;
+    color: white;
+    background-color: #50bfff;
 }
 .status-color.requested {
-color: white;
-background-color: #50bfff;
+    color: white;
+    background-color: #50bfff;
 }
 .status-color.removed,
 .status-color.stop_requested,
 .status-color.stopped {
-color: white;
-background-color: gray;
+    color: white;
+    background-color: gray;
 }
 </style>

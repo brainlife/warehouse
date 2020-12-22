@@ -85,7 +85,7 @@
 
                                         <template slot="option" slot-scope="option">
                                             <span v-if="option.dataset.task.status != 'finished'">({{option.dataset.task.status}})</span>
-                                            {{option.dataset.task.name}} (t.{{option.dataset.task.config._tid}}) <icon name="arrow-right" scale="0.8"></icon>
+                                            {{option.dataset.task.name}} <span v-if="option.dataset.task.config._tid">(t.{{option.dataset.task.config._tid}})</span> <icon name="arrow-right" scale="0.8"></icon>
                                             <b>{{option.dataset.meta.subject}}</b> 
                                             <small v-if="option.dataset.meta.session"> / {{option.dataset.meta.session}}</small>
                                             <small v-if="option.dataset.datatype_tags">{{option.dataset.datatype_tags.toString()}}</small>
@@ -425,7 +425,6 @@ export default {
                         var dataset = selected.dataset;
                         let dep_config = this.deps_config.find(dep=>dep.task == dataset.task._id);
                         if(!dep_config) {
-                            //this.deps.push(dataset.task._id); //deprecated by deps_config
                             dep_config = {task: dataset.task._id};
                             this.deps_config.push(dep_config);
                         }
@@ -488,7 +487,6 @@ export default {
             this.open = false;
 
             //now construct the task objeect
-            this.deps = [];
             this.deps_config = [];
             this.process_input_config(this.config);
             var meta = {};
@@ -582,7 +580,9 @@ export default {
         compose_label(dataset) {
             var label = "";
             if(dataset.task.status != 'finished') label += "("+dataset.task.status+") ";
-            label += dataset.task.name+' (t.'+dataset.task.config._tid+') '+' > '+dataset.meta.subject;
+            label += dataset.task.name;
+            if(dataset.task.config._tid) label +=' (t.'+dataset.task.config._tid+') ';
+            label += ' > '+dataset.meta.subject;
             if(dataset.meta.session) label += " / "+dataset.meta.session;
             if(dataset.datatype_tags && dataset.datatype_tags.length > 0) label += ' '+dataset.datatype_tags;
             if(dataset.tags.length > 0) label +=' | '+dataset.tags; 

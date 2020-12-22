@@ -79,10 +79,10 @@
             <div style="background-color: white; padding-top: 15px; border-bottom: 1px solid #ddd;">
                 <b-container>
                     <div style="border-bottom: 1px solid #eee; margin-bottom: 10px;">
-                        <appavatar :app="app" style="float: right; position: relative; top: -15px; margin-left: 15px;" width="150" height="150"/>
+                        <appavatar :app="app" style="float: right; position: relative; top: -15px; margin-left: 15px;" :width="150" :height="150"/>
 
                         <!--badges-->
-                        <p style="line-height: 250%;">
+                        <p>
                             <doibadge :doi="app.doi" v-if="app.doi"/>
 
                             <b-badge pill v-if="app.create_date" class="bigpill" title="Registration Date">
@@ -342,7 +342,7 @@
                             <td>
                                 <b-badge variant="light">{{task.service_branch}}</b-badge>
                             </td>
-                            <td>
+                            <td style="word-break: break-all;">
                                 <span class="status-color" :class="task.status" style="padding: 3px" :title="task.status">
                                     <statusicon :status="task.status" /> 
                                     <!--<span style="text-transform: uppercase;" >{{task.status}}</span>-->

@@ -19,7 +19,7 @@ const common = require('../common');
  *                              A valid JWT token "Bearer: xxxxx"
  * @apiSuccess {Object}         List of secondary outputs
  */
-//TODO - deprecated by update_secondary_index() 
+/*
 router.get('/list/:projectid', jwt({secret: config.express.pubkey}), (req, res, next)=>{
     console.log(req.params.projectid);
     db.Projects.findById(req.params.projectid, (err, project)=>{
@@ -31,7 +31,6 @@ router.get('/list/:projectid', jwt({secret: config.express.pubkey}), (req, res, 
 
         axios.get(config.amaretti.api+'/task', {
             params: {
-                //select: 'config.validator_task._id config.validator_task.follow_task_id instance_id',
                 select: 'config instance_id',
                 find: JSON.stringify({
                     'finish_date': {$exists: true},
@@ -55,35 +54,20 @@ router.get('/list/:projectid', jwt({secret: config.express.pubkey}), (req, res, 
                 let sectasks = _res.data.tasks.map(task=>{
                     let output = task.config.validator_task.config._outputs[0];
                     return {
-                        //group_id: project.group_id,
-                        //instance_id: task.instance_id,
-                        //follow_task_id: task.config.validator_task.follow_task_id,
-                        //validator_task_id: task.config.validator_task._id,
-                        //output_id: output.id,
-                        //datatype_id: output.datatype,
                         datatype: datatypes_obj[output.datatype],
                         meta: output.meta,
                         tags: output.tags,
                         datatype_tags: output.datatype_tags,
 
-                        //path: project.group_id+"/"+task.instance_id+"/"+task.config.validator_task.follow_task_id+"/"+output.id+"/secondary",
                         path: task.instance_id+"/"+task.config.validator_task.follow_task_id+"/"+output.id+"/secondary",
                     }
                 });
                 res.json(sectasks);
             });
-
-            /*
-            //now load datasets info for archived validators
-            db.Datasets.find({"prov.task_id": {$in: validator_ids}}).lean().exec((err, datasets)=>{
-                datasets.forEach(dataset=>{
-                });
-                res.json(datasets);
-            });
-            */
         }).catch(next);
     });
 });
+*/
 
 /**
  * @apiGroup Secondary
@@ -212,31 +196,6 @@ router.post('/launchga', jwt({secret: config.express.pubkey}), (req, res, next)=
                 next();
             });
         },
-
-        /*
-        //load participants info
-        next=>{
-            db.Participants.findOne({project}).lean().then(participants=>{
-                //migrate
-                if(participants.rows) {
-                    console.log("renaming rows to subjects");
-                    participants.subjects = participants.rows;
-                    delete participants.rows;
-                }
-
-                if(!participants) {
-                    //pretend.. we have empty participant
-                    participants = new db.Participants({
-                        project,
-                        subjects: {},
-                        //columns: {},
-                    });
-                }
-                req.body.config.participants = participants;
-                next();
-            }).catch(next);
-        },
-        */
 
         //submit the launcher
         next=>{

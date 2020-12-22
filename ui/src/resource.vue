@@ -128,6 +128,7 @@
                         </b-col>
                     </b-row>
 
+                    <!--
                     <b-row>
                         <b-col cols="2">
                             <span class="form-header">Max Task</span>
@@ -138,6 +139,7 @@
                             </p>
                         </b-col>
                     </b-row>
+                    -->
 
                     <b-row>
                         <b-col cols="2">

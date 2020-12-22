@@ -1,7 +1,6 @@
 #!/usr/bin/env node
 
 const amqp = require('amqp');
-const winston = require('winston');
 const mongoose = require('mongoose');
 const async = require('async');
 const request = require('request-promise-native'); //TODO switch to axios
@@ -12,25 +11,24 @@ const fs = require('fs');
 const child_process = require('child_process');
 
 const config = require('../api/config');
-const logger = winston.createLogger(config.logger.winston);
 const db = require('../api/models');
 const common = require('../api/common');
 
 // TODO  Look for failed tasks and report to the user/dev?
 var acon, rcon;
 
-logger.info("connected to mongo");
+console.log("connected to mongo");
 db.init(err=>{
     common.get_amqp_connection((err, conn)=>{
         acon = conn;
-        logger.info("connected to amqp");
+        console.log("connected to amqp");
         subscribe();
     });
 
     rcon = redis.createClient(config.redis.port, config.redis.server);
-    rcon.on('error', logger.error);
+    rcon.on('error', console.error);
     rcon.on('ready', ()=>{
-        logger.info("connected to redis");
+        console.log("connected to redis");
     });
 
     setInterval(emit_counts, 1000*config.metrics.counts.interval); 
@@ -40,16 +38,15 @@ function subscribe() {
     async.series([
         //ensure queues/binds and subscribe to instance events
         next=>{
-            logger.debug("subscribing to instance event");
+            console.debug("subscribing to instance event");
             //let's create permanent queue so that we don't miss event if event handler goes down
             //TODO - why can't I use warehouse queue for this?
             acon.queue('warehouse.instance', {durable: true, autoDelete: false}, instance_q=>{
                 instance_q.bind('wf.instance', '#');
                 instance_q.subscribe({ack: true}, (instance, head, dinfo, ack)=>{
                     handle_instance(instance, err=>{
-                        //logger.debug("done handling instance");
                         if(err) {
-                            logger.error(err)
+                            console.error(err)
                             //continue .. TODO - maybe I should report the failed event to failed queue?
                         }
                         instance_q.shift();
@@ -66,9 +63,8 @@ function subscribe() {
                 task_q.bind('wf.task', '#');
                 task_q.subscribe({ack: true}, (task, head, dinfo, ack)=>{
                     handle_task(task, err=>{
-                        //logger.debug("done handling task");
                         if(err) {
-                            logger.error(err)
+                            console.error(err)
                             //TODO - maybe I should report the failed event to failed queue?
                         }
                         task_q.shift();
@@ -91,7 +87,7 @@ function subscribe() {
                     dataset._id = tokens[4]; //dataset id
                     handle_dataset(dataset, err=>{
                         if(err) {
-                            logger.error(err)
+                            console.error(err)
                             //TODO - maybe I should report the failed event to failed queue?
                         }
                         dataset_q.shift();
@@ -109,7 +105,7 @@ function subscribe() {
                 q.subscribe({ack: true}, (msg, head, dinfo, ack)=>{
                     handle_auth_event(msg, head, dinfo, err=>{
                         if(err) {
-                            logger.error(err)
+                            console.error(err)
                             //TODO - maybe I should report the failed event to failed queue?
                         }
                         q.shift();
@@ -121,7 +117,7 @@ function subscribe() {
 
     ], err=>{
         if(err) throw err;
-        logger.info("done subscribing");
+        console.log("done subscribing");
     });
 }
 
@@ -170,7 +166,7 @@ function health_check() {
 }
 
 function handle_task(task, cb) {
-    console.debug((task._status_changed?"+++":"---"), task._id, task.name, task.service, task.status, task.status_msg);
+    console.debug("task", (task._status_changed?"+++":"---"), task._id, task.name, task.service, task.status, task.status_msg);
 
     //handle counters
     inc_count("health.tasks");
@@ -190,7 +186,7 @@ function handle_task(task, cb) {
         //number of task change events for each project
         //if(task._group_id) inc_count("task.group."+task._group_id+"."+task.status);  //too much data
         if(task.config && task.config._rule) {
-            logger.debug("rule task status changed");
+            console.debug("rule task status changed");
             debounce("update_rule_stats."+task.config._rule.id, ()=>{
                 common.update_rule_stats(task.config._rule.id, err=>{
                     if(err) console.error(err);
@@ -206,9 +202,9 @@ function handle_task(task, cb) {
     async.series([
         //submit output validators
         next=>{
-            if(task.status != "finished" || !task.config || !task.config._outputs ||  
+            if(/*task.status != "finished" ||*/ !task.config || !task.config._outputs ||  
                 //don't run on staging tasks
-                task.deps_config.length == 0 || 
+                !task.deps_config || task.deps_config.length == 0 || 
                 //don't run on validator task output!
                 isValidationTask(task)
             ) {
@@ -351,7 +347,6 @@ function handle_task(task, cb) {
                     }
                 }
 
-                //logger.info("handling task outputs - submitting archiver");
                 let outputs = [];
 
                 //check to make sure that the output is not already registered
@@ -376,7 +371,7 @@ function handle_task(task, cb) {
                         ]
                     });
                     if(_dataset) {
-                        logger.info("already archived or removed by user. output_id:"+output.id+" dataset_id:"+_dataset._id.toString());
+                        console.log("already archived or removed by user. output_id:"+output.id+" dataset_id:"+_dataset._id.toString());
                         return;
                     } 
 
@@ -391,67 +386,6 @@ function handle_task(task, cb) {
             } else next();
         },
         
-        //submit secondary output archiver for finished validation task
-        /*
-        async next=>{
-            if(task.status != "finished" || !isValidationTask(task)) {
-                return;
-            }
-
-            //see if we already submitted secondary archiver
-            console.log("checking to see if we already submitted app-archive-secondary");
-            let find = {
-                service: "brainlife/app-archive-secondary",
-                instance_id: task.instance_id,
-                "deps_config.task": task._id,
-            }
-            let tasks = await rp.get({
-                url: config.amaretti.api+"/task?find="+JSON.stringify(find)+"&limit=1",
-                json: true,
-                headers: {
-                    authorization: "Bearer "+config.warehouse.jwt,
-                }
-            });
-
-            if(tasks.tasks.length) {
-                console.log("app-secondary already submitted");
-                return;
-            }
-
-            console.log("issueing user_jwt for", task.user_id);
-            let user_jwt;
-            if(task.user_id == "warehouse") {
-                console.error("task.user_id set to warehouse! using warehouse jwt to issue archive_jwt");
-                user_jwt = config.warehouse.jwt;
-            } else {
-                user_jwt = await common.issue_archiver_jwt(task.user_id);
-            }
-
-            //submit secondary archiver with just secondary deps
-            console.log("submitting secondary output archiver");
-            let remove_date = new Date();
-            remove_date.setDate(remove_date.getDate()+1); //remove in 1 day
-            let newtask = await rp.post({
-                url: config.amaretti.api+"/task", json: true,
-                body: Object.assign(find, {
-                    deps_config: [ {task: task._id, subdirs: ["secondary"]} ],
-                    config: {
-                        validator_task: task,
-                        app_task_id: task.follow_task_id, //the main app task (used to query secondary archive task)
-                    },
-                    remove_date,
-                    //user_id: task.user_id, 
-                }),
-                headers: {
-                    //authorization: "Bearer "+config.warehouse.jwt,
-                    authorization: "Bearer "+user_jwt,
-                }
-            });
-            console.log("submitted! "+newtask._id);
-            //console.log(JSON.stringify(newtask, null, 4));
-        },
-        */
-
         //submit secondary archiver
         async next=>{
             if(task.status != "finished") {// || !isValidationTask(task)) {
@@ -464,7 +398,7 @@ function handle_task(task, cb) {
             async.eachSeries(task.config._outputs, async (output)=>{
                 let datatype = await db.Datatypes.findById(output.datatype);
                 if(datatype.groupAnalysis || isValidationTask(task)) {
-                    let conf = {
+                    let request = {
                         src: "../"+task._id+"/"+output.id,
 
                         //destination
@@ -472,8 +406,12 @@ function handle_task(task, cb) {
                         instance_id: task.instance_id,
                         task_id: task._id,
                         subdir: output.id,
-                        
-                        //path: null,
+
+                        //used by update_secondary_index
+                        datatype, 
+                        output,
+
+                        finish_date: task.finish_date,
                     }
 
                     //validation task organize things in a unique way
@@ -483,15 +421,14 @@ function handle_task(task, cb) {
                         subdirs.push("secondary"); //validator always output secondary output under ./secondary
                         
                         //secondary output are placed directly
-                        conf.src = "../"+task._id;
-                        conf.task_id = task.deps_config[0].task; //use the task id of the parent
+                        request.src = "../"+task._id;
+                        request.task_id = task.deps_config[0].task; //use the task id of the parent
 
-                        conf.validator = true; //used to let UI know that this was output from validator
+                        request.validator = true; //used to let UI know that this was output from validator
                     } else {
                         subdirs.push(output.id);
                     }
-                    requests.push(conf);
-
+                    requests.push(request);
                 }
             }, async err=>{
                 if(err) {
@@ -500,8 +437,8 @@ function handle_task(task, cb) {
                 }
 
                 if(requests.length == 0) return;
-                console.log("we need to archive the following secondary output")
-                console.dir(requests);
+                //console.log("we need to archive the following secondary output")
+                //console.dir(requests);
 
                 //see if we already submitted secondary archiver for this task
                 console.log("checking to see if we already submitted app-archive-secondary");
@@ -555,13 +492,10 @@ function handle_task(task, cb) {
                 });
                 console.log("submitted! "+newtask._id);
                 //console.log(JSON.stringify(newtask, null, 4));
-
             });
         },
 
-
         //update secondary archive index
-        /*
         next=>{
             if(task.status != "finished" || task.service != "brainlife/app-archive-secondary") {
                 return next();
@@ -570,15 +504,13 @@ function handle_task(task, cb) {
                 let project = await db.Projects.findOne({group_id: task._group_id});
                 await common.update_secondary_index(project);
             }, 1000*10); 
-
             next();
         },
-        */
 
         //report archive status back to user through dataset_config
         next=>{
             if(task.service == "brainlife/app-archive") {
-                logger.info("handling app-archive events");
+                console.log("handling app-archive events");
                 async.eachSeries(task.config.datasets, (dataset_config, next_dataset)=>{
                     let _set = {
                         status_msg: task.status_msg,
@@ -609,7 +541,7 @@ function handle_task(task, cb) {
         //poke rule to trigger re-evaluation
         next=>{
             if(task.status == "removed" && task.config && task.config._rule) {
-                logger.info("rule submitted task is removed. updating update_date:"+task.config._rule.id);
+                console.log("rule submitted task is removed. updating update_date:"+task.config._rule.id);
                 db.Rules.findOneAndUpdate({_id: task.config._rule.id}, {$set: {update_date: new Date()}}, next);
             } else next();
         },
@@ -630,21 +562,17 @@ function debounce(key, action, delay) {
         debouncer[key] = d;
     }
 
-    //logger.debug("debounc check %d %d", d.lastrun, now);
     if(d.lastrun+delay < now) {
         //hasn't run (for a while).. run it immediately
         d.lastrun = now;
-        //logger.debug("hasn't run (a while).. running immediately");
         action();
     } else {
         //debounce
-        //logger.debug("debouncing");
         if(d.timeout) {
-            logger.debug("already scheduled.. skipping");
+            console.debug("already scheduled.. skipping");
             //clearTimeout(d.timeout);
         } else {
             let need_delay = d.lastrun + delay - now;
-            //logger.debug("recently ran.. delaying");
             d.timeout = setTimeout(action, need_delay);
             d.lastrun = now + need_delay;
             setTimeout(()=>{
@@ -655,30 +583,30 @@ function debounce(key, action, delay) {
 }
 
 function handle_instance(instance, cb) {
-    logger.debug("%s instance:%s %s", (instance._status_changed?"+++":"---"), instance._id, instance.status);
-
+    console.debug("instance ---", instance._id, instance.status);
+    console.dir(instance);
     inc_count("health.instances");
     
-    //event counts to store on graphite. these numbers can be aggregated to show various bar graphs
-    if(instance._status_changed) {
-        //number of instance events for each resource
+    //if(instance._status_changed) {
+        //number of instance events for each user
         inc_count("instance.user."+instance.user_id+"."+instance.status); 
+        
         //number of instance events for each project
         if(instance.group_id) {
             inc_count("instance.group."+instance.group_id+"."+instance.status); 
+
             debounce("update_project_stats."+instance.group_id, async ()=>{
                 let project = await db.Projects.findOne({group_id: instance.group_id});
+                console.log("requesting to update_project_stats");
                 common.update_project_stats(project);
             }, 1000); 
         }
-    }
+    //}
     cb();
 }
 
 function handle_dataset(dataset, cb) {
-    logger.debug("dataset:%s", dataset._id);
-    //logger.debug(JSON.stringify(dataset, null, 4));
-
+    console.debug("dataset:%s", dataset._id);
     let pid = dataset.project._id||dataset.project; //unpopulate project if necessary
     debounce("update_dataset_stats."+pid, ()=>{
         common.update_dataset_stats(pid);
@@ -688,7 +616,7 @@ function handle_dataset(dataset, cb) {
 }
 
 function handle_auth_event(msg, head, dinfo, cb) {
-    logger.debug(JSON.stringify(msg, null, 4));
+    console.debug(JSON.stringify(msg, null, 4));
     let exchange = dinfo.exchange;
     let keys = dinfo.routingKey.split(".");
     if(dinfo.exchange == "auth" && dinfo.routingKey.startsWith("user.create.")) {
@@ -753,7 +681,7 @@ function post_newusers(msg) {
         uri: "http://api.ipstack.com/"+msg.headers["x-real-ip"]+"?access_key="+config.ipstack.token,
     }).then(iostackRes=>{
         //https://api.slack.com/methods/chat.postMessage
-        logger.debug("posting new user info to slack channel");
+        console.debug("posting new user info to slack channel");
         request({
             method: "POST",
             uri: "https://brainlife.slack.com/api/chat.postMessage",

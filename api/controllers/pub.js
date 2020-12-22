@@ -105,7 +105,7 @@ router.get('/datasets-inventory/:releaseid', (req, res, next)=>{
 router.get('/apps/:releaseid', async (req, res, next)=>{
     try {
         let apps = await common.aggregateDatasetsByApps({
-            publications: mongoose.Types.ObjectId(req.params.releaseid) 
+            publications: mongoose.Types.ObjectId(req.params.releaseid),
         });
         res.json(apps);
     } catch(err) {

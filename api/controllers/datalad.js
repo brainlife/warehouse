@@ -82,18 +82,6 @@ router.post('/import/:dataset_id', jwt({secret: config.express.pubkey}), (req, r
             common.publish("participant.create."+req.user.sub+"."+project._id, participants);
             participants.save();
 
-            /*
-            if(req.body.meta) {
-                if(!project.meta) project.meta = {};
-                Object.assign(project.meta, req.body.meta);
-            }
-            if(req.body.meta_info) {
-                if(!project.meta_info) project.meta_info = {};
-                Object.assign(project.meta_info, req.body.meta_info);
-            }
-            project.save();
-            */
-
             db.DLDatasets.updateOne({_id: dataset._id}, {$inc: {import_count: 1} }).then(err=>{
                 if(err) console.error(err);
                 else console.log("incremented import_count");
@@ -114,7 +102,17 @@ router.post('/import/:dataset_id', jwt({secret: config.express.pubkey}), (req, r
                     db.Datasets.create(d, next_item);
                 }, err=>{
                     if(err) return next(err);
-                    res.json("inserted");
+                    console.log("updating dataset stats")
+                    common.update_dataset_stats(project._id, err=>{
+                        if(err) return next(err);
+                        res.json("inserted");
+                        /*
+                        console.log("updating project stats")
+                        common.update_project_stats(project, err=>{
+                            if(err) return next(err);
+                        });
+                        */
+                    });
                 });  
             });
         });

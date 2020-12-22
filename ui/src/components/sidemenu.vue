@@ -264,6 +264,9 @@ position: relative;
 transition: background-color 0.2s;
 transition: width 0.2s;
 }
+.items li svg {
+    height: 20px;
+}
 .items li:hover {
 width: 180px;
 }
@@ -273,7 +276,7 @@ width: 180px;
 
 .items li h4 {
 position: relative;
-top: 1px;
+top: -3px;
 line-height: 100%;
 font-size: 9pt;
 display: inline-block;

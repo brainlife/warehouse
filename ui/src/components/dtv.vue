@@ -1,9 +1,6 @@
 <template>
 <div>
     <div v-if="task.finish_date" class="validated">
-        <!--
-        <b style="opacity: 0.5;">{{task.service}}<small>:{{task.service_branch}}</small></b>
-        -->
         <timeago class="text-muted" style="float: right" :datetime="task.finish_date" :auto-update="10"/>
         <span v-if="task.product && task.product.errors.length == 0 && task.product.warnings.length == 0" style="opacity: 0.5;">
             <icon name="check" scale="0.8"/> <b style="opacity: 0.8">Validated</b>
@@ -18,16 +15,6 @@
 
         <secondary v-if="secondary && product" :task="task" :output="output" :product="product" :secondary="secondary"/>
 
-        <div v-if="output.secondary_task" style="font-size: 90%;">
-            <span v-if="output.secondary_task.finish_date">
-                Ready for Group Analysis
-            </span>
-            <span v-else>
-                <statusicon :status="output.secondary_task.status"/>
-                {{output.secondary_task.status_msg}}
-            </span>
-            <small style="opacity: 0.5; font-size:70%;">{{output.secondary_task._id}}</small>
-        </div>
     </div>
     <task v-else :task="task"/>
 </div>
