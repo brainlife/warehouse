@@ -473,12 +473,16 @@ export default {
                     });
                 }
 
-                //aggregate meta
-                //TODO - this just concatenate *all* meta from all input datasets.. I should probaby do something smarter..
+                //copy some hierarchical metadata from input
+                //similar code in ui/modal/newtask.vue
+                //similar code in bin/rule_handler
                 let meta = config._inputs.reduce((meta, dataset)=>{
-                    for(var k in dataset.meta) if(!meta[k]) meta[k] = dataset.meta[k]; //use first one
+                    ["subject", "session", "run"].forEach(k=>{
+                        if(!meta[k]) meta[k] = dataset.meta[k]; //use first one
+                    });
                     return meta;
                 }, {});
+                console.log("reduced meta", meta)
 
                 //prepare _outputs
                 this.app.outputs.forEach(output=>{

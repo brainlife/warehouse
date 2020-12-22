@@ -123,7 +123,7 @@
                         </b-col>
                         <b-col>
                             <div class='altmetric-embed' 
-                                data-badge-type='medium-donut' 
+                                data-badge-type='small-donut' 
                                 data-badge-details="right" 
                                 :data-doi="app.doi" 
                                 data-hide-no-mentions="true"/>
@@ -559,6 +559,7 @@ export default {
                 }
 
                 this.app = res.data.apps[0];
+                //if(this.cofig.debug) this.app.doi = "10.25663/brainlife.app.188"; //didn't work
                 if(this.config.user) this.find_resources(this.app.github);
 
                 Vue.nextTick(()=>{

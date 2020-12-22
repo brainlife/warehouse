@@ -22,7 +22,7 @@
         <div v-if="nonremoved_rule_count == 0" style="margin: 20px;" >
             <p class="text-muted">Pipeline rules allow you to automate bulk submissions of your processes based on defined criterias.</p>
             <p class="text-muted">This feature could potentially launch a large number of processes. Please read our <a href="https://brainlife.io/docs/user/pipeline/" target="doc">Documentation</a> for more information.</p>
-           <iframe width="444" height="250" src="https://www.youtube.com/embed/Ewy3ahCVUzw" frameborder="0" 
+           <iframe width="444" height="250" src="https://www.youtube.com/embed/Ewy3ahCVUzw" frameborder="0"
                 allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
 
         </div>
@@ -45,7 +45,7 @@
                 </b-row>
             </div>
 
-            <div v-for="rule in sorted_rules.filter(r=>r.removed == false)" :key="rule._id" :id="rule._id" 
+            <div v-for="rule in sorted_rules.filter(r=>r.removed == false)" :key="rule._id" :id="rule._id"
                 :class="{'rule-removed': rule.removed, 'rule-selected': selected == rule, 'rule-inactive': !rule.active}" class="rule">
                 <div class="rule-header" @click="toggle(rule)">
                     <b-row :no-gutters="true">
@@ -62,10 +62,10 @@
                                 <span>{{rule.app.name}}</span> <b-badge variant="secondary">{{rule.branch}}</b-badge><br>
                                 <span v-if="rule.subject_match" title="Only handle subjects that matches this regex">
                                     <b-badge variant="light">SUBJECT: {{rule.subject_match}}</b-badge>&nbsp;
-                                </span>     
+                                </span>
                                 <span v-if="rule.session_match" title="Only handle session that matches this regex">
                                     <b-badge variant="light">SESSION: {{rule.session_match}}</b-badge>&nbsp;
-                                </span>     
+                                </span>
                                 <small>{{rule.name}}</small>
                             </div>
                         </b-col>
@@ -89,6 +89,7 @@
                     <div class="rule-body">
                         <div class="section-header">
                             <div style="float: right; position: relative; top: -4px;">
+                                <small style="font-size: 70%; opacity: 0.3">{{rule._id}}</small>
                                 <div class="button" @click="copy(rule)" v-if="ismember() || isadmin()" size="sm" title="copy"><icon name="copy"/></div>
                                 <div class="button" @click="edit(rule)" v-if="ismember() || isadmin()" size="sm" title="edit"><icon name="edit"/></div>
                                 <div class="button" @click="remove(rule)" v-if="ismember() || isadmin()" size="sm" title="remove"><icon name="trash"/></div>
@@ -199,8 +200,8 @@ var debounce = null;
 
 export default {
     mixins: [ appcache ],
-    props: [ 'project' ], 
-    components: { 
+    props: [ 'project' ],
+    components: {
         contact, tags, app,
         datatypetag, ruleform, rulelog, stateprogress,
     },
@@ -212,7 +213,7 @@ export default {
 
             ready: false,
 
-            rules: null, 
+            rules: null,
             datatypes: null,
             projects: null,
 
@@ -240,17 +241,16 @@ export default {
         this.ws.onmessage=(json)=>{
             var event = JSON.parse(json.data);
             if(!event.dinfo) return; //??
-            //console.dir(event);
             if(event.dinfo.routingKey.startsWith("rule.update.")) {
                 let newrule = event.msg;
-                //if(newrule.app._id) alert("feeding app that's already populated");
+                console.log("rule updated", event.msg);
                 this.appcache(newrule.app, {populate_datatype: false}, (err, app)=>{
                     newrule.app = app;
                     let rule = this.rules.find(rule=>rule._id == newrule._id);
                     if(rule) {
                         //update existing rule
-                        for(let key in newrule) { 
-                            rule[key] = newrule[key]; 
+                        for(let key in newrule) {
+                            rule[key] = newrule[key];
                         }
                     } else {
                         console.error("odd.. couldn't find the rule that we just received update");
@@ -307,7 +307,7 @@ export default {
     computed: {
 
         nonremoved_rule_count() {
-            return this.rules.filter(rule=>rule.removed == false).length;    
+            return this.rules.filter(rule=>rule.removed == false).length;
         },
 
         sorted_rules() {
@@ -317,8 +317,8 @@ export default {
             let field = this.order;
             if(field[0] == "-") {
                 order = -1;
-                field = field.substring(1); 
-            } 
+                field = field.substring(1);
+            }
             return this.rules.sort((a,b)=>{
                 switch(field) {
                 case "desc":
@@ -327,22 +327,22 @@ export default {
                     break;
 
                 //deprecated
-                case "date": 
+                case "date":
                     a = a.create_date?new Date(a.create_date):null;
                     b = b.create_date?new Date(b.create_date):null;
                     break;
 
-                case "create_date": 
+                case "create_date":
                     a = a.create_date?new Date(a.create_date):null;
                     b = b.create_date?new Date(b.create_date):null;
                     break;
 
-                case "update_date": 
+                case "update_date":
                     a = a.update_date?new Date(a.update_date):null;
                     b = b.update_date?new Date(b.update_date):null;
                     break;
 
-                default: 
+                default:
                     throw("no such field");
                 }
                 if(a < b) return order;
@@ -364,12 +364,12 @@ export default {
                     project: this.project._id,
                     //removed: false, //I need all rules so that I can get the total count
                 }),
-                populate: 'app', 
-                sort: 'create_date', 
+                populate: 'app',
+                sort: 'create_date',
                 limit: 500,
             }})
             .then(res=>{
-                this.rules = res.data.rules; 
+                this.rules = res.data.rules;
                 if(this.$route.params.subid) {
                     this.editing = this.rules.find(rule=>rule._id == this.$route.params.subid);
                 }
@@ -416,7 +416,7 @@ export default {
                     for(let input_id in rule.input_project_override) {
                         let project_id = rule.input_project_override[input_id];
                         if(!~ids.indexOf(project_id)) ids.push(project_id);
-                    } 
+                    }
                 });
                 return this.$http.get('project', {params: {
                     find: JSON.stringify({
@@ -430,7 +430,7 @@ export default {
                     this.projects[project._id] = project;
                 });
                 cb();
-            }).catch(cb); 
+            }).catch(cb);
         },
 
         isadmin() {
@@ -509,7 +509,7 @@ export default {
                     this.load(err=>{
                         this.$notify({text: "Successfully updated a rule", type: "success"});
                         this.cancel_edit();
-                    }); 
+                    });
                 }).catch(this.notify_error);
             } else {
                 //create
@@ -558,9 +558,15 @@ export default {
             if(rule.extra_datatype_tags) tags = tags.concat(rule.extra_datatype_tags[input.id]);
             return tags;
         },
-    
+
         flip_switch(rule) {
+            console.log("flip_switch", rule.active);
             if(rule.active) {
+                //activate
+                this.$http.put('rule/'+rule._id, {active: true}).then(res=>{
+                    this.$notify({ title: 'Activating', text: 'Successfully activated', type: 'success', });
+                }).catch(this.notify_error);
+            } else {
                 //deactivate
                 Vue.set(rule, 'deactivating', true);
                 this.$notify({ title: 'Deactivating', text: 'Deactivating this rule and all tasks submitted from it', type: 'info', });
@@ -568,16 +574,11 @@ export default {
                     rule.deactivating = false;
                     this.$notify({ title: 'Deactivating', text: 'Successfully deactivated', type: 'success', });
                 }).catch(this.notify_error);
-            } else {
-                //activate
-                this.$http.put('rule/'+rule._id, {active: true}).then(res=>{
-                    this.$notify({ title: 'Activating', text: 'Successfully activated', type: 'success', });
-                }).catch(this.notify_error);
             }
 
             return true; //stop prop
         },
-    
+
    },
 };
 
@@ -618,7 +619,7 @@ padding-top: 10px;
 font-size: 88%;
 }
 .rule-header .custom-switch {
-top: -2px;   
+top: -2px;
 }
 .rule.rule-selected .rule-header {
 padding: 15px;
@@ -627,8 +628,8 @@ top: 0px;
 z-index: 7; /*make it on top of scrollbar for log view*/
 }
 .rule-body {
-margin-right: 100px; 
-background-color: white; 
+margin-right: 100px;
+background-color: white;
 clear: both;
 }
 .rule.rule-selected .rule-body {
@@ -661,7 +662,7 @@ z-index: 1; /*needed to make sort order dropdown box to show up on top of page-c
 overflow-x: hidden; /*i can't figure out why there would be x scroll bar when a rule is active*/
 top: 95px;
 }
-.header, 
+.header,
 .content {
 min-width: 500px;
 }
@@ -673,9 +674,9 @@ font-size: 85%;
 opacity: 0.5;
 }
 .section-header {
-background-color: #f4f4f4; 
-clear: both; 
-padding: 10px; 
+background-color: #f4f4f4;
+clear: both;
+padding: 10px;
 margin-bottom: 10px;
 }
 </style>

@@ -200,6 +200,35 @@ function handle_task(task, cb) {
 
     //handle event
     async.series([
+        
+        //load task product for finished task
+        //TODO - can we gurantee that the amaretti/task/product is loaded by the time we received this event?
+        next=>{
+            if(task.status != "finished") return next();
+            console.log("loading product for ", task._id, task.name);
+            axios.get(config.amaretti.api+"/task/product", {
+                params: {
+                    ids: [task._id],
+                },
+                headers: { authorization: "Bearer "+config.warehouse.jwt, }
+            }).then(res=>{
+                if(res.data.length == 1) {
+                    task_product = res.data[0].product;
+
+                }
+                next();
+            }).catch(err=>{
+                console.error(err);
+                console.error("failed to load product for "+task._id); //TODO should I retry? how?
+                next();
+            });
+        },
+        
+        //TODO - I need to apply the task_product (meta, tag, datatype_tags) to task.config._outputs
+        next=>{
+            next();
+        },
+        
         //submit output validators
         next=>{
             if(/*task.status != "finished" ||*/ !task.config || !task.config._outputs ||  
@@ -251,7 +280,7 @@ function handle_task(task, cb) {
                 }
 
                 let validator_config = {
-                    _app: task.config._app,
+                    _app: task.config._app, //app id
                     _outputs: [Object.assign({}, output, {
                         subdir: "output", //validator should always output under "output"
                     })],
@@ -310,27 +339,6 @@ function handle_task(task, cb) {
                 console.log("submitted new validator------------------------------");
                 console.dir(dtv_task);
             }, next);
-        },
-        
-        //load task product for finished task
-        next=>{
-            if(task.status != "finished") return next();
-            console.log("loading product for ", task._id, task.name);
-            axios.get(config.amaretti.api+"/task/product", {
-                params: {
-                    ids: [task._id],
-                },
-                headers: { authorization: "Bearer "+config.warehouse.jwt, }
-            }).then(res=>{
-                if(res.data.length == 1) {
-                    task_product = res.data[0].product;
-                }
-                next();
-            }).catch(err=>{
-                console.error(err);
-                console.error("failed to load product for "+task._id); //TODO should I retry? how?
-                next();
-            });
         },
         
         //submit output archivers

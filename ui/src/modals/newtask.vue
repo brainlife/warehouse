@@ -516,11 +516,12 @@ export default {
                         dataset_id: dataset.dataset_id,
                     });
 
-                    //aggregating meta from all inputs -  if 2 inputs has different value for the same meta, keep the first one..
-                    //TODO - I need a better way to discover meta (like letting app to decide?)
-                    for(var k in dataset.meta) {
+                    //copy some hierarchical metadata from input
+                    //similar code in ui/modal/appsubmit.vue
+                    //similar code in bin/rule_handler
+                    ["subject", "session", "run"].forEach(k=>{
                         if(!meta[k]) meta[k] = dataset.meta[k]; //use first one
-                    }
+                    });
                 });
             }
 
@@ -635,7 +636,7 @@ text-align: right;
 .selected-app {
 position: sticky;
 top: 0px;
-z-index: 1;
+z-index: 2;
 }
 .apps {
 padding: 20px;

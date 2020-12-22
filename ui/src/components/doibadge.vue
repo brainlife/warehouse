@@ -27,6 +27,6 @@ img {
 cursor: pointer;
 }
 .bigpill {
-line-height: 140%;
+line-height: 150%;
 }
 </style>

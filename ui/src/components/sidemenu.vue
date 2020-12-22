@@ -276,7 +276,6 @@ width: 180px;
 
 .items li h4 {
 position: relative;
-top: -3px;
 line-height: 100%;
 font-size: 9pt;
 display: inline-block;

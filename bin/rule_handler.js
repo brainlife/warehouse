@@ -299,8 +299,6 @@ function handle_rule(rule, cb) {
                 let tags = rule.output_tags[output.id];
                 if(tags && tags.length > 0) query.tags = { $all: tags };
 
-                //console.log("finding output-------------------");
-                //console.log(JSON.stringify(query, null, 4));
                 db.Datasets.find(query)
                 .select('meta') 
                 .lean()
@@ -732,13 +730,17 @@ function handle_rule(rule, cb) {
                 });
             },
 
-            //aggregate metadata (TODO - I really need just subject?)
+            //set metadata
             next=>{
+                //copy some hierarchical metadata from input
+                //simialr code in ui/modal/appsubmit
+                //similar code in ui/newtask.vue
 				for(var input_id in inputs) {
 					var input = inputs[input_id];
-					for(var k in input.meta) {
-						if(!meta[k]) meta[k] = input.meta[k]; //use first encounter
-					}
+                    //let's copy hierarchical metadata only
+                    ["subject", "session", "run"].forEach(k=>{
+                        if(!meta[k]) meta[k] = input.meta[k]; //use first one
+                    });
 				}
 
                 //we need to use the subject/session for the current group as input might have come from other subject/session
@@ -807,12 +809,13 @@ function handle_rule(rule, cb) {
 						//TODO - how is multi input handled here?
             			var dataset = inputs[output.datatype_tags_pass];
                         if(!dataset) logger.error("datatype_tags_pass set but can't find the input:"+output.datatype_tags_pass);
-                        if(dataset && dataset.datatype_tags) tags = dataset.datatype_tags; //could be null?
+                        if(dataset && dataset.datatype_tags) {
+                            tags = dataset.datatype_tags; //could be null?
+                        }
                     }
                     //.. and add app specified output tags at the end
                     if(output.datatype_tags) tags = tags.concat(output.datatype_tags);
                     output_req.datatype_tags = uniq(tags);
-
                     _config._outputs.push(output_req);
                 });
 

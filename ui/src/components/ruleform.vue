@@ -148,9 +148,11 @@
     <br>
     <br>
 
+    <!--
     <div v-if="config.debug">
         <pre>{{rule}}</pre>
     </div>
+    -->
 
     <div class="page-footer">
         <b-button type="button" @click="cancel">Cancel</b-button>
@@ -184,7 +186,6 @@ export default {
     mixins: [ search_app_mixin ],
     props: {
         value: { type: Object },
-        //new_output_tags: { type: Array }, //output_datasets tags for new output
     },
 
     components: { 
@@ -227,7 +228,7 @@ export default {
 
     watch: {
         value: function() {
-            this.load_value();
+            this.load_rule();
         },
 
         "rule.app": function(newv, oldv) {
@@ -306,7 +307,7 @@ export default {
     },
     
     mounted() {
-        this.load_value();
+        this.load_rule();
         this.ready = true;
     },
     
@@ -381,7 +382,7 @@ export default {
         },
 
         //update with value from the parent component
-        load_value() {
+        load_rule() {
             if(!this.value) return; //no value specified yet
             this.reset_rule();
             Object.assign(this.rule, this.value);
