@@ -193,6 +193,8 @@ table.info td {
 }
 .fa-icon {
     vertical-align: middle !important;
+    position: relative;
+    top: -0.1em;
 }
 
 /*

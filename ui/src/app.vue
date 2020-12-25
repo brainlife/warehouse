@@ -123,10 +123,10 @@
                         </b-col>
                         <b-col>
                             <div class='altmetric-embed' 
-                                data-badge-type='small-donut' 
+                                data-badge-type='donut' 
                                 data-badge-details="right" 
-                                :data-doi="app.doi" 
-                                data-hide-no-mentions="true"/>
+                                data-hide-no-mentions="true"
+                                :data-doi="app.doi||config.debug_doi"/>
                         </b-col>
                     </b-row>
                 </b-container>
@@ -563,7 +563,6 @@ export default {
                 if(this.config.user) this.find_resources(this.app.github);
 
                 Vue.nextTick(()=>{
-                    console.log("initializing altemtric badge");
                     //re-initialize altmetric badge - now that we have badge <div> placed
                     _altmetric_embed_init(this.$el);
                 });

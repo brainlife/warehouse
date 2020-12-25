@@ -343,6 +343,7 @@ function handle_release(release, project, cb) {
 }
 
 //proxy doi.org doi resolver
+//TODO - why does this exist? should let client directly access it?
 router.get('/doi', (req, res, next)=>{
     logger.debug("querying doi: %s", req.query.doi);
     request({

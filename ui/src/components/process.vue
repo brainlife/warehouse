@@ -163,12 +163,7 @@
                             </b-collapse>
 
                             <dtv :task="output.dtv_task" :output="output" v-if="task.status == 'finished' && output.dtv_task"/>
-                            <!--
-                            <span v-if="!output.dtv_task && output.secondary_task" title="Ready for group analysis" style="opacity: 0.5;">
-                                &nbsp;<icon name="thumbs-up" scale="0.7"/> Ready for Group Analysis
-                            </span>
-                            -->
-                            <div v-if="output.secondary_task" style="font-size: 90%;">
+                            <div v-if="output.secondary_task" style="font-size: 90%; padding: 5px 10px; border: 2px solid #eee; border-radius: 5px; margin-top: 5px; color: #888;">
                                 <span v-if="output.secondary_task.finish_date">
                                     Ready for Group Analysis
                                 </span>

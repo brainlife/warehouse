@@ -5,7 +5,7 @@
             <icon name="cog" spin></icon> Loading..
         </span>
     </p>
-    <b-alert :show="error" variant="danger">{{error}}</b-alert>
+    <b-alert :show="error != null" variant="danger">{{error}}</b-alert>
     <div v-if="files && !error">
         <div :style="{marginLeft: offset}">
             <div  class="buttons">
@@ -151,7 +151,6 @@ export default {
         load() {
             var url = Vue.config.wf_api+'/task/ls/'+this.task._id;
             if(this.path) url += '?p='+encodeURIComponent(this.path);
-            console.log(url);
             this.$http.get(url).then(res=>{
                 this.files = res.data.files.sort((a, b)=>{
                     if(a.attrs.mtime == b.attrs.mtime) {

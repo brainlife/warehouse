@@ -39,7 +39,7 @@
                                 <icon name="calendar" style="opacity: 0.4;"/>&nbsp;&nbsp;&nbsp;<small>Registerd</small>&nbsp;&nbsp;{{new Date(datatype.create_date).toLocaleDateString()}}
                             </b-badge>
                         </p>
-                        <p style="opacity: 0.6">{{datatype.desc}}</p>
+                        <p>{{datatype.desc}}</p>
                     </b-container>
                 </div><!--sub header-->
                 <b-container>
@@ -93,7 +93,7 @@
                                 <span style="background-color: #ddd; padding: 2px 5px; display: inline-block;">{{entry.datatype_tag}}</span>
                             </b-col>
                             <b-col cols="9">
-                                <small>{{entry.desc}}</small>
+                                <p>{{entry.desc}}</p>
                             </b-col>
                         </b-row>
 

@@ -45,7 +45,11 @@
                     </div>
                     <b-row>
                         <b-col>
-                            <div class='altmetric-embed' data-badge-type='donut' data-badge-details="right" data-hide-no-mentions="false" :data-doi="pub.doi||config.debug_doi"/>
+                            <div class='altmetric-embed' 
+                                data-badge-type='donut' 
+                                data-badge-details="right" 
+                                data-hide-no-mentions="false" 
+                                :data-doi="pub.doi||config.debug_doi"/>
                         </b-col>
                     </b-row>
                 </b-container>

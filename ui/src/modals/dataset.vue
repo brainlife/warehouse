@@ -879,6 +879,7 @@ export default {
 
                 //ok.. let's see if a task that produced the dataset still exists
                 if(!this.dataset.prov) return cb(null);
+                if(!this.dataset.prov.task) return cb(null); //(only happens in dev?)
                 if(!this.dataset.prov.task._id) return cb(null); //(only happens in dev?)
                 return this.$http.get(Vue.config.amaretti_api+'/task', {params: {
                     find: JSON.stringify({ 

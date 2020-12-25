@@ -211,21 +211,25 @@
                 </div>
 
                 <div v-if="selected.stats.apps && selected.stats.apps.length > 0">
-                    <span class="form-header">Citations</span>
-                    <p><small>Please use the following citations to cite the Apps used by this project.</small></p>
-                    <p v-for="app in uniqueApps" :key="app._id">
-                        <icon name="robot" style="opacity: 0.5;"/> <b>{{app.name}}</b><br>
-                        <citation :doi="app.doi"/> 
-                    </p>
-                </div>
+                    <b-button variant="outline-secondary" size="sm" @click="showCitations = true" v-if="!showCitations">Load Citation</b-button>
+                    <div v-if="showCitations">
+                        <br>
+                        <span class="form-header">Citations</span>
+                        <p><small>Please use the following citations to cite the Apps used by this project.</small></p>
+                        <p v-for="app in uniqueApps" :key="app._id">
+                            <icon name="robot" style="opacity: 0.5;"/> <b>{{app.name}}</b><br>
+                            <citation :doi="app.doi"/> 
+                        </p>
 
-                <div v-if="resource_citations.length > 0">
-                    <p><small>Please use the following citations to cite the resources used by this project.</small></p>
-                    <p v-for="(resource_citation, idx) in resource_citations" :key="idx">
-                        <icon name="server" style="opacity: 0.5;"/> <b>{{resource_citation.resource.name}}</b><br>
-                        <!--<small>{{resource_citation.resource.config.desc}}</small>-->
-                        <i>{{resource_citation.citation}}</i>
-                    </p>
+                        <div v-if="resource_citations.length > 0">
+                            <p><small>Please use the following citations to cite the resources used by this project.</small></p>
+                            <p v-for="(resource_citation, idx) in resource_citations" :key="idx">
+                                <icon name="server" style="opacity: 0.5;"/> <b>{{resource_citation.resource.name}}</b><br>
+                                <!--<small>{{resource_citation.resource.config.desc}}</small>-->
+                                <i>{{resource_citation.citation}}</i>
+                            </p>
+                        </div>
+                    </div>
                 </div>
 
                 <vue-disqus ref="disqus" shortname="brain-life" :identifier="selected._id"/>
@@ -350,6 +354,7 @@ export default {
 
             projects: null, //all projects that user can see summary of
 
+            showCitations: false,
             datatypes: {}, //datatypes loadded (used by datatype_groups)
 
             resource_citations: [],
@@ -436,6 +441,7 @@ export default {
     },
 
     methods: {
+
         get_total(instances) {
             if(!instances) return 0;
             let counts = 0;
