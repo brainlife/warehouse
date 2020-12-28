@@ -128,19 +128,6 @@
                         </b-col>
                     </b-row>
 
-                    <!--
-                    <b-row>
-                        <b-col cols="2">
-                            <span class="form-header">Max Task</span>
-                        </b-col>
-                        <b-col>
-                            <p style="opacity: 0.6;">
-                               Up to <b>{{resource.config.maxtask}}</b> concurrent tasks can be submitted on this resource
-                            </p>
-                        </b-col>
-                    </b-row>
-                    -->
-
                     <b-row>
                         <b-col cols="2">
                             <span class="form-header">Workdir</span>
@@ -417,7 +404,9 @@ export default {
 
             this.$http.get(Vue.config.amaretti_api+'/resource/tasks/'+this.$route.params.id).then(res=>{
                 this.tasks = res.data.recent;
-                this.tasksRunning = this.tasks.filter(t=>{t.status == "running" || t.status == "running_sync"});
+                console.log("tasks");
+                console.dir(this.tasks);
+                this.tasksRunning = this.tasks.filter(t=>t.status == "running" || t.status == "running_sync");
 
                 //resolve project names
                 let gids = this.tasks.map(task=>task._group_id);
