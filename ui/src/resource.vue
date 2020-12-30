@@ -52,7 +52,7 @@
                                 <icon name="calendar" style="opacity: 0.4;"/> <small>Registered</small>&nbsp;&nbsp;{{new Date(resource.create_date).toLocaleDateString()}}
                             </b-badge>
                             <b-badge pill class="bigpill" title="Number of tasks currently running on this resource">
-                                <icon name="play" style="opacity: 0.4;"/>&nbsp;&nbsp;&nbsp;{{tasksRunning.length}}&nbsp;&nbsp;<small>Running / {{resource.config.maxtask}} max</small>
+                                <icon name="play" style="opacity: 0.4;"/>&nbsp;&nbsp;&nbsp;{{runningTasks}}&nbsp;&nbsp;<small>Running / {{resource.config.maxtask}} max</small>
                             </b-badge>
                         </p>
                         <p>{{resource.config.desc||'no description'}}</p>
@@ -331,7 +331,7 @@ export default {
             //groups: null,
 
             tasks: [],  //recent jobs 
-            tasksRunning: [],  //jobs currently running
+            runningTasks: 0,
 
             //report: null,
             projects: null, //list of all projects and some basic info (only admin can load this)
@@ -361,7 +361,7 @@ export default {
             return (p*100).toFixed(1)+ "%";
         },
         load() {
-            console.log("loading resource:"+this.$route.params.id);
+            //console.log("loading resource:"+this.$route.params.id);
             this.$http.get(Vue.config.amaretti_api+'/resource', {params: {
                 find: JSON.stringify({
                     _id: this.$route.params.id,
@@ -400,13 +400,16 @@ export default {
                         });
                     }).catch(console.error);
                 }
+
+                if(this.resource.stats && this.resource.stats.recent_job_counts) {
+                    let recs = this.resource.stats.recent_job_counts;
+                    this.runningTasks = recs[recs.length-1][1];
+                }
+
             }).catch(console.error);
 
             this.$http.get(Vue.config.amaretti_api+'/resource/tasks/'+this.$route.params.id).then(res=>{
                 this.tasks = res.data.recent;
-                console.log("tasks");
-                console.dir(this.tasks);
-                this.tasksRunning = this.tasks.filter(t=>t.status == "running" || t.status == "running_sync");
 
                 //resolve project names
                 let gids = this.tasks.map(task=>task._group_id);

@@ -996,7 +996,7 @@ exports.update_project_stats = async function(project, cb) {
 
     } catch (err) {
         if(cb) cb(err);
-        else consolele.error(err);
+        else console.error(err);
     }
 }
 

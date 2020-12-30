@@ -94,7 +94,6 @@ export default {
     mounted() {
         let find = JSON.stringify({
             status: {$ne: "removed"},
-            //active: true,
         });
         this.$http.get(Vue.config.amaretti_api+'/resource', {params: {
             find, 
@@ -105,23 +104,6 @@ export default {
     },
 
     methods: {
-        /*
-        back() {
-            //this.$router.push('/apps');
-            this.$router.go(-1);
-        },
-        open_sample_dataset(dataset_id) {
-            //this.$router.replace('/project/'+this.project._id+'/dataset/'+dataset_id);
-            this.$root.$emit('dataset.view', {id: dataset_id,  back: './'});
-        },
-        */
-
-        /*
-        open(resource) {
-            this.$router.push('/resource/'+resource._id);
-        },
-        */
-
         newresource() {
             this.$router.push('/resource/_/edit');
         },
