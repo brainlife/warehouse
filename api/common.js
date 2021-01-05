@@ -224,23 +224,25 @@ exports.archive_task_outputs = async function(user_id, task, outputs, cb) {
         return cb("archive_task_outputs/outputs is not array "+JSON.stringify(outputs, null, 4));
     }
 
+    let task_products;
     try {
-        let task_products = await rp.get({
+        task_products = await rp.get({
             url: config.amaretti.api+"/task/product/", json: true,
             qs: {
                 ids: [task._id],
             },
             headers: { authorization: "Bearer "+config.warehouse.jwt, },
         });
-        let task_product;
-        if(task_products.length == 1) {
-            task_product = task_products[0].product;
-        } else {
-            //fallback on the old task.product - in case user is still running old jobs
-            task_product = task.product;
-        }
     } catch (err) {
         return cb(err)
+    }
+
+    let task_product;
+    if(task_products.length == 1) {
+        task_product = task_products[0].product;
+    } else {
+        //fallback on the old task.product - in case user is still running old jobs
+        task_product = task.product;
     }
 
     let products = exports.split_product(task_product, outputs);
