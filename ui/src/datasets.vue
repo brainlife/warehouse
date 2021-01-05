@@ -340,12 +340,13 @@ export default {
             });
         },
 
+        //TODO - I think there is a case where this goes into infinite loop..
         open_dataset(dataset_id) {
             if(this.selected && this.selected._id == dataset_id) {
                 console.log("moving to ", document.location.hash)
                 this.$router.push('/datasets'+document.location.hash);
             } else {
-                console.log("moving to /datasets/", datset_id, document.location.hash)
+                console.log("moving to /datasets/", dataset_id, document.location.hash)
                 this.$router.push('/datasets/'+dataset_id+document.location.hash);
                 document.getElementsByClassName("page-main")[0].scrollTop = 0;
             }

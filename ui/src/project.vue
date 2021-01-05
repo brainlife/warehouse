@@ -418,8 +418,6 @@ export default {
             let project_id = this.$route.params.id
             if(!this.projects[project_id]) {
                 this.error = "You don't have access to the project, or the project ID is invalid. Please contact the project owner and ask to add you to the member/guest of the project.";
-                //this.$notify({type: 'error', duration: 10000, text: "You don't have access to the project, or the project ID is invalid. Please contact the project owner and ask to add you to the member/guest of the project."});
-                //this.$router.replace("/projects");
                 return;
             }
   
@@ -512,13 +510,6 @@ export default {
                 });
             }
         },
-
-        /*
-        change_project(project) {
-            this.$router.push('/project/'+project._id+'/'+this.$route.params.tab);
-            this.open_project(project);
-        },
-        */
 
         open_project(project) {
             this.selected = project;

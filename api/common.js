@@ -239,10 +239,11 @@ exports.archive_task_outputs = async function(user_id, task, outputs, cb) {
             //fallback on the old task.product - in case user is still running old jobs
             task_product = task.product;
         }
-        let products = exports.split_product(task_product, outputs);
     } catch (err) {
         return cb(err)
     }
+
+    let products = exports.split_product(task_product, outputs);
 
     //get all project ids set by user
     let project_ids = [];
