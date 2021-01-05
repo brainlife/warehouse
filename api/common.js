@@ -188,7 +188,7 @@ exports.wait_task = function(req, task_id, cb) {
 }
 
 //TODO - I should create more generic version of this
-exports.issue_archiver_jwt = async function(user_id, cb) {
+exports.issue_archiver_jwt = async function(user_id) {
 
     //load user's gids so that we can add warehouse group id (authorized to access archive)
     //I need existing user's gids so that user can submit stating task on the instance that user should have access to
@@ -224,21 +224,25 @@ exports.archive_task_outputs = async function(user_id, task, outputs, cb) {
         return cb("archive_task_outputs/outputs is not array "+JSON.stringify(outputs, null, 4));
     }
 
-    let task_products = await rp.get({
-        url: config.amaretti.api+"/task/product/", json: true,
-        qs: {
-            ids: [task._id],
-        },
-        headers: { authorization: "Bearer "+config.warehouse.jwt, },
-    });
-    let task_product;
-    if(task_products.length == 1) {
-        task_product = task_products[0].product;
-    } else {
-        //fallback on the old task.product - in case user is still running old jobs
-        task_product = task.product;
+    try {
+        let task_products = await rp.get({
+            url: config.amaretti.api+"/task/product/", json: true,
+            qs: {
+                ids: [task._id],
+            },
+            headers: { authorization: "Bearer "+config.warehouse.jwt, },
+        });
+        let task_product;
+        if(task_products.length == 1) {
+            task_product = task_products[0].product;
+        } else {
+            //fallback on the old task.product - in case user is still running old jobs
+            task_product = task.product;
+        }
+        let products = exports.split_product(task_product, outputs);
+    } catch (err) {
+        return cb(err)
     }
-    let products = exports.split_product(task_product, outputs);
 
     //get all project ids set by user
     let project_ids = [];
@@ -1063,18 +1067,22 @@ exports.ismember = (user, rec)=>{
 
 exports.users_general = async ()=>{
     console.log("loading users");
-    let users = await rp.get({
-        url: config.auth.api+"/profile/list", json: true,
-        qs: {
-            find: JSON.stringify({
-                active: true,
-                "profile.private.notification.newsletter_general": true,
-            }),
-            limit: 3000,
-        },
-        headers: { authorization: "Bearer "+config.warehouse.jwt },
-    });
-    return users.profiles;
+    try {
+        let users = await rp.get({
+            url: config.auth.api+"/profile/list", json: true,
+            qs: {
+                find: JSON.stringify({
+                    active: true,
+                    "profile.private.notification.newsletter_general": true,
+                }),
+                limit: 3000,
+            },
+            headers: { authorization: "Bearer "+config.warehouse.jwt },
+        });
+        return users.profiles;
+    } catch (err) {
+        console.error(err);
+    }
 }
 
 
