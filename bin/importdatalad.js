@@ -7,8 +7,7 @@ const async = require('async');
 const fs = require('fs');
 const path = require('path');
 const child_process = require('child_process');
-
-const bids_walker = require('brainlife').bids_walker;
+const cli = require('brainlife');
 
 process.chdir('/mnt/datalad');
 
@@ -45,7 +44,7 @@ db.init(async err=>{
         //if(dataset_path != "datasets.datalad.org/openneuro/ds001590") return next_dir();
 
         console.log("walking bids..");
-        bids_walker(dataset_path, (err, bids)=>{
+        cli.bids_walker(dataset_path, (err, bids)=>{
             if(err) return next_dir(err);
             //console.dir(bids);
 
