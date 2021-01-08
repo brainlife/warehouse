@@ -283,7 +283,13 @@ function handle_task(task, cb) {
                     _app: task.config._app, //app id
                     _outputs: [Object.assign({}, output, {
                         subdir: "output", //validator should always output under "output"
+                        
+                        //validator should always output files using datatype file names
+                        //also without this, it could end up using deprecated app file mapping
+                        files: null, 
                     })],
+
+                    //_tid: task.config._tid,  //for UI.. use the same _tid as the parent
 
                     //I decided to handle this at the loading time
                     //pass the followed task's product to validator so it can analyze / merge it!
@@ -303,10 +309,12 @@ function handle_task(task, cb) {
                         }
                     }
                 });
+
+                //we shouldn't remove it too soon.
+                //let remove_date = new Date();
+                //remove_date.setDate(remove_date.getDate()+7); //remove in 7 days(?)
                 
                 //submit datatype validator - if not yet submitted
-                let remove_date = new Date();
-                remove_date.setDate(remove_date.getDate()+7); //remove in 7 days(?)
                 let dtv_task = await rp.post({
                     url: config.amaretti.api+"/task",
                     json: true,
@@ -318,7 +326,7 @@ function handle_task(task, cb) {
                         deps_config: [ {task: task._id, subdirs} ],
                         config: validator_config,
                         //max_runtime: 1000*3600, //1 hour should be enough for most..(nope.. it could be queued for a lone time)
-                        remove_date,
+                        remove_date: task.remove_date, //remove when source task is removed
 
                         //we want to run on the same resource that task has run on
                         follow_task_id: task._id,
