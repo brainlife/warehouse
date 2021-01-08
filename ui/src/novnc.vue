@@ -69,6 +69,7 @@ export default {
                         "config.input_instance_id": this.task.instance_id,
                         "config.input_task_id": this.taskid,
                         "config.type": this.type,
+                        "config.subdir": this.subdir,
                     })
                 }})
                 .then(res=>{

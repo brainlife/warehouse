@@ -45,17 +45,8 @@ export default {
     },
     mounted() {
         this.$root.$on("viewselecter.open", opt=>{
-            //console.log("viewselecter opened with");
-            //console.dir(opt);
-
-            //this.datatype = opt.datatype;
-            //this.task = opt.task;
-            //this.subdir = opt.subdir;
-            //this.files = opt.files;
-
             this.opt = opt;
             this.$refs.modal.show();
-
         });
     },
 
@@ -80,8 +71,7 @@ export default {
                 files: this.opt.files,
             }
             path += "#"+btoa(JSON.stringify(uiconfig));
-
-            console.log("opening", path, this.opt);
+            //console.log("opening", path, this.opt);
             window.open(path, this.opt.task._id+"."+this.opt.subdir, "width=1200,height=801,menubar=no"); //chrome opens window with 799 pixels if I specify 800.. why!?
         }
     }
