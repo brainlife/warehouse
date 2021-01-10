@@ -221,6 +221,9 @@ export default {
 
     created() {
         this.$root.$on("newtask.open", info=>{
+            console.log("recieved from client");
+            console.dir(info);
+
             //receive info from client
             this.datasets = info.datasets;
             this.project = info.project;
@@ -228,6 +231,7 @@ export default {
             this.$nextTick(()=>{
                 this.$refs.search.focus();
             });
+
 
             //reset form
             this.app = null;
@@ -413,16 +417,21 @@ export default {
             this.valid = valid;
         },
 
+        //transform config object
         process_input_config(config) {
             for(var k in this.app.config) { 
                 var node = this.app.config[k];
+                //console.log("processing input", k, node);
                 if(node.type && node.type == "input") {
-                    var input = this.inputs[node.input_id];
+                    var input = this.inputs[node.input_id]; //input spec from the app registration
                     if(input.multi) config[k] = [];
-                    input.selected.forEach(selected=>{
-                        if(!selected) return; //not set?
 
+                    //we handle multiple input for UI
+                    input.selected.forEach(selected=>{
+                        if(!selected) return; //not set for optional input?
                         var dataset = selected.dataset;
+                        //console.log("dataset info", dataset);
+
                         let dep_config = this.deps_config.find(dep=>dep.task == dataset.task._id);
                         if(!dep_config) {
                             dep_config = {task: dataset.task._id};
@@ -432,20 +441,24 @@ export default {
                         //use file path specified in datatype..
                         var file = input.datatype.files.find(file=>file.id == node.file_id);
                         if(!file) {
-                            console.error("failed to find file id", node.file_id);
+                            //console.error("failed to find file id", node.file_id);
                             config[k] = "no such file_id:"+node.file_id;
                             return;
                         }
                         
-                        //use file.filename/dirname path, unless filemapping from the input dataset is provided
+                        //use file.filename/dirname path, 
+                        //unless filemapping from the input dataset is provided
                         var base = "../"+dataset.task._id;
                         if(dataset.subdir) {
                             base+="/"+dataset.subdir;
 
                             //add to subdirs list
                             if(!dep_config.subdirs) dep_config.subdirs = [];
-                            if(!dep_config.subdirs.includes(dataset.subdir)) dep_config.subdirs.push(dataset.subdir);
+                            if(!dep_config.subdirs.includes(dataset.subdir)) {
+                                dep_config.subdirs.push(dataset.subdir);
+                            }
                         }
+
                         var path = base+"/"+(file.filename||file.dirname);
                         if(dataset.files && dataset.files[node.file_id]) {
                             path = base+"/"+dataset.files[node.file_id];
@@ -455,6 +468,9 @@ export default {
                     });
                 }
             }
+
+            //console.log(config);
+            //throw "debug";
         },
 
         //select all datasets that meets datatype requirement of 'input', that comes from task with name:task_name
@@ -486,7 +502,7 @@ export default {
             if(!this.open) return; 
             this.open = false;
 
-            //now construct the task objeect
+            //now construct the task object
             this.deps_config = [];
             this.process_input_config(this.config);
             var meta = {};

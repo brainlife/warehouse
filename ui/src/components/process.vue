@@ -47,12 +47,12 @@
                             <b v-if="input.meta && input.meta.subject">{{input.meta.subject}}</b>
                             <small v-if="input.meta && input.meta.session" style="opacity: 0.8"> / {{input.meta.session}}</small>
 
-                            <div style="display: inline-block;" v-if="find_task(input.task_id)" class="clickable" @click="scrollto(input.task_id)">
+                            <div style="display: inline-block;" v-if="find_task(input.task_id)" class="clickable" @click="scrollto(find_real_task(input.task_id)._id)">
                                 <datatypetag :datatype="datatypes[input.datatype]" :tags="input.datatype_tags" :clickable="false"/>
                                 <span style="opacity: 0.5;">
                                     <small v-for="(tag,idx) in input.tags" :key="idx"> | {{tag}} </small>
                                     <icon style="margin: 0 5px" name="arrow-left" scale="0.8"/> 
-                                    <b>t.{{find_task(input.task_id).config._tid}}</b>
+                                    <b>{{find_real_task(input.task_id).config._tid}}</b>
                                     <statusicon v-if="find_task(input.task_id).status != 'finished'" :status="find_task(input.task_id).status"/>
                                     {{find_task(input.task_id).name}}
                                 </span>
@@ -97,6 +97,11 @@
                                     </div>
 
                                     <!--archive button-->
+                                    <!-- 
+                                        validator task could get removed, then we can't archive it anymore ..
+                                        technically, the data is still validated even if it's removed, but archive will fail
+                                        if we let user archive it.
+                                    -->
                                     <div v-if="output.dtv_task && output.dtv_task.status == 'finished'" style="display: inline-block;">
                                         <div class="button" title="Archive this output" 
                                             @click="open_archiver(output.dtv_task, output.dtv_task.config._outputs[0])">
@@ -496,6 +501,12 @@ export default {
                 if(task._id == id) found = task;
             });
             return found;
+        },
+
+        find_real_task(id) {
+            let task = this.find_task(id);
+            if(task.follow_task_id) return this.find_real_task(task.follow_task_id);
+            return task;
         },
 
         compose_desc(iolist, id) {

@@ -86,8 +86,21 @@
                             <span class="form-header">Owner</span>
                         </b-col>
                         <b-col>
+                            <small>User who registered this resource and can administer this resource</small>
                             <p>
                                 <contact :id="resource.user_id"/>
+                            </p>
+                        </b-col>
+                    </b-row>
+
+                    <b-row v-if="resource.admins.length > 0">
+                        <b-col cols="2">
+                            <span class="form-header">Admins</span>
+                        </b-col>
+                        <b-col>
+                            <small>Users who can edit this resource</small>
+                            <p v-for="c in resource.admins" :key="c._id">
+                                <contact :id="c"/>
                             </p>
                         </b-col>
                     </b-row>
@@ -114,17 +127,19 @@
                             </p>
                         </b-col>
                     </b-row>
+
                     <b-row v-if="resource.gids && resource.gids.length > 0">
                         <b-col cols="2">
                             <span class="form-header">Groups</span>
                         </b-col>
                         <b-col>
-                            <div class="">
-                                <tags :tags="resource.gids"/><br>
-                            </div>
+                            <!--
+                            <tags :tags="resource.gids"/><br>
+                            --->
                             <p>
-                                <small>Group ID that this resource is shared with</small>
+                                <small>Members of the following groups can run jobs on this resource</small>
                             </p>
+                            <group v-for="gid in resource.gids" :key="gid" :id="gid"/>
                         </b-col>
                     </b-row>
 
@@ -304,9 +319,10 @@ import Router from 'vue-router'
 import {Plotly} from 'vue-plotly'
 
 import pageheader from '@/components/pageheader'
+import group from '@/components/group'
 import contact from '@/components/contact'
 import app from '@/components/app'
-import tags from '@/components/tags'
+//import tags from '@/components/tags'
 import statustag from '@/components/statustag'
 import statusicon from '@/components/statusicon'
 import stateprogress from '@/components/stateprogress'
@@ -316,7 +332,7 @@ export default {
         pageheader, 
         app, 
         contact, 
-        tags, 
+        group, 
         statustag, 
         statusicon, 
         stateprogress, 
@@ -328,7 +344,6 @@ export default {
     data () {
         return {
             resource: null, 
-            //groups: null,
 
             tasks: [],  //recent jobs 
             runningTasks: 0,

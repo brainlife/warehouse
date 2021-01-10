@@ -63,7 +63,6 @@ export default {
 
             //uiconfig is the new kid in the block
             let uiconfig = {
-                //docker: view.docker,
                 task_id: this.opt.task._id,
                 type: view.ui,
                 datatype: this.opt.datatype.name,
@@ -72,7 +71,7 @@ export default {
             }
             path += "#"+btoa(JSON.stringify(uiconfig));
             //console.log("opening", path, this.opt);
-            window.open(path, this.opt.task._id+"."+this.opt.subdir, "width=1200,height=801,menubar=no"); //chrome opens window with 799 pixels if I specify 800.. why!?
+            window.open(path, this.opt.task._id+"."+this.opt.subdir+"."+view.ui, "width=1200,height=801,menubar=no"); //chrome opens window with 799 pixels if I specify 800.. why!?
         }
     }
 }

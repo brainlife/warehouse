@@ -38,6 +38,7 @@
 <script>
 import Vue from 'vue'
 
+//import group from '@/components/group'
 import resource_cache from '@/mixins/resource_cache'
 
 export default {

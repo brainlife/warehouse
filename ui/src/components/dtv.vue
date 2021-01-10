@@ -51,7 +51,7 @@ export default {
     watch: {
         task() {
             if(this.task.finish_date && !this.secondary) {
-                console.log("watch detected dtv finish");
+                //console.log("watch detected dtv finish");
                 this.waitSecondaryArchive(this.task, (err, secondary)=>{
                     if(err) console.error(err);
                     else this.secondary = secondary;

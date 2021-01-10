@@ -31,6 +31,31 @@
                 </b-col>
             </b-row>
 
+            <b-row v-if="resource.user_id">
+                <b-col cols="3">
+                    <span class="form-header">Owner</span>
+                </b-col> 
+                <b-col cols="9">
+                    <p>
+                        <contact :id="resource.user_id"/>
+                        <br>
+                        <small class="text-muted">Users who registered this resource and administer this resource.</small>
+                    </p>
+                </b-col>
+            </b-row>
+
+            <b-row>
+                <b-col cols="3">
+                    <span class="form-header">Administrators</span>
+                </b-col> 
+                <b-col>
+                    <contactlist v-model="resource.admins"></contactlist>
+                    <p>
+                        <small class="text-muted">Users who can administer this resource.</small>
+                    </p>
+                </b-col>
+            </b-row>
+
             <b-row>
                 <b-col cols="3">
                     <span class="form-header">Avatar *</span>
@@ -195,6 +220,7 @@ import Vue from 'vue'
 
 import pageheader from '@/components/pageheader'
 import contactlist from '@/components/contactlist'
+import contact from '@/components/contact'
 import tageditor from '@/components/tageditor'
 
 const forge = require('node-forge');
@@ -202,6 +228,7 @@ const forge = require('node-forge');
 export default {
     components: { 
         contactlist, 
+        contact, 
         pageheader,
         tageditor,
     },

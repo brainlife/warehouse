@@ -111,7 +111,7 @@ export default {
         updateData() {
             if(!this.product) return;
 
-            console.log("updateData - component/product");
+            //console.log("updateData - component/product");
 
             //list "other" graphs
             let others = Object.assign({}, this.product);
