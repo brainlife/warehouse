@@ -32,10 +32,13 @@ export default {
                 if(this.states[state]) sorted.push({state: state, count: this.states[state]});
             });
 
+            //don't show any other states.. probably we don't care
             //add states not listed in order at the end
+            /*
             for(let state in this.states) {
                 if(!order.includes(state)) sorted.push({state: state, count: this.states[state]});
             }
+            */
 
             return sorted;
         },

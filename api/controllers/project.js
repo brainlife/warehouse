@@ -71,7 +71,10 @@ router.get('/', jwt({secret: config.express.pubkey, credentialsRequired: false})
         if(err) return next(err);
         db.Projects.countDocuments(find).exec((err, count)=>{
             if(err) return next(err);
-            res.json({projects: recs, count: count});
+            res.json({
+                projects: recs, 
+                count
+            });
         });
     });
 });

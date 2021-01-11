@@ -153,7 +153,15 @@ Vue.use(VueDisqus)
 Vue.use(VueAxios, axios)
 Vue.use(Notifications);
 Vue.use(VueLazyload)
-Vue.use(BootstrapVue);
+Vue.use(BootstrapVue, {
+    /*doesn't seem to work 
+    //https://github.com/bootstrap-vue/bootstrap-vue/issues/3169#issuecomment-758212291
+    bvToast: {
+        title: "Alert",
+        autoHideDelay: 1000, 
+    }
+    */
+});
 Vue.use(SocialSharing);
 Vue.use(VueTimeago, {
     name: 'timeago',

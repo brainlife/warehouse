@@ -999,6 +999,15 @@ exports.update_project_stats = async function(project, cb) {
             "stats.instances": instance_counts,
         }}, {new: true});
 
+        //only publish some stats
+        exports.publish("project.update.warehouse."+project._id, {stats: {
+            rules: rules,
+            instances: instance_counts,
+            //apps: app_stats, 
+            //publications: publications,
+            //resources: resource_stats,
+        }})
+
         if(cb) cb(null, newproject);
 
     } catch (err) {

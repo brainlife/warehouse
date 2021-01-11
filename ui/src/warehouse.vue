@@ -2,7 +2,7 @@
 <div id="warehouse" :class="{'sidewide': $root.sidemenuWide}">
     <sidemenu/>
     <router-view/>
-    <notifications position="top right"/>
+    <notifications position="bottom left"/>
     <modals/>
     <loading/>
 </div>

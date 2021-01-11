@@ -269,7 +269,7 @@ export default {
             if(confirm("Do you really want to remove this project?")) {
                 this.$http.delete('project/'+this.project._id)
                 .then(res=>{
-                    this.$notify({text: 'successfully removed the project' });
+                    this.$notify('successfully removed the project');
                     this.$router.push('/projects');        
                 });
             }

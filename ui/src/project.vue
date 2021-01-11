@@ -41,8 +41,8 @@
                             </div>
                         </span>
                         
-                        <span v-if="tabinfo.id == 'pipeline' && selected.stats && selected.stats.rules && selected.stats.rules.active" title="Number of pipeline rules" style="opacity: 0.6; font-size: 80%;">
-                            &nbsp;{{selected.stats.rules.active}}
+                        <span v-if="tabinfo.id == 'pipeline' && selected.stats && selected.stats.rules && (selected.stats.rules.active||selected.stats.rules.inactive)" title="Number of pipeline rules" style="opacity: 0.6; font-size: 80%;">
+                            &nbsp;{{selected.stats.rules.active}} <small>/ {{selected.stats.rules.inactive}}</small>
                         </span>
 
                         <span v-if="tabinfo.id == 'pub' && selected.stats && selected.stats.publications > 0" style="opacity: 0.6; font-size: 80%;">
@@ -428,6 +428,12 @@ export default {
                 if(!this.projects[project_id]) project_id = ids[0];
             }
             this.open_project(this.projects[project_id]);
+
+            /*
+            this.$bvToast.toast('toast to you', {
+                //autoHideDelay: 5000,
+            });
+            */
     
         }).catch(err=>{
             console.error(err);
@@ -567,11 +573,6 @@ export default {
                 }));
                 this.ws.onmessage = (json)=>{
                     var event = JSON.parse(json.data);
-                    /*
-                    for(var key in event.msg) {
-                        this.selected[key] = event.msg[key];
-                    }
-                    */
                     Object.assign(this.selected, event.msg);
                 };
             };
