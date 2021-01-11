@@ -93,7 +93,7 @@
                         </b-col>
                     </b-row>
 
-                    <b-row v-if="resource.admins.length > 0">
+                    <b-row v-if="resource.admins && resource.admins.length > 0">
                         <b-col cols="2">
                             <span class="form-header">Admins</span>
                         </b-col>
