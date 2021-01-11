@@ -408,6 +408,11 @@ function handle_task(task, cb) {
                 return;
             }
 
+            if(!task.config) {
+                console.error("task.config not set for task _id", task._id);
+                return;
+            }
+
             //see what needs to be archived to secondary
             let requests = [];
             let subdirs = [];

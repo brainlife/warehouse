@@ -412,37 +412,10 @@ function handle_rule(rule, cb) {
         rlogger.debug("");//empty
         rlogger.debug(group_id+" --------------------------------");
 
-        /*
-        if(!rule.app.inputs) {
-            console.error("empty inputs specified");
-            console.dir(rule.app);
-            return cb();
-        }
-        if(!rule.app.outputs) {
-            console.error("empty outputs specified");
-            return cb();
-        }
-        */
- 
-        /* disabling this now because we are only running rule when datasets or rule is updated
-        if(running >= config.rule.max_task_per_rule) {
-            rlogger.info("reached max running task.. skipping the rest of subjects", subject, running);
-            return next_group();
-        }
-        */
-
-        /* I should apply this filter upstream..
-        if(rule.subject_match && !subject.match(rule.subject_match)) {
-            rlogger.debug("doesn't match subject filter:"+rule.subject_match);
-            return next_group();
-        }
-        */
-
         if(rule_tasks[group_id]) {
             rlogger.debug("task already submitted for group:"+group_id+" "+rule_tasks[group_id]._id+" "+rule_tasks[group_id].status);
             return next_group();
         }
-
         
         //find all outputs from the app with tags specified in rule.output_tags[output_id]
         var output_missing = false;
