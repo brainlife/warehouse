@@ -505,7 +505,13 @@ export default {
 
         find_real_task(id) {
             let task = this.find_task(id);
-            if(task.follow_task_id) return this.find_real_task(task.follow_task_id);
+            if(task.follow_task_id) {
+                let parent_task = this.find_real_task(task.follow_task_id);
+                if(parent_task) return parent_task;
+                else {
+                    console.error("couldn't find parent task of", task.follow_task_id)
+                }
+            }
             return task;
         },
 

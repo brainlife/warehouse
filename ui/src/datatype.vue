@@ -33,7 +33,6 @@
             <div v-if="tab == 0">
                 <div style="background-color: white; padding-top: 15px; border-bottom: 1px solid #ddd;">
                     <b-container>
-                        <b-alert show variant="secondary" v-if="datatype.groupAnalysis">The data be used for group analysis</b-alert>
                         <p style="line-height: 250%;">
                             <b-badge pill v-if="datatype.create_date" class="bigpill" title="Registration Date">
                                 <icon name="calendar" style="opacity: 0.4;"/>&nbsp;&nbsp;&nbsp;<small>Registerd</small>&nbsp;&nbsp;{{new Date(datatype.create_date).toLocaleDateString()}}
@@ -44,6 +43,7 @@
                 </div><!--sub header-->
                 <b-container>
                     <br>
+                    <b-alert show variant="secondary" v-if="datatype.groupAnalysis">The data can be used for group analysis</b-alert>
                     <span class="form-header">Files/Dirs</span>
                     <p><small style="opacity: 0.7">The following files/dirs are expected to be part of this datatype</small></p>
                     <div v-for="file in datatype.files" :key="file.id" style="background-color: white; padding: 8px; margin-bottom: 1px;">
