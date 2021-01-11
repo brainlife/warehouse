@@ -573,7 +573,9 @@ export default {
                 }));
                 this.ws.onmessage = (json)=>{
                     var event = JSON.parse(json.data);
-                    Object.assign(this.selected, event.msg);
+                    for(let k in event.msg) {
+                        Object.assign(this.selected[k], event.msg[k]);
+                    }
                 };
             };
             this.update_resource_usage_graph();
