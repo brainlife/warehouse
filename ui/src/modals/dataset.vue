@@ -579,7 +579,7 @@ export default {
                     limit: 1,
                 }})
                 .then(res=>{
-                    console.dir(res.data.tasks)
+                    //console.dir(res.data.tasks)
                     if(res.data.tasks.length == 1) {
                         this.dtv = res.data.tasks[0];
                         this.waitSecondaryArchive(this.dtv, (err, secondary)=>{
@@ -701,7 +701,10 @@ export default {
         load_archive_task() {
             if(!this.dataset || !this.dataset.archive_task_id) return; //no task_id
             this.$http.get(Vue.config.amaretti_api+'/task/'+this.dataset.archive_task_id).then(res=>{
-                Vue.set(this.dataset, 'archive_task', res.data)
+
+                if(this.dataset.archive_task) Object.assign(this.dataset.archive_task, res.data);
+                else Vue.set(this.dataset, 'archive_task', res.data)
+
                 if(res.data.status != "finished" && res.data.status != "failed") {
                     console.log("polling archive task update", res.data.status)
                     setTimeout(this.load_archive_task, 5000)

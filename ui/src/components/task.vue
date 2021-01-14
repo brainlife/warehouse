@@ -64,7 +64,7 @@
                         </tr>
                         <tr v-if="resource">
                             <th>Resource</th>
-                            <td>{{this.resource.name}}</td>
+                            <td>{{resource.name}}</td>
                         </tr>
                         <tr v-if="task.next_date" style="opacity: 0.6;">
                             <th>Next&nbsp;Chk</th>
@@ -176,6 +176,7 @@ export default {
         task: {
             deep: true,
             handler: function() {
+                //console.log("task updated");
                 this.load_resource_info(this.task.resource_id);
             }
         },
@@ -225,11 +226,14 @@ export default {
         load_resource_info(id) {
             if(!id) return; //no resource assigned yet?
 
+            console.log("reloading resource info");
+
             this.resource = resource_cache[id];
             if(!this.resource) {
                 this.$http.get(Vue.config.wf_api+'/resource/', {params: {
                     find: JSON.stringify({_id: id})
                 }}).then(res=>{
+                    console.log("updating this.resource");
                     this.resource = res.data.resources[0];
                     resource_cache[id] = this.resource;
                 });

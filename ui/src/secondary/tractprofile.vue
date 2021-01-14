@@ -96,7 +96,7 @@ export default {
 
     mounted() {
         console.log("mounted tractprofile secondary ui");
-        console.dir(this.product.meta);
+        //console.dir(this.product.meta);
         if(this.hasTensor()) {
             Vue.set(this.columns, 'fa', {show: false});
             Vue.set(this.columns, 'ad', {show: false});
@@ -132,7 +132,7 @@ export default {
             this.columns.mk.show = true;
             this.columns.ak.show = true;
         } else {
-            console.dir(this.product.meta);
+            //console.dir(this.product.meta);
             console.error("odd.. either tensor or noddi should be set");
         }
 

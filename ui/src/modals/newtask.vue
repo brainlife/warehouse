@@ -221,8 +221,8 @@ export default {
 
     created() {
         this.$root.$on("newtask.open", info=>{
-            console.log("recieved from client");
-            console.dir(info);
+            //console.log("recieved from client");
+            //console.dir(info);
 
             //receive info from client
             this.datasets = info.datasets;

@@ -119,8 +119,8 @@ export default {
 
                 this.ws.onmessage = (json)=>{
                     let event = JSON.parse(json.data);
-                    console.log("task updated", event);
-                    this.task = event.msg;
+                    console.log("task updated!", event);
+                    Object.assign(this.task, event.msg);
                 }
 
             }

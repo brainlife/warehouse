@@ -573,7 +573,6 @@ export default {
                 }));
                 this.ws.onmessage = (json)=>{
                     var event = JSON.parse(json.data);
-                    console.dir(event);
                     for(let k in event.msg) {
                         if(this.selected[k] === undefined) this.selected[k] = event.msg[k];
                         else Object.assign(this.selected[k], event.msg[k]);

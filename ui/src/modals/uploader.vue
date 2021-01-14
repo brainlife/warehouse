@@ -281,7 +281,7 @@ export default {
 
             //fmap only show files that pertains to subtype
             if(this.datatype._id == '5c390505f9109beac42b00df') {
-                console.dir(this.subtype);
+                //console.dir(this.subtype);
                 let subtypeFiles = this.dtSpecs[this.datatype._id][this.subtype].files;
                 return [...this.datatype.files.filter(f=>subtypeFiles.includes(f.id)), sidecar];
             } 
