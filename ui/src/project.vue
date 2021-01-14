@@ -42,7 +42,7 @@
                         </span>
                         
                         <span v-if="tabinfo.id == 'pipeline' && selected.stats && selected.stats.rules && (selected.stats.rules.active||selected.stats.rules.inactive)" title="Number of pipeline rules" style="opacity: 0.6; font-size: 80%;">
-                            &nbsp;{{selected.stats.rules.active}} <small>/ {{selected.stats.rules.inactive}}</small>
+                            &nbsp;{{selected.stats.rules.active}} <small>/ {{selected.stats.rules.active + selected.stats.rules.inactive}}</small>
                         </span>
 
                         <span v-if="tabinfo.id == 'pub' && selected.stats && selected.stats.publications > 0" style="opacity: 0.6; font-size: 80%;">
@@ -573,8 +573,10 @@ export default {
                 }));
                 this.ws.onmessage = (json)=>{
                     var event = JSON.parse(json.data);
+                    console.dir(event);
                     for(let k in event.msg) {
-                        Object.assign(this.selected[k], event.msg[k]);
+                        if(this.selected[k] === undefined) this.selected[k] = event.msg[k];
+                        else Object.assign(this.selected[k], event.msg[k]);
                     }
                 };
             };

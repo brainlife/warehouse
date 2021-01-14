@@ -25,7 +25,16 @@ export default {
             return Object.values(this.states).reduce((sum,v)=>sum+v, 0);
         },
         states_sorted() {
-            let order = ["requested", "running", "running_sync", "failed", "finished", "stopped", "remove_requested", "removed"];
+            let order = [
+                "requested", 
+                "running", 
+                "running_sync", 
+                "failed", 
+                "finished", 
+                "stopped", 
+                //"remove_requested", 
+                //"removed"
+            ];
             let sorted = [];
             if(!this.states) return sorted;
             order.forEach(state=>{

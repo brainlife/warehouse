@@ -14,21 +14,6 @@ const db = require('../models');
 const common = require('../common');
 const mongoose = require('mongoose');
 
-/*
-//check if user can publish this project
-function can_publish(req, project_id, cb) {
-    //TODO - why does this exist?
-    if(typeof project_id === 'string') project_id = mongoose.Types.ObjectId(project_id);
-    
-    //check user has access to the project
-    common.getprojects(req.user, function(err, canread_project_ids, canwrite_project_ids) {
-        if(err) return cb(err);
-        let found = canwrite_project_ids.find(id=>id.equals(project_id));
-        cb(null, found);
-    });
-}
-*/
-
 /**
  * @apiGroup Pipeline Rules
  * @api {get} /rule             Query pipeline rules
@@ -151,6 +136,9 @@ router.post('/', jwt({secret: config.express.pubkey}), (req, res, next)=>{
             if(err) return next(err);
             common.publish("rule.create."+req.user.sub+"."+req.body.project+"."+rule._id, {})
             res.json(rule); 
+            
+            //TODO - need to query for project .. and update stats
+            //common.updatate_project_stats(project, err=>{});
         });
     });
 });
@@ -203,6 +191,9 @@ router.put('/:id', jwt({secret: config.express.pubkey}), (req, res, next)=>{
                 if(err) return next(err);
                 common.publish("rule.update."+req.user.sub+"."+rule.project+"."+rule._id, _rule)
                 res.json(_rule); 
+                
+                //TODO - need to query for project .. and update stats
+                //common.updatate_project_stats(project, err=>{});
             });
         });
     });
@@ -257,6 +248,9 @@ router.put('/deactivate/:id', jwt({secret: config.express.pubkey}), function(req
                         }, err=>{
                             if(err) return next(err);
                             res.json({status: "ok"});
+
+                            //TODO - need to query for project .. and update stats
+                            //common.updatate_project_stats(project, err=>{});
                         });
                     });
                 });
@@ -292,6 +286,9 @@ router.delete('/:id', jwt({secret: config.express.pubkey}), function(req, res, n
                 if(err) return next(err);
                 common.publish("rule.update."+req.user.sub+"."+rule.project+"."+rule._id, rule)
                 res.json({status: "ok"});
+                
+                //TODO - need to query for project .. and update stats
+                //common.updatate_project_stats(project, err=>{});
             }); 
         });
     });

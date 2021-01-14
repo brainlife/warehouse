@@ -720,6 +720,7 @@ export default {
                     console.error("couldn't load dataset:", id);
                     return;
                 }
+
                 //TODO - why not just set all fields?
                 this.dataset.size = dataset.size;
                 this.dataset.status = dataset.status;
@@ -734,7 +735,6 @@ export default {
                 } else {
                     this.$notify({type: "success", text: "Data-Object successfully stored on "+dataset.storage});
                 }
-                this.load_archive_task(); 
             });
         },
 
