@@ -16,7 +16,7 @@
 
         <div>
             <span>
-                <small style="opacity: 0.7; text-transform: uppercase;">running</small>
+                <small style="opacity: 0.7;">RUNNING</small>
                 <b style="font-size: 125%;">{{running}}</b>
             </span>
             <span style="opacity: 0.7">
@@ -59,6 +59,7 @@ export default {
                 this.resource_obj = resource;
             });
         }
+        console.dir(this.resource);
     },
     computed: {
         running() {
@@ -66,11 +67,11 @@ export default {
             if(this.resource_obj.detail && this.resource_obj.detail.running) return this.resource_obj.detail.running;
 
             //for full resource detail
-            if(!this.resource_obj.stats || !this.resource_obj.stats.recent_job_counts) return 0;
-            let raw_points = this.resource_obj.stats.recent_job_counts; 
-            if(raw_points.length == 0) return 0;
-            let last = raw_points[raw_points.length-1]; 
-            return last[1];
+            if(this.resource_obj.stats && this.resource_obj.stats.recent_job_counts) {
+                let recs = this.resource_obj.stats.recent_job_counts; 
+                if(recs.length > 0) return recs[recs.length-1][1];
+            } 
+            return 0;
         },
 
         usage_path() {

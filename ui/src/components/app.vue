@@ -2,10 +2,11 @@
 <div v-if="app_" class="appcard" :class="{'compact': compact, 'clickable': clickable, 'deprecated': app_.deprecated_by}" @click="click">
     <div v-if="compact">
         <appavatar :app="app_" style="position: absolute; right: 0;" :width="80" :height="80"/>
+        <span v-if="app_.deprecated_by" class="deprecated-label" style="top: inherit; bottom: 0;">Deprecated</span>
         <div style="max-height: 75px; margin-left: 10px; margin-right: 90px; overflow: hidden;">
             <h4 class="name">
                 <icon v-if="app_.projects && app_.projects.length > 0" scale="0.9" name="lock" title="not working.." class="text-secondary"/>
-                <icon v-if="app_.deprecated_by" scale="0.9" name="regular/calendar-times" title="deprecated" class="text-secondary"/>
+                <!--<icon v-if="app_.deprecated_by" scale="0.9" name="regular/calendar-times" title="deprecated" class="text-secondary"/>-->
                 {{app_.name}} <span class="github" style="font-weight: normal;">{{app_.github}}</span> 
                 <b-badge>{{branch||app_.github_branch}}</b-badge>
             </h4>
@@ -14,15 +15,18 @@
         <slot/>
     </div>
     <div v-else style="overflow: hidden; position: relative;" :style="{ height }">
+        <span v-if="app_.deprecated_by" class="deprecated-label">Deprecated</span>
         <appavatar :app="app_" style="float: right; margin-left: 10px;" :width="80" :height="80"/>
         <div class="header">
             <h4 class="name">
                 <span v-if="app_.projects && app_.projects.length > 0" title="Private App" class="text-secondary">
                     <icon name="lock"/>
                 </span>
+                <!--
                 <span v-if="app_.deprecated_by" :id="'dep_'+app_.deprecated_by" title="Deprecated">
                     <icon name="regular/calendar-times"/>
                 </span>
+                -->
                 {{app_.name}}
             </h4>
             <h5 class="github">{{app_.github}} <b-badge>{{branch||app_.github_branch}}</b-badge></h5>
@@ -238,5 +242,17 @@ line-height: 100%;
 }
 .deprecated h4 {
 opacity: 0.7;
+}
+.deprecated-label {
+position: absolute; 
+right: 0; 
+top: 0;
+background-color: #666;
+color: white; 
+padding: 2px 4px;
+opacity: 0.9;
+text-transform: uppercase;
+font-size: 80%;
+font-weight: bold;
 }
 </style>
