@@ -32,7 +32,7 @@
                         <b-tab>
                             <template v-slot:title>
                                 Recent Jobs
-                                <span style="opacity: 0.6; font-size: 80%" v-if="tasks.length > 0">{{tasks.length}}</span>
+                                <span style="opacity: 0.6; font-size: 80%" v-if="tasksRunning.length > 0">{{tasksRunning.length}}</span>
                             </template>
                         </b-tab>
                         <b-tab v-if="projects">
@@ -52,7 +52,7 @@
                                 <icon name="calendar" style="opacity: 0.4;"/> <small>Registered</small>&nbsp;&nbsp;{{new Date(resource.create_date).toLocaleDateString()}}
                             </b-badge>
                             <b-badge pill class="bigpill" title="Number of tasks currently running on this resource">
-                                <icon name="play" style="opacity: 0.4;"/>&nbsp;&nbsp;&nbsp;{{runningTasks}}&nbsp;&nbsp;<small>Running / {{resource.config.maxtask}} max</small>
+                                <icon name="play" style="opacity: 0.4;"/>&nbsp;&nbsp;&nbsp;{{tasksRunning.length}}&nbsp;&nbsp;<small>Running / {{resource.config.maxtask}} max</small>
                             </b-badge>
                         </p>
                         <p>{{resource.config.desc||'no description'}}</p>
@@ -182,11 +182,13 @@
                         <icon name="calendar"/> Last OK date {{new Date(resource.lastok_date).toLocaleDateString()}}
                     </p>
 
+                    <!--
                     <div v-if="config.debug">
                         <pre>{{resource}}</pre>
-                        <pre>{{tasks}}</pre>
+                        <pre>{{tasksRunning}}</pre>
                         <pre>{{usage_data}}</pre>
                     </div>
+                    -->
                 </b-container>
             </div>
             <div v-if="tab == 1">
@@ -227,6 +229,28 @@
                 <!--recent jobs-->
                 <b-container>
                     <br>
+                    <!--
+                    <b-table sticky-header :items="tasksRecent" :fields="[
+                        '_project', 
+                        'status',  
+                        'service',
+                        'status_msg',
+                        {key: 'user_id', label: 'Status'},
+                        'date',
+                    ]">
+                        <template #cell(_project)="data"> 
+                            <span v-if="data._project">{{data._project.name}}</span>
+                            <span v-else style="opacity: 0.7;">(Private) 
+                                <small><icon name="id-badge"/> {{data._group_id}}</small>
+                            </span>
+                        </template>
+                        <template #cell(date)="data"> 
+                            date
+                            {{data}}
+                        </template>
+                    </b-table>
+                    -->
+
                     <table class="table table-sm">
                         <thead>
                             <tr style="background-color: #eee;">
@@ -237,7 +261,8 @@
                                 <th></th>
                             </tr>
                         </thead>
-                        <tr v-for="task in tasks" :key="task._id">
+                        <tr><th colspan="5" style="background-color: #eee; padding-left: 5px;">Running Jobs</th></tr>
+                        <tr v-for="task in tasksRunning" :key="task._id">
                             <td>
                                 <span v-if="task._project">{{task._project.name}}</span>
                                 <span v-else style="opacity: 0.7;">(Private) 
@@ -271,6 +296,44 @@
                                 <small v-else-if="task.status == 'failed'"><time>Failed <timeago :datetime="task.fail_date" :auto-update="1"/></time></small>
                             </td>
                         </tr>
+                        <tr v-if="tasksRunning.length == 0"><td colspan="5" style="padding-left: 5px; opacity: 0.5;">(No Jobs)</td></tr>
+
+                        <tr><th colspan="5" style="background-color: #eee; padding-left: 5px;">Recent Jobs</th></tr>
+                        <tr v-for="task in tasksRecent" :key="task._id">
+                            <td>
+                                <span v-if="task._project">{{task._project.name}}</span>
+                                <span v-else style="opacity: 0.7;">(Private) 
+                                    <small><icon name="id-badge"/> {{task._group_id}}</small>
+                                </span>
+                            </td>
+                            <td>
+                                <span class="status-color" :class="task.status" style="padding: 3px;" :title="task.status">
+                                    <statusicon :status="task.status" /> 
+                                    <!--<span style="text-transform: uppercase;" >{{task.status}}</span>-->
+                                </span>
+                                {{task.service}} <b-badge>{{task.service_branch}}</b-badge><br>
+                                <small style="word-break: break-word;">{{task.status_msg}}</small>
+                                <small style="font-size: 70%">{{task._id}}</small>
+                            </td>
+                            <td>
+                                <contact :id="task.user_id" size="small"/>
+                            </td>
+                            <td>
+                                <small>
+                                    <time>Requested <timeago :datetime="task.request_date" :auto-update="1"/></time>
+                                </small>
+                            </td>
+                            <td>
+                                <small v-if="task.status == 'requested'">
+                                    <time v-if="task.start_date">Started <timeago :datetime="task.start_date" :auto-update="1"/></time>
+                                </small>
+                                <small v-else-if="task.status == 'running'"><time>Started <timeago :datetime="task.start_date" :auto-update="1"/></time></small>
+                                <small v-else-if="task.status == 'running_sync'"><time>Started <timeago :datetime="task.start_date" :auto-update="1"/></time></small>
+                                <small v-else-if="task.status == 'finished'"><time>Finished <timeago :datetime="task.finish_date" :auto-update="1"/></time></small>
+                                <small v-else-if="task.status == 'failed'"><time>Failed <timeago :datetime="task.fail_date" :auto-update="1"/></time></small>
+                            </td>
+                        </tr>
+                        <tr v-if="tasksRecent.length == 0"><td colspan="5" style="padding-left: 5px; opacity: 0.5;">(No Jobs)</td></tr>
                     </table>
                     <p style="padding-left: 20px; opacity: 0.7; font-size: 80%;">Only showing up to 100 most recent jobs</p>
 
@@ -345,8 +408,8 @@ export default {
         return {
             resource: null, 
 
-            tasks: [],  //recent jobs 
-            runningTasks: 0,
+            tasksRecent: [],  //recent jobs 
+            tasksRunning: [],  //recent jobs 
 
             //report: null,
             projects: null, //list of all projects and some basic info (only admin can load this)
@@ -416,15 +479,18 @@ export default {
                     }).catch(console.error);
                 }
 
+                /*
                 if(this.resource.stats && this.resource.stats.recent_job_counts) {
                     let recs = this.resource.stats.recent_job_counts;
                     this.runningTasks = recs[recs.length-1][1];
                 }
+                */
 
             }).catch(console.error);
 
             this.$http.get(Vue.config.amaretti_api+'/resource/tasks/'+this.$route.params.id).then(res=>{
-                this.tasks = res.data.recent;
+                this.tasksRunning = res.data.running;
+                this.tasksRecent = res.data.recent;
 
                 //resolve project names
                 let gids = this.tasks.map(task=>task._group_id);

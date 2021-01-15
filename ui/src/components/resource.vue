@@ -59,7 +59,6 @@ export default {
                 this.resource_obj = resource;
             });
         }
-        console.dir(this.resource);
     },
     computed: {
         running() {
