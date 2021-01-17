@@ -62,10 +62,12 @@
                                 </small>
                             </td>
                         </tr>
+                        <!--
                         <tr v-if="resource">
                             <th>Resource</th>
                             <td>{{resource.name}}</td>
                         </tr>
+                        -->
                         <tr v-if="task.next_date" style="opacity: 0.6;">
                             <th>Next&nbsp;Chk</th>
                             <td>{{new Date(this.task.next_date).toLocaleString()}}</td>
@@ -166,25 +168,30 @@ export default {
             },
             show_masked_config: false,
 
-            resource: null,
+            //resource: null, //loaded when task info popup is loaded
 
             config: Vue.config,
         }
     },
 
+    /*
     watch: {
         task: {
             deep: true,
             handler: function() {
-                //console.log("task updated");
+                console.log("task updated - reloading resource_info", this.task._id);
                 this.load_resource_info(this.task.resource_id);
             }
         },
     },
+    /*
 
+    /*
     mounted() {
+        console.log("mounted");
         if(this.task) this.load_resource_info(this.task.resource_id);
     },
+    */
 
     computed: {
         has_input_slot() {
@@ -223,6 +230,7 @@ export default {
     },
 
     methods: {
+        /*
         load_resource_info(id) {
             if(!id) return; //no resource assigned yet?
 
@@ -239,6 +247,7 @@ export default {
                 });
             }
         },
+        */
 
         toggle(section) {
             if(this.activeSections[section] === undefined) {
@@ -288,7 +297,12 @@ export default {
         },
 
         openinfo() {
-            this.$root.$emit("taskinfo.open", {task: this.task, resource: this.resource});
+            this.$http.get(Vue.config.wf_api+'/resource/', {params: {
+                find: JSON.stringify({_id: this.task.resource_id})
+            }}).then(res=>{
+                let resource = res.data.resources[0];
+                this.$root.$emit("taskinfo.open", {task: this.task, resource});
+            });
         },
 
         estimated_remain(task) {

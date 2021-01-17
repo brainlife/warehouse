@@ -367,21 +367,24 @@ export default {
     },
 
     watch: {
+        /*
         '$route': function() {
             var project_id = this.$route.params.id;
-            if(this.selected != project_id && project_id) {
+            if(project_id && this.selected && this.selected._id != project_id) {
+                console.log("project chagned from", this.selected._id, "to", project_id)
                 this.open_project(this.projects[project_id]);
             } else {
                 this.handleRouteParams();
             }
         },
+        */
 
         tab: function() {
             //TODO - maybe make pubform a modal so that I don't have to do this.
             this.publishing = false;
             this.pub_editing = null;
             if(this.$route.params.tab != this.tabs[this.tab].id) {
-                console.log("switching to different tab............");
+                //console.log("switching to different tab............");
                 this.$router.replace("/project/"+this.selected._id+"/"+this.tabs[this.tab].id);
             }
         },
@@ -560,7 +563,9 @@ export default {
                 });
             }
 
-            if(this.ws) this.ws.close();
+            if(this.ws) {
+                this.ws.close();
+            }
             var url = Vue.config.event_ws+"/subscribe?jwt="+Vue.config.jwt;
             this.ws = new ReconnectingWebSocket(url, null, {reconnectInterval: 3000});
             this.ws.onopen = (e)=>{

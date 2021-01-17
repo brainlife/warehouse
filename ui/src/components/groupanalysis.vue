@@ -146,10 +146,7 @@ export default {
     },
 
     destroyed() {
-        if(this.ws) {
-            console.log("disconnecting from ws - process");
-            this.ws.close();
-        }
+        if(this.ws) this.ws.close();
     },
 
     mounted() {

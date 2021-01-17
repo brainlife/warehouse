@@ -31,7 +31,7 @@
                         </b-tab>
                         <b-tab>
                             <template v-slot:title>
-                                Recent Jobs
+                                Jobs
                                 <span style="opacity: 0.6; font-size: 80%" v-if="tasksRunning.length > 0">{{tasksRunning.length}}</span>
                             </template>
                         </b-tab>
@@ -261,7 +261,7 @@
                                 <th></th>
                             </tr>
                         </thead>
-                        <tr><th colspan="5" style="background-color: #eee; padding-left: 5px;">Running Jobs</th></tr>
+                        <tr><th colspan="5" style="background-color: #eee; padding-left: 5px;">Running ({{ tasksRunning.length }})</th></tr>
                         <tr v-for="task in tasksRunning" :key="task._id">
                             <td>
                                 <span v-if="task._project">{{task._project.name}}</span>
@@ -298,7 +298,7 @@
                         </tr>
                         <tr v-if="tasksRunning.length == 0"><td colspan="5" style="padding-left: 5px; opacity: 0.5;">(No Jobs)</td></tr>
 
-                        <tr><th colspan="5" style="background-color: #eee; padding-left: 5px;">Recent Jobs</th></tr>
+                        <tr><th colspan="5" style="background-color: #eee; padding-left: 5px;">Recent ({{tasksRecent.length}})</th></tr>
                         <tr v-for="task in tasksRecent" :key="task._id">
                             <td>
                                 <span v-if="task._project">{{task._project.name}}</span>

@@ -360,11 +360,7 @@ export default {
         this.$root.$off('datasetselecter.submit');
         this.$root.$off('newtask.submit');
         this.$root.$off('showtask');
-
-        if(this.ws) {
-            console.log("disconnecting from ws - process");
-            this.ws.close();
-        }
+        if(this.ws) this.ws.close();
     },
 
     computed: {
@@ -550,7 +546,11 @@ export default {
 
         load(cb) {
             this.loading = true;
-            if(this.ws) this.ws.close();
+            if(this.ws) {
+                console.log("closing previous ws")
+                this.ws.close();
+            }
+
             var url = Vue.config.event_ws+"/subscribe?jwt="+Vue.config.jwt;
             this.ws = new ReconnectingWebSocket(url, null, {/*debug: Vue.config.debug,*/ reconnectInterval: 3000});
             this.ws.onopen = (e)=>{
@@ -563,6 +563,7 @@ export default {
                     }
                 }));
 
+                //TODO - maybe I should listen to dataset events in project.vue? (components/datasets.vue also listens to dataset events)
                 this.ws.send(JSON.stringify({
                     bind: {
                         ex: "warehouse",

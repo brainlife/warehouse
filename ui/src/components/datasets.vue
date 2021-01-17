@@ -338,7 +338,8 @@ export default {
             if(this.ws) this.ws.close();
             this.ws = new ReconnectingWebSocket(url, null, {/*debug: Vue.config.debug,*/ reconnectInterval: 3000});
             this.ws.onopen = (e)=>{
-                console.log("connected.. sending bind request");
+
+                //TODO - maybe I should listen to this in project.vue? components/process.vue also listens to dataset events
                 this.ws.send(JSON.stringify({
                     bind: {
                         ex: "warehouse",
