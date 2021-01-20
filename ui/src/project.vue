@@ -367,7 +367,6 @@ export default {
     },
 
     watch: {
-        /*
         '$route': function() {
             var project_id = this.$route.params.id;
             if(project_id && this.selected && this.selected._id != project_id) {
@@ -377,7 +376,6 @@ export default {
                 this.handleRouteParams();
             }
         },
-        */
 
         tab: function() {
             //TODO - maybe make pubform a modal so that I don't have to do this.

@@ -1006,7 +1006,7 @@ transition: transform .45s;
 .right-buttons {
 float: right;
 position: relative;
-z-index: 1;
+z-index: 2;
 }
 h5 {
 font-size: 18px;

@@ -259,7 +259,6 @@ export default {
 
     destroyed() {
         if(this.ws) {
-            console.log("disconnecting from ws - processes");
             this.ws.close();
         }
     },

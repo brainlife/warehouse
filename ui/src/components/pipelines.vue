@@ -278,7 +278,6 @@ export default {
     },
 
     destroyed() {
-        console.log("closing ws");
         if(this.ws) this.ws.close();
     },
 

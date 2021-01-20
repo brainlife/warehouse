@@ -328,7 +328,7 @@ export default {
                             {'outputs.datatype': this.datatype._id},
                         ]
                     }),
-                    select: 'name desc inputs outputs stats github',
+                    select: 'name desc inputs outputs stats github projects',
                     populate: 'inputs.datatype outputs.datatype', //<app> likes datatypes populated
                     limit: 500, //TODO - this is not sustailable
                 }}).then(res=>{

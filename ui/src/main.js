@@ -368,7 +368,7 @@ new Vue({
         });
 
         //refresh in half an hour
-        console.log("starting auto-jwt refresh");
+        //console.log("starting auto-jwt refresh");
         setInterval(()=>{
             this.$root.$emit("refresh_jwt");
         }, 1000*1800);
@@ -390,7 +390,7 @@ new Vue({
                 limit: 1, //I just need count (0 means all)
             }});
 
-            console.log("checking project", res.data.projects);
+            //console.log("checking project", res.data.projects);
             if(res.data.projects.length == 0) {
                 //let's create a default project
                 console.log("need to create default project");
@@ -415,7 +415,7 @@ new Vue({
             console.log("refreshing token");
             this.$http.post(Vue.config.auth_api+"/refresh").then(res=>{
                 if(!res.data.jwt) console.log("token refresh didn't work.. resetting jwt");
-                console.log("refreshed token!");
+                //console.log("refreshed token!");
                 jwt_decode_brainlife(res.data.jwt);
                 localStorage.setItem("jwt", res.data.jwt);
                 if(cb) cb();

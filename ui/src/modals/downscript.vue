@@ -90,7 +90,7 @@ export default {
     },
 
     mounted() {
-        console.log("listening downscript.open");
+        //console.log("listening downscript.open");
         this.$root.$on("downscript.open", query=>{
             this.query = query;
             this.$refs.modal.show()

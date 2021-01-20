@@ -65,7 +65,8 @@ export default {
             //app passes resource object from resource/best api - which contains somewhat abbreviated resource info
             if(this.resource_obj.detail && this.resource_obj.detail.running) return this.resource_obj.detail.running;
 
-            //for full resource detail
+            //for full resource detail.. use the last reported number from grafana
+            //TODO - the count might be different from the amaretti resource/tasks/<resource_id> api count.. but.. what can I do?
             if(this.resource_obj.stats && this.resource_obj.stats.recent_job_counts) {
                 let recs = this.resource_obj.stats.recent_job_counts; 
                 if(recs.length > 0) return recs[recs.length-1][1];

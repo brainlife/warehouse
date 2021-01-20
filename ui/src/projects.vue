@@ -76,14 +76,7 @@ export default {
 
             query: "",
             mode: localStorage.getItem("projects.mode")||"tile",
-            reload_int: null,
             config: Vue.config,
-
-            /*
-            scrollTop: null,
-            scrollBottom: null,
-            visibleProjects: [],
-            */
         }
     },
 
@@ -98,11 +91,6 @@ export default {
         }
     },
 
-    destroyed() {
-        console.log("clearing reload_int");
-        clearInterval(this.reload_int);
-    },
-
     methods: {
         clearQuery() {
             this.query = ''
@@ -110,8 +98,6 @@ export default {
         },
 
         load() {
-            console.log("loading projects");
-
             let ands = [
                 {removed: false, "openneuro": {$exists: false}},
             ];
@@ -149,11 +135,6 @@ export default {
                         this.other_projects.push(p);
                     }
                 });
-                /*
-                this.$nextTick(()=>{
-                    this.handle_scroll();
-                });
-                */
                 this.loading = false;
             }).catch(err=>{
                 console.error(err);

@@ -140,7 +140,7 @@ export default {
                 project_ids.push(this.alldatasets[did].project);
             });
 
-            console.log("checking project agreement");
+            //console.log("checking project agreement");
             //load project agreements
             this.$http.get('project', {params: {
                 find: JSON.stringify({
