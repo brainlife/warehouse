@@ -492,8 +492,10 @@ export default {
                 this.tasksRunning = res.data.running;
                 this.tasksRecent = res.data.recent;
 
+                let allTasks = [...this.tasksRunning, ...this.tasksRecent];
+
                 //resolve project names
-                let gids = this.tasks.map(task=>task._group_id);
+                let gids = allTasks.map(task=>task._group_id);
                 let project_find = JSON.stringify({
                     group_id: {$in: gids},
                 });
@@ -502,7 +504,7 @@ export default {
                     res.data.projects.forEach(project=>{
                         projects[project.group_id] = project;
                     });
-                    this.tasks.forEach(task=>{
+                    allTasks.forEach(task=>{
                         task._project = projects[task._group_id];
                     });
                 });

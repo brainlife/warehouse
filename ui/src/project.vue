@@ -367,6 +367,7 @@ export default {
     },
 
     watch: {
+        /* needed by dataset modal > instanceselecter but it causes infinite redraw bug*/
         '$route': function() {
             var project_id = this.$route.params.id;
             if(project_id && this.selected && this.selected._id != project_id) {
@@ -461,6 +462,7 @@ export default {
         },
 
         handleRouteParams() {
+            console.log("handleRouteParams", this.$route.params)
             var tab_id = this.$route.params.tab;
             if(tab_id) {
                 //lookup tab index from the tab_id
