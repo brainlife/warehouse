@@ -208,7 +208,7 @@
                     <span class="form-header">Group Analysis</span>
                 </b-col> 
                 <b-col cols="9">
-                    <input type="checkbox" v-model="datatype.groupAnalysis"> (experimental) This datatype will be available for group analysis.</input>
+                    <input type="checkbox" v-model="datatype.groupAnalysis"> (experimental) This datatype will be available for group analysis </input>
                     <small>The maximum amount of data will be limited to 64MB per data object</small>
                     <br>
                 </b-col>
@@ -350,7 +350,11 @@ export default {
                     error = "please specify either filename or dirname for each files (not both)";
                 }
             });
-
+            /*
+            if(this.datatype.groupAnalysis && !this.datatype.validator) {
+                error = "group analysis requires datatype validator";
+            }
+            */
 
             if(error) {
                 this.$notify({type: "error", text: error});

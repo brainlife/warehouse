@@ -416,6 +416,8 @@ function handle_task(task, cb) {
             let subdirs = [];
             async.eachSeries(task.config._outputs, async (output)=>{
                 let datatype = await db.Datatypes.findById(output.datatype);
+
+                //datatype with group analysis is always archived, and validationTask's secondary output is also archived
                 if(datatype.groupAnalysis || isValidationTask(task)) {
                     let request = {
                         src: "../"+task._id+"/"+output.id,
@@ -435,7 +437,7 @@ function handle_task(task, cb) {
 
                     //validation task organize things in a unique way
                     if(isValidationTask(task)) {
-                        //TODO - shouldn't I check the result of the validation before going ahead with archive?
+                        //TODO - shouldn't makre sure validation didn't find any errors before going ahead with archive?
                         
                         subdirs.push("secondary"); //validator always output secondary output under ./secondary
                         
