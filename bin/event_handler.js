@@ -441,8 +441,10 @@ function handle_task(task, cb) {
                         
                         subdirs.push("secondary"); //validator always output secondary output under ./secondary
                         
-                        //secondary output are placed directly
-                        request.src = "../"+task._id;
+                        //only archive ./secondary (there could be other stuff that we don't need to put in secondary storage)
+                        request.src = "../"+task._id+"/secondary";
+                        request.subdir += "/secondary";
+
                         request.task_id = task.deps_config[0].task; //use the task id of the parent
 
                         request.validator = true; //used to let UI know that this was output from validator
