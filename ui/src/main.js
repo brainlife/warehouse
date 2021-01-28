@@ -237,6 +237,7 @@ Vue.config.event_api = apihost+"/api/event";
 Vue.config.event_ws = apihost_ws+"/api/event";
 Vue.config.auth_signin = "/auth#!/signin";
 Vue.config.auth_signout = "/auth#!/signout";
+Vue.config.ezbids_api = apihost+"/api/ezbids";
 Vue.config.productionTip = false;
 Vue.config.debug_doi = "10.25663/bl.p.3"; //o3d publication
 Vue.config.plotly = {
@@ -262,6 +263,7 @@ if (process.env.NODE_ENV == "development") {
     //do crosssite auth between localhost and dev1 auth
     Vue.config.auth_signin = "https://dev1.soichi.us/auth#!/signin?app=dev";
     Vue.config.auth_signout = "https://dev1.soichi.us/auth#!/signout?app=dev";
+    Vue.config.ezbids_api = "https://dev1.soichi.us/api/ezbids";
 
     //intercept jwt sent via url parameter
     var urlParams = new URLSearchParams(window.location.search);
@@ -341,37 +343,30 @@ new Vue({
 
     mounted() {
         let wide = localStorage.getItem("sidemenuWide");
-        if(wide) {
-            this.sidemenuWide = (wide=="1"?true:false);
-        }
+        if(wide) this.sidemenuWide = (wide=="1"?true:false);
 
         //allow child component to refresh jwt
         //project/submit (adding project requires jwt scope change for ac)
-        this.$on("refresh_jwt", cb=>{
-            this.refresh_jwt(cb);
-        });
+        this.$on("refresh_jwt", this.refresh_jwt);
 
         if(!Vue.config.jwt) {
-            return this.ready = true;
-        }
-        
-        this.ensure_myproject();
-
-        //refresh jwt on page refresh (and to get new jwt after creating new project)
-        this.refresh_jwt(err=>{
-            this.$root.$emit("jwt_refreshed");
+            //for guest
             this.ready = true;
-            /*
-            this.load_profile(err=>{
-            });
-            */
-        });
+        } else {
+            //for authenticated user
+            this.ensure_myproject();
 
-        //refresh in half an hour
-        //console.log("starting auto-jwt refresh");
-        setInterval(()=>{
-            this.$root.$emit("refresh_jwt");
-        }, 1000*1800);
+            //refresh jwt on page refresh (and to get new jwt after creating new project)
+            this.refresh_jwt(err=>{
+                this.$root.$emit("jwt_refreshed");
+                this.ready = true;
+            });
+
+            //refresh in half an hour
+            setInterval(()=>{
+                this.$root.$emit("refresh_jwt");
+            }, 1000*1800);
+        }
     },
 
     methods: {
@@ -415,7 +410,6 @@ new Vue({
             console.log("refreshing token");
             this.$http.post(Vue.config.auth_api+"/refresh").then(res=>{
                 if(!res.data.jwt) console.log("token refresh didn't work.. resetting jwt");
-                //console.log("refreshed token!");
                 jwt_decode_brainlife(res.data.jwt);
                 localStorage.setItem("jwt", res.data.jwt);
                 if(cb) cb();

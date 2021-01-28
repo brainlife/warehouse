@@ -411,6 +411,7 @@ export default {
 
         prep_upload() {
             //find resource that I can run validator
+            //TODO why do I care which resource to run validator on?
             this.$http.get(Vue.config.amaretti_api+'/resource/best/', {params: {
                 service: this.datatype.validator,
             }}).then(res=>{

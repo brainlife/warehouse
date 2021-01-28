@@ -27,6 +27,14 @@ export default {
             config: Vue.config,
         }
     },
+
+    mounted() {
+        //handle hashrequest
+        if(document.location.hash.startsWith("#ezbids")) {
+            const sessionId = document.location.hash.substring(8);
+            this.$root.$emit("ezbidsimporter.open", {sessionId});
+        }
+    }
 }
 
 </script>

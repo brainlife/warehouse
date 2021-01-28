@@ -9,14 +9,14 @@
     <div v-else-if="ready" class="page-content">
         <div class="list" style="background-color: white;">
             <p>
-                Once you complete your subject level processing, you can run group analysis on the derived data.
+                Once you complete your subject level processing, you can run group analysis on jupyter hub hosted on brainlife. You can access any group-analysis ready data objects created by running Apps.
             </p>
             <p>
-                To launch a group analysis, select a group analysis App from the list of available group analysis Apps below,
+                Please select a group analysis App from the list of available group analysis Apps below,
                 TODO..
             </p>
 
-            <h4>Existing Analysis</h4>
+            <h4>Existing Notebooks</h4>
             <div>
                 <div style="display: inline-block; width: 300px; margin-right: 10px; margin-bottom: 10px;" 
                     v-for="task in tasks.filter(task=>task.status != 'removed')" :key="task._id">
@@ -230,10 +230,12 @@ export default {
                     instance_id: this.instance._id,
 
                     container: app.container,
+                    app: "soichih/ga-test", //TODO
                     tag: app.tag,
 
                     name: app.name, 
                     desc: app.desc, //TODO..
+
                     //config: {},
                 }).then(res=>{
                     let task = res.data;

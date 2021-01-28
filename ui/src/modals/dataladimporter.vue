@@ -1,5 +1,5 @@
 <template>
-<b-modal :no-close-on-backdrop='true' :title="title" ref="modal" size="lg" @ok="submit">
+<b-modal :no-close-on-backdrop="true" title="Import Datalad Dataset" ref="modal" size="lg" @ok="submit">
     <b-row v-if="dataset">
         <b-col class="text-muted" cols="3">Datatypes to Import</b-col>
         <b-col>
@@ -50,7 +50,6 @@ export default {
     },
     data () {
         return {
-            title: null,
             project: null,
             datatypes: [],
 
@@ -71,7 +70,6 @@ export default {
             this.dataset = opt.dataset;
             this.subjects = opt.subjects;
 
-            this.title = "Import";
             this.project_name = this.dataset.dataset_description.Name;
             this.project_desc = "Imported from "+this.dataset.path;
             this.$refs.modal.show(); 

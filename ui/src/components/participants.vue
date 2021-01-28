@@ -39,7 +39,7 @@ import Vue from 'vue'
 
 export default {
     props: {
-        subjects: { type: Object },
+        subjects: { type: Array },
         columns: { type: Object },
     },
 

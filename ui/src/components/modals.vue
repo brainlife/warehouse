@@ -15,9 +15,11 @@
         <archiver/>
         <taskinfo/>
         <appsubmit/>
-        <importer/>
         <participants/>
         <galauncher/>
+
+        <dataladimporter/>
+        <ezbidsimporter/>
     </div>
 </div>
 </template>
@@ -37,9 +39,11 @@ import downscript from '@/modals/downscript'
 import taskinfo from '@/modals/taskinfo'
 import appsubmit from '@/modals/appsubmit'
 import copytarget from '@/modals/copytarget'
-import importer from '@/modals/importer'
 import participants from '@/modals/participants'
 import galauncher from '@/modals/galauncher'
+
+import dataladimporter from '@/modals/dataladimporter'
+import ezbidsimporter from '@/modals/ezbidsimporter'
 
 export default {
     components: {
@@ -54,9 +58,10 @@ export default {
         taskinfo, 
         appsubmit, 
         copytarget, 
-        importer, 
         participants,
         galauncher,
+        dataladimporter, 
+        ezbidsimporter, 
     },
     data() {
         return {
@@ -66,5 +71,4 @@ export default {
 }
 
 </script>
-
 

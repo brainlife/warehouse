@@ -511,8 +511,6 @@ export default {
     },
 
     mounted: function() {
-        console.log("app mounted");
-
         this.$on('editor-update', c=>{
             console.log("update", c);
         });

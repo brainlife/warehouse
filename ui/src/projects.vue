@@ -83,6 +83,7 @@ export default {
     mounted() {
         this.query = sessionStorage.getItem("projects.query")||"";
         this.load();
+
     },
 
     watch: {

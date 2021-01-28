@@ -139,6 +139,7 @@ router.get('/:task_id/*', jwt({
  * @apiParam {String} [name]        Name for this analysis
  * @apiParam {String} [desc]        Description for this analysis
  * @apiParam {Object} [config]      Configuration to send to the launcher
+ * @apiParam {String} app           App to initialize inside the container (like soichih/ga-test)
  *
  * @apiHeader {String} authorization 
  *                                  A valid JWT token "Bearer: xxxxx"
@@ -150,7 +151,8 @@ router.post('/launchga', jwt({secret: config.express.pubkey}), (req, res, next)=
     if(!req.body.container) return next("container name is not set");
     if(!req.body.tag) return next("container tag is not set");
 
-    if(!req.body.config) req.body.config = {};
+    let task_config = {};
+    if(req.body.config) Object.assign(task_config, req.body.config);
 
     let project = null;
     let instance = null;
@@ -192,15 +194,16 @@ router.post('/launchga', jwt({secret: config.express.pubkey}), (req, res, next)=
                 if(err) return next(err);
                 if(!_project) return next("can't find project with group_id:"+instance.group_id);
                 project = _project;
-                req.body.config.project = _project;
+                task_config.project = _project;
                 next();
             });
         },
 
         //submit the launcher
         next=>{
-            req.body.config.container = req.body.container+":"+req.body.tag;
-            req.body.config.group = instance.group_id;
+            task_config.container = req.body.container+":"+req.body.tag;
+            task_config.group = instance.group_id;
+            task_config.app = req.body.app; //like.. soichih/ga-test
 
             axios.post(config.amaretti.api+"/task", {
                 name: req.body.name,
@@ -209,7 +212,7 @@ router.post('/launchga', jwt({secret: config.express.pubkey}), (req, res, next)=
                 service_branch: "master", //TODO
                 instance_id : instance._id,
                 max_runtime: 24*1000*3600, //24 hour should be enough?
-                config: req.body.config,
+                config: task_config,
             }, {
                 headers: { authorization: "Bearer "+jwt, }
             }).then(_res=>{
