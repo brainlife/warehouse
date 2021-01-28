@@ -21,7 +21,7 @@
             <div style="float: left; padding: 6px 8px" @click="poke">
                 <statusicon :status="task.status" scale="1.5"/>
             </div>
-            <div style="margin-left: 45px; margin-right: 5px; padding-bottom: 4px; position: relative;">
+            <div style="margin-left: 45px; margin-right: 5px; padding-bottom: 4px; position: relative; overflow: hidden;">
                 <div style="float: right;">
                     <div class="button" :id="'popover'+task._id" @click="openinfo">
                         <icon name="chart-area"/>

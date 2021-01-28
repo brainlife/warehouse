@@ -108,8 +108,8 @@ export default {
                 this.project_name = this.ezBIDS.datasetDescription.Name;
                 this.project_desc = this.ezBIDS.readme;
             }).catch(err=>{
-                console.error(err);
-                this.$notify({type: 'error', text: err.toString()});
+                this.$notify({type: 'error', text: "Failed to load the specified ezBIDS session"});
+                this.close();
             });
 
             this.$refs.modal.show();

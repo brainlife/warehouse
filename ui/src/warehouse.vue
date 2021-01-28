@@ -33,6 +33,8 @@ export default {
         if(document.location.hash.startsWith("#ezbids")) {
             const sessionId = document.location.hash.substring(8);
             this.$root.$emit("ezbidsimporter.open", {sessionId});
+
+            history.replaceState(undefined, undefined, "#"); //remove hashrequest
         }
     }
 }
