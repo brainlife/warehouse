@@ -22,7 +22,7 @@ export default {
     computed: {
         max() {
             if(!this.states) return 0;
-            return Object.values(this.states).reduce((sum,v)=>sum+v, 0);
+            return this.states_sorted.reduce((sum,v)=>sum+v.count, 0);
         },
         states_sorted() {
             let order = [
@@ -56,11 +56,12 @@ export default {
     methods: {
         getvariant(state) {
             switch(state) {
-            case "running": return "primary";
             case "requested": return "info";
+            case "running": return "primary";
+            case "running_sync": return "primary";
+            case "failed": return "danger";
             case "finished": return "success";
             case "stopped": return "secondary";
-            case "failed": return "danger";
             default: return "dark";
             }
         },

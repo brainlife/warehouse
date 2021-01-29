@@ -209,6 +209,7 @@ exports.groupanalysis = {
     },
 }
 
+/*
 const js_config = require(__dirname+'/jetstream');
 const js_storage = pkgcloud.storage.createClient(js_config);
 exports.storage_systems.jetstream = {
@@ -283,6 +284,7 @@ exports.storage_systems.jetstream = {
         js_storage.removeFile(contname, filename, cb);
     }
 }
+*/
 
 function connect_dc(cb) {
     var conn = new ssh2.Client();
