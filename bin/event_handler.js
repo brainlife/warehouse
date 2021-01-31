@@ -190,7 +190,7 @@ function handle_task(task, cb) {
                 common.update_rule_stats(task.config._rule.id, err=>{
                     if(err) console.error(err);
                 });
-            }, 1000); 
+            }, 1000*10); 
         }
     //}
 
@@ -261,7 +261,6 @@ function handle_task(task, cb) {
 
                 let subdirs;
                 if(output.subdir) {
-                    //find['deps_config.subdir'] = [output.subdir];
                     subdirs = [output.subdir];
                 }
                 let tasks = await rp.get({
@@ -279,6 +278,13 @@ function handle_task(task, cb) {
 
                 let validator_config = {
                     _app: task.config._app, //app id
+
+                    //prov graph uses _input to travel upstream.. so let's set some info
+                    _input: [Object.assign({}, output, {
+                        task_id: task._id,
+                        keys: datatype.files.map(f=>f.id), //populate all file ids..
+                    })],
+
                     _outputs: [Object.assign({}, output, {
                         subdir: "output", //validator should always output under "output"
                         
@@ -288,7 +294,6 @@ function handle_task(task, cb) {
                     })],
 
                     //_tid: task.config._tid,  //for UI.. use the same _tid as the parent
-
                     //I decided to handle this at the loading time
                     //pass the followed task's product to validator so it can analyze / merge it!
                     //product: products[output.id],
@@ -622,7 +627,7 @@ function handle_instance(instance, cb) {
                 let project = await db.Projects.findOne({group_id: instance.group_id});
                 console.log("requesting to update_project_stats");
                 common.update_project_stats(project);
-            }, 1000); 
+            }, 1000*30); 
         }
     //}
     cb();
@@ -633,7 +638,7 @@ function handle_dataset(dataset, cb) {
     let pid = dataset.project._id||dataset.project; //unpopulate project if necessary
     debounce("update_dataset_stats."+pid, ()=>{
         common.update_dataset_stats(pid);
-    }, 1000*10);  //counting datasets are bit more expensive.. let's debounce longer
+    }, 1000*60);  //counting datasets are bit more expensive.. let's debounce longer
 
     cb();
 }

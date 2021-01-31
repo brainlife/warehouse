@@ -13,7 +13,6 @@ const archiver = require('archiver');
 
 //mine
 const config = require('../config');
-const logger = winston.createLogger(config.logger.winston);
 const db = require('../models');
 const common = require('../common');
 
@@ -481,7 +480,7 @@ This boutique descriptor that can be used to run the workflow used to generate t
 
                             b_test.invocation[b_id] = def;
                         } else {
-                            logger.error("no app.config for "+k);
+                            console.error("no app.config for "+k);
                         }
                     }
                 }
@@ -563,8 +562,10 @@ mongoose.connection.once('open', ()=>{
 
 //TODO - I should split the algorithms to 2 parts 
 //DEPRECATE by api.provGraph?
-//first part to generate a full provenance graph which might be too verbose - noisy but a complete picture (no defer)
-//second part to simplify the graph so that users can make sense of it (it could even be done at the UI side)
+//first part to generate a full provenance graph which might be too verbose 
+//  - noisy but a complete picture (no defer)
+//second part to simplify the graph so that users can make sense of it 
+//  (it could even be done at the UI side?)
 function generate_prov(origin_dataset_id, cb) {
     let nodes = [];
     let edges = [];
@@ -650,6 +651,7 @@ function generate_prov(origin_dataset_id, cb) {
     let datasets_analyzed = [];
     function load_dataset_prov(dataset, defer, cb) {
         let to = "dataset."+dataset._id;
+        //console.debug("loading dataset prov for", dataset._id)
         if(defer) to = defer.to;
         if(!dataset.prov.task) {
             //leaf dataset.. we are done!
@@ -664,6 +666,7 @@ function generate_prov(origin_dataset_id, cb) {
 
         //skip validation task by starting at follow_task_id if it's set
         let task_id = dataset.prov.task.follow_task_id || dataset.prov.task._id;
+        console.log("load_dataset_prov", dataset.prov.task.follow_task_id, dataset.prov.task._id)
         load_task(task_id, (err, task)=>{
             if(err) return cb(err);
             if(!task.service) task.service = "unknown"; //only happens for dev/test? (TODO.. maybe I should cb()?)
@@ -720,7 +723,7 @@ function generate_prov(origin_dataset_id, cb) {
         .exec((err, dataset)=>{
             if(err) return cb(err);
             if(!dataset) {
-                logger.warn("no such dataset .. removed?", dataset_id);
+                console.error("no such dataset .. removed?", dataset_id);
                 return cb();
             }
 
@@ -757,8 +760,12 @@ function generate_prov(origin_dataset_id, cb) {
         if(~tasks_analyzed.indexOf(task._id)) return cb();
         tasks_analyzed.push(task._id);
 
+        //console.debug("load_task_prov", task._id);
+
         //if(!task.deps_config) return cb(); //just in case?
         if(!task.config) return cb(); 
+
+        //normal apps should have _inputs (validator doesn't)
         async.each(task.config._inputs, (input, next_dep)=>{
             if(!input.task_id) return next_dep(); //old task didn't have this set?
             load_task(input.task_id, (err, dep_task)=>{
@@ -887,7 +894,6 @@ router.post('/', jwt({secret: config.express.pubkey}), (req, res, cb)=>{
             if(!output.tags) output.tags = [];
             if(req.body.tags) output.tags = output.tags.concat(req.body.tags).unique();
 
-            logger.debug("submitting archive task");
             common.archive_task_outputs(req.user.sub.toString(), task, [output], (err, datasets, archive_task)=>{
                 if(err) return next(err);
                 res.json(datasets[0]); //there should be only 1 dataset being archived via this API, so return [0]
@@ -1104,41 +1110,41 @@ function stream_dataset(dataset, req, res, next) {
     var system = config.storage_systems[dataset.storage];
     if(!system) return next("no such storage:"+dataset.storage);
     var stat_timer = setTimeout(function() {
-        logger.debug("timeout while calling stat on "+dataset.storage);
+        //console.debug("timeout while calling stat on "+dataset.storage);
         next("stat timeout - filesystem maybe offline today:"+dataset.storage);
     }, 1000*15);
     system.stat(dataset, (err, stats)=>{
         clearTimeout(stat_timer);
         if(err) return next(err);
-        logger.debug("obtaining download stream "+dataset.storage);
+        //console.debug("obtaining download stream "+dataset.storage);
         system.download(dataset, (err, readstream, filename)=>{
             if(err) return next(err);
             //without attachment, the file will replace the current page (why?)
             res.setHeader('Content-disposition', 'attachment; filename='+filename);
             if(stats) res.setHeader('Content-Length', stats.size);
             else if(dataset.size) res.setHeader('Content-Length', dataset.size);
-            logger.debug("sent headers.. commencing download");
+            //console.debug("sent headers.. commencing download");
             let m = meter();
             readstream.pipe(m).pipe(res);   
             readstream.on('error', err=>{
                 //like.. when sftp failed to find a file
-                logger.error("failed to pipe", err);
+                console.error("failed to pipe", err);
                 //this seems to terminate the pipe, but I still can't tell the client that
                 //transfer went wrong.. especially if dataset.size is not set..
                 readstream.end(); 
             });
 
             res.on('finish', ()=>{
-                logger.debug("done piping.. meter count:%s dataset.size %d", m.bytes, dataset.size);
+                //console.debug("done piping.. meter count:%s dataset.size %d", m.bytes, dataset.size);
                 if(!dataset.size) {
                     /* this is not good idea.. as .tar file size might change if versionn of tar get updates
-                    logger.debug("updating dataset size based on m.bytes");
+                    console.debug("updating dataset size based on m.bytes");
                     dataset.size = m.bytes;
                     */
                 } else { 
-                    if(dataset.size != m.bytes) logger.warn("dataset.size doesn't match bytes transferred..");
+                    if(dataset.size != m.bytes) console.error("dataset.size doesn't match bytes transferred..");
                 }
-                if(m.bytes == 0) logger.warn("meter count is 0... something went wrong?");
+                if(m.bytes == 0) console.error("meter count is 0... something went wrong?");
 
                 inc_download_count(dataset);
                 let sub = "guest";
@@ -1153,8 +1159,7 @@ function stream_dataset(dataset, req, res, next) {
 function inc_download_count(dataset) {
     if(!dataset.download_count) dataset.download_count = 1;
     else dataset.download_count++;
-    //dataset.download_date = new Date(); //redundant with update_date
-    logger.debug("download_count %d", dataset.download_count);
+    //console.debug("download_count %d", dataset.download_count);
 }
 
 //caches agreements for each project
@@ -1180,9 +1185,9 @@ let cache = {};
 //listen to user profile update event
 common.get_amqp_connection((err, conn)=>{
     if(err) {
-        logger.error("failed to obtain amqp connection");
+        console.error("failed to obtain amqp connection");
     }
-    logger.info("amqp connection ready.. subscribing to auth user.update events");
+    console.log("amqp connection ready.. subscribing to auth user.update events");
     conn.queue('', q=>{
         q.bind("auth", "user.update.*", ()=>{ //no err..
             q.subscribe((message, header, deliveryInfo, messageObject)=>{
@@ -1239,12 +1244,12 @@ router.get('/download/:id', jwt({
 }), function(req, res, next) {
     var id = req.params.id;
 
-    logger.debug("download requested for %s", id);
-    if(!req.user) logger.warn("no auth request");
+    //console.debug("download requested for %s", id);
+    if(!req.user) console.error("no auth request");
     db.Datasets.findById(id).populate('datatype').exec(function(err, dataset) {
         if(err) return next(err);
         if(!dataset) {
-            logger.debug("no such dataset:"+id);
+            //console.debug("no such dataset:"+id);
             res.status(404).json({message: "couldn't find the dataset specified"});
             return;
         }
@@ -1344,7 +1349,7 @@ router.get('/download/safe/:id', jwt({
     var id = req.params.id;
     if(!req.user || !req.user.scopes || !req.user.scopes.datasets) return res.status(404).json({message: "no datasets scope"});
     if(!~req.user.scopes.datasets.indexOf(id)) return res.status(404).json({message: "not authorized"});
-    logger.debug("token check ok.. loading dataset info");
+    //console.debug("token check ok.. loading dataset info");
     db.Datasets.findById(id).populate('datatype').exec((err, dataset)=>{
         if(err) return next(err);
         if(!dataset) return res.status(404).json({message: "couldn't find the dataset specified"});
