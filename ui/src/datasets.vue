@@ -145,7 +145,17 @@
                     </b-col>
                 </b-row>
             </div>
-            <p v-if="selected.participants_info"><pre>{{selected.participants_info}}</pre></p>
+
+            <p v-if="hasMore" style="padding: 10px 20px; margin: 0px; background-color: #f0f0f0;">
+                Showing up to {{itemLimit}} data objects
+                <b-button style="float: right" @click="showAll()">Show All</b-button>
+                <br clear="both">
+            </p>
+
+            <div v-if="selected.participants_info">
+                <b-alert show variant="secondary">Phenotype Column Definitions</b-alert>
+                <pre>{{selected.participants_info}}</pre>
+            </div>
         </div>
 
     </div>
@@ -198,14 +208,6 @@ export default {
         return {
             datasets: [], //dataset list
 
-            //dataset filters
-            /*
-            sources: {
-                openneuro: true,
-                indi: true,
-            },
-            */
-            //licenses: ['ANY'],
             datatypes: [],
             datatype_options: [ 
                 "58c33bcee13a50849b25879a", //t1
@@ -217,11 +219,6 @@ export default {
                 "5ddf1381936ca39318c5f045", //eeg
                 "5dcecaffc4ae284155298383", //meg
             ],
-            //min_age: 0,
-            //max_age: 100,
-
-            //sex_m: true,
-            //sex_f: true,
 
             query: "",
             dataset_ps: null, 
@@ -230,6 +227,9 @@ export default {
             loading_dataset: false,
             selected: null, 
             subjects: null, //dataobjects that belongs to selected dataset
+
+            itemLimit: 0,
+            hasMore: false,
 
             config: Vue.config,
         }
@@ -240,15 +240,9 @@ export default {
             this.load_datasets();
         },
         "$route.params.dataset_id": function(dataset_id, ov) {
-            console.log("route changed", dataset_id);
             if(dataset_id == ov) return;
             this.load_dataset(dataset_id);
         },
-
-        '$route': function() {
-            console.log("route changed");
-        },
-
     },
 
     filters: {
@@ -279,6 +273,10 @@ export default {
     },
     
     methods: {
+        showAll() {
+            this.load_dataset(this.selected._id, 0);
+        },
+
         readHash() {
             let hash = document.location.hash;
             if(hash) {
@@ -287,7 +285,6 @@ export default {
                     let query = JSON.parse(hash);
                     this.query = query.query;
                     this.datatypes = query.datatypes;
-                    console.log(query);
                 } catch (err) {
                     console.error(err);
                 }
@@ -343,10 +340,8 @@ export default {
         //TODO - I think there is a case where this goes into infinite loop..
         open_dataset(dataset_id) {
             if(this.selected && this.selected._id == dataset_id) {
-                console.log("moving to ", document.location.hash)
                 this.$router.push('/datasets'+document.location.hash);
             } else {
-                console.log("moving to /datasets/", dataset_id, document.location.hash)
                 this.$router.push('/datasets/'+dataset_id+document.location.hash);
                 document.getElementsByClassName("page-main")[0].scrollTop = 0;
             }
@@ -367,12 +362,11 @@ export default {
             case "ccby.40":
                 return license;
             }
-            //console.log("unknown license");
-            //console.log(license);
             return null;
         },
 
-        load_dataset(dataset_id) {
+        load_dataset(dataset_id, limit = 100) {
+            this.itemLimit = limit;
             this.selected = null;
             this.subjects = null;
             if(!dataset_id) return;
@@ -391,7 +385,7 @@ export default {
                 find: JSON.stringify({dldataset: dataset_id}), 
                 //sort: 'datasets.meta.subject datasets.meta.session', //slow?
                 select: 'dataset.meta.subject dataset.meta.session dataset.desc dataset.datatype dataset.datatype_tags dataset.tags',
-                limit: 0,
+                limit: this.itemLimit,
             }}).then(res=>{
                 let items = res.data;
 
@@ -406,8 +400,9 @@ export default {
                     if(!this.subjects[group]) this.subjects[group] = {subject, session, datasets: []};
                     this.subjects[group].datasets.push(item.dataset);
                 }
-                //console.dir(this.subjects);
                 this.loading_dataset = false;
+
+                this.hasMore = (items.length == this.itemLimit);
 
             }).catch(console.error);            
         },
