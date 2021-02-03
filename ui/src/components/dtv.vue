@@ -70,7 +70,6 @@ export default {
         });
 
         if(this.task.finish_date) {
-            console.log("validator finished.. now waiting for secondary");
             this.waitSecondaryArchive(this.task, (err, secondary)=>{
                 if(err) console.error(err);
                 else this.secondary = secondary;

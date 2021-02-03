@@ -520,7 +520,6 @@ export default {
         },
 
         scrollto(id) {
-            console.log("scrollto", id);
             let elem = document.getElementById(id);
             if(!elem) return; //maybe not loaded yet?
             this.$refs.process.scrollTop = elem.offsetTop;//top;

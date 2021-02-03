@@ -24,7 +24,7 @@ db.init(async err=>{
         return true;
     });
 
-    console.log("looking for dataset_description.json /mnt/datalad/OpenNeuroDatasets);
+    console.log("looking for dataset_description.json /mnt/datalad/OpenNeuroDatasets");
     let openneuro_datasets = child_process.execSync("find OpenNeuroDatasets -maxdepth 2 -name dataset_description.json", {encoding: "utf8"}).split("\n");
     let datasets = [...datalad_datasets, ...openneuro_datasets];
 

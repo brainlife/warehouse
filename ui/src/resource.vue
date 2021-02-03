@@ -32,7 +32,7 @@
                         <b-tab>
                             <template v-slot:title>
                                 Jobs
-                                <span style="opacity: 0.6; font-size: 80%" v-if="tasksRunning.length > 0">{{tasksRunning.length}}</span>
+                                <span style="opacity: 0.6; font-size: 80%" v-if="tasksRunning">{{tasksRunning.length}}</span>
                             </template>
                         </b-tab>
                         <b-tab v-if="projects">
@@ -229,29 +229,8 @@
                 <!--recent jobs-->
                 <b-container>
                     <br>
-                    <!--
-                    <b-table sticky-header :items="tasksRecent" :fields="[
-                        '_project', 
-                        'status',  
-                        'service',
-                        'status_msg',
-                        {key: 'user_id', label: 'Status'},
-                        'date',
-                    ]">
-                        <template #cell(_project)="data"> 
-                            <span v-if="data._project">{{data._project.name}}</span>
-                            <span v-else style="opacity: 0.7;">(Private) 
-                                <small><icon name="id-badge"/> {{data._group_id}}</small>
-                            </span>
-                        </template>
-                        <template #cell(date)="data"> 
-                            date
-                            {{data}}
-                        </template>
-                    </b-table>
-                    -->
-
-                    <table class="table table-sm">
+                    <div v-if="!tasksRunning" class="loading">Loading ...</div>
+                    <table v-else class="table table-sm">
                         <thead>
                             <tr style="background-color: #eee;">
                                 <th style="min-width: 100px;">Project</th>
@@ -335,8 +314,9 @@
                         </tr>
                         <tr v-if="tasksRecent.length == 0"><td colspan="5" style="padding-left: 5px; opacity: 0.5;">(No Jobs)</td></tr>
                     </table>
-                    <p style="padding-left: 20px; opacity: 0.7; font-size: 80%;">Only showing up to 100 most recent jobs</p>
-
+                    <!--
+                    <p style="padding-left: 20px; opacity: 0.7; font-size: 80%;">Only showing recent jobs</p>
+                    -->
                 </b-container>
             </div>
             <div v-if="tab == 3">
@@ -408,8 +388,8 @@ export default {
         return {
             resource: null, 
 
-            tasksRecent: [],  //recent jobs 
-            tasksRunning: [],  //recent jobs 
+            tasksRecent: null,
+            tasksRunning: null,
 
             //report: null,
             projects: null, //list of all projects and some basic info (only admin can load this)
@@ -439,7 +419,7 @@ export default {
             return (p*100).toFixed(1)+ "%";
         },
         load() {
-            //console.log("loading resource:"+this.$route.params.id);
+            //not using resource_cache mixin because we want the latest content?
             this.$http.get(Vue.config.amaretti_api+'/resource', {params: {
                 find: JSON.stringify({
                     _id: this.$route.params.id,

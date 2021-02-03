@@ -357,7 +357,11 @@ function handle_task(task, cb) {
             if(task.status == "finished" && task.config && task.config._outputs) {
                 if(isValidationTask(task)) {
                     if(!task_product) {
-                        console.log("validation service didn't generate product.. maybe parse error? - skip archive")
+                        console.error("validation service didn't generate product.. maybe parse error? - skip archive")
+                        return next();
+                    }
+                    if(!task_product.errors) {
+                        console.error("validation service didn't generate product.errors.. something wrong? skip archive")
                         return next();
                     }
                     if(task_product.errors.length > 0) {
@@ -523,6 +527,7 @@ function handle_task(task, cb) {
             });
         },
 
+        /* we are going to do this on demand
         //update secondary archive index
         next=>{
             if(task.status != "finished" || task.service != "brainlife/app-archive-secondary") {
@@ -534,6 +539,7 @@ function handle_task(task, cb) {
             }, 1000*10); 
             next();
         },
+        */
 
         //report archive status back to user through dataset_config
         next=>{

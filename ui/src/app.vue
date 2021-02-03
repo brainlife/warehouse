@@ -153,7 +153,7 @@
                                 <div v-if="app.inputs && app.inputs.length > 0" style="padding: 5px">
                                     <div v-for="input in app.inputs" :key="input.id" class="io-card">
                                         <small style="opacity: 0.5; float: right;">{{input.id}}</small><!--internal output id-->
-                                        <datatype :datatype="input.datatype" :datatype_tags="input.datatype_tags">
+                                        <datatype :datatype="adjustedDatatype(input.datatype)" :datatype_tags="input.datatype_tags">
                                             <template slot="tag_extra">
                                                 <span v-if="input.multi" style="opacity: 0.8">(multi)</span>
                                                 <b-badge v-if="input.optional" style="opacity: 0.8">optional</b-badge>
@@ -502,9 +502,7 @@ export default {
     watch: {
         '$route': function() {
             var app_id = this.$route.params.id;
-            console.log("route update", app_id);
             if(app_id && this.app && app_id != this.app._id) {
-                console.log("reopening different app");
                 this.open_app();
             }
         },
@@ -512,7 +510,7 @@ export default {
 
     mounted: function() {
         this.$on('editor-update', c=>{
-            console.log("update", c);
+            //console.log("update", c);
         });
 
         this.open_app();
@@ -523,6 +521,7 @@ export default {
             if(!this.resources_considered) return [];
             return this.resources_considered.filter(r=>r.gids.length > 0);
         },
+
     },
 
     methods: {
@@ -553,7 +552,6 @@ export default {
             this.$http.get('app', {params: {
                 find: JSON.stringify({_id: this.$route.params.id}),
                 populate: 'inputs.datatype outputs.datatype projects',
-                limit: 500, //TODO - this is not sustailable
             }})
             .then(res=>{
                 if(res.data.apps.length == 0) {
@@ -679,10 +677,6 @@ export default {
         },
 
         editorInit(editor) {
-            console.log("initializing editor");
-
-            //require('brace/ext/language_tools')
-
             require('brace/mode/json')
             require('brace/theme/chrome')
             require('brace/snippets/javascript')
@@ -698,13 +692,16 @@ export default {
             editor.setShowPrintMargin(true);
         },
 
-        /*
-        getResourceName(resource_id) {
-            this.resource_cache(resource_id, (err, resource)=>{
-                return resource.name;
+        //override the datatype's file id with the mapping used in config.json so we can show to user the actual config.json key
+        adjustedDatatype(datatype) {
+            datatype.files.forEach(file=>{
+                //find the config key for file.id
+                for(let key in this.app.config) {
+                    if(this.app.config[key].type == 'input' && this.app.config[key].file_id == file.id) file.id = key;
+                }
             });
+            return datatype;
         },
-        */
     },
 }
 </script>

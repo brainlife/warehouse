@@ -8,7 +8,6 @@
         <b-alert v-else-if="alert.type == 'success'" variant="success" show>{{alert.msg}}</b-alert>
         <div v-else>
             <b-alert show variant="danger">Unknown brainlife product type</b-alert>
-            <!-- <pre v-if="Object.keys(other_product).length != 0" v-highlightjs="JSON.stringify(other_product, null, 4)" style="max-height: 150px;"><code class="json hljs"></code></pre>-->
             <pre v-if="Object.keys(other_product).length != 0">{{JSON.stringify(other_product, null, 4)}}</pre>
         </div>
     </div>
@@ -22,7 +21,9 @@
         </b-tab>
         <b-tab v-for="(p, $idx) in images" :title="p.name||$idx" :key="$idx">
             <p v-if="p.desc"><small>{{p.desc}}</small></p>
-            <img v-if="p.type.includes('image/')" :src="'data:'+p.type+';base64, '+p.base64" style="max-height: 300px"/>
+            <a :download="'image.'+p.type.split('/')[1]" :href="'data:'+p.type+';base64,'+p.base64">
+                <img v-if="p.type.includes('image/')" :src="'data:'+p.type+';base64,'+p.base64" style="max-width: 100%"/>
+            </a>
         </b-tab>
     </b-tabs>
 </div>

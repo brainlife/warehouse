@@ -226,7 +226,6 @@ export default {
 
     created() {
         this.$root.$on("taskinfo.open", opt=>{
-            console.log("opening taskinfo", opt.task._id);
             this.task = opt.task;
             this.resource = opt.resource;
             this.open = true;
@@ -243,9 +242,7 @@ export default {
 
     methods: {
         editorInit(editor) {
-            console.log("initializing editor");
             require('brace/ext/language_tools')
-
             require('brace/mode/json')
             require('brace/theme/chrome')
 

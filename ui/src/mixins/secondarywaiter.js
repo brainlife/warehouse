@@ -20,8 +20,6 @@ export default {
                 return cb("waited too long for secondary archive.");
             }
             
-            console.log("waitSecondaryArchive", task._id);
-            
             //look for finished secondary archive task
             this.$http.get(Vue.config.amaretti_api+'/task', {params: {
                 find: JSON.stringify({

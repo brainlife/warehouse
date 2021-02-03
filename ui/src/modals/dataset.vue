@@ -133,18 +133,23 @@
                                                 <icon name="brands/github" style="opacity: 0.4;"/>&nbsp;&nbsp;&nbsp;{{dataset.prov.task.commit_id}}
                                             </b-badge>
                                         </a>
-                                        &nbsp;
-                                        <a v-if="resource" :href="'/resource/'+resource._id" title="Resource Used">
-                                            <b-badge pill class="bigpill">
-                                                <icon name="server" style="opacity: 0.5; margin-right: 7px;"/>&nbsp;{{resource.name}}
-                                            </b-badge>
-                                        </a>
                                     </p>
+                                    <p v-else>
+                                        <!-- TODO.. we need to load the follow_task_id task, and and show that commit_id-->
+                                    </p>
+
                                     <app slot="header"
                                         :appid="dataset.prov.task && dataset.prov.task.config._app" 
                                         :branch="dataset.prov.task.service_branch||'master'">
                                         <taskconfig style="margin: 10px; margin-bottom: 40px;" :task="dataset.prov.task"/>
                                     </app>
+                                    <br>
+
+                                    <a v-if="resource" :href="'/resource/'+resource._id" title="Resource Used">
+                                        <b-badge pill class="bigpill">
+                                            <icon name="server" style="opacity: 0.5; margin-right: 7px;"/>&nbsp;{{resource.name}}
+                                        </b-badge>
+                                    </a>
                                     <br>
                                 </b-col>
                             </b-row>
@@ -279,6 +284,7 @@ import secondary from '@/components/secondary'
 
 import agreementMixin from '@/mixins/agreement'
 import secondaryWaiter from '@/mixins/secondarywaiter'
+import resourceCache from '@/mixins/resource_cache'
 
 import vis from 'vis/dist/vis-network.min.js'
 import 'vis/dist/vis-network.min.css'
@@ -288,7 +294,11 @@ const lib = require('@/lib');
 let debounce;
 
 export default {
-    mixins: [agreementMixin, secondaryWaiter],
+    mixins: [
+        agreementMixin, 
+        secondaryWaiter, 
+        resourceCache 
+    ],
 
     components: { 
         contact, 
@@ -298,7 +308,6 @@ export default {
         pageheader, 
         appavatar,
         datatypetag, 
-        task, 
         pubcard, 
         tageditor, 
         taskconfig, 
@@ -328,6 +337,11 @@ export default {
             //back: null, //route to push to when user close it
             
             alltags: null,
+
+            tm_load_archive_task: null,
+            tm_load_status: null,
+
+
             config: Vue.config,
         } 
     },
@@ -375,6 +389,8 @@ export default {
             if(~task.service.indexOf("brainlife/validator-")) return true;
             if(~task.service.indexOf("brain-life/validator-")) return true;
 
+            console.log("calling isimporttask", task)
+
             //if no input, then must be import
             if(!task.deps && !task.deps_config) return true;
             if((task.deps && task.deps.length == 0) &&
@@ -384,7 +400,7 @@ export default {
         },
 
         update_dataset(elem) {
-            if(debounce) clearTimeout(debounce);
+            clearTimeout(debounce);
             debounce = setTimeout(()=>{
                 this.$http.put(Vue.config.api+'/dataset/'+this.dataset._id, this.dataset).then(res=>{
                     this.$notify({type: "success", text: "Saved "+elem});
@@ -597,6 +613,10 @@ export default {
             if(!this.dataset) return;
             this.$router.replace(this.$route.path.replace(this.dataset._id, ""));
             this.dataset = null;
+
+            clearTimeout(debounce);
+            clearTimeout(tm_load_status);
+            clearTimeout(tm_load_archive_task);
         },
 
         openpub(pub) {
@@ -707,7 +727,7 @@ export default {
 
                 if(res.data.status != "finished" && res.data.status != "failed") {
                     console.log("polling archive task update", res.data.status)
-                    setTimeout(this.load_archive_task, 5000)
+                    this.tm_load_archive_task = setTimeout(this.load_archive_task, 5000); 
                 }
             });
         },
@@ -734,7 +754,7 @@ export default {
                 this.dataset.stats = dataset.stats;
                 this.dataset.archive_task_id = dataset.archive_task_id;
                 if(this.dataset.status == "storing") {
-                    setTimeout(()=>{ this.load_status(id); }, 5000);
+                    this.tm_load_status = setTimeout(()=>{ this.load_status(id); }, 5000);
                 } else {
                     this.$notify({type: "success", text: "Data-Object successfully stored on "+dataset.storage});
                 }
@@ -770,7 +790,7 @@ export default {
                 }
                 this.dataset = res.data.datasets[0];
                 if(this.dataset.status == "storing") {
-                    setTimeout(()=>{ this.load_status(id); }, 5000);
+                    this.tm_load_status = setTimeout(()=>{ this.load_status(id); }, 5000);
                 }
                 this.load_archive_task(); 
                 this.load_product();
@@ -823,21 +843,22 @@ export default {
         load_resource() {
             if(!Vue.config.user) return;
             if(!this.dataset.prov || !this.dataset.prov.task) return;
-            this.$http.get(Vue.config.amaretti_api+'/resource', {params: {
-                find: JSON.stringify({_id: this.dataset.prov.task.resource_id}),
-            }})
-            .then(res=>{
-                this.resource = res.data.resources[0];
-            }).catch(err=>{
-                console.error(err);
-                this.$notify({type: 'error', text: err});
-            });;
+            this.resource_cache(this.dataset.prov.task.resource_id, (err, resource)=>{
+                if(err) {
+                    console.error(err);
+                    this.$notify({type: 'error', text: err});
+                } else {
+                    this.resource = resource;
+                }
+            });
         },
 
         start_viewer(datatype) {
             if(!Vue.config.user) return alert("Please Signup/Login first to visualize this data-object");
             this.check_agreements(this.dataset.project, ()=>{
+                this.$root.$emit("loading",{message: "Preparing staging job"});
                 this.find_staged_task((task, subdir, files)=>{
+                    this.$root.$emit("loading", {show: false});
                     if(task) {
                         //check to make sure we can actually download data from this task 
                         this.$http.get(Vue.config.amaretti_api+'/task/ls/'+task._id).then(res=>{

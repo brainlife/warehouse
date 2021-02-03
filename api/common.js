@@ -123,6 +123,8 @@ function register_dataset(task, output, product, cb) {
                 service: task.service,
                 service_branch: task.service_branch,
 
+                deps_config: task.deps_config,
+
                 instance_id: task.instance_id,
                 resource_id: task.resource_id,
                 commit_id: task.commit_id,
@@ -903,12 +905,14 @@ exports.update_secondary_index = async function(project) {
     });
     */
 
+    /* -- too expensive.. index.json could be close to 100MB.. we need a better way
     const path = config.groupanalysis.secondaryDir+"/"+project.group_id+"/index.json";
     config.groupanalysis.getSecondaryUploadStream(path, (err, stream)=>{
         console.log("storing index.json", path);
         stream.write(JSON.stringify(index, null, 4));
         stream.end();
     })
+    */
 }
 
 exports.update_project_stats = async function(project, cb) {

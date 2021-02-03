@@ -62,12 +62,10 @@
                                 </small>
                             </td>
                         </tr>
-                        <!--
                         <tr v-if="resource">
                             <th>Resource</th>
                             <td>{{resource.name}}</td>
                         </tr>
-                        -->
                         <tr v-if="task.next_date" style="opacity: 0.6;">
                             <th>Next&nbsp;Chk</th>
                             <td>{{new Date(this.task.next_date).toLocaleString()}}</td>
@@ -153,9 +151,12 @@ import statusicon from '@/components/statusicon'
 import taskconfig from '@/components/taskconfig'
 import contact from '@/components/contact'
 
-let resource_cache = {};
+import resourceCache from '@/mixins/resource_cache'
+
+//let resource_cache = {};
 
 export default {
+    mixins: [ resourceCache ],
     props: ['task'],
     components: { 
         filebrowser, statusicon, taskconfig, contact,
@@ -168,30 +169,25 @@ export default {
             },
             show_masked_config: false,
 
-            //resource: null, //loaded when task info popup is loaded
+            resource: null, //loaded when task info popup is loaded
 
             config: Vue.config,
         }
     },
 
-    /*
     watch: {
         task: {
-            deep: true,
             handler: function() {
-                console.log("task updated - reloading resource_info", this.task._id);
-                this.load_resource_info(this.task.resource_id);
-            }
+                this.load();
+            },
+            deep: true, //just for resource_id..
         },
-    },
-    /*
 
-    /*
-    mounted() {
-        console.log("mounted");
-        if(this.task) this.load_resource_info(this.task.resource_id);
     },
-    */
+
+    mounted() {
+        this.load();
+    },
 
     computed: {
         has_input_slot() {
@@ -230,24 +226,19 @@ export default {
     },
 
     methods: {
-        /*
-        load_resource_info(id) {
-            if(!id) return; //no resource assigned yet?
+        load(id) {
+            if(!this.task) return;
 
-            console.log("reloading resource info");
-
-            this.resource = resource_cache[id];
-            if(!this.resource) {
-                this.$http.get(Vue.config.wf_api+'/resource/', {params: {
-                    find: JSON.stringify({_id: id})
-                }}).then(res=>{
-                    console.log("updating this.resource");
-                    this.resource = res.data.resources[0];
-                    resource_cache[id] = this.resource;
+            if(this.task.resource_id) {
+                this.resource_cache(this.task.resource_id, (err, resource)=>{
+                    if(err) {
+                        console.error(err);
+                    } else {
+                        this.resource = resource;
+                    }
                 });
             }
         },
-        */
 
         toggle(section) {
             if(this.activeSections[section] === undefined) {
@@ -297,12 +288,7 @@ export default {
         },
 
         openinfo() {
-            this.$http.get(Vue.config.wf_api+'/resource/', {params: {
-                find: JSON.stringify({_id: this.task.resource_id})
-            }}).then(res=>{
-                let resource = res.data.resources[0];
-                this.$root.$emit("taskinfo.open", {task: this.task, resource});
-            });
+            this.$root.$emit("taskinfo.open", {task: this.task, resource: this.resource});
         },
 
         estimated_remain(task) {

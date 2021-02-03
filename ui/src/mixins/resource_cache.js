@@ -9,7 +9,6 @@ export default {
     methods: {
         resource_cache(id, cb) {
             this._cache("resource."+id, ()=>{
-                console.log("loading resource info for "+id);
                 return this.$http.get(Vue.config.amaretti_api+'/resource', {params: {
                     find: JSON.stringify({_id: id}),
                 }});

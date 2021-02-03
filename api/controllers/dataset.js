@@ -1038,7 +1038,7 @@ router.post('/stage', jwt({secret: config.express.pubkey}), (req, res, next)=>{
                 method: "post",
                 url: config.amaretti.api+"/task",
                 data: {
-                    name : "Staging",
+                    name : "Stage from archive",
                     service : "brainlife/app-stage",
                     instance_id : req.body.instance_id,
                     config: _config,

@@ -260,6 +260,7 @@ export default {
 
     mounted: function() {
         if(this.$route.params.id !== '_') {
+            //TODO use resource_cache mixin?
             this.$http.get(Vue.config.amaretti_api+'/resource', {params: {
                 find: JSON.stringify({_id: this.$route.params.id})
             }}).then(res=>{

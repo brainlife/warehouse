@@ -51,7 +51,6 @@ export default {
     
     methods: {
         load: function() {
-            //console.log("loading rulelog");
             if(!this.id) return;
             this.err = null;
             this.logs = null;
@@ -66,10 +65,6 @@ export default {
         },
 
         editorInit(editor) {
-            console.log("initializing editor");
-
-            //require('brace/ext/language_tools')
-
             require('brace/mode/text')
             require('brace/theme/chrome')
             require('brace/snippets/javascript')
