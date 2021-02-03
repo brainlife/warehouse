@@ -17,16 +17,20 @@ db.init(async err=>{
     await load_datatypes();
 
     //find dataset_description.json
-    console.log("looking for dataset_description.json /mnt/datalad/datasets.datalad.org");
-    let datalad_datasets = child_process.execSync("find datasets.datalad.org -maxdepth 4 -name dataset_description.json", {encoding: "utf8"}).split("\n").filter(dataset=>{
+    console.log("loading datasets.txt");
+    //let datalad_datasets = child_process.execSync("find datasets.datalad.org -maxdepth 4 -name dataset_description.json", {encoding: "utf8"}).split("\n").filter(dataset=>{
+    let datasets = child_process.execSync("cat datasets.txt", {encoding: "utf8"}).split("\n").filter(dataset=>{
         if(dataset.startsWith("datasets.datalad.org/openneuro")) return false;
         if(dataset.startsWith("datasets.datalad.org/openfmri")) return false;
         return true;
     });
 
+    /*
     console.log("looking for dataset_description.json /mnt/datalad/OpenNeuroDatasets");
-    let openneuro_datasets = child_process.execSync("find OpenNeuroDatasets -maxdepth 2 -name dataset_description.json", {encoding: "utf8"}).split("\n");
+    //let openneuro_datasets = child_process.execSync("find OpenNeuroDatasets -maxdepth 2 -name dataset_description.json", {encoding: "utf8"}).split("\n");
+    let openneuro_datasets = child_process.execSync("cat OpenNeuroDatasets/datasets.txt", {encoding: "utf8"}).split("\n");
     let datasets = [...datalad_datasets, ...openneuro_datasets];
+    */
 
     //debug..
     //bids_dirs = ["datasets.datalad.org/openneuro/ds002311/dataset_description.json"];
