@@ -8,6 +8,8 @@ const fs = require('fs');
 const path = require('path');
 const axios = require('axios');
 
+//hide openneuro datasets that are removed
+
 let root = "/mnt/datalad";
 if(config.debug) root = "/mnt/scratch/datalad-test";
 else process.chdir(root)
@@ -30,7 +32,6 @@ db.init(async err=>{
             //dataset_id = "ds001934";
             let query = `query { dataset(id:\"${dataset_id}\") { id name public } }`;
             //name public created snapshots { tag created } analytics { downloads views }
-            console.log(query);
             axios({url: "https://openneuro.org/crn/graphql", method: 'post', data: {query}}).then(res=>{
                 if(res.errors) return next_dataset(res.errors);
                 if(res.data.data.dataset && res.data.data.dataset.public && !bad_datasets.includes(dataset_id)) {

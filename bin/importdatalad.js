@@ -8,6 +8,7 @@ const fs = require('fs');
 const path = require('path');
 const child_process = require('child_process');
 const cli = require('brainlife');
+const axios = require('axios');
 
 process.chdir('/mnt/datalad');
 
@@ -90,11 +91,13 @@ function handle_bids(key, bids, cb) {
     //upsert dl-dataset record
     db.DLDatasets.findOne(key, (err, dldataset)=>{
         if(err) return cb(err);
-        if(!bids.dataset_description) return next_dir();
+        if(!bids.dataset_description) return cb();
 
-        if(!dldataset) {
-            dldataset = new db.DLDatasets(key);
-        }
+        //create new dataset for first time!
+        if(!dldataset) dldataset = new db.DLDatasets(key);
+
+        //we don't care if it's already removed
+        if(dldataset.removed) return cb();
 
         if(bids.README) dldataset.README = bids.README;
         if(bids.CHANGED) dldataset.CHANGES = bids.CHANGES;
@@ -124,20 +127,13 @@ function handle_bids(key, bids, cb) {
             datatypes: datatype_counts,
         }
 
-        //console.log(JSON.stringify(bids, null, 4));
-        //process.exit(1);
-
-        //TODO if we update bids_walker, then I need to invalidate commit_id for all dldatasets so that data will be 
-        //re-registered (should I store the branlife npm package version number?)
+        //TODO if we update bids_walker, then I need to invalidate commit_id for all dldatasets 
+        //so that data will be re-registered (should I store the branlife npm package version number?)
         let commit_id = child_process.execSync("git rev-parse HEAD", {cwd: key.path, encoding: "utf8"}).trim();
-        /* //let's disable this for now.. we need to update records quite often
-        if(dldataset.commit_id == commit_id) {
-            console.log("same commit_id.. skipping this dataset");
-            return cb();
-        }
-        */
         dldataset.commit_id = commit_id;
-        dldataset.removed = false;
+        
+        //why was I doing this?
+        //dldataset.removed = false;
 
         dldataset.save(err=>{
             if(err) throw err;

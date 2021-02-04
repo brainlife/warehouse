@@ -7,18 +7,18 @@
             <img src="https://pbs.twimg.com/profile_images/899900469119680512/XybpieA7_400x400.jpg" height="30px" class="datalad-logo">
         </div>
     </div>
-    <div class="page-content page-left-top" style="padding: 10px;" :style="{width: listWidth+'px'}">
-        <b-form-group label="Datatypes">
-            <b-form-checkbox-group v-model="datatypes">
-                <b-form-checkbox v-for="datatype_id in datatype_options" :key="datatype_id" :value="datatype_id">
-                    <span style="font-size: 90%">
-                        <datatypetag :datatype="datatype_id" :clickable="false"/>
-                    </span>
-                </b-form-checkbox>
-            </b-form-checkbox-group>
-        </b-form-group>
-    </div>
     <div class="page-content page-left scroll-shadow" ref="dataset-list" :style="{width: listWidth+'px'}">
+        <div v-if="datatype_options" style="margin: 5px; padding-right: 15px;">
+            <v-select v-if="datatype_options" v-model="datatypes" :options="datatype_options" :reduce="dt => dt._id" label="name" :multiple="true" placeholder="Filter by Datatype">
+                <template slot="option" slot-scope="option">
+                    <datatypetag :datatype="option" :clickable="false"/>
+                    <small>{{option.desc}}</small>
+                </template>
+                <template slot="selected-option" slot-scope="option">
+                    <datatypetag :datatype="option" :clickable="false"/>
+                </template>
+            </v-select>
+        </div>
         <p v-if="loading_datasets" style="padding: 20px; opacity: 0.8;">Loading...</p>
         <p v-else-if="datasets.length == 0" style="padding: 20px; opacity: 0.8;">No matching dataset</p>
         <div v-for="dataset in datasets" :key="dataset._id" class="dataset" :title="dataset.path" :ref="dataset._id" @click="open_dataset(dataset._id)" 
@@ -192,13 +192,14 @@ import VueMarkdown from 'vue-markdown'
 import PerfectScrollbar from 'perfect-scrollbar'
 
 import pagesplitter from '@/mixins/pagesplitter'
+import datatypecache from '@/mixins/datatypecache'
 
 let query_debounce = null;
 
 export default {
-    mixins: [pagesplitter],
+    mixins: [pagesplitter, datatypecache],
     components: { 
-        pageheader, datatypetag, VueMarkdown, tags, license,
+        pageheader, datatypetag, VueMarkdown, tags, license, 
         //datatype, app, VueMarkdown, contact, tags, 
     },
     
@@ -208,16 +209,28 @@ export default {
         return {
             datasets: [], //dataset list
 
-            datatypes: [],
-            datatype_options: [ 
+            datatypes: [], //selected datatypes
+            datatype_options: null, //{label: .. datatype: } opbjects
+
+            //datatype ids to use in filter
+            datatype_ids: [ 
                 "58c33bcee13a50849b25879a", //t1
                 "594c0325fa1d2e5a1f0beda5", //t2
                 "5d9cf81c0eed545f51bf75df", //flair
                 "58c33c5fe13a50849b25879b", //dwi
                 "59b685a08e5d38b0b331ddc5", //func
                 "5c390505f9109beac42b00df", //fmap
-                "5ddf1381936ca39318c5f045", //eeg
-                "5dcecaffc4ae284155298383", //meg
+
+                "60007567aacf9e1615a691dd", //eeg/bdf
+                "6000753eaacf9e6591a691d9", //eeg/brainvision
+                "600074f6aacf9e7acda691d7", //eeg/edf
+                "60007410aacf9e4edda691d4", //eeg/eeglab
+
+                "6000714baacf9e22a6a691c8", //meg/ctf
+                "6000737faacf9ee51fa691cb", //meg/fif
+
+                //"5ddf1381936ca39318c5f045", //eeg
+                //"5dcecaffc4ae284155298383", //meg
             ],
 
             query: "",
@@ -262,9 +275,10 @@ export default {
     },
 
     mounted() {
+        this.load_datatypes();
         this.readHash();
         this.load_datasets();
-        let dataset_list  = this.$refs["dataset-list"];
+        let dataset_list = this.$refs["dataset-list"];
         this.dataset_ps = new PerfectScrollbar(dataset_list);        
         this.init_splitter();
 
@@ -291,6 +305,15 @@ export default {
             }
         },
 
+        load_datatypes(cb) {
+            this.$http.get('datatype', {params: {
+                find: JSON.stringify({_id: {$in: this.datatype_ids}}),
+            }}).then(res=>{
+                this.datatype_options = res.data.datatypes;
+                if(cb) return cb();
+            });
+        },
+
         load_datasets() {
             this.loading_datasets = true;
             this.datasets = [];
@@ -310,6 +333,7 @@ export default {
             this.$http('datalad/datasets', {params: {
                 find: JSON.stringify(find),
                 select: 'path name dataset_description stats',
+                sort: 'path',
                 limit: 0,
             }}).then(res=>{
                 this.datasets = res.data;
@@ -494,10 +518,9 @@ box-shadow: 0 0 1px #ccc;
 }
 .page-left {
 background-color: #fcfcfc;
-top: 165px;
+top: 50px;
 bottom: 40px;
 border-right: 1px solid #eee;
-overflow: hidden;
 }
 .page-main {
 bottom: 0px;
@@ -508,8 +531,9 @@ transition: left 0s;
 z-index: 1;
 }
 .page-left-top {
-height: 125px;
 top: 50px;
+height: 50px;
+background-color: #f0f0f0;
 overflow: hidden;
 }
 .page-left-bottom {
