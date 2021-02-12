@@ -160,9 +160,18 @@ function handle_bids(key, bids, cb) {
                 if(item.dataset.meta.session) {
                     itemkey["dataset.meta.session"] = item.dataset.meta.session;
                 }
-                if(item.dataset.meta.run) {
-                    itemkey["dataset.meta.run"] = item.dataset.meta.run;
-                }
+
+                //need to append any bids entities that make this object unique
+                //https://github.com/bids-standard/bids-specification/blob/master/src/schema/entities.yaml
+                let entities = [
+                    "task", "acq", "ce", "rec", "dir", 
+                    "run", "mod", "echo", "flip", "inv", "mt", "part", "recording",
+                    "proc", "split", 
+                    //"space", "res", "den", "label", "desc" //only for derivatives
+                ];
+                entities.forEach(e=>{
+                    if(item.dataset.meta[e]) itemkey["dataset.meta."+e] = item.dataset.meta[e];
+                })
 
                 db.DLItems.findOne(itemkey, (err, dlitem)=>{
                     if(err) return cb(err);

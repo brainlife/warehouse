@@ -26,7 +26,7 @@
     "async": "^2.6.1",
     "axios": "^0.19.2",
     "body-parser": "^1.18.3",
-    "brainlife": "^1.5",
+    "brainlife": "^1.5.11",
     "compression": "^1.7.3",
     "cors": "^2.8.5",
     "coveralls": "^3.1.0",
@@ -37,10 +37,10 @@
     "gunzip-stream": "^1.0.1",
     "istanbul": "^0.4.5",
     "mkdirp": "^0.5.5",
-    "mongoose": "^5.10.14",
+    "mongoose": "^5.11.15",
     "morgan": "^1.10.0",
     "nocache": "^2.0.0",
-    "nodemailer": "^6.4.16",
+    "nodemailer": "^6.4.18",
     "pkgcloud": "^1.6.0",
     "redis": "^2.8.0",
     "request": "^2.88.2",
@@ -55,7 +55,7 @@
     "xml2js": "^0.4.23"
   },
   "devDependencies": {
-    "chai": "^4.2.0",
+    "chai": "^4.3.0",
     "mocha": "^5.2.0",
     "node-geocoder": "^3.27.0",
     "supertest": "^3.3.0"
