@@ -1,6 +1,5 @@
 
 const assert = require('assert');
-//const axios = require('axios');
 
 describe.skip('/health', function() {
     it('should return ok', function() {
@@ -41,8 +40,7 @@ describe.skip('workflows', ()=>{
     });
 });
 
-describe('common', ()=>{
-
+describe.skip('common', ()=>{
     const common = require('../api/common');
     const models = require('../api/models');
     it('get_next_app_doi', function(done) {

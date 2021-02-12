@@ -93,6 +93,7 @@ router.get('/:projectid', jwt({secret: config.express.pubkey}), (req, res, next)
  *
  * @apiHeader {String} authorization 
  *                              A valid JWT token "Bearer: xxxxx"
+ * @apiSuccess {Object}         { status: "success" }
  */
 router.put('/:projectid', jwt({secret: config.express.pubkey}), (req, res, next)=>{
     //access control
@@ -113,18 +114,45 @@ router.put('/:projectid', jwt({secret: config.express.pubkey}), (req, res, next)
             common.publish("participant.update."+req.user.sub+"."+project._id, req.body);
             res.json({status: "success"});
         });
+
+        //store participants.json
+        const participant_path = config.groupanalysis.secondaryDir+"/"+project.group_id+"/participants.json";
+        console.debug("writing subjects to", participant_path);
+        config.groupanalysis.getSecondaryUploadStream(participant_path, (err, stream)=>{
+            if(err) {
+                console.error(err);
+                return;
+            }
+            console.log("ready to write")
+            stream.write(JSON.stringify(req.body.subjects, null, 4));
+            stream.end();
+        })
+
+        //store participant_column
+        const column_path = config.groupanalysis.secondaryDir+"/"+project.group_id+"/participants_column.json";
+        console.debug("writing subjects to", column_path);
+        config.groupanalysis.getSecondaryUploadStream(column_path, (err, stream)=>{
+            if(err) {
+                console.error(err);
+                return;
+            }
+            console.log("ready to write column")
+            stream.write(JSON.stringify(req.body.columns, null, 4));
+            stream.end();
+        })
     });
 });
 
 /**
  * @apiGroup Participant
  * @api {patch} /participant/:projectid/:subject
- *                              Update participants data
+ *                              Update participants data for specific subject
  *
  * @apiHeader {String} authorization 
  *                              A valid JWT token "Bearer: xxxxx"
- * @apiSuccess {Object}         Content of participants record
+ * @apiSuccess {Object}         { n: 1, nModified: 1, ok: 1 }
  */
+/* who uses this?
 router.patch('/:projectid/:subject', jwt({secret: config.express.pubkey}), (req, res, next)=>{
     //access control
     db.Projects.findById(req.params.projectid, (err, project)=>{
@@ -134,13 +162,16 @@ router.patch('/:projectid/:subject', jwt({secret: config.express.pubkey}), (req,
             return res.status(401).end("you are not an administartor nor member of this project");
 
         let set = { ["subjects."+req.params.subject]: req.body }; //TODO is this safe?
-        db.Participants.updateOne({project}, {$set: set}, (err, participants)=>{
+        db.Participants.updateOne({project}, {$set: set}, (err, stats)=>{
             if(err) return next(err);
             common.publish("participant.patch."+req.user.sub+"."+project._id+"."+req.params.subject, req.body);
-            res.json({status: "success"});
+            res.json(stats); //{ n: 1, nModified: 1, ok: 1 }
         });
+
+        //TODO - update participant info on secondary storage
     });
 });
+*/
 
 module.exports = router;
 

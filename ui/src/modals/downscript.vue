@@ -85,7 +85,7 @@ export default {
             return null; 
         },
         downscript() {
-            return `curl ${this.headers} -d '${this.json}' -X POST ${Vue.config.api}/dataset/downscript?limit=0 | bash`
+            return `curl ${this.headers} -d '${this.json}' -X POST "${Vue.config.api}/dataset/downscript?limit=0" | bash`
         }
     },
 

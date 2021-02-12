@@ -504,6 +504,10 @@ function handle_rule(rule, cb) {
                     },
                 }, (err, res, body)=>{
                     if(err) return next(err);
+                    if(!body.instances) {
+                        console.error("instance api didn't return an instances array");
+                        return next(body)
+                    }
                     instance = body.instances[0];
                     if(instance) {
                         rlogger.debug("using instance id:"+instance._id);

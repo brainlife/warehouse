@@ -858,15 +858,16 @@ export default {
             this.check_agreements(this.dataset.project, ()=>{
                 this.$root.$emit("loading",{message: "Preparing staging job"});
                 this.find_staged_task((task, subdir, files)=>{
-                    this.$root.$emit("loading", {show: false});
                     if(task) {
                         //check to make sure we can actually download data from this task 
                         this.$http.get(Vue.config.amaretti_api+'/task/ls/'+task._id).then(res=>{
+                            this.$root.$emit("loading", {show: false});
                             this.$root.$emit("viewselecter.open", { datatype, task, subdir, files });
                         }).catch(err=>{
                             //couldn't access the task.. let's stage new task
                             this.create_stage_task((err, task, subdir)=>{
                                 if(err) return this.$notify({type: "error", text: err.toString()});
+                                this.$root.$emit("loading", {show: false});
                                 this.$root.$emit("viewselecter.open", { datatype, task, subdir });
                             });
                         });
@@ -874,6 +875,7 @@ export default {
                         //no staged task... need to stage one
                         this.create_stage_task((err, task, subdir)=>{
                             if(err) return this.$notify({type: "error", text: err.toString()});
+                            this.$root.$emit("loading", {show: false});
                             this.$root.$emit("viewselecter.open", { datatype, task, subdir });
                         });
                     }

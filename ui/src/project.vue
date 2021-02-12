@@ -1,7 +1,7 @@
 <template>
 <div>
     <div v-if="error" class="page-content error">{{error}}</div>
-    <div v-if="selected && tabs.length > 0">
+    <div v-if="selected">
         <div class="page-header">
             <div style="float: right;">
                 <div @click="edit()" v-if="isadmin()" class="button">
@@ -263,7 +263,13 @@
 
         <div v-if="tabs[tab].id == 'groupanalysis'" class="page-content">
             <b-alert show variant="secondary" v-if="!(ismember()||isadmin())">Only the admins or members of this project can access group analysis page. Please contact the project admin to give you access.</b-alert>
-            <groupAnalysis :project="selected" v-else/>
+            <div v-else>
+                <groupAnalysis v-if="selected.group_analysis" :project="selected" v-else/>
+                <div v-else class="margin20 text-muted">
+                    <br>
+                    Group Analysis is not enable for this project.
+                </div>
+            </div>
         </div>
 
         <div v-if="tabs[tab].id == 'pub'" class="page-content">
@@ -347,7 +353,14 @@ export default {
             participants: null,
             participants_columns: null,
 
-            tabs: [],
+            tabs: [
+                {id: "detail", label: "Detail"},
+                {id: "dataset", label: "Archive"},
+                {id: "process", label: "Processes"},
+                {id: "pipeline", label: "Pipelines"},
+                {id: "groupanalysis", label: "Group Analysis"},
+                {id: "pub", label: "Publications"},
+            ],
             tab: 0, //initial tab top open
 
             projects: null, //all projects that user can see summary of
@@ -383,7 +396,7 @@ export default {
             this.publishing = false;
             this.pub_editing = null;
             if(this.$route.params.tab != this.tabs[this.tab].id) {
-                //console.log("switching to different tab............");
+                console.log("switching to different tab............");
                 this.$router.replace("/project/"+this.selected._id+"/"+this.tabs[this.tab].id);
             }
         },
@@ -472,7 +485,9 @@ export default {
                     }
                 });
             } else {
-                this.$router.replace("/project/"+this.selected._id+"/detail");
+                //console.log("tab is not set.. switching to detail tab");
+                //this.$router.replace("/project/"+this.selected._id+"/detail");
+                //this.tab = "detail"; //should fire tab watcher
             }
         },
 
@@ -538,7 +553,8 @@ export default {
                     this.$refs.disqus.reset(window.DISQUS);
                 }
 
-                //setup tabs
+                //reset tabs
+                /*
                 this.tabs = [];
                 this.tabs.push({id: "detail", label: "Detail"});
                 this.tabs.push({id: "dataset", label: "Archive"});
@@ -548,6 +564,7 @@ export default {
                     if(full_project.group_analysis) this.tabs.push({id: "groupanalysis", label: "Group Analysis"});
                     this.tabs.push({id: "pub", label: "Publications"});
                 }
+                */
 
                 this.handleRouteParams();
             });

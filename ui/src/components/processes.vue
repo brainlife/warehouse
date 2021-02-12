@@ -387,8 +387,16 @@ export default {
                 group_id: this.project.group_id,
             }).then(res=>{
                 let instance = res.data;
-                this.instances.unshift(instance);
-                this.toggle_instance(instance);
+                //sometimes websocket get delivered before this callback..
+                var idx = this.instances.findIndex(i=>i._id == instance._id);
+                if(~idx) {
+                    console.log("websocket beat me!")
+                    this.toggle_instance(this.instances[idx]);
+                } else {
+                    //not yet delivered.. go ahead
+                    this.instances.unshift(instance);
+                    this.toggle_instance(instance);
+                }
             }).catch(this.notify_error);
         },
 

@@ -51,7 +51,7 @@
                             <b-badge pill class="bigpill">
                                 <icon name="calendar" style="opacity: 0.4;"/> <small>Registered</small>&nbsp;&nbsp;{{new Date(resource.create_date).toLocaleDateString()}}
                             </b-badge>
-                            <b-badge pill class="bigpill" title="Number of tasks currently running on this resource">
+                            <b-badge pill class="bigpill" title="Number of tasks currently running on this resource" v-if="tasksRunning">
                                 <icon name="play" style="opacity: 0.4;"/>&nbsp;&nbsp;&nbsp;{{tasksRunning.length}}&nbsp;&nbsp;<small>Running / {{resource.config.maxtask}} max</small>
                             </b-badge>
                         </p>
@@ -181,14 +181,6 @@
                     <p style="opacity: 0.7;">
                         <icon name="calendar"/> Last OK date {{new Date(resource.lastok_date).toLocaleDateString()}}
                     </p>
-
-                    <!--
-                    <div v-if="config.debug">
-                        <pre>{{resource}}</pre>
-                        <pre>{{tasksRunning}}</pre>
-                        <pre>{{usage_data}}</pre>
-                    </div>
-                    -->
                 </b-container>
             </div>
             <div v-if="tab == 1">

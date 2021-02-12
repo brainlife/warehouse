@@ -437,10 +437,15 @@ function handle_task(task, cb) {
                         task_id: task._id,
                         subdir: output.id,
 
-                        //used by update_secondary_index
+                        //used to create object index
                         datatype, 
                         output,
-
+                        app: {
+                            service: task.service,
+                            service_branch: task.service_branch,
+                            commit_id: task.commit_id,
+                            name: task.name,
+                        },
                         finish_date: task.finish_date,
                     }
 

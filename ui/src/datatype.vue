@@ -24,7 +24,13 @@
                             <template v-slot:title>Samples</template>
                         </b-tab>
                         <b-tab>
-                            <template v-slot:title>Apps</template>
+                            <template v-slot:title>Apps 
+                                <small>
+                                    {{input_apps.length}} 
+                                    <icon name="caret-right" scale="0.8"/>
+                                    {{output_apps.length}}
+                                </small>
+                            </template>
                         </b-tab>
                     </b-tabs>
                 </b-container>

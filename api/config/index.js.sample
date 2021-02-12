@@ -197,14 +197,38 @@ exports.groupanalysis = {
         });
     },
 
-    getSecondaryUploadStream(path, cb) {
+    getSecondaryUploadStream(_path, cb) {
         connect_osiris((err, conn, sftp)=>{
             if(err) return cb(err);
-            let stream = sftp.createWriteStream(path);
-            stream.on('close', code=>{
-                conn.end();
-            });
-            cb(null, stream);
+            
+            //make sure the parent directory exists before writing to it
+            conn.exec("mkdir -p "+path.dirname(_path), (err, stream)=>{
+                if(err) return cb(err);
+                stream.on('error', err=>{
+                    console.error(err);
+                });
+                stream.on('close', code=>{
+                    if(code != 0) cb("failed to prepare parent directory")
+                    
+                    //now create write stream
+                    let sftp_stream = sftp.createWriteStream(_path);
+                    sftp_stream.on('close', code=>{
+                        conn.end();
+                    });
+                    cb(null, sftp_stream);
+                });
+
+                /*
+                stream.on('data', data=>{
+                    console.log(data.toString());
+                });
+                */
+                
+                //I believe listening to stream is required for close event to fire..?
+                stream.stderr.on('data', data=>{
+                    console.error(data.toString());
+                });
+            })
         });
     },
 }
@@ -352,7 +376,6 @@ function connect_osiris(cb) {
         console.log("connected to osiris - opening sftp stream also");
         conn.sftp((err, sftp)=>{
             if(err) return cb(err);
-            console.log("sftp opened");
             if(cb) cb(null, conn, sftp);
             cb = null;
         });

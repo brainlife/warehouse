@@ -14,22 +14,24 @@ const common = require('../common');
 
 /**
  * @apiGroup Secondary
- *                              List secondary output list 
- * @apiHeader {String} authorization 
- *                              A valid JWT token "Bearer: xxxxx"
+ *                              List secondary output list. This is a public interface (for now) as it only contains the metadata, 
+ *                              and user must know the project id to access it. But it would be nice to restrict this to the 
+ *                              ipython notebook running for the group. maybe I can issue a special token?
  * @apiSuccess {Object}         List of secondary outputs
  */
-/*
-router.get('/list/:projectid', jwt({secret: config.express.pubkey}), (req, res, next)=>{
-    console.log(req.params.projectid);
-    db.Projects.findById(req.params.projectid, (err, project)=>{
-        if(err) return next(err);
+router.get('/list/:projectid', /*jwt({secret: config.express.pubkey}),*/ async (req, res, next)=>{
+    try {
+        let project = db.Projects.findById(req.params.projectid);
         if(!project) return res.status(404).end();
+
+        /*
         if(!common.isadmin(req.user, project) && !common.ismember(req.user, project)) {
             return res.status(401).end("you are not an administartor nor member of this project");
         } 
+        */
 
-        axios.get(config.amaretti.api+'/task', {
+        console.log("project group", project.group_id);
+        const _res = await axios.get(config.amaretti.api+'/task', {
             params: {
                 select: 'config instance_id',
                 find: JSON.stringify({
@@ -38,36 +40,57 @@ router.get('/list/:projectid', jwt({secret: config.express.pubkey}), (req, res, 
                     '_group_id': project.group_id,
                 }),
                 limit: 20000, //TODO.. how scalable is this!?
+                sort: 'create_date',
             },
-            headers: { authorization: req.headers.authorization },
-        }).then(_res=>{
-            let validator_ids = _res.data.tasks.map(task=>task.config.validator_task._id);
-            let datatype_ids = _res.data.tasks.map(task=>task.config.validator_task.config._outputs[0].datatype);
-            
-            //lookup datatype names
-            db.Datatypes.find({_id: {$in: datatype_ids}}, {name:1,desc:1,files:1}).lean().exec((err, datatypes)=>{
-                let datatypes_obj = {};
-                datatypes.forEach(rec=>{
-                    datatypes_obj[rec._id] = rec;
-                });
+            //headers: { authorization: req.headers.authorization },
+            headers: { authorization: "Bearer "+config.warehouse.jwt },
+        });
+        console.dir(_res);
 
-                let sectasks = _res.data.tasks.map(task=>{
-                    let output = task.config.validator_task.config._outputs[0];
-                    return {
-                        datatype: datatypes_obj[output.datatype],
-                        meta: output.meta,
-                        tags: output.tags,
-                        datatype_tags: output.datatype_tags,
+        //let validator_ids = _res.data.tasks.map(task=>task.config.validator_task._id);
+        let objects = [];
+        
+        //merge all output requests into a single list
+        _res.data.tasks.forEach(task=>{
+            if(!task.config.requests) return; //old format?
+            task.config.requests.forEach(request=>{
+                if(!request.datatype) return; //should only happen on dev
+                
+                //pull information out of request and store things that users care
+                objects.push({
+                    path: request.instance_id+"/"+request.task_id+"/"+request.subdir,
 
-                        path: task.instance_id+"/"+task.config.validator_task.follow_task_id+"/"+output.id+"/secondary",
-                    }
-                });
-                res.json(sectasks);
+                    task_id: request.task_id,
+                    //instance_id: request.instance_id,
+                    //subdir: request.subdir,
+
+                    datatype: request.datatype,
+                    app: request.app,
+                    output: request.output,
+                    finish_date: request.finish_date,
+                    /*
+                    datatype: {
+                        id: request.datatype._id,
+                        name: request.datatype.name,
+                        desc: request.datatype.desc,
+                        files: request.datatype.files,
+                    },
+
+                    desc: request.output.desc,
+                    datatype_tags: request.output.datatype_tags,
+                    tags: request.output.tags,
+                    meta: request.output.meta,
+                    */
+                })
             });
-        }).catch(next);
-    });
+        });
+
+        res.json(objects);
+
+    } catch (err) {
+        next(err);
+    }
 });
-*/
 
 /**
  * @apiGroup Secondary
