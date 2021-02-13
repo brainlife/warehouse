@@ -45,7 +45,6 @@ router.get('/list/:projectid', /*jwt({secret: config.express.pubkey}),*/ async (
             //headers: { authorization: req.headers.authorization },
             headers: { authorization: "Bearer "+config.warehouse.jwt },
         });
-        console.dir(_res);
 
         //let validator_ids = _res.data.tasks.map(task=>task.config.validator_task._id);
         let objects = [];
@@ -65,9 +64,11 @@ router.get('/list/:projectid', /*jwt({secret: config.express.pubkey}),*/ async (
                     //subdir: request.subdir,
 
                     datatype: request.datatype,
-                    app: request.app,
-                    output: request.output,
-                    finish_date: request.finish_date,
+
+                    //these might not exist on old objects during development
+                    app: request.app||{},
+                    output: request.output||{},
+                    finish_date: request.finish_date||{},
                     /*
                     datatype: {
                         id: request.datatype._id,

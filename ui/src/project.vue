@@ -264,7 +264,7 @@
         <div v-if="tabs[tab].id == 'groupanalysis'" class="page-content">
             <b-alert show variant="secondary" v-if="!(ismember()||isadmin())">Only the admins or members of this project can access group analysis page. Please contact the project admin to give you access.</b-alert>
             <div v-else>
-                <groupAnalysis v-if="selected.group_analysis" :project="selected" v-else/>
+                <groupAnalysis v-if="selected.group_analysis" :project="selected"/>
                 <div v-else class="margin20 text-muted">
                     <br>
                     Group Analysis is not enable for this project.

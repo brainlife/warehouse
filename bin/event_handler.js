@@ -438,7 +438,11 @@ function handle_task(task, cb) {
                         subdir: output.id,
 
                         //used to create object index
-                        datatype, 
+                        datatype: {
+                            _id: datatype._id,
+                            name: datatype.name,
+                            //desc: datatype.desc,
+                        }, 
                         output,
                         app: {
                             service: task.service,

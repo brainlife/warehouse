@@ -39,7 +39,7 @@ router.get('/datasets', jwt({secret: config.express.pubkey, credentialsRequired:
     .select(select)
     .skip(+skip)
     .limit(+limit)
-    .sort(req.query.sort || '_id')
+    .sort(req.query.sort || '')
     .lean()
     .exec((err, recs)=>{
         if(err) return next(err);
@@ -148,7 +148,7 @@ router.get('/items', jwt({secret: config.express.pubkey, credentialsRequired: fa
     .select(select)
     .skip(+skip)
     .limit(+limit)
-    .sort(req.query.sort || '_id')
+    .sort(req.query.sort || '')
     .lean()
     .exec((err, recs)=>{
         if(err) return next(err);

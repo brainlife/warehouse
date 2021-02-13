@@ -127,6 +127,12 @@
                             <b-row v-if="dataset.prov && dataset.prov.task && dataset.prov.task.config && dataset.prov.task.config._app">
                                 <b-col cols="2"><span class="form-header">Produced by</span></b-col>
                                 <b-col cols="10">
+                                    <app slot="header"
+                                        :appid="dataset.prov.task && dataset.prov.task.config._app" 
+                                        :branch="dataset.prov.task.service_branch||'master'">
+                                        <taskconfig style="margin: 10px; margin-bottom: 40px;" :task="dataset.prov.task"/>
+                                    </app>
+                                    <br>
                                     <p v-if="!isimporttask(dataset.prov.task)">
                                         <a :href="'https://github.com/'+dataset.prov.task.service+'/tree/'+dataset.prov.task.commit_id" title="App Commit ID">
                                             <b-badge pill class="bigpill">
@@ -136,23 +142,24 @@
                                     </p>
                                     <p v-else>
                                         <!-- TODO.. we need to load the follow_task_id task, and and show that commit_id-->
+                                        commit_id not available
                                     </p>
-
-                                    <app slot="header"
-                                        :appid="dataset.prov.task && dataset.prov.task.config._app" 
-                                        :branch="dataset.prov.task.service_branch||'master'">
-                                        <taskconfig style="margin: 10px; margin-bottom: 40px;" :task="dataset.prov.task"/>
-                                    </app>
-                                    <br>
-
-                                    <a v-if="resource" :href="'/resource/'+resource._id" title="Resource Used">
-                                        <b-badge pill class="bigpill">
-                                            <icon name="server" style="opacity: 0.5; margin-right: 7px;"/>&nbsp;{{resource.name}}
-                                        </b-badge>
-                                    </a>
-                                    <br>
                                 </b-col>
                             </b-row>
+
+                            <b-row v-if="resource">
+                                <b-col cols="2"><span class="form-header">Resource Used</span></b-col>
+                                <b-col cols="10">
+                                    <p>
+                                        <a :href="'/resource/'+resource._id" title="Resource Used">
+                                            <b-badge pill class="bigpill">
+                                                <icon name="server" style="opacity: 0.5; margin-right: 7px;"/>&nbsp;{{resource.name}}
+                                            </b-badge>
+                                        </a>
+                                    </p>
+                                </b-col>
+                            </b-row>
+
 
                             <b-row>
                                 <b-col cols="2"><span class="form-header">Archived in</span></b-col>
@@ -388,8 +395,6 @@ export default {
         isimporttask(task) {
             if(~task.service.indexOf("brainlife/validator-")) return true;
             if(~task.service.indexOf("brain-life/validator-")) return true;
-
-            console.log("calling isimporttask", task)
 
             //if no input, then must be import
             if(!task.deps && !task.deps_config) return true;

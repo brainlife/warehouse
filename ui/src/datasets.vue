@@ -320,6 +320,9 @@ export default {
 
             let find = { removed: false };
             if(this.query) {
+                //TODO - mongo text search is handy, but it's very limited.
+                //for example, it doesn't allow partial search. like "btc" doesn't find "BTC_postop".
+                //we might want to switch to constructing a query much like project/archive search
                 find["$text"] = {$search: this.query};
             }
             for(let datatype_id of this.datatypes) {
@@ -410,6 +413,7 @@ export default {
                 //sort: 'datasets.meta.subject datasets.meta.session', //slow?
                 select: 'dataset.meta.subject dataset.meta.session dataset.desc dataset.datatype dataset.datatype_tags dataset.tags',
                 limit: this.itemLimit,
+                sort: 'dataset.meta.subject',
             }}).then(res=>{
                 let items = res.data;
 

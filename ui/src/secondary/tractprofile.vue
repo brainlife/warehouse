@@ -225,6 +225,7 @@ export default {
             csv_rows.forEach(csv_row=>{
                 rows.push(csv_row.split(",").map(v=>parseFloat(v)));
             });
+            let reversed_rows = rows.slice().reverse(); 
 
             let x_coords = null;
             let y_coords = null;
@@ -358,7 +359,7 @@ export default {
 
                 //follow the bottom curve of sdev in reverse order back to the beginning
                 let xerridx = x.length-1;
-                rows.reverse().forEach(cols=>{
+                reversed_rows.forEach(cols=>{
                     xerr.push(xerridx--);
                     yerr.push(cols[cid]-cols[cid+1]);
                 });
