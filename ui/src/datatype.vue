@@ -24,9 +24,13 @@
                             <template v-slot:title>Samples</template>
                         </b-tab>
                         <b-tab>
-                            <template v-slot:title>Apps 
+                            <template v-slot:title>
                                 <small>
                                     {{input_apps.length}} 
+                                    <icon name="caret-right" scale="0.8"/>
+                                </small>
+                                Apps
+                                <small>
                                     <icon name="caret-right" scale="0.8"/>
                                     {{output_apps.length}}
                                 </small>
@@ -229,22 +233,25 @@
             <div v-if="tab == 3">
                 <b-container>
                     <br>
+
+                    <p v-if="input_apps.length == 0"><small>No App uses this datatype as input.</small></p>
+                    <p v-else>
+                    <small>The following {{input_apps.length}} Apps use data in this datatype for input.</small>
+                    </p>
+                    <div class="apps-container" style="border-left: 4px solid rgb(0, 123, 255); padding-left: 15px;">
+                        <app v-for="app in input_apps" :key="app._id" :app="app" class="app" height="270px"/>
+                    </div>
+                    <br>
+
                     <p v-if="output_apps.length == 0"><small>No App uses this datatype as output.</small></p>
                     <p v-else>
-                        <small>The following Apps outputs data in this datatype.</small>
+                    <small>The following {{output_apps.length}} Apps output data in this datatype.</small>
                     </p>
                     <div class="apps-container" style="border-left: 4px solid rgb(40, 167, 69); padding-left: 15px;">
                         <app v-for="app in output_apps" :key="app._id" :app="app" class="app" height="270px"/>
                     </div>
                     <br>
 
-                    <p v-if="input_apps.length == 0"><small>No App uses this datatype as input.</small></p>
-                    <p v-else>
-                        <small>The following Apps uses data in this datatype for input.</small>
-                    </p>
-                    <div class="apps-container" style="border-left: 4px solid rgb(0, 123, 255); padding-left: 15px;">
-                        <app v-for="app in input_apps" :key="app._id" :app="app" class="app" height="270px"/>
-                    </div>
                 </b-container>
             </div>
         </div>

@@ -621,12 +621,21 @@ export default {
                                     var text = "t."+task.config._tid+"("+task.name+") "+task.status+" "+task.status_msg;
                                     var type = null;
                                     switch(task.status) {
-                                    case "failed": type = "error"; break;
+                                    case "running":
+                                        this.$root.playNotification("running");
+                                        break;
+                                    case "failed": 
+                                        this.$root.playNotification("failed");
+                                        type = "error"; 
+                                        break;
                                     case "finished": 
+                                        this.$root.playNotification("finished");
                                         this.loadProduct([t]);
                                         type = "success"; 
                                         break;
-                                    case "stopped": type = "warn"; break;
+                                    case "stopped": 
+                                        type = "warn"; 
+                                        break;
                                     default: 
                                         type = "";
                                     }

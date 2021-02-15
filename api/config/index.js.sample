@@ -211,13 +211,14 @@ exports.groupanalysis = {
                     if(code != 0) cb("failed to prepare parent directory")
                     
                     //now create write stream
-                    console.log("creating write stream...");
                     let sftp_stream = sftp.createWriteStream(_path);
                     sftp_stream.on('close', code=>{
                         conn.end();
                     });
-                    console.log("ready for stream!");
                     cb(null, sftp_stream);
+                });
+                stream.on('data', data=>{
+                    console.log(data.toString());
                 });
                 
                 //I believe listening to stream is required for close event to fire..?

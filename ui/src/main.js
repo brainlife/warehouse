@@ -234,7 +234,6 @@ Vue.config.wf_api = apihost+"/api/amaretti"; //deprecated by amaretti_api
 Vue.config.amaretti_api = apihost+"/api/amaretti";
 Vue.config.auth_api = apihost+"/api/auth";
 Vue.config.event_api = apihost+"/api/event";
-//Vue.config.profile_api = apihost+"/api/profile";
 Vue.config.event_ws = apihost_ws+"/api/event";
 Vue.config.auth_signin = "/auth#!/signin";
 Vue.config.auth_signout = "/auth#!/signout";
@@ -338,6 +337,8 @@ new Vue({
 
             //things we can access via $root
             sidemenuWide: true,
+
+            notificationSounds: {},
         }
     },
     components: { warehouse },
@@ -356,6 +357,7 @@ new Vue({
         } else {
             //for authenticated user
             this.ensure_myproject();
+            this.load_profile();
 
             //refresh jwt on page refresh (and to get new jwt after creating new project)
             this.refresh_jwt(err=>{
@@ -424,15 +426,41 @@ new Vue({
             });
         },
 
-        /*
-        load_profile(cb) {
+        load_profile() {
             if(!Vue.config.jwt) return;
-            console.log("loading private profile");
-            this.$http.get(Vue.config.profile_api+"/private").then(res=>{
-                Vue.config.profile = res.data;
-                cb();
-            }).catch(cb);
+            this.$http.get(Vue.config.auth_api+"/profile").then(res=>{
+                Vue.config.profile = res.data.profile; 
+                this.load_notification_sounds(Vue.config.profile.private.notification.process_sound);
+            }).catch(console.error);
         },
-        */
+
+        load_notification_sounds(theme) {
+            const themes = {
+                "subtle": {
+                    "running": "https://raw.githubusercontent.com/soichih/soichi.us/master/data/512136__beezlefm__notification-sound.wav",
+                    "failed": "https://raw.githubusercontent.com/soichih/soichi.us/master/data/512136__beezlefm__notification-sound.wav",
+                    "finished": "https://raw.githubusercontent.com/soichih/soichi.us/master/data/512136__beezlefm__notification-sound.wav",
+                },
+                "normal": {
+                    "running": "https://raw.githubusercontent.com/soichih/soichi.us/master/data/512136__beezlefm__notification-sound.wav",
+                    "failed": "https://raw.githubusercontent.com/soichih/soichi.us/master/data/512136__beezlefm__notification-sound.wav",
+                    "finished": "https://raw.githubusercontent.com/soichih/soichi.us/master/data/512136__beezlefm__notification-sound.wav",
+                },
+            }
+            if(themes[theme]) {
+                console.log("loading sound themes", theme);
+                for(const name in themes[theme]) {
+                    this.notificationSounds[name] = new Audio(themes[theme][name]);
+                }
+            }
+        },
+
+        playNotification(name) {
+            if(this.notificationSounds[name]) this.notificationSounds[name].play();
+            else {
+                console.log("no notification sound loaded for ", name);
+            }
+        },
+
     },
 })

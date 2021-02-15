@@ -8,7 +8,7 @@
                     <b-tab title="Profile"/>
                     <b-tab title="Avatar"/>
                     <b-tab title="Account"/>
-                    <!--<b-tab title="Notifications"/>-->
+                    <b-tab title="Notification"/>
                 </b-tabs>
             </b-container>
         </div><!--header-->
@@ -194,13 +194,21 @@
             <div v-if="tab == 3">
                 <b-form @submit="submit_profile">
                     <b-row>
-                        <b-col cols="2">
-                            <span class="form-header">News Letters</span>
+                        <b-col cols="3">
+                            <b>Process Notification Sound</b>
                         </b-col>
-                        <b-col>
+                        <b-col cols="4">
+                            <!--
                             <b-form-checkbox name="aup" v-model="profile.private.notification.newsletter_general">
                                 Receive brainlife.io general newsletters (about once a month).
                             </b-form-checkbox>    
+                            -->
+                            <b-form-select v-model="profile.private.notification.process_sound" :options="[
+                                {value: null, text: 'No Sound'}, 
+                                {value: 'subtle', text: 'Subtle notification sounds'},
+                                {value: 'normal', text: 'Normal notification sounds'},
+                            ]"></b-form-select>
+                            <small>Play notification sounds when process status changes</small>
                         </b-col>
                     </b-row>
 
@@ -256,7 +264,8 @@ export default {
                     computing_experience: null, 
                     */
                     notification: {
-                       newsletter_general: false,
+                       //newsletter_general: false,
+                        process_sound: null
                     }
                 }
             },

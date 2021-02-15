@@ -31,12 +31,17 @@
             </h4>
             <h5 class="github">{{app_.github}} <b-badge>{{branch||app_.github_branch}}</b-badge></h5>
             <div class="datatypes">
+                In
                 <div class="datatype" v-for="input in app_.inputs" :key="'input.'+input.id" :class="[input.optional?'input-optional':'']">
                     <datatypetag :datatype="input.datatype" :tags="input.datatype_tags" :clickable="false"/>
                     <b v-if="input.multi">multi</b>
                     <b v-if="input.optional">opt</b>
                 </div>
-                <icon scale="0.7" name="arrow-right"/>
+                <br>
+                <!--<icon scale="0.7" name="arrow-right"/>-->
+                <!--<h5 class="github">{{app_.github}} <b-badge>{{branch||app_.github_branch}}</b-badge></h5>-->
+                <!--<icon scale="0.7" name="arrow-right"/>-->
+                Out
                 <div class="datatype" v-for="output in app_.outputs" :key="'output.'+output.id">
                     <datatypetag :datatype="output.datatype" :tags="output.datatype_tags" :clickable="false"/>
                 </div>

@@ -123,7 +123,6 @@ router.put('/:projectid', jwt({secret: config.express.pubkey}), (req, res, next)
                 console.error(err);
                 return;
             }
-            console.log("ready to write")
             stream.write(JSON.stringify(req.body.subjects, null, 4));
             stream.end();
         })
@@ -136,7 +135,6 @@ router.put('/:projectid', jwt({secret: config.express.pubkey}), (req, res, next)
                 console.error(err);
                 return;
             }
-            console.log("ready to write column")
             stream.write(JSON.stringify(req.body.columns, null, 4));
             stream.end();
         })
