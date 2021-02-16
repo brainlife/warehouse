@@ -324,6 +324,8 @@ if (!Vue.config.debug) {
     Vue.use(VueAnalytics, { id: 'UA-118407195-1', router })
 }
 
+const soundHost = "https://raw.githubusercontent.com/brainlife/warehouse/master/ui/sounds/";
+
 //create main component
 new Vue({
     el: '#app',
@@ -430,36 +432,32 @@ new Vue({
             if(!Vue.config.jwt) return;
             this.$http.get(Vue.config.auth_api+"/profile").then(res=>{
                 Vue.config.profile = res.data.profile; 
-                this.load_notification_sounds(Vue.config.profile.private.notification.process_sound);
+                //this.load_notification_sounds(Vue.config.profile.private.notification.process_sound);
             }).catch(console.error);
         },
 
+        /*
         load_notification_sounds(theme) {
-            const themes = {
-                "subtle": {
-                    "running": "https://raw.githubusercontent.com/soichih/soichi.us/master/data/512136__beezlefm__notification-sound.wav",
-                    "failed": "https://raw.githubusercontent.com/soichih/soichi.us/master/data/512136__beezlefm__notification-sound.wav",
-                    "finished": "https://raw.githubusercontent.com/soichih/soichi.us/master/data/512136__beezlefm__notification-sound.wav",
-                },
-                "normal": {
-                    "running": "https://raw.githubusercontent.com/soichih/soichi.us/master/data/512136__beezlefm__notification-sound.wav",
-                    "failed": "https://raw.githubusercontent.com/soichih/soichi.us/master/data/512136__beezlefm__notification-sound.wav",
-                    "finished": "https://raw.githubusercontent.com/soichih/soichi.us/master/data/512136__beezlefm__notification-sound.wav",
-                },
-            }
-            if(themes[theme]) {
-                console.log("loading sound themes", theme);
-                for(const name in themes[theme]) {
-                    this.notificationSounds[name] = new Audio(themes[theme][name]);
-                }
-            }
+            if(!theme) return;
+            ["failed", "finished", "running"].forEach(name=>{
+                this.notificationSounds[name] = new Audio(soundHost+theme+"/"+name+".mp3");
+            });
         },
+        */
 
+        /*
         playNotification(name) {
             if(this.notificationSounds[name]) this.notificationSounds[name].play();
             else {
                 console.log("no notification sound loaded for ", name);
             }
+        },
+        */
+
+        playNotification(name, theme) {
+            if(!theme) theme = Vue.config.profile.private.notification.process_sound;
+            if(!theme) return;
+            new Audio(soundHost+theme+"/"+name+".mp3").play();
         },
 
     },

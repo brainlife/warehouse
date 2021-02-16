@@ -431,7 +431,19 @@ export default {
             if(!task) return; //for dev?
             let output_id = dtv_task.config._outputs[0].id;
             let output = task.config._outputs.find(out=>out.id == output_id);
+            if(output.dtv_task) {
+                //updating
+                if(output.dtv_task.status != dtv_task.status) this.playNotification(dtv_task.status);
+            }
             Vue.set(output, 'dtv_task', dtv_task);
+        },
+
+        playNotification(status) {
+            switch(status) {
+            case "running": this.$root.playNotification("running"); break;
+            case "failed": this.$root.playNotification("failed"); break;
+            case "finished": this.$root.playNotification("finished"); break;
+            }
         },
 
         //store the secondary_task object under the task that produced it.
@@ -620,9 +632,9 @@ export default {
                                 if(t.status != task.status) {
                                     var text = "t."+task.config._tid+"("+task.name+") "+task.status+" "+task.status_msg;
                                     var type = null;
+                                    this.playNotification(task.status);
                                     switch(task.status) {
                                     case "running":
-                                        this.$root.playNotification("running");
                                         break;
                                     case "failed": 
                                         this.$root.playNotification("failed");

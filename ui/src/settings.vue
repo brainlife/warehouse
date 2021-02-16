@@ -193,11 +193,12 @@
             <!--notification-->
             <div v-if="tab == 3">
                 <b-form @submit="submit_profile">
+                    <h5 style="opacity: 0.7">Notification Sound</h5>
                     <b-row>
-                        <b-col cols="3">
-                            <b>Process Notification Sound</b>
+                        <b-col cols="2">
+                            <span class="form-header">Job Status Change</span>
                         </b-col>
-                        <b-col cols="4">
+                        <b-col cols="8">
                             <!--
                             <b-form-checkbox name="aup" v-model="profile.private.notification.newsletter_general">
                                 Receive brainlife.io general newsletters (about once a month).
@@ -205,10 +206,19 @@
                             -->
                             <b-form-select v-model="profile.private.notification.process_sound" :options="[
                                 {value: null, text: 'No Sound'}, 
-                                {value: 'subtle', text: 'Subtle notification sounds'},
-                                {value: 'normal', text: 'Normal notification sounds'},
+                                {value: 'subtle', text: 'Subtle Sound'},
+                                {value: 'normal', text: 'Normal Sound'},
                             ]"></b-form-select>
-                            <small>Play notification sounds when process status changes</small>
+                            <small>Sound to play when job status changes</small>
+                            <div v-if="profile.private.notification.process_sound" style="padding: 5px 0">
+                                <span class="form-header">Try Sounds</span>
+                                <b-button-group size="sm">
+                                    <b-button v-for="status in ['running', 'finished', 'failed']" :key="status" 
+                                        variant="light" @click="$root.playNotification(status, profile.private.notification.process_sound)"> 
+                                        <statustag :status="status"/> 
+                                    </b-button>
+                                </b-button-group>
+                            </div>
                         </b-col>
                     </b-row>
 
@@ -234,12 +244,13 @@
 <script>
 import Vue from 'vue'
 import pageheader from '@/components/pageheader'
+import statustag from '@/components/statustag'
 
 const lib = require('@/lib'); //for avatar_url
 
 export default {
     components: { 
-        pageheader, 
+        pageheader, statustag,
     },
 
     data () {
@@ -286,8 +297,6 @@ export default {
 
     mounted() {
         this.$http.get(Vue.config.auth_api+"/profile").then(res=>{
-            //console.log("downloading user profile");
-            //console.dir(res.data);
             this.fullname = res.data.fullname;
             if(res.data.profile) Object.assign(this.profile, res.data.profile);
             this.ready = true;
@@ -298,12 +307,11 @@ export default {
         avatar_url: lib.avatar_url,
         submit_profile(e) {
             e.preventDefault()
-            //this.submitting = true;
             this.$http.patch(Vue.config.auth_api+"/profile", {
                 fullname: this.fullname,
                 profile: this.profile, 
             }).then(res=>{
-                //console.dir(res.data);
+                Vue.config.profile = this.profile;
                 this.$notify("Successfully updated profile");
                 this.$router.push("/projects");
             });            
