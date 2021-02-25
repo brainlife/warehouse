@@ -1,11 +1,9 @@
 const express = require('express');
 const router = express.Router();
 const jwt = require('express-jwt');
-const winston = require('winston');
 const async = require('async');
 
 const config = require('../config');
-const logger = winston.createLogger(config.logger.winston);
 const db = require('../models');
 const health = require('../health');
 
@@ -31,7 +29,6 @@ router.get('/health', (req, res, next)=>{
                 messages.push(service+" is stale max:"+(report.maxage||(1000*120)));
             }
         }
-        //if(status != "ok") logger.error(JSON.stringify({messages, reports}, null, 4));
         res.json({status, messages, reports});
     });
 });

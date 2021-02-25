@@ -1,10 +1,12 @@
 <template>
 <div>
     <div v-if="selected">
-        <div class="selected-controller">
+        <div class="selected-controller onRight">
             <div class="button" @click="selected = null" style="padding: 1px 10px; margin-top: 3px;"><icon name="times"/> Close</div>
         </div>
-        <iframe :src="host+'/ipython/'+selected.port+'/lab?token='+selected.token" frameBorder="0"/>
+        <div class="frame onRight">
+            <iframe :src="host+'/ipython/'+selected.port+'/lab?token='+selected.token" frameBorder="0"/>
+        </div>
     </div>
 
     <div v-if="!selected && !ready" class="page-content">
@@ -368,13 +370,15 @@ h4 {
     font-size: 13pt;
     font-weight: bold;
 }
-iframe {
+.frame {
     position: fixed;
+    top: 95px;
+    bottom: 0;
     left: 40px;
-    top: 95x;
-    width: calc(100% - 40px);
-    height: calc(100% - 95px);
-    transition: left 0.2s;
+    display: flex;
+}
+iframe {
+    width: 100%;
 }
 
 .selected-controller {
@@ -382,7 +386,6 @@ iframe {
     text-align: right;
     padding-right: 10px;
     width: 100px;
-    right: 0;
     height: 25px;
     top: 95px;
     z-index: 1;
@@ -394,10 +397,10 @@ iframe {
     background-color: white;
 }
 
-.sidewide iframe {
+.sidewide .frame {
     left: 180px;
-    width: calc(100% - 180px);
 }
+
 .new {
     background-color: white;
     padding: 20px;

@@ -348,7 +348,6 @@ export default {
             tm_load_archive_task: null,
             tm_load_status: null,
 
-
             config: Vue.config,
         } 
     },
@@ -620,8 +619,8 @@ export default {
             this.dataset = null;
 
             clearTimeout(debounce);
-            clearTimeout(tm_load_status);
-            clearTimeout(tm_load_archive_task);
+            clearTimeout(this.tm_load_status);
+            clearTimeout(this.tm_load_archive_task);
         },
 
         openpub(pub) {

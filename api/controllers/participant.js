@@ -2,7 +2,6 @@
 
 const express = require('express');
 const router = express.Router();
-const jwt = require('express-jwt');
 const winston = require('winston');
 const request = require('request');
 
@@ -47,7 +46,7 @@ function getParticipants(req, project, cb) {
  *                              A valid JWT token "Bearer: xxxxx"
  * @apiSuccess {Object}         Content of participants record
  */
-router.get('/:projectid', jwt({secret: config.express.pubkey}), (req, res, next)=>{
+router.get('/:projectid', common.jwt(), (req, res, next)=>{
     //access control
     db.Projects.findById(req.params.projectid, (err, project)=>{
         if(err) return next(err);
@@ -95,7 +94,7 @@ router.get('/:projectid', jwt({secret: config.express.pubkey}), (req, res, next)
  *                              A valid JWT token "Bearer: xxxxx"
  * @apiSuccess {Object}         { status: "success" }
  */
-router.put('/:projectid', jwt({secret: config.express.pubkey}), (req, res, next)=>{
+router.put('/:projectid', common.jwt(), (req, res, next)=>{
     //access control
     db.Projects.findById(req.params.projectid, (err, project)=>{
         if(err) return next(err);
@@ -151,7 +150,7 @@ router.put('/:projectid', jwt({secret: config.express.pubkey}), (req, res, next)
  * @apiSuccess {Object}         { n: 1, nModified: 1, ok: 1 }
  */
 /* who uses this?
-router.patch('/:projectid/:subject', jwt({secret: config.express.pubkey}), (req, res, next)=>{
+router.patch('/:projectid/:subject', common.jwt(), (req, res, next)=>{
     //access control
     db.Projects.findById(req.params.projectid, (err, project)=>{
         if(err) return next(err);

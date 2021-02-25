@@ -2,7 +2,6 @@
 
 const express = require('express');
 const router = express.Router();
-const jwt = require('express-jwt');
 const winston = require('winston');
 const request = require('request');
 
@@ -26,7 +25,7 @@ const common = require('../common');
  *                              A valid JWT token "Bearer: xxxxx"
  * @apiSuccess {Object}         List of projects (maybe limited / skipped) and total count
  */
-router.get('/', jwt({secret: config.express.pubkey, credentialsRequired: false}), (req, res, next)=>{
+router.get('/', common.jwt({credentialsRequired: false}), (req, res, next)=>{
     //console.log("project get recieved--------------------------------------------");
     var find = {};
     if(req.query.find) find = JSON.parse(req.query.find);
@@ -99,8 +98,7 @@ router.get('/', jwt({secret: config.express.pubkey, credentialsRequired: false})
  *
  * @apiSuccess {Object}         Project record registered
  */
-router.post('/', jwt({secret: config.express.pubkey}), function(req, res, next) {
-
+router.post('/', common.jwt(), function(req, res, next) {
     delete req.body._id; //shouldn't be set
     req.body.user_id = req.user.sub; //override (TODO - toString()?)
 
@@ -153,7 +151,7 @@ router.post('/', jwt({secret: config.express.pubkey}), function(req, res, next) 
  *
  * @apiSuccess {Object}         Project object updated
  */
-router.put('/:id', jwt({secret: config.express.pubkey}), (req, res, next)=>{
+router.put('/:id', common.jwt(), (req, res, next)=>{
     var id = req.params.id;
     db.Projects.findById(id, (err, project)=>{
         if(err) return next(err);
@@ -198,7 +196,7 @@ router.put('/:id', jwt({secret: config.express.pubkey}), (req, res, next)=>{
  * @apiHeader {String} authorization 
  *                              A valid JWT token "Bearer: xxxxx"
  */
-router.delete('/:id', jwt({secret: config.express.pubkey}), function(req, res, next) {
+router.delete('/:id', common.jwt(), function(req, res, next) {
     var id = req.params.id;
     //TODO - prevent user from removing project that's in use..
     db.Projects.findById(req.params.id, function(err, project) {
@@ -215,5 +213,4 @@ router.delete('/:id', jwt({secret: config.express.pubkey}), function(req, res, n
 });
 
 module.exports = router;
-
 

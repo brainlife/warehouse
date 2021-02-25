@@ -165,7 +165,7 @@
         <div v-else>
             <p style="font-size: 150%; margin-top: 200px;"><icon name="arrow-left"/> Select a dataset</p>
             <p>You can import datasets from various remote data sources such as OpenNeuro, FCP/INDI through datalad.</p>
-            <div style="position: fixed; bottom: 30px;">
+            <div style="position: fixed; bottom: 30px;"
                 <img src="https://www.datalad.org/theme/img/logo/datalad_nav_wide.png" width="150px" align="right" style="margin: 0px 30px;">
                 <p>You can discover and import datasets from data repositories published through Datalad.</p>
                 <p><a href="https://www.datalad.org/">Datalad</a> is a data discovery, and versioning tool that allows 

@@ -84,7 +84,7 @@ function construct_dataset_query(body/*, project_ids*/) {
  *
  * @apiSuccess {Object}         List of datasets (maybe limited / skipped) and total count
  */
-router.get('/', jwt({secret: config.express.pubkey, credentialsRequired: false}), (req, res, next)=>{
+router.get('/', common.jwt({secret: config.express.pubkey, credentialsRequired: false}), (req, res, next)=>{
     let skip = req.query.skip||0;
     let limit = req.query.limit||100; //this means if user set it to "0", no limit
     if(req.query.find) req.query.find = JSON.parse(req.query.find);
@@ -161,7 +161,7 @@ router.get('/', jwt({secret: config.express.pubkey, credentialsRequired: false})
  *
  * @apiSuccess {Object}         List of distinct values
  */
-router.get('/distinct', jwt({secret: config.express.pubkey, credentialsRequired: false}), (req, res, next)=>{
+router.get('/distinct', common.jwt({secret: config.express.pubkey, credentialsRequired: false}), (req, res, next)=>{
     const find = JSON.parse(req.query.find);
     if(!find.project) return next("please specify project query");
     common.cast_mongoid(find);
@@ -187,7 +187,7 @@ router.get('/distinct', jwt({secret: config.express.pubkey, credentialsRequired:
  * 
  */
 //warning.. similar code in pub.js
-router.get('/inventory', jwt({secret: config.express.pubkey, credentialsRequired: false}), (req, res, next)=>{
+router.get('/inventory', common.jwt({secret: config.express.pubkey, credentialsRequired: false}), (req, res, next)=>{
     const find = JSON.parse(req.query.find);
     if(!find.project) return next("please specify project query");
     common.cast_mongoid(find);
@@ -229,7 +229,7 @@ router.get('/prov/:id', (req, res, next)=>{
  * @api {get} /dataset/product/:id  Download dataobject product
  *
  */
-router.get('/product/:id', jwt({secret: config.express.pubkey}),  (req, res, next)=>{
+router.get('/product/:id', common.jwt({secret: config.express.pubkey}),  (req, res, next)=>{
     let id = req.params.id;
     common.getprojects(req.user, function(err, canread_project_ids, canwrite_project_ids) {
         if(err) return next(err);
@@ -848,7 +848,7 @@ function generate_prov(origin_dataset_id, cb) {
  * @apiSuccess {Object}                 Dataset created
  *                              
  */
-router.post('/', jwt({secret: config.express.pubkey}), (req, res, cb)=>{
+router.post('/', common.jwt({secret: config.express.pubkey}), (req, res, cb)=>{
     if(!req.body.project) return cb("project id not set");
     if(!req.body.task_id) return cb("task_id not set");
     if(!req.body.output_id) return cb("output_id not set");
@@ -916,7 +916,7 @@ router.post('/', jwt({secret: config.express.pubkey}), (req, res, cb)=>{
  *
  * @apiSuccess {Object}             Submitted brainlife/stage task
  */
-router.post('/stage', jwt({secret: config.express.pubkey}), (req, res, next)=>{
+router.post('/stage', common.jwt({secret: config.express.pubkey}), (req, res, next)=>{
     if(!req.body.instance_id) return next("instance_id is not set");
     if(!req.body.dataset_ids && !Array.isArray(req.body.dataset_ids)) return next("dataset_ids are not set");
 
@@ -1074,7 +1074,7 @@ router.post('/stage', jwt({secret: config.express.pubkey}), (req, res, next)=>{
  *
  * @apiSuccess {Object}         Updated Dataset
  */
-router.put('/:id', jwt({secret: config.express.pubkey}), (req, res, next)=>{
+router.put('/:id', common.jwt({secret: config.express.pubkey}), (req, res, next)=>{
     var id = req.params.id;
     common.getprojects(req.user, function(err, canread_project_ids, canwrite_project_ids) {
         db.Datasets.findById(id, (err, dataset)=>{
@@ -1229,7 +1229,7 @@ function get_user_agreements(sub, authorization, cb) {
  * @apiHeader {String} [authorization] A valid JWT token "Bearer: xxxxx"
  *
  */
-router.get('/download/:id', jwt({
+router.get('/download/:id', common.jwt({
     secret: config.express.pubkey,
     credentialsRequired: false,
     getToken: function(req) { 
@@ -1333,7 +1333,7 @@ router.get('/download/:id', jwt({
  * @apiHeader {String} [authorization] A valid JWT token "Bearer: xxxxx"
  *
  */
-router.get('/download/safe/:id', jwt({
+router.get('/download/safe/:id', common.jwt({
     secret: config.warehouse.public_key,
     credentialsRequired: false, //TODO why?
     getToken: function(req) { 
@@ -1368,7 +1368,7 @@ router.get('/download/safe/:id', jwt({
  * @apiHeader {String} authorization 
  *                               A valid JWT token "Bearer: xxxxx"
  */
-router.delete('/:id?', jwt({secret: config.express.pubkey}), function(req, res, next) {
+router.delete('/:id?', common.jwt({secret: config.express.pubkey}), function(req, res, next) {
     let ids = req.body.ids||req.params.id;
     if(!Array.isArray(ids)) ids = [ ids ];
     common.getprojects(req.user, function(err, canread_project_ids, canwrite_project_ids) {
@@ -1404,7 +1404,7 @@ router.delete('/:id?', jwt({secret: config.express.pubkey}), function(req, res, 
  *
  * @apiSuccess {String}         generated bash shell script
 */
-router.post('/downscript', jwt({secret: config.express.pubkey, credentialsRequired: false}), (req, res, next)=>{
+router.post('/downscript', common.jwt({secret: config.express.pubkey, credentialsRequired: false}), (req, res, next)=>{
     let skip = req.query.skip||0;
     let limit = req.query.limit||100; //this means if user set it to "0", no limit (it's string)
     common.getprojects(req.user, (err, canread_project_ids, canwrite_project_ids)=>{
@@ -1576,7 +1576,7 @@ ${p.desc}`;
  * @apiHeader {String} authorization 
  *                                  A valid JWT token "Bearer: xxxxx"
 */
-router.post('/copy', jwt({secret: config.express.pubkey}), (req, res, next)=>{
+router.post('/copy', common.jwt({secret: config.express.pubkey}), (req, res, next)=>{
     if(!req.body.project) return next("project(id) is not set");
     if(!req.body.dataset_ids && !Array.isArray(req.body.dataset_ids)) return next("dataset_ids are not set");
 
@@ -1647,7 +1647,7 @@ router.post('/copy', jwt({secret: config.express.pubkey}), (req, res, next)=>{
  * @apiHeader {String} authorization 
  *                                  A valid JWT token "Bearer: xxxxx"
 */
-router.post('/finalize-upload', jwt({secret: config.express.pubkey}), (req, res, next)=>{
+router.post('/finalize-upload', common.jwt({secret: config.express.pubkey}), (req, res, next)=>{
     if(!req.body.task) return next("task(id) is not set");
     if(!req.body.subdir) return next("subdir is not set");
     if(!req.body.datatype) return next("datatype(id) is not set");

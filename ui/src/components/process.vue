@@ -1,6 +1,6 @@
 <template>
 <div v-if="projects && instance" style="position: relative;">
-    <div v-if="!loading" ref="process-header" class="process-header" :style="{left: splitter_pos+'px'}">
+    <div v-if="!loading" ref="process-header" class="process-header onRight" :style="{left: splitter_pos+'px'}">
         <div class="instance-action">
             <div @click.stop="remove()" class="button" title="Remove this process">
                 <icon name="trash"/>
@@ -13,7 +13,7 @@
         </div>
     </div>
 
-    <div ref="process" class="process" :style="{left: splitter_pos+'px'}">
+    <div ref="process" class="process onRight" :style="{left: splitter_pos+'px'}">
         <p class="loading" v-if="loading"><icon name="cog" scale="1.25" spin/> Loading...</p>
         <b-alert variant="secondary" :show="!loading && tasks && tasks.length == 0">Please stage datasets by clicking "Stage Data" button below.</b-alert>
         <div v-if="!loading && tasks">
@@ -237,7 +237,7 @@
         <br>
     </div>
 
-    <div class="new-action" :style="{left: splitter_pos+'px'}">
+    <div class="new-action onRight" :style="{left: splitter_pos+'px'}">
         <b-row no-gutters>
             <b-col v-if="_datasets.length > 0">
                 <div class="new-action-button new-action-button-newtask" @click="newtask"><icon name="play"/>&nbsp;&nbsp;Submit App</div>
@@ -877,27 +877,29 @@ export default {
 scroll-behavior: smooth;
 position: fixed;
 bottom: 45px;
-right: 0;
 top: 175px;
 overflow-y: auto;
 overflow-x: hidden;
 }
+/*
 .sidebar {
 background-color: #ddd;
 position: fixed;
 top: 110px;
 bottom: 0px;
 width: 300px;
-right: 0px;
 overflow: auto;
-padding-bottom: 50px; /*so it won't be covered by notification*/
+padding-bottom: 50px; 
 }
+*/
+/*
 .sidebar h6 {
 font-weight: bold;
 color: #999;
 padding: 10px;
 margin: 0px;
 }
+*/
 .task {
 box-shadow: 1px 1px 5px #ccc;
 }
@@ -908,12 +910,14 @@ border-left: 5px solid #ccc;
 padding-left: 10px;
 font-style: italic;
 }
+/*
 .sidebar .dataset {
 border-bottom: 1px solid #d5d5d5; 
 padding: 3px;
 padding-left: 7px;
 font-size: 85%;
 }
+*/
 .dataset.clickable:hover {
 background-color: #eee;
 }
@@ -982,7 +986,6 @@ background-color: white;
 position: fixed;
 bottom: 0px;
 height: 45px;
-right: 0px;
 z-index: 7;
 }
 
@@ -1054,7 +1057,6 @@ padding: 10px;
 padding-left: 0px;
 position: fixed; 
 top: 95px; 
-right: 0;
 left: 600px;
 height: 80px;
 z-index: 7; 

@@ -1,5 +1,4 @@
 <template>
-
 <div class="sidemenu" v-if="showmenu">
     <div class="logo">
         <div class="toggle" @click="$root.toggleSideMenu">

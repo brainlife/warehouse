@@ -4,7 +4,6 @@
 const express = require('express');
 const router = express.Router();
 const winston = require('winston');
-const jwt = require('express-jwt');
 const async = require('async');
 const request = require('request');
 const fs = require('fs');
@@ -30,7 +29,7 @@ const common = require('../common');
  *
  * @apiSuccess {Object}         List of datatypes (maybe limited / skipped) and total count
  */
-router.get('/', jwt({secret: config.express.pubkey, credentialsRequired: false}), (req, res, next)=>{
+router.get('/', common.jwt({credentialsRequired: false}), (req, res, next)=>{
     var find = {};
 	var skip = req.query.skip || 0;
 	var limit = req.query.limit || 100;
@@ -51,7 +50,7 @@ router.get('/', jwt({secret: config.express.pubkey, credentialsRequired: false})
 });
 
 //get all uis registered
-router.get('/ui', jwt({secret: config.express.pubkey, credentialsRequired: false}), (req, res, next)=>{
+router.get('/ui', common.jwt({credentialsRequired: false}), (req, res, next)=>{
     db.UIs.find({})
     .lean()
     .exec((err, uis)=>{
@@ -76,7 +75,7 @@ router.get('/ui', jwt({secret: config.express.pubkey, credentialsRequired: false
  *
  * @apiSuccess {Object}         Datatype registered
  */
-router.post('/', jwt({secret: config.express.pubkey}), function(req, res, next) {
+router.post('/', common.jwt(), function(req, res, next) {
 
     delete req.body._id; //shouldn't be set
     //req.body.user_id = req.user.sub; 
@@ -111,7 +110,7 @@ router.post('/', jwt({secret: config.express.pubkey}), function(req, res, next) 
  *
  * @apiSuccess {Object}         Datatype updated
  */
-router.put('/:id', jwt({secret: config.express.pubkey}), (req, res, next)=>{
+router.put('/:id', common.jwt(), (req, res, next)=>{
     var id = req.params.id;
     db.Datatypes.findById(id, (err, datatype)=>{
         if(err) return next(err);

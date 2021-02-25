@@ -1,6 +1,7 @@
 <template>
-<div id="warehouse" :class="{'sidewide': $root.sidemenuWide}">
+<div id="warehouse" :class="{'sidewide': $root.sidemenuWide, 'rightviewOpen': $root.rightviewOpen}">
     <sidemenu/>
+    <rightview/>
     <router-view/>
     <notifications position="bottom left"/>
     <modals/>
@@ -9,10 +10,10 @@
 </template>
 
 <script>
-
 import Vue from 'vue'
 import modals from '@/components/modals'
 import sidemenu from '@/components/sidemenu'
+import rightview from '@/components/rightview'
 import loading from '@/components/loading'
 
 export default {
@@ -20,6 +21,7 @@ export default {
         modals,
         sidemenu,
         loading,
+        rightview,
     },
 
     data() {
@@ -38,11 +40,9 @@ export default {
         }
     }
 }
-
 </script>
 
-<style>
-
+<style type="scss">
 #warehouse {
     height: 100%;
     background-color: #f9f9f9;
@@ -77,7 +77,6 @@ html,body {
 }
 
 /*deprecate below eventually*/
-
 .clickable {
     cursor: pointer;
 }
@@ -95,7 +94,6 @@ html,body {
     z-index: 1;
     background-color: white;
 }
-
 .page-header h4 {
     opacity: 0.8;
     overflow: hidden; 
@@ -107,33 +105,48 @@ html,body {
 .page-content {
     position: fixed;
     left: 40px;
-    right: 0px;
+    right: 30px;
     top: 0px;
-    transition: left 0.2s;
+    transition: left 0.2s, right 0.2s;
 }
+
 .sidewide .page-header, 
 .sidewide .page-footer,
-.sidewide .search-box,
-.sidewide .page-content {
+.sidewide .page-content, 
+.sidewide .search-box {
     left: 180px;
 }
+
+.onRight {
+    transition: right 0.2s;
+    right: 30px;
+}
+.rightviewOpen .page-header, 
+.rightviewOpen .page-footer,
+.rightviewOpen .page-content,
+.rightviewOpen .button-fixed,
+.rightviewOpen .onRight {
+    right: 350px;
+}
+
 .page-content {
     top: 50px;
     bottom: 0px;
     overflow: auto;
+
 }
 .page-footer {
     text-align: right; 
     position: fixed; 
     height: 60px;
     left: 40px;
-    right: 0px;
+    right: 30px;
     bottom: 0px; 
     padding: 10px 30px;
     background-color: rgba(100,100,100,0.4);
     z-index: 7;
     pointer-events: none;
-    transition: left 0.2s;
+    transition: left 0.2s, right 0.2s;
 }
 
 .page-footer .btn {
@@ -150,7 +163,7 @@ code.hljs {
     font-size: 85%;
 }
 .table {
-color: inherit;
+    color: inherit;
 }
 table.info {
     width: 100%;
@@ -186,12 +199,13 @@ table.info td {
     position: fixed;
     bottom: 20px;
     right: 30px;
+    margin-right: 30px;
     border-radius: 4px;
     width: 150px;
     font-weight: bold;
     border: none;
     background-color: #159957;
-    transition: background-image 0.5s, left 0.5s, right 0.5s, opacity 0.5s, transform 0.2s;
+    transition: background-image 0.5s, left 0.2s, right 0.2s, opacity 0.5s, transform 0.2s, margin-right 0.2s;
     box-shadow: 1px 1px 3px #0001;
     color: white;
     z-index: 6;
@@ -246,6 +260,7 @@ table.info td {
 .brainlife-tab {
     min-height: 45px;
     padding-top: 5px;
+    overflow: hidden;
 }
 .brainlife-tab .nav-tabs {
     border: none;
@@ -325,68 +340,68 @@ table.info td {
     position: relative;
 }
 .brainlife-modal-header-buttons {
-float: right;
-margin-top: 5px;
+    float: right;
+    margin-top: 5px;
 }
 
 small {
-font-size: 85%;
-opacity: 0.7;
+    font-size: 85%;
+    opacity: 0.7;
 }
 
 .col-form-label,
 .form-header {
-text-transform: uppercase;
-opacity: 0.8;
-font-weight: bold;
-font-size: 13px;
-margin-bottom: 5px;
-display: block;
+    text-transform: uppercase;
+    opacity: 0.8;
+    font-weight: bold;
+    font-size: 13px;
+    margin-bottom: 5px;
+    display: block;
 }
 
 .vs__actions button.clear {
-position: relative;
-top: 2px;
+    position: relative;
+    top: 2px;
 }
 
 .v-select .dropdown-toggle {
-background-color: white;
+    background-color: white;
 }
 .v-select {
-font-family: inherit;
+    font-family: inherit;
 }
 
 /*prevent bootstrap-vue css conflict*/
 .v-select.dropdown .dropdown-toggle::after {
-display: none;
+    display: none;
 }
 .v-select.dropdown .form-control {
-height: inherit; 
+    height: inherit; 
 }
 
 .select2-container--default .select2-selection--single {
-height: 36px;
+    height: 36px;
 }
 .select2-container--default .select2-selection--single .select2-selection__rendered {
-margin: 3px 0px;
+    margin: 3px 0px;
 }
 .select2-container--default .select2-selection--single,
 .select2-container--default.select2-container--focus .select2-selection--multiple,
 .select2-container--default .select2-selection--multiple {
-border: 1px solid #ced4da;
+    border: 1px solid #ced4da;
 }
 
 .js-plotly-plot .plotly .modebar {
-z-index: inherit;
+    z-index: inherit;
 }
 ::placeholder,
 .form-control::placeholder {
-color: black;
-opacity: 0.35;
+    color: black;
+    opacity: 0.35;
 }
 
 .readme {
-line-height: 175%;
+    line-height: 175%;
 }
 
 .readme img {
@@ -442,7 +457,7 @@ pre {
     position: fixed;
     top: 6px;
     padding-left: 10px;
-    right: 0px;
+    right: 30px;
     left: 40px;
     transition: left 0.2s;
 }
@@ -530,12 +545,6 @@ pre {
     min-height: 16px;
 }
 
-/*
-.badge-pill {
-    padding-top: .5em;
-}
-*/
-
 .scroll-shadow {
     /*https://stackoverflow.com/questions/9333379/check-if-an-elements-content-is-overflowing*/
     background:
@@ -596,4 +605,17 @@ pre {
     color: white;
     background-color: gray;
 }
+
+@media screen and (max-width: 800px) {
+    /*hide un-opened rightview menu for mobile*/
+    #warehouse:not(.rightviewOpen) .rightview {
+        display: none;
+    }
+    #warehouse:not(.rightviewOpen) .page-header,
+    #warehouse:not(.rightviewOpen) .page-content,
+    #warehouse:not(.rightviewOpen) .onRight {
+        right: 0;
+    }
+}
+
 </style>

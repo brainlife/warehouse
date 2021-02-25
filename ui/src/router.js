@@ -78,13 +78,21 @@ export default new Router({
         }},
 
         //to-be-deprecated by /view?config= (still used by viewer selecter?)
-        {path: '/view/:taskid/:type/:datatype64/:subdir?', component: view, props: true}, 
+        {path: '/view/:taskid/:type/:datatype64/:subdir?', component: view, props: true, meta: {
+            noRightView: true,
+        }}, 
 
-        {path: '/view', component: view, props: true},
+        {path: '/view', component: view, props: true, meta: {
+            noRightView: true,
+        }},
 
-        {path: '/novnc/:taskid/:type/:datatype64/:subdir?', component: novnc, props: true},
+        {path: '/novnc/:taskid/:type/:datatype64/:subdir?', component: novnc, props: true, meta: {
+            noRightView: true,
+        }},
 
-        {path: '/novnc', component: novnc, props: true}, //deprecated by /novnc?config=
+        {path: '/novnc', component: novnc, props: true, meta: {
+            noRightView: true,
+        }}, //deprecated by /novnc?config=
 
          //deprecated by /projects (redirect?)
         {path: '/project', component: projects, meta: {
@@ -164,11 +172,13 @@ export default new Router({
         {path: '/pubs', component: pubs, meta: {
             public: true,
             sidemenu: "pub",
+            noRightView: true,
         }},
 
         {path: '/pub/:id', component: pub, meta: {
             public: true,
             sidemenu: "pub",
+            noRightView: true,
         }},
 
         {path: '/settings', component: settings, meta: {
@@ -182,6 +192,7 @@ export default new Router({
         {path: '/404', component: missing, meta: {
             public: true,
             sidemenu: null,
+            noRightView: true,
         }},
         
         {path: '/admin', component: admin, meta: {

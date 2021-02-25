@@ -2,13 +2,13 @@
 <div>
     <div class="page-header">
         <b-form-checkbox style="float: right; padding: 11px; z-index: 1" v-model="show_dep">Show Deprecated Apps</b-form-checkbox>
-        <div class="search-box">
+        <div class="search-box onRight">
             <b-form-input v-model="query" type="text" placeholder="Search Apps" @focus.native="focus_search()" @input="change_query_debounce" class="input"/>
             <icon name="search" class="search-icon" scale="1.5"/>
             <icon name="times" class="clear-search" scale="1.5" v-if="query != ''" @click="clearQuery()"/>
         </div>
     </div>
-    <div class="group-list" v-if="app_groups" ref="group-list">
+    <div class="group-list onRight" v-if="app_groups" ref="group-list">
         <h4 style="opacity: 0.7;">Categories</h4>
 
         <div v-if="app_groups['_new']">
@@ -352,7 +352,6 @@ margin-right: 240px;
 position: fixed;
 top: 50px;
 bottom: 0px;
-right: 0px;
 width: 240px;
 background-color: #ddd;
 }
@@ -405,7 +404,7 @@ transition: box-shadow 0.3s ease;
 box-shadow: 2px 2px 6px rgba(0,0,0,0.2);
 }
 .button-fixed {
-right: 280px;
+margin-right: 280px;
 }
 .search-box .clear-search {
 right: 260px;

@@ -18,20 +18,24 @@ export default {
     },
     computed: {
         styles: function() {
+            let styles = {
+                right: this.$root.rightMargin,
+            };
             switch(window.location.hostname) {
             case "localhost":
-                return {
+                Object.assign(styles, {
                     "backgroundImage": "inherit",
                     "backgroundColor": "orange",
-                }
+                });
+                break;
             case "test.brainlife.io":
-                return {
+                Object.assign(styles, {
                     "backgroundImage": "inherit",
                     "backgroundColor": "purple",
-                }
-            default: 
-                return {};
+                });
+                break;
             }
+            return styles;
         }
     },
     methods: {

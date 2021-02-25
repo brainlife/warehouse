@@ -2,7 +2,6 @@
 
 const express = require('express');
 const router = express.Router();
-const jwt = require('express-jwt');
 const axios = require('axios');
 const async = require('async');
 const path = require('path');
@@ -19,17 +18,10 @@ const common = require('../common');
  *                              ipython notebook running for the group. maybe I can issue a special token?
  * @apiSuccess {Object}         List of secondary outputs
  */
-router.get('/list/:projectid', /*jwt({secret: config.express.pubkey}),*/ async (req, res, next)=>{
+router.get('/list/:projectid', async (req, res, next)=>{
     try {
         let project = db.Projects.findById(req.params.projectid);
         if(!project) return res.status(404).end();
-
-        /*
-        if(!common.isadmin(req.user, project) && !common.ismember(req.user, project)) {
-            return res.status(401).end("you are not an administartor nor member of this project");
-        } 
-        */
-
         console.log("project group", project.group_id);
         const _res = await axios.get(config.amaretti.api+'/task', {
             params: {
@@ -101,10 +93,8 @@ router.get('/list/:projectid', /*jwt({secret: config.express.pubkey}),*/ async (
  *                          A valid JWT token "Bearer: xxxxx"
  * @apiSuccess {Object}     Directory structure of secondary content
  */
-router.get('/:task_id/*', jwt({
+router.get('/:task_id/*', common.jwt({
     //similar to dataset/download
-    secret: config.express.pubkey,
-    //credentialsRequired: false,
     getToken: function(req) { 
         //load token from req.headers as well as query.at
         if(req.query.at) return req.query.at; 
@@ -118,7 +108,6 @@ router.get('/:task_id/*', jwt({
     const task_id = req.params.task_id;
     const p = req.query.p || req.params[0];
 
-    //{ headers: { Authorization: "Bearer "+req.user.jwt||req.query.at } }
     axios.get(config.amaretti.api+"/task/"+task_id).then(taskres=>{
         if(taskres.status != 200) return next("failed to load task "+task_id);
         const task = taskres.data;
@@ -170,7 +159,7 @@ router.get('/:task_id/*', jwt({
  *
  * @apiSuccess {Object}             Submitted launcher task
  */
-router.post('/launchga', jwt({secret: config.express.pubkey}), (req, res, next)=>{
+router.post('/launchga', common.jwt(), (req, res, next)=>{
     if(!req.body.instance_id) return next("instance_id is not set");
     if(!req.body.container) return next("container name is not set");
     if(!req.body.tag) return next("container tag is not set");

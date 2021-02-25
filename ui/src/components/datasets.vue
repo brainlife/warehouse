@@ -2,7 +2,7 @@
 <div>
     <div :class="{rightopen: selected_count}">
         <div v-if="loading" class="loading" :class="{sidemenuwide: $root.sidemenuWide}"><icon name="cog" spin scale="2"/></div>
-        <div class="table-header">
+        <div class="table-header onRight">
             <div style="float: right; position: relative; top: 4px;">
                 <b-form-input id="filter" class="filter" :class="{'filter-active': query != ''}" size="sm" v-model="query" placeholder="Filter" @input="change_query_debounce"></b-form-input>
             </div>
@@ -86,7 +86,7 @@
 
     </div>
 
-    <div class="selected-view" :class="{'selected-view-open':selected_count}" v-if="datatypes">
+    <div class="selected-view onRight" :class="{'selected-view-open':selected_count}" v-if="datatypes">
         <h4>
             <div class="button" style="float: right; position: relative; top: -5px" @click="clear_selected"><icon name="times"/></div>
             <icon name="check-square" style="position: relative; margin-right: 10px;"/> {{selected_count}} Selected 
@@ -771,17 +771,15 @@ export default {
 
 <style scoped>
 .table-header {
-    transition: 0.2s right, 0.2s bottom, 0.2s left;
     position: fixed;
     top: 100px;
     left: 40px;
-    right: 0px;
     overflow-x: hidden;
     padding-left: 10px;
     padding-right: 16px;
     color: #999;
 
-    transition: left 0.2s;
+    transition: left 0.2s, right 0.2s;
 }
 .sidewide .table-header {
     left: 180px;
@@ -792,7 +790,7 @@ text-transform: uppercase;
 }
 
 .page-content {
-transition: 0.2s right, 0.2s bottom, 0.2s left;
+transition: right 0.2s, left 0.2s;
 top: 165px;
 overflow-y: scroll;
 padding-left: 10px;
@@ -808,7 +806,11 @@ margin-bottom: 5px;
 
 .rightopen .page-content,
 .rightopen .table-header {
-right: 250px;
+    right: 300px;
+}
+.rightviewOpen .rightopen .page-content,
+.rightviewOpen .rightopen .table-header {
+    right: 600px;
 }
 
 .selected {
@@ -822,12 +824,12 @@ right: 250px;
     background-color: #eee;
     overflow-x: hidden;
     position: fixed;
-    right: -250px;
+    margin-right: -250px;
     width: 250px;
     top: 95px;
     bottom: 0px;
     z-index: 2;
-    transition: right 0.2s;
+    transition: margin-right 0.2s, right 0.2s;
 }
 .selected-view h4 {
     color: #666;
@@ -838,7 +840,7 @@ right: 250px;
     height: 45px;
 }
 .selected-view-open {
-    right: 0px;
+    margin-right: 0px;
 }
 .selected-view .selected-item {
     background-color: white;
@@ -911,7 +913,7 @@ background-color: #ccc;
 color: white;
 }
 .button-fixed.selected-view-open {
-right: 300px;
+margin-right: 300px;
 }
 .filter {
 float: right;

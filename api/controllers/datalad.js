@@ -2,7 +2,6 @@
 
 const express = require('express');
 const router = express.Router();
-const jwt = require('express-jwt');
 const winston = require('winston');
 const async = require('async');
 
@@ -25,7 +24,7 @@ const common = require('../common');
  *                              A valid JWT token "Bearer: xxxxx"
  * @apiSuccess {Object}         List of projects (maybe limited / skipped) and total count
  */
-router.get('/datasets', jwt({secret: config.express.pubkey, credentialsRequired: false}), (req, res, next)=>{
+router.get('/datasets', common.jwt({credentialsRequired: false}), (req, res, next)=>{
     var find = {};
     if(req.query.find) find = JSON.parse(req.query.find);
     var skip = req.query.skip||0;
@@ -59,7 +58,7 @@ router.get('/datasets', jwt({secret: config.express.pubkey, credentialsRequired:
  * @apiHeader {String} authorization 
  *                              A valid JWT token "Bearer: xxxxx"
  */
-router.post('/import/:dataset_id', jwt({secret: config.express.pubkey}), (req, res, next)=>{
+router.post('/import/:dataset_id', common.jwt(), (req, res, next)=>{
     db.DLDatasets.findById(req.params.dataset_id).exec((err, dataset)=>{
         if(err) return next(err);
         if(!dataset) return next("no such dataset");
@@ -134,7 +133,7 @@ router.post('/import/:dataset_id', jwt({secret: config.express.pubkey}), (req, r
  *                              A valid JWT token "Bearer: xxxxx"
  * @apiSuccess {Object}         List of projects (maybe limited / skipped) and total count
  */
-router.get('/items', jwt({secret: config.express.pubkey, credentialsRequired: false}), (req, res, next)=>{
+router.get('/items', common.jwt({credentialsRequired: false}), (req, res, next)=>{
     var find = {};
     if(req.query.find) find = JSON.parse(req.query.find);
     var skip = req.query.skip||0;

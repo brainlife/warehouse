@@ -2,7 +2,6 @@
 
 const express = require('express');
 const router = express.Router();
-const jwt = require('express-jwt');
 const winston = require('winston');
 const async = require('async');
 const fs = require('fs');
@@ -27,7 +26,7 @@ const mongoose = require('mongoose');
  *
  * @apiSuccess {Object}         List of rules (maybe limited / skipped) and total count
  */
-router.get('/', jwt({secret: config.express.pubkey}), (req, res, next)=>{
+router.get('/', common.jwt(), (req, res, next)=>{
     let find = {};
 	let skip = req.query.skip || 0;
 	let limit = req.query.limit || 100;
@@ -57,7 +56,7 @@ router.get('/', jwt({secret: config.express.pubkey}), (req, res, next)=>{
  *
  * @apiSuccess String               Return string containing the entire log
  */
-router.get('/log/:ruleid', jwt({secret: config.express.pubkey}), (req, res, next)=>{
+router.get('/log/:ruleid', common.jwt(), (req, res, next)=>{
     db.Rules.findById(req.params.ruleid)
     .exec((err, rule)=>{
         if(err) return next(err);
@@ -123,7 +122,7 @@ function check_access(req, rule, cb) {
  *
  * @apiSuccess {Object}             Created rule object
  */
-router.post('/', jwt({secret: config.express.pubkey}), (req, res, next)=>{
+router.post('/', common.jwt(), (req, res, next)=>{
     if(!req.body.project) return next("project id not set");
     if(!req.body.app) return next("app id not set");
     check_access(req, req.body, err=>{
@@ -172,7 +171,7 @@ router.post('/', jwt({secret: config.express.pubkey}), (req, res, next)=>{
  *
  * @apiSuccess {Object}             Updated Rule
  */
-router.put('/:id', jwt({secret: config.express.pubkey}), (req, res, next)=>{
+router.put('/:id', common.jwt(), (req, res, next)=>{
     var id = req.params.id;
     db.Rules.findById(id, (err, rule)=>{
         if(err) return next(err);
@@ -208,7 +207,7 @@ router.put('/:id', jwt({secret: config.express.pubkey}), (req, res, next)=>{
  * @apiHeader {String} authorization 
  *                              A valid JWT token "Bearer: xxxxx"
  */
-router.put('/deactivate/:id', jwt({secret: config.express.pubkey}), function(req, res, next) {
+router.put('/deactivate/:id', common.jwt(), function(req, res, next) {
     const id = req.params.id;
     db.Rules.findById(id, function(err, rule) {
         if(err) return next(err);
@@ -268,7 +267,7 @@ router.put('/deactivate/:id', jwt({secret: config.express.pubkey}), function(req
  * @apiHeader {String} authorization 
  *                              A valid JWT token "Bearer: xxxxx"
  */
-router.delete('/:id', jwt({secret: config.express.pubkey}), function(req, res, next) {
+router.delete('/:id', common.jwt(), function(req, res, next) {
     const id = req.params.id;
     db.Rules.findById(id, function(err, rule) {
         if(err) return next(err);

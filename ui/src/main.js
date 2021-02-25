@@ -339,6 +339,7 @@ new Vue({
 
             //things we can access via $root
             sidemenuWide: true,
+            rightviewOpen: null,
 
             notificationSounds: {},
         }
@@ -348,6 +349,14 @@ new Vue({
     mounted() {
         let wide = localStorage.getItem("sidemenuWide");
         if(wide) this.sidemenuWide = (wide=="1"?true:false);
+
+        let ro = localStorage.getItem("rightviewOpen");
+        if(ro) {
+            this.rightviewOpen = JSON.parse(ro);
+        } else {
+            //open doc for new users
+            if(Vue.config.jwt) this.rightviewOpen = "doc";
+        }
 
         //allow child component to refresh jwt
         //project/submit (adding project requires jwt scope change for ac)
@@ -378,6 +387,11 @@ new Vue({
         toggleSideMenu() {
             this.sidemenuWide = !this.sidemenuWide;
             localStorage.setItem("sidemenuWide", this.sidemenuWide?"1":"0");
+        },
+
+        toggleRightView(page) {
+            this.rightviewOpen = page;
+            localStorage.setItem("rightviewOpen", JSON.stringify(page));
         },
 
         async ensure_myproject() {
@@ -436,29 +450,10 @@ new Vue({
             }).catch(console.error);
         },
 
-        /*
-        load_notification_sounds(theme) {
-            if(!theme) return;
-            ["failed", "finished", "running"].forEach(name=>{
-                this.notificationSounds[name] = new Audio(soundHost+theme+"/"+name+".mp3");
-            });
-        },
-        */
-
-        /*
-        playNotification(name) {
-            if(this.notificationSounds[name]) this.notificationSounds[name].play();
-            else {
-                console.log("no notification sound loaded for ", name);
-            }
-        },
-        */
-
         playNotification(name, theme) {
             if(!theme) theme = Vue.config.profile.private.notification.process_sound;
             if(!theme) return;
             new Audio(soundHost+theme+"/"+name+".mp3").play();
         },
-
     },
 })

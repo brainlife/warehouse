@@ -1,16 +1,11 @@
 
-//contrib
 const express = require("express");
 const router = express.Router();
-const jwt = require("express-jwt");
-const winston = require('winston');
-
-//mine
 const config = require("../config");
+const common = require('../common');
 const db = require("../models");
-const logger = winston.createLogger(config.logger.winston);
 
-router.get("/checkaccess/project/:project_id", jwt({secret: config.express.pubkey}), function(req, res, next) {
+router.get("/checkaccess/project/:project_id", common.jwt(), function(req, res, next) {
     //load project requested and check
     db.Projects.find({
         _id: req.params.project_id,

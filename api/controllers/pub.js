@@ -2,7 +2,6 @@
 
 const express = require('express');
 const router = express.Router();
-const jwt = require('express-jwt');
 const winston = require('winston');
 const async = require('async');
 const request = require('request');
@@ -174,7 +173,7 @@ router.get('/datasets/:releaseid', (req, res, next)=>{
  * @apiSuccess {Object}                 Publication record created
  *                              
  */
-router.post('/', jwt({secret: config.express.pubkey}), (req, res, next)=>{
+router.post('/', common.jwt(), (req, res, next)=>{
     if(!req.body.project) return next("project id not set");
     if(!req.body.license) return next("license not set");
     if(!req.body.name) return next("name not set");
@@ -252,7 +251,7 @@ router.post('/', jwt({secret: config.express.pubkey}), (req, res, next)=>{
  *
  * @apiSuccess {Object}         Updated Publication
  */
-router.put('/:id', jwt({secret: config.express.pubkey}), (req, res, next)=>{
+router.put('/:id', common.jwt(), (req, res, next)=>{
     var id = req.params.id;
     db.Publications.findById(id, (err, pub)=>{
         if(err) return next(err);

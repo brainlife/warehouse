@@ -13,6 +13,7 @@ const redis = require('redis');
 const xmlescape = require('xml-escape');
 const amqp = require("amqp"); //switch to amqplib?
 const axios = require('axios');
+const jwt = require('express-jwt');
 
 const config = require('./config');
 const db = require('./models');
@@ -1232,4 +1233,13 @@ exports.aggregateDatasetsByApps = query=>{
         });
     });
 }
+
+//wrapper for express-jwt to set some required default options
+exports.jwt = opt=>{
+    return jwt(Object.assign({
+        secret: config.express.pubkey,
+        algorithms: ['RS256'],
+    }, opt));
+}
+
 

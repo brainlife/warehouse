@@ -247,7 +247,6 @@
         </div>
 
         <div v-if="tabs[tab].id == 'process'" class="page-content">
-            <!--<noprocess v-if="!(ismember()||isadmin())"/>-->
             <b-alert show variant="secondary" v-if="!(ismember()||isadmin())">
                 Only the admins or members of this project can access processes. Please contact the project admins to give you access.
             </b-alert>

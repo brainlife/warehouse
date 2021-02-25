@@ -2,7 +2,6 @@
 
 const express = require('express');
 const router = express.Router();
-const jwt = require('express-jwt');
 const winston = require('winston');
 const async = require('async');
 const request = require('request');
@@ -37,7 +36,7 @@ function canedit(user, rec) {
  *                              A valid JWT token "Bearer: xxxxx"
  * @apiSuccess {Object}         List of apps (maybe limited / skipped) and total count
  */
-router.get('/', jwt({secret: config.express.pubkey, credentialsRequired: false}), (req, res, next)=>{
+router.get('/', common.jwt({credentialsRequired: false}), (req, res, next)=>{
     var skip = req.query.skip||0;
     let limit = req.query.limit||100;
     var ands = [];
@@ -89,7 +88,7 @@ router.get('/', jwt({secret: config.express.pubkey, credentialsRequired: false})
  *                              A valid JWT token "Bearer: xxxxx"
  * @apiSuccess {Object}         App detail
  */
-router.get('/:id', jwt({secret: config.express.pubkey}), (req, res, next)=>{
+router.get('/:id', common.jwt(), (req, res, next)=>{
     db.Apps.findById(req.params.id)
     .select(req.query.select)
     .populate(req.query.populate || '')
@@ -124,7 +123,7 @@ router.get('/:id/badge', (req, res, next)=>{
 
 //experimental
 //   used by: ui dashboard
-router.get('/:id/metrics', /*jwt({secret: config.express.pubkey, credentialsRequired: false}),*/ (req, res, next)=>{
+router.get('/:id/metrics', (req, res, next)=>{
     db.Apps.findById(req.params.id).select('github').lean().exec((err, app)=>{
         if(err) return next(err);
         if(!app) return next("no such app");
@@ -177,7 +176,7 @@ router.get('/:id/metrics', /*jwt({secret: config.express.pubkey, credentialsRequ
  *
  * @apiSuccess {Object}         App registered
  */
-router.post('/', jwt({secret: config.express.pubkey}), (req, res, next)=>{
+router.post('/', common.jwt(), (req, res, next)=>{
 
     req.body.user_id = req.user.sub;
     
@@ -265,7 +264,7 @@ router.post('/', jwt({secret: config.express.pubkey}), (req, res, next)=>{
  *
  * @apiSuccess {Object}         Updated App
  */
-router.put('/:id', jwt({secret: config.express.pubkey}), (req, res, next)=>{
+router.put('/:id', common.jwt(), (req, res, next)=>{
     var id = req.params.id;
     common.validate_projects(req.user, req.body.projects, err=>{
         if(err) return next(err);
@@ -346,7 +345,7 @@ router.put('/:id', jwt({secret: config.express.pubkey}), (req, res, next)=>{
  * @apiHeader {String} authorization 
  *                              A valid JWT token "Bearer: xxxxx"
  */
-router.delete('/:id', jwt({secret: config.express.pubkey}), (req, res, next)=>{
+router.delete('/:id', common.jwt(), (req, res, next)=>{
     var id = req.params.id;
     //TODO - prevent user from removing app that's in use..
     db.Apps.findById(req.params.id, (err, app)=>{
@@ -372,7 +371,7 @@ router.delete('/:id', jwt({secret: config.express.pubkey}), (req, res, next)=>{
  * @apiHeader {String} authorization 
  *                              A valid JWT token "Bearer: xxxxx"
  */
-router.get('/info/:org/:name', jwt({secret: config.express.pubkey}), async (req, res, next)=>{
+router.get('/info/:org/:name', common.jwt(), async (req, res, next)=>{
     let service = req.params.org+"/"+req.params.name; //TODO validate?
     try {
         let branches = [];

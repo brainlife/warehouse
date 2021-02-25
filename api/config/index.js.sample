@@ -143,6 +143,7 @@ exports.rule = {
 
 exports.express = {
     port: 12501,
+    
     //public key used to validate jwt token
     pubkey: fs.readFileSync('/home/hayashis/git/auth/api/config/auth.pub'),
 }

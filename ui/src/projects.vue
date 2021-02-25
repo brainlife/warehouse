@@ -1,13 +1,13 @@
 <template>
 <div>
     <div class="page-header">
-        <div class="search-box">
+        <div class="search-box onRight">
             <b-form-input v-model="query" type="text" placeholder="Search Projects" @input="change_query_debounce" class="input"/>
             <icon name="search" class="search-icon" scale="1.5"/>
             <icon name="times" class="clear-search" scale="1.5" @click="clearQuery()" v-if="query != ''"/>
         </div>
     </div>
-    <div class="mode-toggler" v-if="my_projects">
+    <div class="mode-toggler onRight" v-if="my_projects">
         <b-form-group>
         <b-form-radio-group v-model="mode" buttons button-variant="outline-secondary">
             <b-form-radio value="tile"><icon name="th"/></b-form-radio>
@@ -173,7 +173,7 @@ export default {
 .mode-toggler {
 position: fixed;
 top: 60px;
-right: 30px;
+padding-right: 30px;
 z-index: 2;
 opacity: 0.5;
 transition: opacity 0.3s;

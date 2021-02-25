@@ -36,10 +36,7 @@ exports.init = (cb)=>{
         mongoose.connect(config.mongodb, {
             useNewUrlParser: true,
             useUnifiedTopology: true,
-            
-            //TODO - isn't auto_reconnect set by default?
-            //auto_reconnect: true, 
-            //reconnectTries: Number.MAX_VALUE
+            server: { auto_reconnect: true },
         }, err=>{
             if(err) return cb(err);
             console.log("connected to mongo");
