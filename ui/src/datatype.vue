@@ -51,9 +51,9 @@
                         <p>{{datatype.desc}}</p>
                     </b-container>
                 </div><!--sub header-->
+                <b-alert show variant="secondary" v-if="datatype.groupAnalysis"><b-container>The data can be used for group analysis</b-container></b-alert>
                 <b-container>
                     <br>
-                    <b-alert show variant="secondary" v-if="datatype.groupAnalysis">The data can be used for group analysis</b-alert>
                     <span class="form-header">Files/Dirs</span>
                     <p><small style="opacity: 0.7">The following files/dirs are expected to be part of this datatype</small></p>
                     <div v-for="file in datatype.files" :key="file.id" style="background-color: white; padding: 8px; margin-bottom: 1px;">

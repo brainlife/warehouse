@@ -193,7 +193,7 @@
             <!--notification-->
             <div v-if="tab == 3">
                 <b-form @submit="submit_profile">
-                    <h5 style="opacity: 0.7">Notification Sound</h5>
+                    <h5 style="opacity: 0.7">Sounds</h5>
                     <b-row>
                         <b-col cols="2">
                             <span class="form-header">Job Status Change</span>
@@ -298,7 +298,8 @@ export default {
     mounted() {
         this.$http.get(Vue.config.auth_api+"/profile").then(res=>{
             this.fullname = res.data.fullname;
-            if(res.data.profile) Object.assign(this.profile, res.data.profile);
+            //if(res.data.profile) Object.assign(this.profile, res.data.profile);
+            if(res.data.profile) lib.mergeDeep(this.profile, res.data.profile);
             this.ready = true;
         })
     },
@@ -322,20 +323,23 @@ export default {
 
 <style scoped>
 .page-content {
-top: 0px;
-background-color: #f9f9f9;
+    top: 0px;
+    background-color: #f9f9f9;
 }
 .page-content h2 {
-margin-bottom: 0px;
-padding: 10px 0px;
-font-size: 20pt;
+        margin-bottom: 0px;
+    padding: 10px 0px;
+    font-size: 20pt;
 }
 .header {
-padding: 10px;
-padding-bottom: 0px;
-margin-bottom: 20px;
-background-color: white;
-border-bottom: 1px solid #eee;
+    padding: 10px;
+    padding-bottom: 0px;
+    margin-bottom: 20px;
+    background-color: white;
+    border-bottom: 1px solid #eee;
+}
+h5 {
+    margin-bottom: 20px
 }
 </style>
 
