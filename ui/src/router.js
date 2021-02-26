@@ -56,7 +56,7 @@ export default new Router({
         
         {path: '/apps', component: apps, meta: {
             public: true, 
-            sidemenu: "app"
+            sidemenu: "app",
         }},
 
         {path: '/appsgraph', component: appsgraph, meta: {
@@ -172,13 +172,11 @@ export default new Router({
         {path: '/pubs', component: pubs, meta: {
             public: true,
             sidemenu: "pub",
-            noRightView: true,
         }},
 
         {path: '/pub/:id', component: pub, meta: {
             public: true,
             sidemenu: "pub",
-            noRightView: true,
         }},
 
         {path: '/settings', component: settings, meta: {

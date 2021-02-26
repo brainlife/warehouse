@@ -7,7 +7,7 @@
     <div v-if="open">
         <div v-if="loading" class="loading">Loading...</div>
         <div v-show="!loading">
-            <iframe :src="src" frameBorder="0" @load="loaded" ref="docframe"/>
+            <iframe :src="docSrc" frameBorder="0" @load="loaded" ref="docframe"/>
         </div>
     </div>
 </div>
@@ -18,17 +18,86 @@
 import Vue from 'vue'
 
 export default {
-    props: {
-    },
     data() {
-        let src = "/docs/user/started";
-        if(Vue.config.debug) src = "https://test.brainlife.io"+src; //localhost doesn't have /docs.. so we have to use this
         return {
             loading: true,
-            src,
+            docSrc: null,
         }
     },
+
+    watch: {
+        '$route'() {
+            let doc = this.findDoc();
+            if(doc) this.setDocUrl(doc);
+        }
+    },
+
+    mounted() {
+        let doc = this.findDoc();
+        if(!doc) doc = "/docs/user/started";
+        this.setDocUrl(doc);
+    },
+
     methods: {
+        setDocUrl(src) {
+            if(Vue.config.debug) src = "https://test.brainlife.io"+src; //localhost doesn't have /docs.. so we have to use this
+            console.log("setting doc url", src);
+            this.docSrc = src;
+        },
+
+        findDoc() {
+            //pick a page to show based on sidemenu 
+            if(this.$route.meta) {
+
+                console.log("sidemenu", this.$route.meta.sidemenu)
+
+                let doc = null;
+                switch(this.$route.meta.sidemenu) {
+
+                case "project":
+                    //project page has sub pages
+                    switch(this.$route.params.tab) {
+                    case "dataset":
+                        return "/docs/user/archive";
+                    case "process":
+                        return "/docs/user/process/"; 
+                    case "pipeline":
+                        return "/docs/user/pipeline/"; 
+                    case "groupanalysis":
+                        return "/docs/user/groupanalysis/"; 
+                        break;
+                    case "pub":
+                        return "/docs/user/publication/"; 
+                    default:
+                        return "/docs/user/project/";
+                    }
+                    break;
+
+                case "app":
+                    switch(this.$route.params.mode) {
+                    case "edit":
+                        return "/docs/apps/register/";
+                    default:
+                        return "/docs/user/started/";
+                    }
+                    break;
+
+                case "datatype":
+                    return "/docs/user/datatypes/";
+                case "pub":
+                    //TODO - this is for users publishing things - not looking at published stuff
+                    return "/docs/user/publication/";
+                case "app":
+                    return "/docs/user/started/";
+                case "resource":
+                    return "/docs/resources/register/";
+                case "dataset":
+                    return "/docs/user/datasets/";
+                }
+                return null;
+            }
+        },
+
         toggle(page) {
             if(this.$root.rightviewOpen == page) page = null;
             console.log(page);
@@ -61,8 +130,7 @@ export default {
             return false;
         },
     },
-    created() {
-    },
+
 }
 </script>
 
