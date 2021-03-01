@@ -227,84 +227,20 @@
                             <tr style="background-color: #eee;">
                                 <th style="min-width: 100px;">Project</th>
                                 <th>Status</th>
+                                <th>Service</th>
                                 <th>Submitter</th>
+                                <th>Request Date</th>
                                 <th>Date</th>
-                                <th></th>
                             </tr>
                         </thead>
-                        <tr><th colspan="5" style="background-color: #eee; padding-left: 5px;">Running ({{ tasksRunning.length }})</th></tr>
-                        <tr v-for="task in tasksRunning" :key="task._id">
-                            <td>
-                                <span v-if="task._project">{{task._project.name}}</span>
-                                <span v-else style="opacity: 0.7;">(Private) 
-                                    <small><icon name="id-badge"/> {{task._group_id}}</small>
-                                </span>
-                            </td>
-                            <td>
-                                <span class="status-color" :class="task.status" style="padding: 3px;" :title="task.status">
-                                    <statusicon :status="task.status" /> 
-                                    <!--<span style="text-transform: uppercase;" >{{task.status}}</span>-->
-                                </span>
-                                {{task.service}} <b-badge>{{task.service_branch}}</b-badge><br>
-                                <small style="word-break: break-word;">{{task.status_msg}}</small>
-                                <small style="font-size: 70%">{{task._id}}</small>
-                            </td>
-                            <td>
-                                <contact :id="task.user_id" size="small"/>
-                            </td>
-                            <td>
-                                <small>
-                                    <time>Requested <timeago :datetime="task.request_date" :auto-update="1"/></time>
-                                </small>
-                            </td>
-                            <td>
-                                <small v-if="task.status == 'requested'">
-                                    <time v-if="task.start_date">Started <timeago :datetime="task.start_date" :auto-update="1"/></time>
-                                </small>
-                                <small v-else-if="task.status == 'running'"><time>Started <timeago :datetime="task.start_date" :auto-update="1"/></time></small>
-                                <small v-else-if="task.status == 'running_sync'"><time>Started <timeago :datetime="task.start_date" :auto-update="1"/></time></small>
-                                <small v-else-if="task.status == 'finished'"><time>Finished <timeago :datetime="task.finish_date" :auto-update="1"/></time></small>
-                                <small v-else-if="task.status == 'failed'"><time>Failed <timeago :datetime="task.fail_date" :auto-update="1"/></time></small>
-                            </td>
-                        </tr>
-                        <tr v-if="tasksRunning.length == 0"><td colspan="5" style="padding-left: 5px; opacity: 0.5;">(No Jobs)</td></tr>
 
-                        <tr><th colspan="5" style="background-color: #eee; padding-left: 5px;">Recent ({{tasksRecent.length}})</th></tr>
-                        <tr v-for="task in tasksRecent" :key="task._id">
-                            <td>
-                                <span v-if="task._project">{{task._project.name}}</span>
-                                <span v-else style="opacity: 0.7;">(Private) 
-                                    <small><icon name="id-badge"/> {{task._group_id}}</small>
-                                </span>
-                            </td>
-                            <td>
-                                <span class="status-color" :class="task.status" style="padding: 3px;" :title="task.status">
-                                    <statusicon :status="task.status" /> 
-                                    <!--<span style="text-transform: uppercase;" >{{task.status}}</span>-->
-                                </span>
-                                {{task.service}} <b-badge>{{task.service_branch}}</b-badge><br>
-                                <small style="word-break: break-word;">{{task.status_msg}}</small>
-                                <small style="font-size: 70%">{{task._id}}</small>
-                            </td>
-                            <td>
-                                <contact :id="task.user_id" size="small"/>
-                            </td>
-                            <td>
-                                <small>
-                                    <time>Requested <timeago :datetime="task.request_date" :auto-update="1"/></time>
-                                </small>
-                            </td>
-                            <td>
-                                <small v-if="task.status == 'requested'">
-                                    <time v-if="task.start_date">Started <timeago :datetime="task.start_date" :auto-update="1"/></time>
-                                </small>
-                                <small v-else-if="task.status == 'running'"><time>Started <timeago :datetime="task.start_date" :auto-update="1"/></time></small>
-                                <small v-else-if="task.status == 'running_sync'"><time>Started <timeago :datetime="task.start_date" :auto-update="1"/></time></small>
-                                <small v-else-if="task.status == 'finished'"><time>Finished <timeago :datetime="task.finish_date" :auto-update="1"/></time></small>
-                                <small v-else-if="task.status == 'failed'"><time>Failed <timeago :datetime="task.fail_date" :auto-update="1"/></time></small>
-                            </td>
-                        </tr>
-                        <tr v-if="tasksRecent.length == 0"><td colspan="5" style="padding-left: 5px; opacity: 0.5;">(No Jobs)</td></tr>
+                        <tr><th colspan="6" style="background-color: #eee; padding-left: 5px;">Running ({{ tasksRunning.length }})</th></tr>
+                        <tr v-if="tasksRunning.length == 0"><td colspan="6" style="padding-left: 5px; opacity: 0.5;">(No Jobs)</td></tr>
+                        <taskRecord :tasks="tasksRunning" :cols="['project', 'status', 'service', 'submitter', 'request_date', 'dates']"/>
+
+                        <tr><th colspan="6" style="background-color: #eee; padding-left: 5px;">Recent ({{tasksRecent.length}})</th></tr>
+                        <tr v-if="tasksRecent.length == 0"><td colspan="6" style="padding-left: 5px; opacity: 0.5;">(No Jobs)</td></tr>
+                        <taskRecord :tasks="tasksRecent" :cols="['project', 'status', 'service', 'submitter', 'request_date', 'dates']"/>
                     </table>
                     <!--
                     <p style="padding-left: 20px; opacity: 0.7; font-size: 80%;">Only showing recent jobs</p>
@@ -357,10 +293,9 @@ import pageheader from '@/components/pageheader'
 import group from '@/components/group'
 import contact from '@/components/contact'
 import app from '@/components/app'
-//import tags from '@/components/tags'
 import statustag from '@/components/statustag'
-import statusicon from '@/components/statusicon'
 import stateprogress from '@/components/stateprogress'
+import taskRecord from '@/components/taskrecord'
 
 export default {
     components: { 
@@ -369,9 +304,9 @@ export default {
         contact, 
         group, 
         statustag, 
-        statusicon, 
         stateprogress, 
         Plotly,
+        taskRecord, 
 
         editor: require('vue2-ace-editor'),
     },
@@ -466,6 +401,7 @@ export default {
 
                 let allTasks = [...this.tasksRunning, ...this.tasksRecent];
 
+                /*
                 //resolve project names
                 let gids = allTasks.map(task=>task._group_id);
                 let project_find = JSON.stringify({
@@ -480,6 +416,7 @@ export default {
                         task._project = projects[task._group_id];
                     });
                 });
+            */
             }).catch(console.error);
 
             this.$http.get(Vue.config.amaretti_api+'/resource/usage/'+this.$route.params.id).then(res=>{

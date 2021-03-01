@@ -237,6 +237,7 @@ export default {
             resource: {
                 _id: null, 
                 active: true,
+                admins: [Vue.config.user.sub],
                 name: "",
                 avatar: "",
                 config: {

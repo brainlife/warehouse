@@ -53,6 +53,10 @@ export default {
         this.files = uiconfig.files;
 
         this.wait(this.taskid, ()=>{
+
+            //we use this to just show the task info
+            if(!this.type) return;
+
             this.open_novnc();
         });
     },

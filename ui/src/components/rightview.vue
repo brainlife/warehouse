@@ -174,8 +174,8 @@ iframe {
 }
 .icon {
     width: 30px;
-    height: 38px;
-    padding: 8px 7px;
+    height: 50px;
+    padding: 15px 7px;
     transition: background-color 0.1s, color 0.1s;
 }
 .icon.active {

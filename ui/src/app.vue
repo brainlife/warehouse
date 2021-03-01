@@ -336,13 +336,15 @@
                         <thead style="background-color: #eee; font-size: 80%;">
                             <tr>
                                 <th style="min-width: 100px;">Branch</th>
-                                <th>Status</th>
                                 <th style="min-width: 80px"><!--<icon name="shield-alt"/>-->Project</th>
+                                <th>Status</th>
                                 <th>Resource</th>
                                 <th>Submitter</th>
                                 <th width="150px">Date</th>
                             </tr>
                         </thead>
+                        <taskRecord :tasks="tasks" :cols="['branch', 'project', 'status', 'resource', 'submitter', 'dates']"/>
+                        <!--
                         <tr v-for="task in tasks" :key="task._id">
                             <td>
                                 <b-badge variant="light">{{task.service_branch}}</b-badge>
@@ -350,7 +352,6 @@
                             <td style="word-break: break-all;">
                                 <span class="status-color" :class="task.status" style="padding: 3px" :title="task.status">
                                     <statusicon :status="task.status" /> 
-                                    <!--<span style="text-transform: uppercase;" >{{task.status}}</span>-->
                                 </span>
                                 <small>{{task.status_msg}}</small>
                                 <small style="font-size: 70%">{{task._id}}</small>
@@ -375,6 +376,7 @@
                                 <small v-else-if="task.status == 'failed'"><time>Failed <timeago :datetime="task.fail_date" :auto-update="1"/></time></small>
                             </td>
                         </tr>
+                        -->
                     </table>
                 </div>
                 <div v-else>
@@ -463,6 +465,7 @@ import projectavatar from '@/components/projectavatar'
 import doibadge from '@/components/doibadge'
 import resource from '@/components/resource'
 import statusicon from '@/components/statusicon'
+import taskRecord from '@/components/taskrecord'
 
 import resource_cache from '@/mixins/resource_cache'
 
@@ -476,6 +479,8 @@ export default {
         projectavatar,
         doibadge, app,
         resource, statusicon,
+        taskRecord, 
+
         editor: require('vue2-ace-editor'),
     },
 
@@ -578,6 +583,7 @@ export default {
                         });
                     });
 
+                    /*
                     //resolve project names
                     let gids = this.tasks.map(task=>task._group_id);
                     let project_find = JSON.stringify({
@@ -592,6 +598,7 @@ export default {
                             task._project = projects[task._group_id];
                         });
                     });
+                    */
                     
                 }).catch(console.error);
 
