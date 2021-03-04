@@ -2,15 +2,17 @@
 <div v-if="task">
     <div class="task-header">
         <slot name="header">
-            <!--default content.. normally client should override this slot-->
+            <!--
+                (Boring) DEFAULT HEADER
+                Normally client should override this slot
+            -->
             <h4 style="background-color: white; padding: 7px; margin-bottom: 0px;">
                 <span v-if="task.service.startsWith('brainlife/validator-')">
-                    <icon name="vial"/>
-                    Validation <small>{{task.service}}</small>
+                    <icon name="vial"/> Validation <small>{{task.service}}</small>
                 </span>
                 <span v-else>
-                    <icon name="paper-plane"/>
-                    {{task.name||task.service}}
+                    <icon name="paper-plane"/>&nbsp;&nbsp;{{task.name}} <span class="github">{{task.service}}</span> 
+                    <b-badge>{{task.service_branch}}</b-badge>
                 </span>
             </h4>
         </slot>

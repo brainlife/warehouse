@@ -1,6 +1,13 @@
 <template>
 <b-form @submit="submit" v-if="ready">
     <div style="margin: 20px;">
+        <h5 v-if="!rule._id">New Pipeline Rule</h5>
+        <h5 v-if="rule._id">Edit Pipeline Rule</h5>
+
+        <b-form-group label="Name" horizontal>
+            <b-form-input v-model="rule.name" type="text" placeholder="Please enter a name for this rule (optional)"></b-form-input>
+        </b-form-group>
+
         <b-form-group label="App to run *" horizontal>
             <v-select required v-model="rule.app" label="name" :filterable="false" :options="search_apps" @search="search_app" 
                 placeholder="Search App">
@@ -29,10 +36,6 @@
         <div v-if="rule.app">
             <b-form-group label="Branch" horizontal>
                 <branchselecter v-model="rule.branch" :service="this.rule.app.github"/>
-            </b-form-group>
-
-            <b-form-group label="Description" horizontal>
-                <b-form-input v-model="rule.name" type="text" placeholder="Please enter description for this rule"></b-form-input>
             </b-form-group>
 
             <b-form-group label="Configuration" horizontal>
@@ -543,5 +546,8 @@ export default {
 <style scoped>
 .card:not(:first-of-type) {
 border-top: none;
+}
+h5 {
+    margin-bottom: 20px;
 }
 </style>
