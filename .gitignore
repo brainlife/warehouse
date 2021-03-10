@@ -6,7 +6,7 @@ ui/node_modules
 ui/dist
 ui/npm-debug.log
 ui/yarn-error.log
-ui/config/dev.env
+ui/config/dev.env.js
 **/barn
 docker/config
 ui/config/index.js
