@@ -49,14 +49,17 @@
 
         <div class="page-content instances-list scroll-shadow" ref="instances-list" :style="{width: listWidth+'px'}">
             <!--no instances show help doc-->
-            <div v-if="instances.length == 0" style="margin: 20px; opacity: 0.7">
+            <p v-if="instances.length == 0" class="text-muted" style="padding: 10px;">
+                <!--
                 <p>Here, you can submit a series of Apps to analyze dataset one subject at a time.</p>
                 <p>Output datasets will be removed within 25 days unless archived.</p>
                 <p>To learn about how to submit processes, please refer to our <a href="https://brainlife.io/docs/user/process/" target="doc">Documentation</a>.</p>
                 <iframe width="360" height="225"
                     src="https://www.youtube.com/embed/u9Qlh0-iaAk" frameborder="0" 
                     allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
-            </div>
+                -->
+                Please create a new process.
+            </p>
 
             <!--show list-->
             <div v-if="instances.length > 0">

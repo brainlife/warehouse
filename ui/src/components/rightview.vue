@@ -88,7 +88,7 @@ export default {
                     //TODO - this is for users publishing things - not looking at published stuff
                     return "/docs/user/publication/";
                 case "app":
-                    return "/docs/user/started/";
+                    return "/docs/user/started/#apps";
                 case "resource":
                     return "/docs/resources/register/";
                 case "dataset":

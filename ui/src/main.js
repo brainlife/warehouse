@@ -257,13 +257,14 @@ Vue.config.has_role = function(role, service = "warehouse") {
 //Vue.http.options.root = Vue.config.api; //default root for $http
 axios.defaults.baseURL = Vue.config.api; //default root for $http
 
+console.log("ENV", process.env.NODE_ENV);
 if (process.env.NODE_ENV == "development") {
     Vue.config.debug = true;
     
     //do crosssite auth between localhost and dev1 auth
-    Vue.config.auth_signin = "https://dev1.soichi.us/auth#!/signin?app=dev";
-    Vue.config.auth_signout = "https://dev1.soichi.us/auth#!/signout?app=dev";
-    Vue.config.ezbids_api = "https://dev1.soichi.us/api/ezbids";
+    Vue.config.auth_signin = "https://"+process.env.HOSTNAME+"/auth#!/signin?app=dev";
+    Vue.config.auth_signout = "https://"+process.env.HOSTNAME+"/auth#!/signout?app=dev";
+    Vue.config.ezbids_api = "https://"+process.env.HOSTNAME+"/api/ezbids";
 
     //intercept jwt sent via url parameter
     var urlParams = new URLSearchParams(window.location.search);

@@ -386,37 +386,12 @@ export default {
                     }).catch(console.error);
                 }
 
-                /*
-                if(this.resource.stats && this.resource.stats.recent_job_counts) {
-                    let recs = this.resource.stats.recent_job_counts;
-                    this.runningTasks = recs[recs.length-1][1];
-                }
-                */
-
             }).catch(console.error);
 
             this.$http.get(Vue.config.amaretti_api+'/resource/tasks/'+this.$route.params.id).then(res=>{
                 this.tasksRunning = res.data.running;
                 this.tasksRecent = res.data.recent;
-
                 let allTasks = [...this.tasksRunning, ...this.tasksRecent];
-
-                /*
-                //resolve project names
-                let gids = allTasks.map(task=>task._group_id);
-                let project_find = JSON.stringify({
-                    group_id: {$in: gids},
-                });
-                this.$http.get("/project", {params: {find: project_find, select: 'name group_id'}}).then(res=>{
-                    let projects = {};
-                    res.data.projects.forEach(project=>{
-                        projects[project.group_id] = project;
-                    });
-                    allTasks.forEach(task=>{
-                        task._project = projects[task._group_id];
-                    });
-                });
-            */
             }).catch(console.error);
 
             this.$http.get(Vue.config.amaretti_api+'/resource/usage/'+this.$route.params.id).then(res=>{

@@ -92,7 +92,7 @@
                 </b-alert>
             
                 <!--datatype box-->
-                <div style="float: right; width: 280px; padding: 20px; position: sticky; top: 140px;" v-if="selected.stats">
+                <div class="side" v-if="selected.stats">
                     <span class="form-header">Datatypes</span>
                     <p><small>This project contains the following datatypes</small></p>
                     <!--datatype was deprecated by datatype_details-->
@@ -118,7 +118,7 @@
                     </div>
                 </div>
 
-                <div style="margin: 20px; margin-right: 300px;">
+                <div class="main">
                     <div v-if="selected.agreements && selected.agreements.length > 0">
                         <span class="form-header">Agreements</span>
                         <p> <small class="text-muted">You must consent to the following agreement(s) before accessing data on this project.</small> </p>
@@ -812,5 +812,26 @@ padding: 5px 10px;
     padding: 20px;
     background-color: #eee;
     color: #666;
+}
+
+.side {
+    float: right; 
+    width: 280px; 
+    padding: 20px; 
+    position: sticky; 
+    top: 140px;
+}
+.main {
+    margin: 20px; 
+    margin-right: 300px;
+}
+
+@media only screen and (max-width: 1100px) {
+    .side {
+        display: none;
+    }
+    .main {
+        margin-right: 20px;
+    }
 }
 </style>

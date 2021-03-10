@@ -13,7 +13,9 @@
             <br>
             <div class="margin20 text-muted" v-if="!pubs || pubs.length == 0">
                 <p>No publication registered for this project.</p>
+                <!--
                 <p>To learn about how to submit publications, please refer to our <a href="https://brainlife.io/docs/user/publication/" target="doc">Documentation</a>.</p>
+                -->
             </div>
             <div v-for="pub in pubs" :key="pub._id" :class="{'pub-removed': pub.removed, 'pub-editable': (ismember()||isadmin())}" class="pub" @click="edit(pub)">
                 <doibadge :doi="pub.doi" style="float: right;"/>

@@ -34,30 +34,29 @@ export default {
     },
 }
 </script>
+
 <style scoped>
 .loading-overlay {
-position: fixed;
-top: 0;
-bottom: 0;
-left: 0;
-right: 0;
-background-color: #0004;
-z-index: 10;
+    position: fixed;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background-color: #0004;
+    z-index: 10;
 }
 .loading-message {
-text-align: center;
-color: #0009;
-font-size: 120%;
-text-shadow: 0px 0px 5px #fff;
-padding: 30px;
-margin: 25%;
-background-color: #fffa;
-box-shadow: 0 0 8px #0006;
+    text-align: center;
+    color: black;
+    font-size: 125%;
+    text-shadow: 0px 0px 4px #fff6;
+    padding: 30px;
+    margin: 25%;
 }
 .fade-enter-active, .fade-leave-active {
-  transition: opacity .5s;
+    transition: opacity .5s;
 }
 .fade-enter, .fade-leave-to /* .fade-leave-active below version 2.1.8 */ {
-  opacity: 0;
+    opacity: 0;
 }
 </style>

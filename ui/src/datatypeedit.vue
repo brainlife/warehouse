@@ -73,7 +73,7 @@
                         <b-row>
                             <b-col cols="4">
                                 <b-input-group prepend="ID">
-                                    <b-form-input type="text" v-model="file.id" placeholder="ID used to reference this input"/>
+                                    <b-form-input type="text" v-model="file.id" placeholder="ID used to reference this input" trim/>
                                 </b-input-group>
                                 <br>
                                 <input type="checkbox" v-model="file.required"> Required</input>
@@ -83,12 +83,12 @@
                                 <br>
                                 <b-input-group>
                                     <b-input-group-prepend is-text>Filename</b-input-group-prepend>
-                                    <b-input type="text" v-model="file.filename" placeholder="filename"/>
+                                    <b-input type="text" v-model="file.filename" placeholder="filename" trim/>
                                 </b-input-group>
                                 <br>
                                 <b-input-group>
                                     <b-input-group-prepend is-text>Dirname</b-input-group-prepend>
-                                    <b-input type="text" v-model="file.dirname" placeholder="dirname"/>
+                                    <b-input type="text" v-model="file.dirname" placeholder="dirname" trim/>
                                 </b-input-group>
                                 <small>Enter either filename or dirname (not both)</small>
                                 <br>
@@ -350,11 +350,6 @@ export default {
                     error = "please specify either filename or dirname for each files (not both)";
                 }
             });
-            /*
-            if(this.datatype.groupAnalysis && !this.datatype.validator) {
-                error = "group analysis requires datatype validator";
-            }
-            */
 
             if(error) {
                 this.$notify({type: "error", text: error});
@@ -396,8 +391,6 @@ export default {
         add_file() {
             this.datatype.files.push({
                 id: "",
-                //filename: "",
-                //dirname: "",
                 desc: "",
                 required: true,
             });

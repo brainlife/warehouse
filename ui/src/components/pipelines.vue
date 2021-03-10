@@ -20,6 +20,7 @@
     <div v-else class="page-content" ref="scrolled">
         <!--list view-->
         <div v-if="nonremoved_rule_count == 0" style="margin: 20px;" >
+            <br>
             <p class="text-muted">No pipeline rules</p>
             <!--
             <p class="text-muted">Pipeline rules allow you to automate bulk submissions of your processes based on defined criterias.</p>

@@ -427,13 +427,20 @@ export default {
             if(!this.tasks) return;
             if(!dtv_task.config._outputs) return; //for dev
             if(!dtv_task.follow_task_id) return; //for dev
+            
+            //first find the task and output that dtv follows
             let task = this.tasks.find(task=>task._id == dtv_task.follow_task_id);
             if(!task) return; //for dev?
+
+            //then find the output that dtv ran for
             let output_id = dtv_task.config._outputs[0].id;
             let output = task.config._outputs.find(out=>out.id == output_id);
             if(output.dtv_task) {
                 //updating
-                if(output.dtv_task.status != dtv_task.status) this.playNotification(dtv_task.status);
+                if(output.dtv_task.status != dtv_task.status) {
+                    console.log("playing due to dtv_task", output.dtv_task, dtv_task);
+                    this.playNotification(dtv_task.status);
+                }
             }
             Vue.set(output, 'dtv_task', dtv_task);
         },
@@ -637,11 +644,9 @@ export default {
                                     case "running":
                                         break;
                                     case "failed": 
-                                        this.$root.playNotification("failed");
                                         type = "error"; 
                                         break;
                                     case "finished": 
-                                        this.$root.playNotification("finished");
                                         this.loadProduct([t]);
                                         type = "success"; 
                                         break;
@@ -662,8 +667,6 @@ export default {
                         break;
                     case "warehouse":
                         //see if we care..
-                        //console.log("warehouse event received", event.dinfo.routingKey);
-                        //console.dir(event);
                         let routingKey = event.dinfo.routingKey.split(".");
                         let dataset_id = routingKey[4];  
                         let archived_dataset = this.archived.find(d=>d._id == dataset_id);
@@ -683,7 +686,9 @@ export default {
             this.$http.get(Vue.config.amaretti_api+'/task', {params: {
                 find: JSON.stringify({
                     instance_id: this.instance._id,
-                    //status: {$ne: "removed"}, //need to load validator that's removed
+
+                    //TODO - need to load validator that's removed - as validator gets removed quickly but we still need them for provenance?
+                    status: {$ne: "removed"}, 
                 }),
                 limit: 1000, //should be enough.. for now?
                 sort: 'create_date',
@@ -859,15 +864,6 @@ export default {
                 });
             }
         },
-
-/*
-        editorInit(editor) {
-            require('brace/mode/json')
-            editor.container.style.lineHeight = 1.25;
-            editor.renderer.updateFontSize();
-            editor.setReadOnly(true);
-        }
-*/
     },
 }
 </script>
