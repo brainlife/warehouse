@@ -478,8 +478,6 @@ function handle_task(task, cb) {
                 }
 
                 if(requests.length == 0) return;
-                //console.log("we need to archive the following secondary output")
-                //console.dir(requests);
 
                 //see if we already submitted secondary archiver for this task
                 console.log("checking to see if we already submitted app-archive-secondary");

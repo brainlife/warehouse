@@ -1656,6 +1656,7 @@ router.post('/finalize-upload', common.jwt({secret: config.express.pubkey}), (re
     let task;
     let project;
     let validator_task;
+    let output;
 
     //only set if there is no validator
     //let dataset; 
@@ -1693,24 +1694,77 @@ router.post('/finalize-upload', common.jwt({secret: config.express.pubkey}), (re
                 if(err) return next(err);
                 if(!_datatype) return next("datatype(id) is not set");
                 datatype = _datatype;
+
+                output = {
+                    id: "upload",
+                    datatype: datatype._id,
+                    datatype_tags: req.body.datatype_tags||[],
+                    meta: req.body.meta||{},
+                    tags: req.body.tags||[],
+                    desc: req.body.desc,
+                };
+                
                 next();
             });
         },
 
+        //submit secondary archiver if the datatype is group analysis datatype
+        next=>{
+            if(!datatype.groupAnalysis) return next();
+
+            let request = {
+                src: "../"+task._id+"/upload",
+
+                //destination
+                group_id: task._group_id,
+                instance_id: task.instance_id,
+                task_id: task._id,
+                subdir: "upload",
+
+                //used to create object index
+                datatype: {
+                    _id: datatype._id,
+                    name: datatype.name,
+                }, 
+                output,
+                /*
+                app: {
+                    service: task.service,
+                    service_branch: task.service_branch,
+                    commit_id: task.commit_id,
+                    name: task.name,
+                },
+                */
+                finish_date: task.finish_date,
+            }
+            
+            //submit secondary archiver with just secondary deps
+            console.log("submitting secondary output archiver");
+            let remove_date = new Date();
+            remove_date.setDate(remove_date.getDate()+1); //remove in 1 day
+            axios.post(config.amaretti.api+"/task", {
+                service: "brainlife/app-archive-secondary",
+                instance_id: task.instance_id,
+                deps_config: [ {task: task._id} ],
+                config: {
+                    requests: [request ], 
+                },
+                remove_date,
+                //user_id: task.user_id, 
+            },{
+                headers: { authorization: req.headers.authorization, }
+            }).then(res=>{
+                if(res.status != 200) return next("secondary archiver failed to submit");
+                console.log("submitted secondary archiver! ");
+                next();
+            }).catch(next);
+        },
+
         //submit validator (or register directly from upload task)
         next=>{
-            let output = {
-                id: "upload",
-                datatype: datatype._id,
-                datatype_tags: req.body.datatype_tags||[],
-                meta: req.body.meta||{},
-                tags: req.body.tags||[],
+            output.archive = {
+                project: project._id,
                 desc: req.body.desc,
-
-                archive: {
-                    project: project._id,
-                    desc: req.body.desc,
-                },
             }
 
             if(datatype.validator) {
