@@ -20,7 +20,7 @@ const common = require('../common');
  */
 router.get('/list/:projectid', async (req, res, next)=>{
     try {
-        let project = db.Projects.findById(req.params.projectid);
+        let project = await db.Projects.findById(req.params.projectid);
         if(!project) return res.status(404).end();
         console.log("loading task from project group", project.group_id);
         const _res = await axios.get(config.amaretti.api+'/task', {
@@ -45,6 +45,9 @@ router.get('/list/:projectid', async (req, res, next)=>{
             if(!task.config.requests) return; //old format?
             task.config.requests.forEach(request=>{
                 if(!request.datatype) return; //should only happen on dev
+
+                //slim down datatype
+                request.datatype = request.datatype.name;
                 
                 //pull information out of request and store things that users care
                 let o = {
