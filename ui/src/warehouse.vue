@@ -346,7 +346,7 @@ table.info td {
 
 small {
     font-size: 85%;
-    opacity: 0.7;
+    opacity: 0.8;
 }
 
 .col-form-label,
@@ -606,7 +606,11 @@ pre {
     background-color: gray;
 }
 
-@media screen and (max-width: 800px) {
+/*
+hide rightview for mobile
+https://stackoverflow.com/questions/14942081/detect-if-a-browser-in-a-mobile-device-ios-android-phone-tablet-is-used*/
+@media (pointer:none), (pointer:coarse),
+@media (max-width: 800px) {
     /*hide un-opened rightview menu for mobile*/
     #warehouse:not(.rightviewOpen) .rightview {
         display: none;

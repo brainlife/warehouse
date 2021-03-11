@@ -22,7 +22,7 @@ router.get('/list/:projectid', async (req, res, next)=>{
     try {
         let project = db.Projects.findById(req.params.projectid);
         if(!project) return res.status(404).end();
-        console.log("project group", project.group_id);
+        console.log("loading task from project group", project.group_id);
         const _res = await axios.get(config.amaretti.api+'/task', {
             params: {
                 select: 'config instance_id',
@@ -34,50 +34,35 @@ router.get('/list/:projectid', async (req, res, next)=>{
                 limit: 20000, //TODO.. how scalable is this!?
                 sort: 'create_date',
             },
-            //headers: { authorization: req.headers.authorization },
             headers: { authorization: "Bearer "+config.warehouse.jwt },
         });
 
-        //let validator_ids = _res.data.tasks.map(task=>task.config.validator_task._id);
         let objects = [];
         
         //merge all output requests into a single list
+        console.log("iterating tasks", _res.data.tasks.length);
         _res.data.tasks.forEach(task=>{
             if(!task.config.requests) return; //old format?
             task.config.requests.forEach(request=>{
                 if(!request.datatype) return; //should only happen on dev
                 
                 //pull information out of request and store things that users care
-                objects.push({
+                let o = {
                     path: request.instance_id+"/"+request.task_id+"/"+request.subdir,
-
                     task_id: request.task_id,
-                    //instance_id: request.instance_id,
-                    //subdir: request.subdir,
-
                     datatype: request.datatype,
 
                     //these might not exist on old objects during development
                     app: request.app||{},
                     output: request.output||{},
                     finish_date: request.finish_date||{},
-                    /*
-                    datatype: {
-                        id: request.datatype._id,
-                        name: request.datatype.name,
-                        desc: request.datatype.desc,
-                        files: request.datatype.files,
-                    },
-
-                    desc: request.output.desc,
-                    datatype_tags: request.output.datatype_tags,
-                    tags: request.output.tags,
-                    meta: request.output.meta,
-                    */
-                })
+                };
+                console.debug(o);
+                objects.push(o);
             });
         });
 
+        console.log("returning json");
         res.json(objects);
 
     } catch (err) {

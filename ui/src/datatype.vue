@@ -54,26 +54,27 @@
                 <b-alert show variant="secondary" v-if="datatype.groupAnalysis"><b-container>The data can be used for group analysis</b-container></b-alert>
                 <b-container>
                     <br>
-                    <span class="form-header">Files/Dirs</span>
-                    <p><small style="opacity: 0.7">The following files/dirs are expected to be part of this datatype</small></p>
-                    <div v-for="file in datatype.files" :key="file.id" style="background-color: white; padding: 8px; margin-bottom: 1px;">
-                        <b-row>
-                            <b-col>
-                                <span v-if="file.filename"><icon name="regular/file"/> {{file.filename}}</span>
-                                <span v-if="file.dirname"><icon name="folder"/> {{file.dirname}}</span>
-                                <b-badge v-if="file.ext" variant="light" title="Validator extension check">{{file.ext}}</b-badge>
-                            </b-col>
-                            <b-col cols="3">
-                                <small><b style="opacity: 0.7">{{file.id}}</b></small>
-                                <b-badge v-if="!file.required" style="float: right;">optional</b-badge>
-                            </b-col>
-                            <b-col>
-                                <small>{{file.desc}}</small>
-                            </b-col>
-                        </b-row>
+                    <div class="box">
+                        <span class="form-header">Files/Dirs</span>
+                        <p><small style="opacity: 0.7">The following files/dirs are expected to be part of this datatype</small></p>
+                        <div v-for="file in datatype.files" :key="file.id" style="padding: 5px 20px; border-top: 1px solid #f6f6f6; margin: 0 -20px;">
+                            <b-row>
+                                <b-col>
+                                    <span v-if="file.filename"><icon name="regular/file"/> {{file.filename}}</span>
+                                    <span v-if="file.dirname"><icon name="folder"/> {{file.dirname}}</span>
+                                    <b-badge v-if="file.ext" variant="light" title="Validator extension check">{{file.ext}}</b-badge>
+                                </b-col>
+                                <b-col cols="3">
+                                    <small><b style="opacity: 0.7">{{file.id}}</b></small>
+                                    <b-badge v-if="!file.required" style="float: right;">optional</b-badge>
+                                </b-col>
+                                <b-col>
+                                    <small>{{file.desc}}</small>
+                                </b-col>
+                            </b-row>
+                        </div>
                     </div>
 
-                    <br>
                     <div class="box">
                         <span class="form-header">Admins</span>
                         <p><small style="opacity: 0.7">Users who are responsible for this datatype.</small></p>
@@ -143,16 +144,23 @@
                 </b-container>
             </div>
 
+            <!--readme--->
             <div v-if="tab == 1">
+                <div style="background-color: white">
                 <b-container>
                     <br>
                     <div v-if="datatype.readme">
                         <vue-markdown :source="datatype.readme" class="readme"/>
                     </div>
                     <div v-else style="opacity: 0.5;">No README</div>
+                    <br>
+                </b-container>
+                </div>
 
+                <!--sub content-->
+                <b-container>
+                    <br>
                     <!--upload hint-->
-                    <hr>
                     <span class="form-header">Upload Hints</span>
                     <p><small style="opacity: 0.7">You can upload your data in this datatype using <a href="https://brainlife.io/docs/cli/install/" target="cli">brainlife CLI</a>.</small></p>
                     <pre>$ bl data upload --datatype {{datatype.name}} --project (project ID) --subject (subject name) \
