@@ -25,7 +25,7 @@ router.get('/list/:projectid', async (req, res, next)=>{
         console.log("loading task from project group", project.group_id);
         const _res = await axios.get(config.amaretti.api+'/task', {
             params: {
-                select: 'config instance_id',
+                select: 'config.requests instance_id',
                 find: JSON.stringify({
                     'finish_date': {$exists: true},
                     'service': 'brainlife/app-archive-secondary',
