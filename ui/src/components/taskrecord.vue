@@ -10,6 +10,10 @@
                 <small><icon name="lock"/> {{task._group_id}}</small>
             </span>
         </td>
+        <td v-if="cols.includes('service')">
+            {{task.service}} <b-badge>{{task.service_branch}}</b-badge><br>
+            <!--<small style="font-size: 50%">{{task._id}}</small>-->
+        </td>
         <td v-if="cols.includes('status')">
             <span class="status-color" :class="task.status" style="padding: 3px;" :title="task.status">
                 <statusicon :status="task.status" /> 
@@ -18,10 +22,6 @@
             <small style="font-size: 50%">{{task._id}}</small>
             -->
             <small style="word-break: break-word;">{{task.status_msg}}</small>
-        </td>
-        <td v-if="cols.includes('service')">
-            {{task.service}} <b-badge>{{task.service_branch}}</b-badge><br>
-            <!--<small style="font-size: 50%">{{task._id}}</small>-->
         </td>
         <td v-if="cols.includes('resource')">
             <span v-if="task._resource">{{task._resource.name}}</span>

@@ -223,28 +223,25 @@
                     <br>
                     <div v-if="!tasksRunning" class="loading">Loading ...</div>
                     <table v-else class="table table-sm">
-                        <thead>
+                        <thead style="background-color: #eee; font-size: 80%;">
                             <tr style="background-color: #eee;">
-                                <th style="min-width: 100px;">Project</th>
-                                <th>Status</th>
+                                <th width="15%">Project</th>
                                 <th>Service</th>
+                                <th width="30%">Status</th>
                                 <th>Submitter</th>
-                                <th>Request Date</th>
+                                <th>Request&nbsp;Date</th>
                                 <th>Date</th>
                             </tr>
                         </thead>
 
-                        <tr><th colspan="6" style="background-color: #eee; padding-left: 5px;">Running ({{ tasksRunning.length }})</th></tr>
+                        <tr><th colspan="6" style="background-color: #fff; padding-left: 5px; opacity: 0.5;">Running ({{ tasksRunning.length }})</th></tr>
                         <tr v-if="tasksRunning.length == 0"><td colspan="6" style="padding-left: 5px; opacity: 0.5;">(No Jobs)</td></tr>
                         <taskRecord :tasks="tasksRunning" :cols="['project', 'status', 'service', 'submitter', 'request_date', 'dates']"/>
 
-                        <tr><th colspan="6" style="background-color: #eee; padding-left: 5px;">Recent ({{tasksRecent.length}})</th></tr>
+                        <tr><th colspan="6" style="background-color: #fff; padding-left: 5px; opacity: 0.5;">Recent ({{tasksRecent.length}})</th></tr>
                         <tr v-if="tasksRecent.length == 0"><td colspan="6" style="padding-left: 5px; opacity: 0.5;">(No Jobs)</td></tr>
                         <taskRecord :tasks="tasksRecent" :cols="['project', 'status', 'service', 'submitter', 'request_date', 'dates']"/>
                     </table>
-                    <!--
-                    <p style="padding-left: 20px; opacity: 0.7; font-size: 80%;">Only showing recent jobs</p>
-                    -->
                 </b-container>
             </div>
             <div v-if="tab == 3">

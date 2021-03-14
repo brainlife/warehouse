@@ -15,14 +15,17 @@
 
     <div v-if="!selected && ready" class="page-content">
         <!-- instructions -->
+        <!--
         <p>
             <b-alert :show="true" variant="secondary">
                 Once you complete your subject level processing, you can run group analysis on jupyter notebook hosted on brainlife.io.
             </b-alert>
         </p>
+        -->
 
-        <div style="padding: 0 20px">
-            <h4>Sessions</h4>
+        <div>
+            <br>
+            <h4 style="padding-left:10px">Sessions</h4>
             <small v-if="sessions.length == 0">Please launch a new session.</small>
             <div v-for="task in sessions" :key="task._id" class="session">
                 <b-row>
@@ -128,9 +131,9 @@ export default {
                     text: "python/dipy", 
                     //img: "https://kanoki.org/wp-content/uploads/2017/07/Screen-Shot-2017-07-15-at-04.59.36.png",
                     value: {
-                        desc: "Jupyter Datascience Notebook (lab-2.1.1) with Dipy and Fury",
+                        desc: "Jupyter Datascience Notebook (lab-2.1.1) with Dipy(1.3.0) and Fury",
                         container: "brainlife/ga-dipy",
-                        tag: "1.0",
+                        tag: "lab211-dipy130",
                     },
                 },
                 {

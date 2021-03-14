@@ -47,7 +47,12 @@ router.get('/list/:projectid', async (req, res, next)=>{
                 if(!request.datatype) return; //should only happen on dev
 
                 //slim down datatype
-                request.datatype = request.datatype.name;
+                //I don't think I have to do this anymore as secondary archiver should only 
+                //store _id and name. (doing this for old tasks. probably)
+                request.datatype = {
+                    _id: request.datatype._id,
+                    name: request.datatype.name,
+                }
                 
                 //pull information out of request and store things that users care
                 let o = {

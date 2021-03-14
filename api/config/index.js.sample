@@ -231,83 +231,6 @@ exports.groupanalysis = {
     },
 }
 
-/*
-const js_config = require(__dirname+'/jetstream');
-const js_storage = pkgcloud.storage.createClient(js_config);
-exports.storage_systems.jetstream = {
-    need_backup: true,
-    test: cb=>{
-        js_storage.getContainers((err,containers)=>{
-            if(err) return cb(err);
-            cb();
-        }); 
-    },
-    stat: (dataset, cb)=>{
-        let contname = dataset.project.toString();
-        let filename = dataset._id+".tar.gz"; //old ones were using .tar.gz
-
-        if(dataset.storage_config && dataset.storage_config.filename) {
-            contname = dataset.storage_config.contname;
-            filename = dataset.storage_config.filename;
-        }
-
-        //console.log(contname);
-        //console.log(filename);
-        js_storage.getFile(contname, filename, (err,_stats)=>{
-            if(err) return cb(err);
-            console.dir(_stats);
-            cb(null, {
-                size: _stats.size,
-                mtime: _stats.lastModified,
-            });
-        });
-    },
-    upload: (dataset, cb)=>{
-        let contname = dataset.project.toString();
-        let filename = dataset._id+'.tar';
-        console.log("uploading dataset", contname, filename);
-
-        //make sure container exists (if it exists, it's noop)
-        js_storage.createContainer({
-            name: contname,
-            metadata: {
-                //TODO..project_name?
-            },
-        }, (err, container)=> {
-            if(err) return cb(err);
-            let stream = js_storage.upload({container, remote: filename});
-            let success = new Promise((resolve, reject)=>{
-                stream.on('success', resolve);
-                stream.on('error', reject);
-            });
-        
-            dataset.storage_config = { contname, filename }; //anti-pattern to update dataset here..
-            cb(null, stream, success);
-        });
-    },
-    download: (dataset, cb)=>{
-        let contname = dataset.project.toString();
-        let filename = dataset._id+".tar.gz"; //old ones were using .tar.gz
-        if(dataset.storage_config && dataset.storage_config.filename) {
-            contname = dataset.storage_config.contname;
-            filename = dataset.storage_config.filename;
-        }
-        let stream = js_storage.download({container: contname, remote: filename});
-        cb(null, stream, filename);
-    },
-    remove: (dataset, cb)=>{
-        let contname = dataset.project.toString();
-        let filename = dataset._id+'.tar.gz'; //old one were using .tar.gz
-        if(dataset.storage_config && dataset.storage_config.filename) {
-            contname = dataset.storage_config.contname;
-            filename = dataset.storage_config.filename;
-        }
-        console.log("removing", contname, filename);
-        js_storage.removeFile(contname, filename, cb);
-    }
-}
-*/
-
 function connect_dc(cb) {
     var conn = new ssh2.Client();
     conn.on('ready', ()=>{
@@ -577,6 +500,7 @@ exports.storage_systems.copy = {
     },
 } 
 
+/*
 exports.storage_systems.dc2 = {
     need_backup: false,
     test: cb=>{
@@ -615,6 +539,7 @@ exports.storage_systems.dc2 = {
         });
     },
 } 
+*/
 
 exports.storage_systems["dcwan/hcp"] = {
     test: cb=>{

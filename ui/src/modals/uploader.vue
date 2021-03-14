@@ -242,6 +242,7 @@ export default {
                 "5907d922436ee50ffde9c549", //track/tck
                 "5b956f6cd7b3f1e24e9121ce", //track/trk
                 "5c390505f9109beac42b00df", //fmap
+                "604976b3ebfe45c4633ae3d2", //microperimetry
             ]}}),
         }}).then(res=>{
             this.datatypes = {};
