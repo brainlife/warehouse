@@ -51,7 +51,7 @@
             <b-button variant="primary" :disabled="!ezBIDS" @click="submit()">Submit</b-button>
         </b-form-group>
         <b-form-group v-if="task">
-            <b-button @click="close">Close</b-button>
+            <b-button @click="task = null" variant="warning">Re-submit</b-button>
             <b-button @click="cancelImport" v-if="task.status == 'running' || task.status == 'requested'">Cancel</b-button>
             <b-button @click="openProject" v-if="task.status == 'finished'" variant="primary">Open Project</b-button>
         </b-form-group>
@@ -122,9 +122,9 @@ export default {
                     })
                 },
             }).then(res=>{
-                if(res.data.tasks.length == 1) {
+                if(res.data.tasks.length != 0) {
                     console.log("importer already submitted!");
-                    this.task = res.data.tasks[0];
+                    this.task = res.data.tasks[res.data.tasks.length-1];
                     this.subscribeInstance(this.task.instance_id);
                 }
             }).catch(err=>{
