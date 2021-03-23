@@ -154,9 +154,11 @@ export default {
             this.load();
         },
         
+        /*
         go(path) {
             this.$router.push(path);
         },
+        */
 
         newproject() {
             if(Vue.config.user) {

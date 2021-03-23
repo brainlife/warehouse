@@ -237,7 +237,7 @@ var participantsSchema = mongoose.Schema({
     //    "scandate" : "19-02-15",
     //    "scan_time" : "16:30"
     //},
-});
+}, {minimize: false}); //to keep empty object ({}) from disappearing
 exports.Participants = mongoose.model("Participants", participantsSchema);
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -749,6 +749,7 @@ var dlDatasetSchema = mongoose.Schema({
     //openneuro dataset can be removed.. if that happens, we need to flag it
     removed: { type: Boolean, default: false },
 });
+
 dlDatasetSchema.index({path: 1, name: 1}, {unique: true}); 
 dlDatasetSchema.index({'$**': 'text'}) //make all text fields searchable
 exports.DLDatasets = mongoose.model('DLDatasets', dlDatasetSchema);
