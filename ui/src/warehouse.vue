@@ -45,7 +45,7 @@ export default {
             console.log("parsing hash request", document.location.hash);
             if(document.location.hash.startsWith("#ezbids")) {
                 if(!Vue.config.jwt) {
-                    sessionStorage.setItem('auth_redirect', document.location.href+document.location.hash);
+                    sessionStorage.setItem('auth_redirect', document.location.href);
                     document.location = Vue.config.auth_signin;
                 } else {
                     const sessionId = document.location.hash.substring(8);
