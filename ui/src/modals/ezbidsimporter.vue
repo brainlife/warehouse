@@ -125,7 +125,7 @@ export default {
                 if(res.data.tasks.length != 0) {
                     console.log("importer already submitted!");
                     this.task = res.data.tasks[res.data.tasks.length-1];
-                    this.subscribeInstance(this.task.instance_id);
+                    this.subscribeTask(this.task);
                 }
             }).catch(err=>{
                 console.error(err);
@@ -181,7 +181,7 @@ export default {
                 }
                 this.$http.post(Vue.config.amaretti_api+'/task', params).then(res=>{
                     this.task = res.data.task;
-                    this.subscribeInstance(instance._id);
+                    this.subscribeTask(this.task);
                 }).catch(err=>{
                     console.error(err);
                     this.$notify({type: 'error', text: err.body.message});
@@ -211,30 +211,24 @@ export default {
             });
         },
 
-        subscribeInstance(instance_id) {
+        subscribeTask(task) {
             //lastly, subscribe to the whole instance task events
             var url = Vue.config.event_ws+"/subscribe?jwt="+Vue.config.jwt;
             this.ws = new ReconnectingWebSocket(url, null, {debug: Vue.config.debug, reconnectInterval: 3000});
             this.ws.onopen = (e)=>{
-                console.log("websocket opened binding to wf.task", instance_id+".#");
                 this.ws.send(JSON.stringify({
                   bind: {
                     ex: "wf.task",
-                    key: instance_id+".#",
+                    key: task.instance_id+"."+task._id,
                   }
                 }));
             }
             this.ws.onmessage = (json)=>{
-                console.debug(json);
                 var event = JSON.parse(json.data);
-                if(event.error) {
-                    console.error(event.error);
-                    return;
-                }
+                if(event.error) return;
                 var task = event.msg;
                 if(!task) return;
                 for(let k in task) Vue.set(this.task, k, task[k]);
-
                 if(task.status == "finished") {
                     console.log("finished!");
                 }

@@ -43,6 +43,7 @@ export default {
 
         } 
     },
+
     mounted() {
         this.$root.$on("viewselecter.open", opt=>{
             this.opt = opt;
@@ -50,7 +51,7 @@ export default {
         });
     },
 
-	methods: {
+    methods: {
         select(view) {
             this.$refs.modal.hide(); 
 

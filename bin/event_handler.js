@@ -409,7 +409,8 @@ function handle_task(task, cb) {
             } else next();
         },
         
-        //submit secondary archiver
+        //submit secondary archiver for validation tasks to store UI output to secondary storage
+        //this is not to be confused by the group analysis output also stored on secondary storage but it's not "UI" output.
         async next=>{
             if(task.status != "finished") {// || !isValidationTask(task)) {
                 return;
@@ -437,12 +438,16 @@ function handle_task(task, cb) {
                         task_id: task._id,
                         subdir: output.id,
 
-                        //used to create object index
+                        //UI outputs are not secondary data... so it shouldn't have any datatype associated with it
+                        //we use secondary-archiver to archive it
+                        /*
                         datatype: {
                             _id: datatype._id,
                             name: datatype.name,
                             //desc: datatype.desc,
                         }, 
+                        */
+
                         output,
                         app: {
                             service: task.service,
@@ -467,6 +472,9 @@ function handle_task(task, cb) {
 
                         request.validator = true; //used to let UI know that this was output from validator
                     } else {
+                        //group analysys output is more straightfoward
+                        //TODO - for legacy root-output apps, we shouldn't set subdir (and need to apply override?)
+                        //or.. do I say secondary output won't work with legacy app anymore?
                         subdirs.push(output.id);
                     }
                     requests.push(request);
@@ -533,20 +541,6 @@ function handle_task(task, cb) {
                 //console.log(JSON.stringify(newtask, null, 4));
             });
         },
-
-        /* we are going to do this on demand
-        //update secondary archive index
-        next=>{
-            if(task.status != "finished" || task.service != "brainlife/app-archive-secondary") {
-                return next();
-            }
-            debounce("update_secondary_index."+task._group_id, async ()=>{
-                let project = await db.Projects.findOne({group_id: task._group_id});
-                await common.update_secondary_index(project);
-            }, 1000*10); 
-            next();
-        },
-        */
 
         //report archive status back to user through dataset_config
         next=>{

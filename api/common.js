@@ -818,36 +818,6 @@ exports.update_secondary_index = async function(project) {
         headers: { authorization: "Bearer "+config.warehouse.jwt },
     });
 
-    /*
-    //let validator_ids = _res.data.tasks.map(task=>task.config.validator_task._id);
-    let datatype_ids = [];
-    _res.data.tasks.forEach(task=>{
-        let id = task.config.requests.config._outputs[0].datatype;
-        if(!datatype_ids.includes(id)) datatype_ids.push(id);
-    });
-
-    //lookup datatype names
-    let datatypes = await db.Datatypes.find({_id: {$in: datatype_ids}}, {name:1,desc:1,files:1}).lean();
-    let datatypes_obj = {};
-    datatypes.forEach(rec=>{
-        datatypes_obj[rec._id] = rec;
-    });
-    */
-
-    /*
-    let sectasks = _res.data.tasks.map(task=>{
-        let output = task.config.validator_task.config._outputs[0];
-        return {
-            datatype: datatypes_obj[output.datatype],
-            meta: output.meta,
-            tags: output.tags,
-            datatype_tags: output.datatype_tags,
-
-            path: task.instance_id+"/"+task.config.validator_task.follow_task_id+"/"+output.id+"/secondary",
-        }
-    });
-    */
-
     //merge sectasks into participants.subjects
     let index = {
         //project,
@@ -855,16 +825,6 @@ exports.update_secondary_index = async function(project) {
         objects: [],
         participants,
     };
-
-    /*
-    if(participants) {
-        index.columns = participants.columns;
-        for(let subject in participants.subjects) {
-            if(!index.subjects[subject]) index.subjects[subject] = {}
-            index.subjects[subject].phenotype = participants.subjects[subject];
-        }
-    }
-    */
 
     //merge all output requests into a single list
     _res.data.tasks.forEach(task=>{

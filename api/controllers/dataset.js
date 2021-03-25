@@ -1635,7 +1635,7 @@ router.post('/copy', common.jwt({secret: config.express.pubkey}), (req, res, nex
  * @apiDescription              Submit validate/archive request and register new data object
  *
  * @apiParam {String} task      Task ID to archive
- * @apiParam {String} subdir    Sub directory where the data is uploaded to 
+ * @apiParam {String} [subdir]  (optional) Sub directory where the data is uploaded to 
  * @apiParam {String} datatype  Datatype ID of the new object
  * @apiParam {String} desc      Description for the new object
  * @apiParam {String[]} datatype_tags  
@@ -1649,7 +1649,6 @@ router.post('/copy', common.jwt({secret: config.express.pubkey}), (req, res, nex
 */
 router.post('/finalize-upload', common.jwt({secret: config.express.pubkey}), (req, res, next)=>{
     if(!req.body.task) return next("task(id) is not set");
-    if(!req.body.subdir) return next("subdir is not set");
     if(!req.body.datatype) return next("datatype(id) is not set");
 
     //things to be prepared
@@ -1658,9 +1657,7 @@ router.post('/finalize-upload', common.jwt({secret: config.express.pubkey}), (re
     let validator_task;
     let output;
 
-    //only set if there is no validator
-    //let dataset; 
-    let archive_task;
+    let archive_task; //only set if there is no validator
 
     async.series([
         
@@ -1696,7 +1693,7 @@ router.post('/finalize-upload', common.jwt({secret: config.express.pubkey}), (re
                 datatype = _datatype;
 
                 output = {
-                    id: "upload",
+                    id: "upload", //always?
                     datatype: datatype._id,
                     datatype_tags: req.body.datatype_tags||[],
                     meta: req.body.meta||{},
@@ -1713,13 +1710,13 @@ router.post('/finalize-upload', common.jwt({secret: config.express.pubkey}), (re
             if(!datatype.groupAnalysis) return next();
 
             let request = {
-                src: "../"+task._id+"/upload",
+                src: "../"+task._id,//+"/upload",
 
                 //destination
                 group_id: task._group_id,
                 instance_id: task.instance_id,
                 task_id: task._id,
-                subdir: "upload",
+                //subdir: "upload",
 
                 //used to create object index
                 datatype: {
@@ -1736,6 +1733,11 @@ router.post('/finalize-upload', common.jwt({secret: config.express.pubkey}), (re
                 },
                 */
                 finish_date: task.finish_date,
+            }
+
+            if(req.body.subdir) {
+                request.src += "/"+req.body.subdir;
+                request.subdir = req.body.subdir;
             }
             
             //submit secondary archiver with just secondary deps
@@ -1813,15 +1815,11 @@ router.post('/finalize-upload', common.jwt({secret: config.express.pubkey}), (re
         if(err) return next(err);
 
         res.json({
-            //task_id: task._id,
-            //project_id: project._id,
-            //datatype: datatype._id,
-
-            validator_task, //only set if there is a validator
-
+            //only set if there is validator registered
+            validator_task, 
+            
             //only set if there is no validator
-            archive_task,
-            //dataset,
+            archive_task, 
         });
     });
 });

@@ -112,7 +112,7 @@
     <div slot="modal-footer">
         <b-form-group v-if="mode == 'upload'">
             <b-button @click="cancel">Cancel</b-button>
-            <b-button variant="primary" @click="validate()" :disabled="!isValid()">Next</b-button>
+            <b-button variant="primary" @click="finalize()" :disabled="!isValid()">Next</b-button>
         </b-form-group>
         <b-form-group v-if="mode == 'validate'">
             <b-button @click="mode = 'upload'">Back</b-button>
@@ -332,22 +332,18 @@ export default {
         },
 
         findOrCreateInstance() {
-            let name = "upload."+this.project.group_id;
+            let name = "upload."+this.project.group_id; //same for cli upload (bl data upload and bids upload)
             this.$http.get(Vue.config.amaretti_api+'/instance?find='+JSON.stringify({ name })).then(res=>{
                 if(res.data.instances.length > 0) { 
-                    //console.log("reusing instance");
-                    //console.dir(res.data);
                     this.instance = res.data.instances[0];
                     this.subscribeInstance();
                     return;
                 }
 
-                //console.log("creating new instance");
                 this.$http.post(Vue.config.amaretti_api+'/instance', {
                     name,
                     group_id: this.project.group_id,
                 }).then(res=>{
-                    //console.dir(res.data);
                     this.instance = res.data;
                     this.subscribeInstance();
                 }).catch(err=>{
@@ -427,6 +423,7 @@ export default {
                     instance_id: this.instance._id,
                     name: "upload",
                     service: "brainlife/app-noop", //TODO - I should rename to app-upload?
+                    config: {}, //must exist for event handler to submit secondary archiver?
                     preferred_resource_id: this.validator_resource, 
                 });
             }).then(res=>{
@@ -469,7 +466,7 @@ export default {
             let data = new FormData();
             data.append("file", f);
             file.cancel = this.$http.CancelToken.source();
-            this.$http.post(Vue.config.amaretti_api+"/task/upload2/"+this.tasks.upload._id+"?p="+encodeURIComponent(file.filename), data, {
+            this.$http.post(Vue.config.amaretti_api+"/task/upload2/"+this.tasks.upload._id+"?p="+encodeURIComponent("upload/"+file.filename), data, {
                 cancelToken: file.cancel.token,
                 onUploadProgress: evt=>{
                     file.progress = {loaded: evt.loaded, total: evt.total};
@@ -490,6 +487,39 @@ export default {
             this.$refs.modal.hide();
         },
 
+        finalize()  {
+            this.mode = "validate";
+            this.tasks.validation = null;
+
+            //apply sidecar to meta
+            if(this.sidecar) {
+                let _sidecar = JSON.parse(this.sidecar);
+                Object.assign(this.meta, _sidecar);
+            }
+
+            //remove null meta
+            let clean_meta = {};
+            for(let id in this.meta) {
+                if(this.meta[id] !== "") clean_meta[id] = this.meta[id];
+            }
+
+            this.$http.post(Vue.config.api+"/dataset/finalize-upload", {
+                task: this.tasks.upload._id,
+                datatype: this.datatype._id,
+                subdir: "upload",
+
+                datatype_tags: this.datatype_tags,
+                meta: clean_meta,
+                tags: this.tags,
+                desc: this.desc, //what is this for?
+            }).then(res=>{
+                this.tasks.validation = res.data.validator_task;
+            }).catch(err=>{
+                console.error(err);
+            });
+        },
+
+        /*
         validate() {
             this.mode = "validate";
             this.tasks.validation = null;
@@ -546,6 +576,7 @@ export default {
                 console.error(res);
             });
         },
+        */
 
         clearfile: function(file) {
             file.uploaded = null;
