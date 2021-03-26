@@ -412,9 +412,8 @@ function handle_task(task, cb) {
         //submit secondary archiver for validation tasks to store UI output to secondary storage
         //this is not to be confused by the group analysis output also stored on secondary storage but it's not "UI" output.
         async next=>{
-            if(task.status != "finished") {// || !isValidationTask(task)) {
-                return;
-            }
+            if(task.status != "finished") return;
+            if(task.service == "brainlife/app-stage") return;
 
             if(!task.config) {
                 console.error("task.config not set for task _id", task._id);
