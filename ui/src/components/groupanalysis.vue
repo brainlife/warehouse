@@ -23,10 +23,9 @@
         </p>
         -->
 
-        <div>
+        <div v-if="sessions.length >0">
             <br>
-            <h4 style="padding-left:10px">Sessions</h4>
-            <small v-if="sessions.length == 0">Please launch a new session.</small>
+            <h4 style="padding-left: 20px">Sessions</h4>
             <div v-for="task in sessions" :key="task._id" class="session">
                 <b-row>
                     <b-col cols="4">
@@ -396,7 +395,7 @@ iframe {
 
 .session {
     box-shadow: 1px 1px 2px #0002;
-    padding: 10px;    
+    padding: 20px;    
     background-color: white;
 }
 

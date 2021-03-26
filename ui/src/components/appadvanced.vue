@@ -14,6 +14,7 @@
         <!--this is where all the advanced options will go -->
         <slot/>
         <br>
+        <br>
         <b-row>
             <b-col cols="3" class="text-muted">Preferred Resource</b-col>
             <b-col>

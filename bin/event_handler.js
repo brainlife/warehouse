@@ -438,23 +438,15 @@ function handle_task(task, cb) {
                         task_id: task._id,
                         subdir: output.id,
 
-                        //UI outputs are not secondary data... so it shouldn't have any datatype associated with it
-                        //we use secondary-archiver to archive it
-                        /*
-                        datatype: {
-                            _id: datatype._id,
-                            name: datatype.name,
-                            //desc: datatype.desc,
-                        }, 
-                        */
-
                         output,
+
                         app: {
                             service: task.service,
                             service_branch: task.service_branch,
                             commit_id: task.commit_id,
                             name: task.name,
                         },
+
                         finish_date: task.finish_date,
                     }
 
@@ -476,6 +468,14 @@ function handle_task(task, cb) {
                         //TODO - for legacy root-output apps, we shouldn't set subdir (and need to apply override?)
                         //or.. do I say secondary output won't work with legacy app anymore?
                         subdirs.push(output.id);
+                        
+                        //datatype field is used to tell which secondary archive is for group analysis
+                        //this is only set for group analysis (not validation task) because secondary output from validation task
+                        //is only for UI
+                        request.datatype = {
+                            _id: datatype._id,
+                            name: datatype.name,
+                        }
                     }
                     requests.push(request);
                 }

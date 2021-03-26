@@ -44,7 +44,11 @@ router.get('/list/:projectid', async (req, res, next)=>{
         _res.data.tasks.forEach(task=>{
             if(!task.config.requests) return; //old format?
             task.config.requests.forEach(request=>{
-                if(!request.datatype) return; //should only happen on dev
+
+                //we only want objects with datatype set (for group analysis datatypes)
+                //validator output archive won't have datatype set (see event handler) 
+                //so we can filter them out by looking for this.
+                if(!request.datatype) return; 
 
                 //slim down datatype
                 //I don't think I have to do this anymore as secondary archiver should only 
