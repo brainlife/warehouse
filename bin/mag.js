@@ -1,13 +1,4 @@
-// const config = require('../api/config');
-// const db = require('../api/models');
-
-// db.Projects.find({}, (err, allprojects) => {
-
-//     if (err) console.error(err);
-//     console.log(allprojects);
-// })
-
-// #!/usr/bin/env node
+#!/usr/bin/env node
 
 const winston = require('winston');
 const async = require('async');
@@ -37,33 +28,33 @@ db.init(function(err) {
 var report = {
     status: "ok",
     maxage: 1000*60*30,
-    app_counts: 0,
+    project_counts: 0,
 }
 
 function health_check() {
     report.date = new Date();
-    rcon.set("health.warehouse.appinfo."+process.env.HOSTNAME+"-"+process.pid, JSON.stringify(report));
+    rcon.set("health.warehouse.projectinfo."+process.env.HOSTNAME+"-"+process.pid, JSON.stringify(report));
 }
 
 function run() {
-	db.Apps.find({
+	db.Projects.find({
         removed: false,
     })
     //.populate('app project')
-    .exec((err, apps)=>{
+    .exec((err, projects)=>{
 		if(err) throw err;
-        report.app_counts = apps.length;
-        async.eachSeries(apps, handle_app, err=>{
+        report.project_counts = projects.length;
+        async.eachSeries(projects, handle_project, err=>{
             if(err) logger.error(err);
-            console.log("done going through all apps sleeping.....");
+            console.log("done going through all projects sleeping.....");
             setTimeout(run, 1000*3600*3);
         });
 	});
 }
 
-function handle_app(app, cb) {
-    logger.debug("....................... %s %s", app.name, app._id.toString());
-
+function handle_project(project, cb) {
+    logger.debug("....................... %s %s", project.name, project._id.toString());
+    logger.debug(project.desc);
     async.series([
         //caching serviceinfo
         next=>{
