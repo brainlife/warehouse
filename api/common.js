@@ -413,6 +413,18 @@ exports.load_github_detail = function(service_name, cb) {
     }).catch(cb)
 }
 
+exports.mag_evaluate = function(keywords, projectid){
+    if(!config.mag) return cb("no mag config");
+    let headers = {
+        'Ocp-Apim-Subscription-Key': ''+config.mag.subscription_key,
+        'User-Agent': 'brainlife',
+    }
+
+    url = "https://api.labs.cognitive.microsoft.com/academic/v1.0/evaluate?expr={expr}&model=latest&count=10&offset=0&attributes=Id"
+
+
+}
+
 exports.compose_app_datacite_metadata = function(app) {
     //publication year
     let year = app.create_date.getFullYear();
