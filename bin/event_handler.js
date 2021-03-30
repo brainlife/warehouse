@@ -245,11 +245,9 @@ function handle_task(task, cb) {
                 if(!datatype.validator) return; //no validator for this datatype..
                 
                 //see if we already submitted validator for this output
-                //task can be resubmitted, and if it does, amaretti will
-                //automatically rerun it
-                //TODO - even if it's failed?
+                //TODO - I should probably key by the resource_id also? if user resubmit a jobs on different resource
+                //we probably want to resubmit validator on the different resource also? - in case the resource is disabled and such
                 let find = {
-                    //service: { $regex: "^brainlife/validator-" },
                     "deps_config.task": task._id,
                     "config._outputs.id": output.id,
 
@@ -313,9 +311,8 @@ function handle_task(task, cb) {
                     }
                 });
 
-                //we shouldn't remove it too soon.
-                //let remove_date = new Date();
-                //remove_date.setDate(remove_date.getDate()+7); //remove in 7 days(?)
+                let remove_date = new Date();
+                remove_date.setDate(remove_date.getDate()+1); //remove in 1 day
                 
                 //submit datatype validator - if not yet submitted
                 let dtv_task = await rp.post({
@@ -329,7 +326,11 @@ function handle_task(task, cb) {
                         deps_config: [ {task: task._id, subdirs} ],
                         config: validator_config,
                         //max_runtime: 1000*3600, //1 hour should be enough for most..(nope.. it could be queued for a lone time)
-                        remove_date: task.remove_date, //remove when source task is removed
+                        
+                        //remove when source task is removed (but now I task handler has to keep checking the status from validatortor)
+                        //maybe we could remove this a lot sooner now that secondary output is archived to secondary storage?
+                        //remove_date: task.remove_date,  //or maybe I shouldn't remove it too soon?
+                        remove_date,
 
                         //we want to run on the same resource that task has run on
                         follow_task_id: task._id,
@@ -410,10 +411,20 @@ function handle_task(task, cb) {
         },
         
         //submit secondary archiver for validation tasks to store UI output to secondary storage
-        //this is not to be confused by the group analysis output also stored on secondary storage but it's not "UI" output.
+        //also submit secondary archive for the group analysis which is also stored on secondary storage but it's not "UI" output.
         async next=>{
             if(task.status != "finished") return;
-            if(task.service == "brainlife/app-stage") return;
+            //if(task.service == "brainlife/app-stage") return;
+
+            //let's go ahead and resubmit secondary archiver - to force the secondary output to be re-achived if "force_secondary" is not set
+            if(task.service == "brainlife/app-stage"){ 
+                if(task.config.forceSecondary) {
+                    console.log("processing with secondary archive for app-stage (forceSecondary is set)");
+                } else {
+                    //don't run seconary archive for app-stage
+                    return;
+                }
+            }
 
             if(!task.config) {
                 console.error("task.config not set for task _id", task._id);
@@ -484,6 +495,7 @@ function handle_task(task, cb) {
                     return;
                 }
 
+                console.log("number of requests", requests);
                 if(requests.length == 0) return;
 
                 //see if we already submitted secondary archiver for this task

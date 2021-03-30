@@ -1008,7 +1008,7 @@ router.post('/stage', common.jwt({secret: config.express.pubkey}), (req, res, ne
                         }
                     } else {
                         return {
-                            id: d.id,
+                            id: d._id,
 
                             project: d.project,
                             storage: d.storage,
@@ -1018,7 +1018,6 @@ router.post('/stage', common.jwt({secret: config.express.pubkey}), (req, res, ne
                 }),
                 _tid: next_tid,
                 _outputs: datasets.map(d=>{
-                    let subdir = d._id;
                     return {
                         id: d._id,
                         datatype: d.datatype,
@@ -1026,8 +1025,8 @@ router.post('/stage', common.jwt({secret: config.express.pubkey}), (req, res, ne
                         tags: d.tags,
                         datatype_tags: d.datatype_tags,
                         
-                        subdir,
-                        dataset_id: d._id, //TODO - id or dataset_id.. what's the difference? which one should I use?
+                        subdir: d._id,
+                        dataset_id: d._id,
 
                         project: d.project,
                     }
