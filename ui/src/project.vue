@@ -45,6 +45,10 @@
                             &nbsp;{{selected.stats.rules.active}} <small>/ {{selected.stats.rules.active + selected.stats.rules.inactive}}</small>
                         </span>
 
+                        <span v-if="tabinfo.id == 'groupanalysis' && selected.stats && selected.stats.groupanalysis && selected.stats.groupanalysis.sessions.length > 0" title="Number of Group Analysis Sessions" style="opacity: 0.6; font-size: 80%;">
+                            &nbsp;{{selected.stats.groupanalysis.sessions.length}}
+                        </span>
+
                         <span v-if="tabinfo.id == 'pub' && selected.stats && selected.stats.publications > 0" style="opacity: 0.6; font-size: 80%;">
                             &nbsp;{{selected.stats.publications}}
                         </span>
@@ -551,19 +555,6 @@ export default {
                 if(this.$refs.disqus && window.DISQUS) {
                     this.$refs.disqus.reset(window.DISQUS);
                 }
-
-                //reset tabs
-                /*
-                this.tabs = [];
-                this.tabs.push({id: "detail", label: "Detail"});
-                this.tabs.push({id: "dataset", label: "Archive"});
-                this.tabs.push({id: "process", label: "Processes"});
-                if(Vue.config.user) {
-                    this.tabs.push({id: "pipeline", label: "Pipelines"});
-                    if(full_project.group_analysis) this.tabs.push({id: "groupanalysis", label: "Group Analysis"});
-                    this.tabs.push({id: "pub", label: "Publications"});
-                }
-                */
 
                 this.handleRouteParams();
             });

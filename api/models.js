@@ -156,6 +156,12 @@ var projectSchema = mongoose.Schema({
         //counts of publications (updated by common.update_project_stats)
         publications: Number,
 
+        groupanalysis: {
+            sessions: [{
+                task_id: String, //amaretti task id
+                config: mongoose.Schema.Types.Mixed,
+            }]
+        },
     },
 
     quota: {type: Number, default: 1000000000000}, //maximum archive size (1TB by default)

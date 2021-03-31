@@ -210,10 +210,10 @@ export default {
                     switch(event.dinfo.exchange) {
                     case "wf.task":
                         let task = event.msg;
-                        let existing_task = this.tasks.find(t=>t._id == task._id);
+                        let existing_task = this.sessions.find(t=>t._id == task._id);
                         if(existing_task) {
                             for(let k in task) existing_task[k] = task[k];
-                        } else this.tasks.push(task); //new task
+                        } else this.sessions.push(task); //new task
 
                         if(this.openWhenReady == task._id && task.status == "running" && task.status_msg == "running") {
                             this.openWhenReady = null;
@@ -223,7 +223,7 @@ export default {
                 }
             }
 
-            //load initial list of tasks
+            //load initial list of sessions
             this.$http.get(Vue.config.amaretti_api+'/task', {
                 params: {
                     find: JSON.stringify({
@@ -232,25 +232,27 @@ export default {
                     }),
                 }
             }).then(res=>{
-                this.tasks = res.data.tasks;
+                this.sessions = res.data.tasks;
                 this.ready = true;
             });
         });
     },
 
     computed: {
+        /*
         sessions() {
             return this.tasks.filter(task=>task.status != 'removed');
         }   
+        */
     },
 
     methods: {
 
         find_or_create_instance(cb) {
-            //find or create an instance to host all ga tasks
+            //find or create an instance to host all ga tasks .. must match in api/common/update_project_stats
             let key = {
                 group_id: this.project.group_id,
-                name: "ga-launchers",
+                name: "ga-launchers", 
             }
             this.$http.get(Vue.config.amaretti_api+'/instance', {
                 params: {

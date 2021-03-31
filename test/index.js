@@ -40,21 +40,3 @@ describe.skip('workflows', ()=>{
     });
 });
 
-describe.skip('common', ()=>{
-    const common = require('../api/common');
-    const models = require('../api/models');
-    it('get_next_app_doi', function(done) {
-        models.init(err=>{
-            done(err);
-        })
-    });
-    it('get_next_app_doi', function(done) {
-        this.timeout(5000);
-
-        common.get_next_app_doi((err, doi)=>{
-            if(err) return done(err);
-            console.log(doi);
-            done();
-        });
-    });
-});

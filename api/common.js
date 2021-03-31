@@ -880,8 +880,10 @@ exports.update_secondary_index = async function(project) {
 }
 
 exports.update_project_stats = async function(project, cb) {
-    console.log("updateing project stats project:", project._id)
+    console.log("updating project stats project:", project._id)
     try {
+
+        //console.debug("loading instance counts");
         let counts = await rp.get({
             url: config.amaretti.api+"/instance/count", json: true,
             qs: {
@@ -891,6 +893,8 @@ exports.update_project_stats = async function(project, cb) {
         });
         let instance_counts = counts[0]; //there should be only 1
 
+        //rule stats --------------------------------------------------------
+        //console.debug("aggregating Rules", project._id);
         let stats = await db.Rules.aggregate()
             .match({removed: false, project: project._id})
             .group({_id: { "active": "$active" }, count: {$sum: 1}});
@@ -903,6 +907,43 @@ exports.update_project_stats = async function(project, cb) {
             if(rec._id.active) rules.active = rec.count;
             else rules.inactive = rec.count;
         });
+
+        //group analysis--------------------------------------------------------
+        //console.debug("loading groupanslysis sessions");
+        let groupanalysis = {
+            sessions: [],
+        }
+        let gaInstanceRes = await axios(config.amaretti.api+"/instance", {
+            params: {
+                find: JSON.stringify({
+                    group_id: project.group_id,
+                    name: "ga-launchers", //must match from ui' components[groupanslysis.vue]
+                }),
+            },
+            headers: { authorization: "Bearer "+config.warehouse.jwt, },
+        });
+        let gaInstances = gaInstanceRes.data.instances;
+        if(gaInstances.length > 0) {
+            let instance = gaInstances[0]; //there should be only 1
+            //load existing sessions
+            let sessionsRes = await axios(config.amaretti.api+"/task", {
+                params: {
+                    find: JSON.stringify({
+                        status: {$ne: "removed"},
+                        instance_id: instance._id,
+                    }),
+                    select: 'config.container'
+                },
+                headers: { authorization: "Bearer "+config.warehouse.jwt, },
+            });
+            groupanalysis.sessions = sessionsRes.data.tasks.map(t=>{
+                return {
+                    task_id: t._id,
+                    config: t.config,
+                }
+            });
+        }
+        //app stats -------------------------------------------------------------
 
         let recs = await exports.aggregateDatasetsByApps({project:project._id})
         let app_stats = [];
@@ -965,15 +1006,14 @@ exports.update_project_stats = async function(project, cb) {
             "stats.apps": app_stats, 
             "stats.publications": publications,
             "stats.instances": instance_counts,
+            "stats.groupanalysis": groupanalysis,
         }}, {new: true});
 
         //only publish some stats
         exports.publish("project.update.warehouse."+project._id, {stats: {
-            rules: rules,
+            rules,
             instances: instance_counts,
-            //apps: app_stats, 
-            //publications: publications,
-            //resources: resource_stats,
+            //groupanalysis,
         }})
 
         if(cb) cb(null, newproject);
