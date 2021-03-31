@@ -619,6 +619,9 @@ exports.cache_contact = function(cb) {
 }
 
 exports.cache_contact();
+
+//TODO - this make any script that uses common to not terminate!
+//start this loop in demand
 setInterval(exports.cache_contact, 1000*60*30); //cache every 30 minutes
 
 exports.deref_contact = function(id) {

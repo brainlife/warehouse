@@ -95,6 +95,7 @@
                     </small>
                 </h4>
                 <i class="status-msg">{{task.status_msg.trim()||'empty status message'}}</i>
+                <div v-if="task.status == 'failed'"><small>Please see <a href="https://brainlife.io/docs/user/failure/" target="doc" style="color: white; text-decoration: underline;">Job troubleshooting guide</a> for more instruction.</small></div>
             </div>
         </div><!--status-card-->
     </div><!--sticky top-->
@@ -102,6 +103,7 @@
     <!--task details-->
     <div class="status-color" :class="task.status" style="padding-left: 3px;">
         <div style="background-color: #fafafa; color: #333; position: relative;">
+
             <div v-if="task.service != 'soichih/sca-product-raw' && task.service != 'brainlife/app-stage'">
                 <taskconfig :task="task" style="padding: 10px;"/>
             </div>

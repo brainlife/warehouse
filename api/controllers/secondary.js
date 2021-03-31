@@ -31,7 +31,7 @@ router.get('/list/:projectid', async (req, res, next)=>{
                     'service': 'brainlife/app-archive-secondary',
                     '_group_id': project.group_id,
                 }),
-                limit: 20000, //TODO.. how scalable is this!?
+                limit: 100000, //TODO.. how scalable is this!?
                 //sort: 'create_date', //this seems to slow things down
             },
             headers: { authorization: "Bearer "+config.warehouse.jwt },
