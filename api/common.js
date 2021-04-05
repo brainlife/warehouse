@@ -19,10 +19,9 @@ const config = require('./config');
 const db = require('./models');
 const mongoose = require('mongoose');
 
-mongoose.set('debug', true);
 
 
-//connect to redis - used to store various shared caches
+//connect to redis - used to store letious shared caches
 //TODO - user needs to call redis.quit();
 exports.redis = redis.createClient(config.redis.port, config.redis.server);
 exports.redis.on('error', err=>{throw err});
@@ -77,7 +76,7 @@ exports.validate_projects = function(user, project_ids, cb) {
         canwrite_project_ids = canwrite_project_ids.map(id=>id.toString());
 
         //iterate each ids to see if user has access
-        var err = null;
+        let err = null;
         project_ids.forEach(id=>{
             if(!~canwrite_project_ids.indexOf(id)) err = "you("+user+") don't have write access to project:"+id;
         });
@@ -416,9 +415,8 @@ exports.load_github_detail = function(service_name, cb) {
     }).catch(cb)
 }
 
-exports.mag_evaluate = function(query, projectid){
-    console.log(config.mag.subscription_key);
-    console.log(query);
+exports.updateProjectMag = function(query, projectid){
+
     if(!config.mag) return console.log("no mag config");
     let headers = {
         'Ocp-Apim-Subscription-Key': config.mag.subscription_key,
@@ -440,25 +438,24 @@ exports.mag_evaluate = function(query, projectid){
             // db.Projects.findByIdAndUpdate(projectid, {$set: {"mag": response.data.entities}}, {new: true});
             data_mag = response.data.entities
             // console.log(data_mag[0])
-            var mag_resp;
             for (i=0; i<data_mag.length;i++){
-                var object = data_mag[i];   // get first object
+                let object = data_mag[i];   // get first object
 
-                var date = Date.parse(object.D);      // get Date and 
+                let date = Date.parse(object.D);      // get Date and 
                 object.publicationDate = new Date(date); // assign to new key
                 
-                var citationCount = object.CC; //get CC
+                let citationCount = object.CC; //get CC
                 // console.log(citationCount)
                 object.citationCount = citationCount; // add Citation Count
                 
-                var title = object.Ti; //get Ti
+                let title = object.Ti; //get Ti
                 object.title = title; // add Title
 
-                var venue = object.VFN; //get VFN
+                let venue = object.VFN; //get VFN
                 object.venue = venue; // add journal
                 
-                for (var y = 0; y < object.AA.length; y++){
-                    var name = object.AA[y].DAuN;
+                for (let y = 0; y < object.AA.length; y++){
+                    let name = object.AA[y].DAuN;
                     object.AA[y].name = name;
                     object.AA[y].institution = object.AA[y].AfN;
 
@@ -467,14 +464,14 @@ exports.mag_evaluate = function(query, projectid){
                     delete object.AA[y].AfId;
                     delete object.AA[y].AfN;
                     delete object.AA[y].AuN;
-                    // var institution = object.AA[y].AfN;
+                    // let institution = object.AA[y].AfN;
                     // authors[y].name = name;
                     // authors[y].institution = institution;
                 }
 
                 object.authors = object.AA;
                 object.fields = []
-                for (var y = 0; y < object.F.length; y++){
+                for (let y = 0; y < object.F.length; y++){
                         // object.fields += ","+object.F[y].FN;
                         object.fields.push(object.F[y].FN)
                 }
@@ -482,9 +479,9 @@ exports.mag_evaluate = function(query, projectid){
                 if(typeof object.IA!== "undefined"){
                     object.abstract = "";
                 try {
-                    var ia_obj = JSON.stringify(object.IA);
+                    let ia_obj = JSON.stringify(object.IA);
                     ia_obj2 = JSON.parse(ia_obj);
-                    var keys = Object.keys(ia_obj2.InvertedIndex);
+                    let keys = Object.keys(ia_obj2.InvertedIndex);
                     Object.keys(ia_obj2.InvertedIndex).forEach(function (item) {
                         object.abstract += item+" ";
                     });
@@ -506,7 +503,7 @@ exports.mag_evaluate = function(query, projectid){
             }
 
 
-            var filtered = data_mag.filter(a => a.logprob > -15);
+            let filtered = data_mag.filter(a => a.logprob > -15);
 
             const updateData = {
                 [`papers`]: filtered,
@@ -749,9 +746,9 @@ exports.deref_contact = function(id) {
 
 //for split_product
 Array.prototype.unique = function() {
-    var a = this.concat();
-    for(var i=0; i<a.length; ++i) {
-        for(var j=i+1; j<a.length; ++j) {
+    let a = this.concat();
+    for(let i=0; i<a.length; ++i) {
+        for(let j=i+1; j<a.length; ++j) {
             if(a[i] === a[j])
                 a.splice(j--, 1);
         }
@@ -1242,8 +1239,8 @@ exports.cast_mongoid = function(node) {
         }  
     }
 
-    for(var k in node) {
-        var v = node[k];
+    for(let k in node) {
+        let v = node[k];
         if(v === null) continue;
         if(isObjectIdValid(v)) {
             node[k] = mongoose.Types.ObjectId(v);
