@@ -158,6 +158,23 @@
                         </b-row>
                     </div>
 
+                    <div class="box" v-if="selected.mag">
+                        <h3> Related Articles </h3>
+                        <p>We found the following journals/articles related to this project based on name/description through MAG</p>
+                        <hr>
+                        <ol>
+                            <li v-for="paper in selected.mag.papers" :key="Id" >
+                               <div><p class="capitalize"> {{paper.title}} <span style="font-style: italic;"> {{ paper.venue }} ( {{new Date(paper.publicationDate).getFullYear()}} )</span></p></div>
+                               <hr>
+                            </li>
+                        </ol>
+                    </div>
+                    <div class="box" v-else>
+                        <h3> Related Articles </h3>
+                        <p>We couldn't find related articles please add more details to the description of the project</p>
+                    </div>
+
+
                     <div v-if="selected.readme" class="box">
                         <span class="form-header">Readme</span>
                         <br>
@@ -232,6 +249,7 @@
                     <vue-disqus ref="disqus" shortname="brain-life" :identifier="selected._id"/>
 
                     <div v-if="config.debug">
+                        <pre>{{selected.mag}}</pre>
                         <pre>{{selected}}</pre>
                     </div>
                 </div><!-- main content-->
@@ -833,5 +851,11 @@ padding: 5px 10px;
     .main {
         margin-right: 20px;
     }
+}
+OL LI::marker {
+    font-size: 2em;
+}
+.capitalize {
+    text-transform: capitalize;
 }
 </style>

@@ -19,6 +19,9 @@ const config = require('./config');
 const db = require('./models');
 const mongoose = require('mongoose');
 
+mongoose.set('debug', true);
+
+
 //connect to redis - used to store various shared caches
 //TODO - user needs to call redis.quit();
 exports.redis = redis.createClient(config.redis.port, config.redis.server);
@@ -413,16 +416,123 @@ exports.load_github_detail = function(service_name, cb) {
     }).catch(cb)
 }
 
-exports.mag_evaluate = function(keywords, projectid){
-    if(!config.mag) return cb("no mag config");
+exports.mag_evaluate = function(query, projectid){
+    console.log(config.mag.subscription_key);
+    console.log(query);
+    if(!config.mag) return console.log("no mag config");
     let headers = {
-        'Ocp-Apim-Subscription-Key': ''+config.mag.subscription_key,
+        'Ocp-Apim-Subscription-Key': config.mag.subscription_key,
         'User-Agent': 'brainlife',
     }
 
-    url = "https://api.labs.cognitive.microsoft.com/academic/v1.0/evaluate?expr={expr}&model=latest&count=10&offset=0&attributes=Id"
+    let url_mag = "https://api.labs.cognitive.microsoft.com/academic/v1.0/evaluate?expr="+query+"&model=latest&count=10&offset=0&attributes=Id,AA.AfId,AA.AfN,AA.AuId,AA.AuN,AA.DAuN,CC,CN,D,Ti,F.FId,F.FN,Y,VFN,DOI,IA"
+    let response_mag = ""
+    axios({
+        method: 'get',
+        url: url_mag,
+        responseType: 'json',
+        headers: headers
+      }).then(function (response) {
+        //   console.log(response)
+        // console.log(response.data)
+        this.response_mag = response
+        if(response.data.entities.length > 0){
+            // db.Projects.findByIdAndUpdate(projectid, {$set: {"mag": response.data.entities}}, {new: true});
+            data_mag = response.data.entities
+            // console.log(data_mag[0])
+            var mag_resp;
+            for (i=0; i<data_mag.length;i++){
+                var object = data_mag[i];   // get first object
+
+                var date = Date.parse(object.D);      // get Date and 
+                object.publicationDate = new Date(date); // assign to new key
+                
+                var citationCount = object.CC; //get CC
+                // console.log(citationCount)
+                object.citationCount = citationCount; // add Citation Count
+                
+                var title = object.Ti; //get Ti
+                object.title = title; // add Title
+
+                var venue = object.VFN; //get VFN
+                object.venue = venue; // add journal
+                
+                for (var y = 0; y < object.AA.length; y++){
+                    var name = object.AA[y].DAuN;
+                    object.AA[y].name = name;
+                    object.AA[y].institution = object.AA[y].AfN;
+
+                    delete object.AA[y].DAuN;
+                    delete object.AA[y].AuId;
+                    delete object.AA[y].AfId;
+                    delete object.AA[y].AfN;
+                    delete object.AA[y].AuN;
+                    // var institution = object.AA[y].AfN;
+                    // authors[y].name = name;
+                    // authors[y].institution = institution;
+                }
+
+                object.authors = object.AA;
+                object.fields = []
+                for (var y = 0; y < object.F.length; y++){
+                        // object.fields += ","+object.F[y].FN;
+                        object.fields.push(object.F[y].FN)
+                }
+
+                if(typeof object.IA!== "undefined"){
+                    object.abstract = "";
+                try {
+                    var ia_obj = JSON.stringify(object.IA);
+                    ia_obj2 = JSON.parse(ia_obj);
+                    var keys = Object.keys(ia_obj2.InvertedIndex);
+                    Object.keys(ia_obj2.InvertedIndex).forEach(function (item) {
+                        object.abstract += item+" ";
+                    });
+                    delete object.IA
+                } catch (error) {
+                    // console.log(error)
+                }
+            }
+
+                delete object.VFN;
+                delete object.Y;
+                delete object.F;
+                delete object.AA; //remove AA
+                delete object.Ti; // remove old ti
+                delete object.CC; // remove CC
+                delete object.D; // remove old D
+                delete object.prob; // remove prob
+        }
+            }
 
 
+            var filtered = data_mag.filter(a => a.logprob > -15);
+
+            const updateData = {
+                [`papers`]: filtered,
+            };
+
+            if(filtered.length != 0){
+             db.Projects.findByIdAndUpdate(projectid, {$set: {"mag": updateData}},{ new: true, upsert: true, }, function (err, updatedproject) {
+                if (err) {
+                    console.log(projectid);
+                    console.log(err);
+                    // res.redirect("/event");
+                } else {
+                    // res.redirect("/event/" + req.params.id);
+                }
+            })
+            }
+      })
+      .catch(function (error) {
+          console.log(error.response.status) 
+          console.log(error.response.data.error) 
+        if(error.response.status==401){
+
+        }
+      })
+
+      return response_mag
 }
 
 exports.compose_app_datacite_metadata = function(app) {
