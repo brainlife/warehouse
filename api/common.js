@@ -24,72 +24,72 @@ const mongoose = require('mongoose');
 //connect to redis - used to store letious shared caches
 //TODO - user needs to call redis.quit();
 exports.redis = redis.createClient(config.redis.port, config.redis.server);
-exports.redis.on('error', err => { throw err });
+exports.redis.on('error', err=>{throw err});
 
 //TODO - should be called something like "get_project_accessiblity"?
-exports.getprojects = function (user, cb) {
+exports.getprojects = function(user, cb) {
     //let's allow access to public project from un-authenticated user so that they can browser public projects on brainlife
     //if(user === undefined) return cb(null, [], []);
-
+    
     //string has sub() so I can't just do if(user.sub)
-    if (typeof user == 'object') user = user.sub.toString();
-
+    if(typeof user == 'object') user = user.sub.toString();
+    
     //everyone has read access to public project
-    let project_query = { access: "public" };
-
+    let project_query = {access: "public"};
+    
     //logged in user may have acess to more projects
     project_query = {
         $or: [
             project_query,
-            { "members": user },
-            { "admins": user },
-            { "guests": user },
+            {"members": user},
+            {"admins": user}, 
+            {"guests": user},
         ],
     };
-    db.Projects.find(project_query).select('_id admins members guests').lean().exec((err, projects) => {
-        if (err) return cb(err);
+    db.Projects.find(project_query).select('_id admins members guests').lean().exec((err, projects)=>{
+        if(err) return cb(err);
         //user can read from all matching projects
-        let canread_ids = projects.map(p => p._id);
+        let canread_ids = projects.map(p=>p._id);
 
         //user has write access if they are listed in members/admins
-        let canwrite_projects = projects.filter(p => {
-            if (user && p.members.includes(user)) return true;
-            if (user && p.admins.includes(user)) return true;
+        let canwrite_projects = projects.filter(p=>{
+            if(user && p.members.includes(user)) return true;
+            if(user && p.admins.includes(user)) return true;
             return false;
         });
-        let canwrite_ids = canwrite_projects.map(p => p._id);
+        let canwrite_ids = canwrite_projects.map(p=>p._id);
         cb(null, canread_ids, canwrite_ids);
     });
 }
 
 //check if user has access to all projects in (write access) projects_id
-exports.validate_projects = function (user, project_ids, cb) {
-    if (!project_ids) return cb(); //no project, no checking necessary
+exports.validate_projects = function(user, project_ids, cb) {
+    if(!project_ids) return cb(); //no project, no checking necessary
 
     //need to be all strings
-    project_ids = project_ids.map(id => id.toString());
+    project_ids = project_ids.map(id=>id.toString());
 
-    exports.getprojects(user, (err, canread_project_ids, canwrite_project_ids) => {
-        if (err) return cb(err);
+    exports.getprojects(user, (err, canread_project_ids, canwrite_project_ids)=>{
+        if(err) return cb(err);
 
         //need to be all strings
-        canwrite_project_ids = canwrite_project_ids.map(id => id.toString());
+        canwrite_project_ids = canwrite_project_ids.map(id=>id.toString());
 
         //iterate each ids to see if user has access
         let err = null;
-        project_ids.forEach(id => {
-            if (!~canwrite_project_ids.indexOf(id)) err = "you(" + user + ") don't have write access to project:" + id;
+        project_ids.forEach(id=>{
+            if(!~canwrite_project_ids.indexOf(id)) err = "you("+user+") don't have write access to project:"+id;
         });
         cb(err);
     });
 }
 
 //copy exists in amaretti/ common.js
-exports.escape_dot = function (obj) {
-    if (typeof obj == "object") {
-        for (let key in obj) {
+exports.escape_dot = function(obj) {
+    if(typeof obj == "object") {
+        for(let key in obj) {
             exports.escape_dot(obj[key]);
-            if (key.includes(".")) {
+            if(key.includes(".")) {
                 let newkey = key.replace(/\./g, '-');
                 obj[newkey] = obj[key];
                 delete obj[key];
@@ -122,7 +122,7 @@ function register_dataset(task, output, product, cb) {
                 follow_task_id: task.follow_task_id, //for _dtv
 
                 name: task.name,
-                config: task.config || {},
+                config: task.config||{},
                 service: task.service,
                 service_branch: task.service_branch,
 
@@ -143,9 +143,9 @@ function register_dataset(task, output, product, cb) {
             instance_id: task.instance_id, //deprecated use prov.task.instance_id
             task_id: task._id, //deprecated. use prov.task._id
         },
-    }, (err, _dataset) => {
-        if (err) return cb(err);
-
+    }, (err, _dataset)=>{
+        if(err) return cb(err);
+        
         //store product in different table
         db.DatasetProducts.create({
             dataset_id: _dataset._id,
@@ -156,67 +156,67 @@ function register_dataset(task, output, product, cb) {
             //service: task.service,
             //service_branch: task.service_branch,
 
-        }, (err, _dataset_product) => {
-            if (!err) exports.publish("dataset.create." + task.user_id + "." + output.archive.project + "." + _dataset._id, _dataset);
+        }, (err, _dataset_product)=>{
+            if(!err) exports.publish("dataset.create."+task.user_id+"."+output.archive.project+"."+_dataset._id, _dataset);
             cb(err, _dataset);
         });
     });
 }
 
 //wait for a task to terminate .. finish/fail/stopped/removed
-exports.wait_task = function (req, task_id, cb) {
-    console.debug("waiting for task to finish id:" + task_id);
+exports.wait_task = function(req, task_id, cb) {
+    console.debug("waiting for task to finish id:"+task_id);
     request.get({
-        url: config.amaretti.api + "/task/" + task_id,
+        url: config.amaretti.api+"/task/"+task_id,
         json: true,
         headers: {
             authorization: req.headers.authorization,
         }
-    }, (err, _res, task) => {
-        if (err) return cb(err);
-        switch (task.status) {
-            case "finished":
-                cb();
-                break;
-            case "requested":
-            case "running":
-            case "running_sync":
-                setTimeout(() => {
-                    exports.wait_task(req, task_id, cb);
-                }, 2000);
-                break;
-            default:
-                console.debug("wait_task detected failed task")
-                cb(task.status_msg);
+    }, (err, _res, task)=>{
+        if(err) return cb(err);
+        switch(task.status) {
+        case "finished":
+            cb();
+            break;
+        case "requested":
+        case "running":
+        case "running_sync":
+            setTimeout(()=>{
+                exports.wait_task(req, task_id, cb);
+            }, 2000);
+            break;
+        default:
+            console.debug("wait_task detected failed task")
+            cb(task.status_msg);
         }
     });
 }
 
 //TODO - I should create more generic version of this
-exports.issue_archiver_jwt = async function (user_id) {
+exports.issue_archiver_jwt = async function(user_id) {
 
     //load user's gids so that we can add warehouse group id (authorized to access archive)
     //I need existing user's gids so that user can submit stating task on the instance that user should have access to
     let gids = await rp.get({
-        url: config.auth.api + "/user/groups/" + user_id,
+        url: config.auth.api+"/user/groups/"+user_id,
         json: true,
         headers: {
-            authorization: "Bearer " + config.warehouse.jwt,
+            authorization: "Bearer "+config.warehouse.jwt,
         }
     });
-
+    
     ///add warehouse group that allows user to submit
-    gids = gids.concat(config.archive.gid);
-
+    gids = gids.concat(config.archive.gid);  
+    
     //issue user token with added gids priviledge
-    let { jwt: user_jwt } = await rp.get({
-        url: config.auth.api + "/jwt/" + user_id,
+    let {jwt: user_jwt} = await rp.get({
+        url: config.auth.api+"/jwt/"+user_id,
         json: true,
         qs: {
-            claim: JSON.stringify({ gids }),
+            claim: JSON.stringify({gids}),
         },
         headers: {
-            authorization: "Bearer " + config.warehouse.jwt,
+            authorization: "Bearer "+config.warehouse.jwt,
         }
     });
 
@@ -224,26 +224,26 @@ exports.issue_archiver_jwt = async function (user_id) {
 }
 
 //register new dataset and submits brainlife/app-archive to archive data for it
-exports.archive_task_outputs = async function (user_id, task, outputs, cb) {
-    if (!Array.isArray(outputs)) {
-        return cb("archive_task_outputs/outputs is not array " + JSON.stringify(outputs, null, 4));
+exports.archive_task_outputs = async function(user_id, task, outputs, cb) {
+    if(!Array.isArray(outputs)) {
+        return cb("archive_task_outputs/outputs is not array "+JSON.stringify(outputs, null, 4));
     }
 
     let task_products;
     try {
         task_products = await rp.get({
-            url: config.amaretti.api + "/task/product/", json: true,
+            url: config.amaretti.api+"/task/product/", json: true,
             qs: {
                 ids: [task._id],
             },
-            headers: { authorization: "Bearer " + config.warehouse.jwt, },
+            headers: { authorization: "Bearer "+config.warehouse.jwt, },
         });
     } catch (err) {
         return cb(err)
     }
 
     let task_product;
-    if (task_products.length == 1) {
+    if(task_products.length == 1) {
         task_product = task_products[0].product;
     } else {
         //fallback on the old task.product - in case user is still running old jobs
@@ -254,35 +254,35 @@ exports.archive_task_outputs = async function (user_id, task, outputs, cb) {
 
     //get all project ids set by user
     let project_ids = [];
-    outputs.forEach(output => {
-        if (output.archive && !~project_ids.indexOf(output.archive.project)) project_ids.push(output.archive.project);
+    outputs.forEach(output=>{
+        if(output.archive && !~project_ids.indexOf(output.archive.project)) project_ids.push(output.archive.project);
     });
 
     //handles multiple output datasets, but they should all belong to the same project.
     //if not, app-archive will fail..
-    if (project_ids.length == 0) return cb(); //nothing to archive?
-    if (project_ids.length > 1) return cb("archive_task_outputs can't handle request with mixed projects");
+    if(project_ids.length == 0) return cb(); //nothing to archive?
+    if(project_ids.length > 1) return cb("archive_task_outputs can't handle request with mixed projects");
     let project = await db.Projects.findById(project_ids[0]);
-    let storage = project.storage || config.archive.storage_default;
-    let storage_config = project.storage_config || config.archive.storage_config;
+    let storage = project.storage||config.archive.storage_default;
+    let storage_config = project.storage_config||config.archive.storage_config;
 
     //check project access
-    exports.validate_projects(user_id, project_ids, err => {
-        if (err) return cb(err);
-        let datasets = [];
-        let dataset_configs = [];
+    exports.validate_projects(user_id, project_ids, err=>{
+        if(err) return cb(err);
+        let datasets = []; 
+        let dataset_configs = []; 
         let subdirs;
         let noSubdirs = false;
-        async.eachSeries(outputs, (output, next_output) => {
+        async.eachSeries(outputs, (output, next_output)=>{
 
             //only archive output that has archive requested
-            if (!output.archive) return next_output();
+            if(!output.archive) return next_output();
 
             console.debug("registering dataset for task", task._id);
-            register_dataset(task, output, products[output.id], async (err, dataset) => {
-                if (err) return next_output(err);
-                if (!dataset) return next_output(); //couldn't register, or already registered
-                let dir = "../" + task._id;
+            register_dataset(task, output, products[output.id], async (err, dataset)=>{
+                if(err) return next_output(err);
+                if(!dataset) return next_output(); //couldn't register, or already registered
+                let dir =  "../"+task._id;
                 let dataset_config = {
                     project: output.archive.project,
                     dir,
@@ -294,10 +294,10 @@ exports.archive_task_outputs = async function (user_id, task, outputs, cb) {
                     storage,
                     storage_config,
                 }
-                if (output.subdir) {
+                if(output.subdir) {
                     //new subdir outputs
-                    dataset_config.dir += "/" + output.subdir;
-                    if (!subdirs) subdirs = [];
+                    dataset_config.dir+="/"+output.subdir;
+                    if(!subdirs) subdirs = [];
                     subdirs.push(output.subdir);
                 } else {
                     //old method - need to lookup datatype first
@@ -310,9 +310,9 @@ exports.archive_task_outputs = async function (user_id, task, outputs, cb) {
                 datasets.push(dataset);
                 next_output();
             });
-        }, async err => {
-            if (err) return cb(err);
-            if (datasets.length == 0) return cb();
+        }, async err=>{
+            if(err) return cb(err);
+            if(datasets.length == 0) return cb();
             try {
                 //only archiver group user can run app-stage/arcvehi, 
                 //so I need to add group access temporarily
@@ -320,33 +320,33 @@ exports.archive_task_outputs = async function (user_id, task, outputs, cb) {
 
                 //submit app-archive!
                 let remove_date = new Date();
-                remove_date.setDate(remove_date.getDate() + 1); //remove in 1 day
-                if (noSubdirs) subdirs = undefined;
+                remove_date.setDate(remove_date.getDate()+1); //remove in 1 day
+                if(noSubdirs) subdirs = undefined;
                 console.log("submitting app-archive");
-                let archive_task_res = await axios.post(config.amaretti.api + "/task", {
+                let archive_task_res = await axios.post(config.amaretti.api+"/task", {
                     name: "archive",
-                    deps_config: [{ task: task._id, subdirs }],
+                    deps_config: [ {task: task._id, subdirs } ],
                     service: "brainlife/app-archive",
                     service_branch: "1.1",
                     instance_id: task.instance_id,
                     config: {
                         datasets: dataset_configs,
                     },
-                    max_runtime: 1000 * 3600, //1 hour should be enough for most..
+                    max_runtime: 1000*3600, //1 hour should be enough for most..
                     remove_date,
 
                     //for slate?
                     //preferred_resource_id: storage_config.resource_id,
-                }, {
+                },{
                     headers: {
-                        authorization: "Bearer " + user_jwt,
+                        authorization: "Bearer "+user_jwt,
                     }
                 });
 
                 //note: archive_task_id is set by event_handler while setting other things like status, desc, status_msg, etc..
-                console.debug("submitted archive_task:" + archive_task_res.data.task._id);
+                console.debug("submitted archive_task:"+archive_task_res.data.task._id);
                 cb(null, datasets, archive_task_res.data.task);
-            } catch (err) {
+            } catch(err) {
                 cb(err);
             }
         });
@@ -354,137 +354,137 @@ exports.archive_task_outputs = async function (user_id, task, outputs, cb) {
 }
 
 //get new information from github and apply it to app document
-exports.update_appinfo = function (app, cb) {
+exports.update_appinfo = function(app, cb) {
     let service_name = app.github;
-    exports.load_github_detail(service_name, (err, repo, con_details) => {
-        if (err) return cb(err);
+    exports.load_github_detail(service_name, (err, repo, con_details)=>{
+        if(err) return cb(err);
         app.desc = repo.description;
         app.tags = repo.topics;
-        if (!app.stats) app.stats = {};
+        if(!app.stats) app.stats = {};
         app.stats.stars = repo.stargazers_count;
         app.markModified('stats');
-        app.contributors = con_details.map(con => {
+        app.contributors = con_details.map(con=>{
             //see https://api.github.com/users/francopestilli for other fields
-            return { name: con.name, email: con.email };
+            return {name: con.name, email: con.email};
         });
         cb();
     });
 }
 
-exports.load_github_detail = function (service_name, cb) {
-    if (!config.github) return cb("no github config");
+exports.load_github_detail = function(service_name, cb) {
+    if(!config.github) return cb("no github config");
     let headers = {
-        'Authorization': 'token ' + config.github.access_token,
+        'Authorization': 'token '+config.github.access_token,
         'User-Agent': 'brainlife',
-
+        
         //needed to get topic (which is currently in preview mode..)
         //https://developer.github.com/v3/repos/#list-all-topics-for-a-repository
-        'Accept': "application/vnd.github.mercy-preview+json",
+        'Accept': "application/vnd.github.mercy-preview+json", 
     }
-    axios.get("https://api.github.com/repos/" + service_name, { headers }).then(res => {
+    axios.get("https://api.github.com/repos/"+service_name, { headers }).then(res=>{
         let git = res.data;
-        if (res.status != 200) {
+        if(res.status != 200) {
             console.error(res);
-            return cb("failed to query requested repo. code:" + res.status);
+            return cb("failed to query requested repo. code:"+res.status);
         }
 
         console.debug("loading contributors");
-        axios.get("https://api.github.com/repos/" + service_name + "/contributors", { headers }).then(res => {
+        axios.get("https://api.github.com/repos/"+service_name+"/contributors", { headers }).then(res=>{
             let cons = res.data;
-            if (res.status != 200) {
+            if(res.status != 200) {
                 console.error(res);
-                return cb("failed to query requested repo. code:" + res.status);
+                return cb("failed to query requested repo. code:"+res.status);
             }
 
             console.debug("loading contributor details")
             let con_details = [];
-            async.eachSeries(cons, (con, next_con) => {
-                axios.get(con.url, { headers }).then(res => {
+            async.eachSeries(cons, (con, next_con)=>{
+                axios.get(con.url, { headers }).then(res=>{
                     let detail = res.data;
-                    if (res.status != 200) {
+                    if(res.status != 200) {
                         console.error(res);
-                        return next_con("failed to load user detail:" + res.status);
+                        return next_con("failed to load user detail:"+res.status);
                     }
                     con_details.push(detail);
                     next_con();
                 }).catch(next_con);
-            }, err => {
+            }, err=>{
                 cb(err, git, con_details);
             });
         }).catch(cb);
     }).catch(cb)
 }
 
-const stopwords = ["'", ",/\n", " ", "", "\n", "!", "-", "a", "a's", "able", "about", "above", "according", "accordingly", "across", "actually", "after", "afterwards", "again", "against", "ain't", "all", "allow", "allows", "almost", "alone", "along", "already", "also", "although", "always", "am", "among", "amongst", "an", "and", "another", "any", "anybody", "anyhow", "anyone", "anything", "anyway", "anyways", "anywhere", "apart", "projectear", "projectreciate", "projectropriate", "are", "aren't", "around", "as", "aside", "ask", "asking", "associated", "at", "available", "away", "awfully", "be", "became", "because", "become", "becomes", "becoming", "been", "before", "beforehand", "behind", "being", "believe", "below", "beside", "besides", "best", "better", "between", "beyond", "both", "brief", "but", "by", "c'mon", "c's", "came", "can", "can't", "cannot", "cant", "cause", "causes", "certain", "certainly", "changes", "clearly", "co", "com", "come", "comes", "concerning", "consequently", "consider", "considering", "contain", "containing", "contains", "corresponding", "could", "couldn't", "course", "currently", "definitely", "described", "despite", "did", "didn't", "different", "do", "does", "doesn't", "doing", "don't", "done", "down", "downwards", "during", "each", "edu", "eg", "eight", "either", "else", "elsewhere", "enough", "entirely", "especially", "et", "etc", "even", "ever", "every", "everybody", "everyone", "everything", "everywhere", "ex", "exactly", "example", "except", "far", "few", "fifth", "first", "five", "followed", "following", "follows", "for", "former", "formerly", "forth", "four", "from", "further", "furthermore", "get", "gets", "getting", "given", "gives", "go", "goes", "going", "gone", "got", "gotten", "greetings", "had", "hadn't", "hprojectens", "hardly", "has", "hasn't", "have", "haven't", "having", "he", "he's", "hello", "help", "hence", "her", "here", "here's", "hereafter", "hereby", "herein", "hereupon", "hers", "herself", "hi", "him", "himself", "his", "hither", "hopefully", "how", "howbeit", "however", "i'd", "i'll", "i'm", "i've", "ie", "if", "ignored", "immediate", "in", "inasmuch", "inc", "indeed", "indicate", "indicated", "indicates", "inner", "insofar", "instead", "into", "inward", "is", "isn't", "it", "it'd", "it'll", "it's", "its", "itself", "just", "keep", "keeps", "kept", "know", "known", "knows", "last", "lately", "later", "latter", "latterly", "least", "less", "lest", "let", "let's", "like", "liked", "likely", "little", "look", "looking", "looks", "ltd", "mainly", "many", "may", "maybe", "me", "mean", "meanwhile", "merely", "might", "more", "moreover", "most", "mostly", "much", "must", "my", "myself", "name", "namely", "nd", "near", "nearly", "necessary", "need", "needs", "neither", "never", "nevertheless", "new", "next", "nine", "no", "nobody", "non", "none", "noone", "nor", "normally", "not", "nothing", "novel", "now", "nowhere", "obviously", "of", "off", "often", "oh", "ok", "okay", "old", "on", "once", "one", "ones", "only", "onto", "or", "other", "others", "otherwise", "ought", "our", "ours", "ourselves", "out", "outside", "over", "overall", "own", "particular", "particularly", "per", "perhaps", "placed", "please", "plus", "possible", "presumably", "probably", "provides", "que", "quite", "qv", "rather", "rd", "re", "really", "reasonably", "regarding", "regardless", "regards", "relatively", "respectively", "right", "said", "same", "saw", "say", "saying", "says", "second", "secondly", "see", "seeing", "seem", "seemed", "seeming", "seems", "seen", "self", "selves", "sensible", "sent", "serious", "seriously", "seven", "several", "shall", "she", "should", "shouldn't", "since", "six", "so", "some", "somebody", "somehow", "someone", "something", "sometime", "sometimes", "somewhat", "somewhere", "soon", "sorry", "specified", "specify", "specifying", "still", "sub", "such", "sup", "sure", "t's", "take", "taken", "tell", "tends", "th", "than", "thank", "thanks", "thanx", "that", "that's", "thats", "the", "their", "theirs", "them", "themselves", "then", "thence", "there", "there's", "thereafter", "thereby", "therefore", "therein", "theres", "thereupon", "these", "they", "they'd", "they'll", "they're", "they've", "think", "third", "this", "thorough", "thoroughly", "those", "though", "three", "through", "throughout", "thru", "thus", "to", "together", "too", "took", "toward", "towards", "tried", "tries", "truly", "try", "trying", "twice", "two", "un", "under", "unfortunately", "unless", "unlikely", "until", "unto", "up", "upon", "us", "use", "used", "useful", "uses", "using", "usually", "value", "various", "very", "via", "viz", "vs", "want", "wants", "was", "wasn't", "way", "we", "we'd", "we'll", "we're", "we've", "welcome", "well", "went", "were", "weren't", "what", "what's", "whatever", "when", "whence", "whenever", "where", "where's", "whereafter", "whereas", "whereby", "wherein", "whereupon", "wherever", "whether", "which", "while", "whither", "who", "who's", "whoever", "whole", "whom", "whose", "why", "will", "willing", "wish", "with", "within", "without", "won't", "wonder", "would", "wouldn't", "yes", "yet", "you", "you'd", "you'll", "you're", "you've", "your", "yours", "yourself", "yourselves", "zero"]
+const stopwords = ["'",",/\n"," ","","\n","!","-","a","a's" , "able" , "about" , "above" , "according" , "accordingly" , "across" , "actually" , "after" , "afterwards" , "again" , "against" , "ain't" , "all" , "allow" , "allows" , "almost" , "alone" , "along" , "already" , "also" , "although" , "always" , "am" , "among" , "amongst" , "an" , "and" , "another" , "any" , "anybody" , "anyhow" , "anyone" , "anything" , "anyway" , "anyways" , "anywhere" , "apart" , "projectear" , "projectreciate" , "projectropriate" , "are" , "aren't" , "around" , "as" , "aside" , "ask" , "asking" , "associated" , "at" , "available" , "away" , "awfully" , "be" , "became" , "because" , "become" , "becomes" , "becoming" , "been" , "before" , "beforehand" , "behind" , "being" , "believe" , "below" , "beside" , "besides" , "best" , "better" , "between" , "beyond" , "both" , "brief" , "but" , "by" , "c'mon" , "c's" , "came" , "can" , "can't" , "cannot" , "cant" , "cause" , "causes" , "certain" , "certainly" , "changes" , "clearly" , "co" , "com" , "come" , "comes" , "concerning" , "consequently" , "consider" , "considering" , "contain" , "containing" , "contains" , "corresponding" , "could" , "couldn't" , "course" , "currently" , "definitely" , "described" , "despite" , "did" , "didn't" , "different" , "do" , "does" , "doesn't" , "doing" , "don't" , "done" , "down" , "downwards" , "during" , "each" , "edu" , "eg" , "eight" , "either" , "else" , "elsewhere" , "enough" , "entirely" , "especially" , "et" , "etc" , "even" , "ever" , "every" , "everybody" , "everyone" , "everything" , "everywhere" , "ex" , "exactly" , "example" , "except" , "far" , "few" , "fifth" , "first" , "five" , "followed" , "following" , "follows" , "for" , "former" , "formerly" , "forth" , "four" , "from" , "further" , "furthermore" , "get" , "gets" , "getting" , "given" , "gives" , "go" , "goes" , "going" , "gone" , "got" , "gotten" , "greetings" , "had" , "hadn't" , "hprojectens" , "hardly" , "has" , "hasn't" , "have" , "haven't" , "having" , "he" , "he's" , "hello" , "help" , "hence" , "her" , "here" , "here's" , "hereafter" , "hereby" , "herein" , "hereupon" , "hers" , "herself" , "hi" , "him" , "himself" , "his" , "hither" , "hopefully" , "how" , "howbeit" , "however" , "i'd" , "i'll" , "i'm" , "i've" , "ie" , "if" , "ignored" , "immediate" , "in" , "inasmuch" , "inc" , "indeed" , "indicate" , "indicated" , "indicates" , "inner" , "insofar" , "instead" , "into" , "inward" , "is" , "isn't" , "it" , "it'd" , "it'll" , "it's" , "its" , "itself" , "just" , "keep" , "keeps" , "kept" , "know" , "known" , "knows" , "last" , "lately" , "later" , "latter" , "latterly" , "least" , "less" , "lest" , "let" , "let's" , "like" , "liked" , "likely" , "little" , "look" , "looking" , "looks" , "ltd" , "mainly" , "many" , "may" , "maybe" , "me" , "mean" , "meanwhile" , "merely" , "might" , "more" , "moreover" , "most" , "mostly" , "much" , "must" , "my" , "myself" , "name" , "namely" , "nd" , "near" , "nearly" , "necessary" , "need" , "needs" , "neither" , "never" , "nevertheless" , "new" , "next" , "nine" , "no" , "nobody" , "non" , "none" , "noone" , "nor" , "normally" , "not" , "nothing" , "novel" , "now" , "nowhere" , "obviously" , "of" , "off" , "often" , "oh" , "ok" , "okay" , "old" , "on" , "once" , "one" , "ones" , "only" , "onto" , "or" , "other" , "others" , "otherwise" , "ought" , "our" , "ours" , "ourselves" , "out" , "outside" , "over" , "overall" , "own" , "particular" , "particularly" , "per" , "perhaps" , "placed" , "please" , "plus" , "possible" , "presumably" , "probably" , "provides" , "que" , "quite" , "qv" , "rather" , "rd" , "re" , "really" , "reasonably" , "regarding" , "regardless" , "regards" , "relatively" , "respectively" , "right" , "said" , "same" , "saw" , "say" , "saying" , "says" , "second" , "secondly" , "see" , "seeing" , "seem" , "seemed" , "seeming" , "seems" , "seen" , "self" , "selves" , "sensible" , "sent" , "serious" , "seriously" , "seven" , "several" , "shall" , "she" , "should" , "shouldn't" , "since" , "six" , "so" , "some" , "somebody" , "somehow" , "someone" , "something" , "sometime" , "sometimes" , "somewhat" , "somewhere" , "soon" , "sorry" , "specified" , "specify" , "specifying" , "still" , "sub" , "such" , "sup" , "sure" , "t's" , "take" , "taken" , "tell" , "tends" , "th" , "than" , "thank" , "thanks" , "thanx" , "that" , "that's" , "thats" , "the" , "their" , "theirs" , "them" , "themselves" , "then" , "thence" , "there" , "there's" , "thereafter" , "thereby" , "therefore" , "therein" , "theres" , "thereupon" , "these" , "they" , "they'd" , "they'll" , "they're" , "they've" , "think" , "third" , "this" , "thorough" , "thoroughly" , "those" , "though" , "three" , "through" , "throughout" , "thru" , "thus" , "to" , "together" , "too" , "took" , "toward" , "towards" , "tried" , "tries" , "truly" , "try" , "trying" , "twice" , "two" , "un" , "under" , "unfortunately" , "unless" , "unlikely" , "until" , "unto" , "up" , "upon" , "us" , "use" , "used" , "useful" , "uses" , "using" , "usually" , "value" , "various" , "very" , "via" , "viz" , "vs" , "want" , "wants" , "was" , "wasn't" , "way" , "we" , "we'd" , "we'll" , "we're" , "we've" , "welcome" , "well" , "went" , "were" , "weren't" , "what" , "what's" , "whatever" , "when" , "whence" , "whenever" , "where" , "where's" , "whereafter" , "whereas" , "whereby" , "wherein" , "whereupon" , "wherever" , "whether" , "which" , "while" , "whither" , "who" , "who's" , "whoever" , "whole" , "whom" , "whose" , "why" , "will" , "willing" , "wish" , "with" , "within" , "without" , "won't" , "wonder" , "would" , "wouldn't" , "yes" , "yet" , "you" , "you'd" , "you'll" , "you're" , "you've" , "your" , "yours" , "yourself" , "yourselves" , "zero"]
 
-exports.generateQuery = function (str) {
+exports.generateQuery = function(str){
     let fil = str.toLowerCase()
-        .split(' ').
-        filter((word) => !stopwords.includes(word)).
-        map((word) => `W='${word}'`).join();
-    return "OR(" + fil + ")"
+    .split(' ').
+    filter((word) => !stopwords.includes(word)).
+    map((word) => `W='${word}'`).join();
+    return "OR("+fil+")"
 }
 
-exports.updateProjectMag = function (project, cb) {
-    if (!config.mag) return console.log("no mag config");
+exports.updateProjectMag = function(project,cb){
+    if(!config.mag) return console.log("no mag config");
     let headers = {
         'Ocp-Apim-Subscription-Key': config.mag.subscription_key,
         'User-Agent': 'brainlife',
     }
-    const query = exports.generateQuery(project.name + " " + project.desc);
-    let urlMag = "https://api.labs.cognitive.microsoft.com/academic/v1.0/evaluate?expr=" + query + "&model=latest&count=10&offset=0&attributes=Id,AA.AfId,AA.AfN,AA.AuId,AA.AuN,AA.DAuN,CC,CN,D,Ti,F.FId,F.FN,Y,VFN,DOI,IA"
+    const query = exports.generateQuery(project.name+" "+project.desc);
+    let urlMag = "https://api.labs.cognitive.microsoft.com/academic/v1.0/evaluate?expr="+query+"&model=latest&count=10&offset=0&attributes=Id,AA.AfId,AA.AfN,AA.AuId,AA.AuN,AA.DAuN,CC,CN,D,Ti,F.FId,F.FN,Y,VFN,DOI,IA"
 
-    const papers = () => axios.get(urlMag, { headers }).then(res => {
-        if (res.status != 200) {
+    const papers = () => axios.get(urlMag,{headers}).then(res =>{
+        if(res.status !=200){
             console.error(res.status);
             return cb("Failed to get related papers");
         }
-        return res.data.entities.filter(papers => papers.logprob > -15);
+        return res.data.entities.filter(papers => papers.logprob > -15);        
     }).catch(cb);
 
-    let dataMag = []
+    let dataMag= []
     papers().then(papers => {
-        papers.forEach(function (paper) {
+        papers.forEach(function(paper){
             let object = {};
             let date = Date.parse(paper.D);      // get Date and 
-            object.publicationDate = new Date(date);
+            object.publicationDate = new Date(date);        
             object.citationCount = paper.CC; // add Citation Count
             object.title = paper.Ti; // add Title
             object.venue = paper.VFN; // add venue
-            object.authors = paper.AA.map(function (author) {
-                const modifiedAuthors = { "institution": author.AfN, "name": author.DAuN };
+            object.authors = paper.AA.map(function(author){
+                const modifiedAuthors = {"institution" : author.AfN, "name" : author.DAuN };
                 return modifiedAuthors;
             })
-            if (paper.F) {
+            if(paper.F){
                 object.fields = paper.F.map((name) => name.FN).join()
             }
-            if (paper.IA) {
+            if(paper.IA){
                 object.abstract = Object.keys(paper.IA.InvertedIndex).join(' ');
             }
             dataMag.push(object);
         });
-        const updateData = { [`papers`]: dataMag, };
+        const updateData = {[`papers`]: dataMag,};
 
-        db.Projects.findByIdAndUpdate(project.id, { $set: { "mag": updateData } }, { new: true, upsert: true, }, function (err, updatedproject) {
+        db.Projects.findByIdAndUpdate(project.id, {$set: {"mag": updateData}},{ new: true, upsert: true, }, function (err, updatedproject) {
             if (err) {
                 console.log(projectid);
                 console.log(err);
-            } else {
+            }else{
                 console.log("updated project");
-            }
-        })
+            }})
     }).catch(error => console.log(error));
+
 }
 
-exports.compose_app_datacite_metadata = function (app) {
+exports.compose_app_datacite_metadata = function(app) {
     //publication year
     let year = app.create_date.getFullYear();
-    let publication_year = "<publicationYear>" + year + "</publicationYear>";
+    let publication_year = "<publicationYear>"+year+"</publicationYear>";
 
     let creators = [];
-    app.admins.forEach(sub => {
+    app.admins.forEach(sub=>{
         let contact = cached_contacts[sub];
-        if (!contact) {
+        if(!contact) {
             console.debug("missing contact", sub);
             return;
         }
@@ -493,19 +493,19 @@ exports.compose_app_datacite_metadata = function (app) {
     });
 
     //datacite requires at least 1 creator.. if we fail to find at least 1 admin contact, let's use franco's name
-    if (creators.length == 0) {
+    if(creators.length == 0) {
         creators.push(`<creator><creatorName>Franco Pestilli</creatorName></creator>`);
     }
 
     let contributors = [];
-    if (app.contributors) app.contributors.forEach(contact => {
+    if(app.contributors) app.contributors.forEach(contact=>{
         //contributorType can be ..
         //Value \'Contributor\' is not facet-valid with respect to enumeration \'[ContactPerson, DataCollector, DataCurator, DataManager, Distributor, Editor, HostingInstitution, Other, Producer, ProjectLeader, ProjectManager, ProjectMember, RegistrationAgency, RegistrationAuthority, RelatedPerson, ResearchGroup, RightsHolder, Researcher, Sponsor, Supervisor, WorkPackageLeader]\'. It must be a value from the enumeration.'
         contributors.push(`<contributor contributorType="Other"><contributorName>${xmlescape(contact.name)}</contributorName></contributor>`);
     });
 
     let subjects = []; //aka "keyword"
-    app.tags.forEach(tag => {
+    app.tags.forEach(tag=>{
         subjects.push(`<subject>${xmlescape(tag)}</subject>`);
     });
 
@@ -528,27 +528,27 @@ exports.compose_app_datacite_metadata = function (app) {
       ${publication_year}
       <resourceType resourceTypeGeneral="Software">XML</resourceType>
       <descriptions>
-          <description descriptionType="Other">${xmlescape(app.desc_override || app.desc)}</description>
+          <description descriptionType="Other">${xmlescape(app.desc_override||app.desc)}</description>
       </descriptions>
     </resource>`;
     return metadata;
 }
 
 //https://schema.datacite.org/meta/kernel-4.1/doc/DataCite-MetadataKernel_v4.1.pdf
-exports.compose_pub_datacite_metadata = function (pub) {
+exports.compose_pub_datacite_metadata = function(pub) {
 
     //publication year
     let year = pub.create_date.getFullYear();
-    let publication_year = "<publicationYear>" + year + "</publicationYear>";
+    let publication_year = "<publicationYear>"+year+"</publicationYear>";
 
     //in case author is empty.. let's use submitter as author..
     //TODO - we need to make author required field
-    if (pub.authors.length == 0) pub.authors.push(pub.user_id);
+    if(pub.authors.length == 0) pub.authors.push(pub.user_id);
 
     let creators = [];
-    pub.authors.forEach(sub => {
+    pub.authors.forEach(sub=>{
         let contact = cached_contacts[sub];
-        if (!contact) {
+        if(!contact) {
             console.debug("missing contact", sub);
             return;
         }
@@ -557,22 +557,22 @@ exports.compose_pub_datacite_metadata = function (pub) {
     });
 
     let contributors = [];
-    pub.contributors.forEach(sub => {
+    pub.contributors.forEach(sub=>{
         let contact = cached_contacts[sub];
-        if (!contact) {
+        if(!contact) {
             console.debug("missing contact", sub);
             return;
         }
         //TODO - add <nameIdentifier nameIdentifierScheme="ORCID">12312312131</nameIdentifier>
-
+        
         //contributorType can be ..
         //Value \'Contributor\' is not facet-valid with respect to enumeration \'[ContactPerson, DataCollector, DataCurator, DataManager, Distributor, Editor, HostingInstitution, Other, Producer, ProjectLeader, ProjectManager, ProjectMember, RegistrationAgency, RegistrationAuthority, RelatedPerson, ResearchGroup, RightsHolder, Researcher, Sponsor, Supervisor, WorkPackageLeader]\'. It must be a value from the enumeration.'
         contributors.push(`<contributor contributorType="Other"><contributorName>${xmlescape(contact.fullname)}</contributorName></contributor>`);
-
+        
     });
 
     let subjects = []; //aka "keyword"
-    pub.tags.forEach(tag => {
+    pub.tags.forEach(tag=>{
         subjects.push(`<subject>${xmlescape(tag)}</subject>`);
     });
 
@@ -601,37 +601,37 @@ exports.compose_pub_datacite_metadata = function (pub) {
     return metadata;
 }
 
-exports.get_next_app_doi = function (cb) {
+exports.get_next_app_doi = function(cb) {
     //console.log("querying for next doi")
-    db.Apps.find({}).select("doi").sort("-doi").limit(1).exec().then(recs => {
+    db.Apps.find({}).select("doi").sort("-doi").limit(1).exec().then(recs=>{
         let rec = recs[0];
         let doi_tokens = rec.doi.split(".");
-        let num = parseInt(doi_tokens[doi_tokens.length - 1]) + 1;
+        let num = parseInt(doi_tokens[doi_tokens.length-1])+1;
         //console.debug("next doi token will be", num);
-        cb(null, config.datacite.prefix + "app." + num);
+        cb(null, config.datacite.prefix+"app."+num);
     }).catch(cb);
 }
 
 //https://support.datacite.org/v1.1/docs/mds-2
 //create new doi and register metadata (still needs to set url once it's minted)
-exports.doi_post_metadata = function (metadata, cb) {
+exports.doi_post_metadata = function(metadata, cb) {
     //register!
     request.post({
-        url: config.datacite.api + "/metadata",
+        url: config.datacite.api+"/metadata",
         auth: {
             user: config.datacite.username,
             pass: config.datacite.password,
         },
         headers: { 'content-type': 'application/xml' },
         body: metadata,
-    }, (err, res, body) => {
-        if (err) return cb(err);
+    }, (err, res, body)=>{
+        if(err) return cb(err); 
         console.debug('metadata registration:', res.statusCode, body);
-        if (res.statusCode == 201) return cb(); //good!
+        if(res.statusCode == 201) return cb(); //good!
 
         //consider all else failed!
         console.error("failed to post metadata to datacite");
-        console.error(config.datacite.api + "/metadata");
+        console.error(config.datacite.api+"/metadata");
         console.error("user %s", config.datacite.username);
         return cb(body);
     });
@@ -639,61 +639,61 @@ exports.doi_post_metadata = function (metadata, cb) {
 
 //datacite api doc >  https://mds.test.datacite.org/static/apidoc
 //set / update the url associated with doi
-exports.doi_put_url = function (doi, url, cb) {
+exports.doi_put_url = function(doi, url, cb) {
     console.log("registering doi url", url);
     request.put({
-        url: config.datacite.api + "/doi/" + doi,
+        url: config.datacite.api+"/doi/"+doi,
         auth: {
             user: config.datacite.username,
             pass: config.datacite.password,
         },
         headers: { 'content-type': 'text/plain' },
-        body: "doi=" + doi + "\nurl=" + url,
-    }, (err, res, body) => {
-        if (err) return cb(err);
+        body: "doi="+doi+"\nurl="+url,
+    }, (err, res, body)=>{
+        if(err) return cb(err); 
         console.debug('url registration:', res.statusCode, body);
-        if (res.statusCode != 201) return cb(body);
+        if(res.statusCode != 201) return cb(body);
         cb(null);
     });
 }
 
 //TODO - update cache from amqp events
 let cached_contacts = {};
-exports.cache_contact = function (cb) {
+exports.cache_contact = function(cb) {
     console.debug("cachign contacts");
-    axios.get(config.auth.api + "/profile/list", {
+    axios.get(config.auth.api+"/profile/list", {
         params: {
             limit: 5000, //TODO -- really!?
         },
-        headers: { authorization: "Bearer " + config.warehouse.jwt }, //config.auth.jwt is deprecated
-    }).then(res => {
-        if (res.status != 200) console.error("couldn't cache auth profiles. code:" + res.status);
+        headers: { authorization: "Bearer "+config.warehouse.jwt }, //config.auth.jwt is deprecated
+    }).then(res=>{
+        if(res.status != 200) console.error("couldn't cache auth profiles. code:"+res.status);
         else {
-            res.data.profiles.forEach(profile => {
+            res.data.profiles.forEach(profile=>{
                 cached_contacts[profile.sub] = profile;
             });
             //console.log("cached profile len:", res.data.profiles.length);
-            if (cb) cb();
+            if(cb) cb();
         }
-    }).catch(err => {
-        if (cb) cb(err);
+    }).catch(err=>{
+        if(cb) cb(err);
         else console.error(err);
     });
 }
 
 exports.cache_contact();
-setInterval(exports.cache_contact, 1000 * 60 * 30); //cache every 30 minutes
+setInterval(exports.cache_contact, 1000*60*30); //cache every 30 minutes
 
-exports.deref_contact = function (id) {
+exports.deref_contact = function(id) {
     return cached_contacts[id];
 }
 
 //for split_product
-Array.prototype.unique = function () {
+Array.prototype.unique = function() {
     let a = this.concat();
-    for (let i = 0; i < a.length; ++i) {
-        for (let j = i + 1; j < a.length; ++j) {
-            if (a[i] === a[j])
+    for(let i=0; i<a.length; ++i) {
+        for(let j=i+1; j<a.length; ++j) {
+            if(a[i] === a[j])
                 a.splice(j--, 1);
         }
     }
@@ -702,24 +702,24 @@ Array.prototype.unique = function () {
 
 //split the task product into separate dataset products. flatten structure so that we merge *global* (applies to all dataset) product.json info
 //to output for each datasets - for convenience and for backward compatibility
-exports.split_product = function (task_product, outputs) {
+exports.split_product = function(task_product, outputs) {
     //create global product (everything except output.id keys)
     let global_product = Object.assign({}, task_product); //copy
-    if (!Array.isArray(outputs)) {
+    if(!Array.isArray(outputs)) {
         console.error("broken outputs info");
         return {};
     }
-    outputs.forEach(output => {
+    outputs.forEach(output=>{
         delete global_product[output.id]; //remove dataset specific output
     });
 
     function merge(dest, src) {
-        for (let key in src) {
-            if (!dest[key]) dest[key] = src[key];
+        for(let key in src) {
+            if(!dest[key]) dest[key] = src[key];
             else {
-                if (Array.isArray(src[key])) {
+                if(Array.isArray(src[key])) {
                     dest[key] = dest[key].concat(src[key]).unique(); //merge array
-                } else if (typeof src[key] == 'object') {
+                } else if(typeof src[key] == 'object') {
                     Object.assign(dest[key], src[key]);
                 } else {
                     //must be primitive
@@ -731,22 +731,22 @@ exports.split_product = function (task_product, outputs) {
 
     //put everything together - output specific data takes precedence over global
     let products = {};
-    outputs.forEach(output => {
+    outputs.forEach(output=>{
         //pull things from config output
         products[output.id] = {
-            tags: output.tags || [],
-            datatype_tags: output.datatype_tags || [],
-            meta: output.meta || {},
+            tags: output.tags||[],
+            datatype_tags: output.datatype_tags||[],
+            meta: output.meta||{},
         };
         merge(products[output.id], global_product);
-        if (task_product) merge(products[output.id], task_product[output.id])
+        if(task_product) merge(products[output.id], task_product[output.id])
     });
 
     return products;
 }
 
 //TODO - this has to match up between amaretti/bin/metrics and warehouse/api/controller querying for graphite daa
-exports.sensu_name = function (name) {
+exports.sensu_name = function(name) {
     name = name.toLowerCase();
     name = name.replace(/[_.@$#\/]/g, "-");
     name = name.replace(/[ ()]/g, "");
@@ -754,47 +754,47 @@ exports.sensu_name = function (name) {
 }
 
 let amqp_conn;
-let connect_amqp = new Promise((resolve, reject) => {
+let connect_amqp = new Promise((resolve, reject)=>{
     console.log("creating connection to amqp server");
-    amqp_conn = amqp.createConnection(config.event.amqp, { reconnectBackoffTime: 1000 * 10 });
-    amqp_conn.once("ready", () => {
+    amqp_conn = amqp.createConnection(config.event.amqp, {reconnectBackoffTime: 1000*10});
+    amqp_conn.once("ready", ()=>{
         resolve(amqp_conn);
     });
-    amqp_conn.on("error", err => {
+    amqp_conn.on("error", err=>{
         console.error(err);
         reject();
     });
 });
 
 let warehouse_ex;
-exports.get_amqp_connection = function (cb) {
-    connect_amqp.then(conn => {
-        conn.exchange("warehouse", { autoDelete: false, durable: true, type: 'topic', confirm: true }, ex => {
+exports.get_amqp_connection = function(cb) {
+    connect_amqp.then(conn=>{
+        conn.exchange("warehouse", {autoDelete: false, durable: true, type: 'topic', confirm: true}, ex=>{
             warehouse_ex = ex;
             cb(null, conn);
         })
     }).catch(cb);
 }
 
-exports.disconnect_amqp = function (cb) {
-    if (amqp_conn) {
+exports.disconnect_amqp = function(cb) {
+    if(amqp_conn) {
         console.debug("disconnecting from amqp");
-        amqp_conn.setImplOptions({ reconnect: false }); //https://github.com/postwait/node-amqp/issues/462
+        amqp_conn.setImplOptions({reconnect: false}); //https://github.com/postwait/node-amqp/issues/462
         amqp_conn.disconnect();
     }
 }
 
 //connect to the amqp exchange and wait for a event to occur
-exports.wait_for_event = function (exchange, key, cb) {
-    exports.get_amqp_connection((err, conn) => {
-        if (err) {
+exports.wait_for_event = function(exchange, key, cb) {
+    exports.get_amqp_connection((err, conn)=>{
+        if(err) {
             console.error("failed to obtain amqp connection");
             return cb(err);
         }
         console.debug("amqp connection ready.. creating exchanges");
-        conn.queue('', q => {
-            q.bind(exchange, key, () => {
-                q.subscribe((message, header, deliveryInfo, messageObject) => {
+        conn.queue('', q=>{
+            q.bind(exchange, key, ()=>{
+                q.subscribe((message, header, deliveryInfo, messageObject)=>{
                     q.destroy();
                     cb(null, message);
                 });
@@ -803,7 +803,7 @@ exports.wait_for_event = function (exchange, key, cb) {
     });
 }
 
-exports.update_dataset_stats = async function (project_id, cb) {
+exports.update_dataset_stats = async function(project_id, cb) {
     console.debug("updating dataset stats project:%s", project_id);
     project_id = mongoose.Types.ObjectId(project_id);
 
@@ -811,28 +811,26 @@ exports.update_dataset_stats = async function (project_id, cb) {
         //create inventory stats
         let inventory = await db.Datasets.aggregate()
             .match({ removed: false, project: project_id, })
-            .group({
-                _id: {
-                    "subject": "$meta.subject",
-                    "datatype": "$datatype",
-                }, count: { $sum: 1 }, size: { $sum: "$size" }
-            })
-            .sort({ "_id.subject": 1 });
+            .group({_id: {
+                "subject": "$meta.subject", 
+                "datatype": "$datatype", 
+            }, count: {$sum: 1}, size: {$sum: "$size"} })
+            .sort({"_id.subject":1});
         let subjects = new Set();
         let stats = {
             subject_count: 0,
-            count: 0,
+            count: 0, 
             size: 0,
             datatypes_detail: [],
         }
-        inventory.forEach(item => {
+        inventory.forEach(item=>{
             subjects.add(item._id.subject);
-
+            
             //some project contains dataset without datatype??
-            if (item._id.datatype) {
+            if(item._id.datatype) {
                 let type = item._id.datatype;
-                let datatype = stats.datatypes_detail.find(datatype => datatype.type.toString() == type.toString());
-                if (datatype) {
+                let datatype = stats.datatypes_detail.find(datatype=>datatype.type.toString() == type.toString());
+                if(datatype) {
                     datatype.subject_count++;
                     datatype.count += item.count;
                     datatype.size += item.size;
@@ -846,43 +844,41 @@ exports.update_dataset_stats = async function (project_id, cb) {
             stats.size += item.size;
         });
         stats.subject_count = subjects.size;
-        exports.publish("project.update.warehouse." + project_id, {
-            stats: {
-                datasets: stats
-            }
-        })
-        let doc = await db.Projects.findByIdAndUpdate(project_id, { $set: { "stats.datasets": stats } }, { new: true });
+        exports.publish("project.update.warehouse."+project_id, {stats: {
+            datasets: stats
+        }})
+        let doc = await db.Projects.findByIdAndUpdate(project_id, {$set: {"stats.datasets": stats}}, {new: true});
 
-        if (cb) cb(null, doc);
-    } catch (err) {
-        if (cb) cb(err);
+        if(cb) cb(null, doc);
+    } catch(err) {
+        if(cb) cb(err);
         else console.error(err);
     }
 }
 
-exports.update_secondary_index = async function (project) {
+exports.update_secondary_index = async function(project) {
     console.log("updating secondary output index file for project", project._id);
-    let participants = await db.Participants.findOne({ project }).lean();
+    let participants = await db.Participants.findOne({project}).lean();
 
     //migrate
-    if (participants && participants.rows) {
+    if(participants && participants.rows) {
         console.log("renaming rows to subjects (rows are deprecated now)");
         participants.subjects = participants.rows;
         delete participants.rows;
     }
 
     //now load the index
-    const _res = await axios.get(config.amaretti.api + '/task', {
+    const _res = await axios.get(config.amaretti.api+'/task', {
         params: {
             select: 'config instance_id',
             find: JSON.stringify({
-                'finish_date': { $exists: true },
+                'finish_date': {$exists: true},
                 'service': 'brainlife/app-archive-secondary',
                 '_group_id': project.group_id,
             }),
             limit: 20000, //TODO.. how scalable is this!?
         },
-        headers: { authorization: "Bearer " + config.warehouse.jwt },
+        headers: { authorization: "Bearer "+config.warehouse.jwt },
     });
 
     /*
@@ -934,14 +930,14 @@ exports.update_secondary_index = async function (project) {
     */
 
     //merge all output requests into a single list
-    _res.data.tasks.forEach(task => {
-        if (!task.config.requests) return; //old format?
-        task.config.requests.forEach(request => {
-            if (!request.datatype) return; //should only happen on dev
-
+    _res.data.tasks.forEach(task=>{
+        if(!task.config.requests) return; //old format?
+        task.config.requests.forEach(request=>{
+            if(!request.datatype) return; //should only happen on dev
+            
             //pull information out of request and store things that users care
             index.objects.push({
-                path: request.instance_id + "/" + request.task_id + "/" + request.subdir,
+                path: request.instance_id+"/"+request.task_id+"/"+request.subdir,
 
                 instance_id: request.instance_id,
                 task_id: request.task_id,
@@ -983,34 +979,34 @@ exports.update_secondary_index = async function (project) {
     */
 }
 
-exports.update_project_stats = async function (project, cb) {
+exports.update_project_stats = async function(project, cb) {
     console.log("updateing project stats project:", project._id)
     try {
         let counts = await rp.get({
-            url: config.amaretti.api + "/instance/count", json: true,
+            url: config.amaretti.api+"/instance/count", json: true,
             qs: {
-                find: JSON.stringify({ status: { $ne: "removed" }, group_id: project.group_id }),
+                find: JSON.stringify({status: {$ne: "removed"}, group_id: project.group_id}),
             },
-            headers: { authorization: "Bearer " + config.warehouse.jwt, },
+            headers: { authorization: "Bearer "+config.warehouse.jwt, },
         });
         let instance_counts = counts[0]; //there should be only 1
 
         let stats = await db.Rules.aggregate()
-            .match({ removed: false, project: project._id })
-            .group({ _id: { "active": "$active" }, count: { $sum: 1 } });
-
+            .match({removed: false, project: project._id})
+            .group({_id: { "active": "$active" }, count: {$sum: 1}});
+        
         let rules = {
             active: 0,
             inactive: 0,
         }
-        stats.forEach(rec => {
-            if (rec._id.active) rules.active = rec.count;
+        stats.forEach(rec=>{
+            if(rec._id.active) rules.active = rec.count;
             else rules.inactive = rec.count;
         });
 
-        let recs = await exports.aggregateDatasetsByApps({ project: project._id })
+        let recs = await exports.aggregateDatasetsByApps({project:project._id})
         let app_stats = [];
-        recs.forEach(rec => {
+        recs.forEach(rec=>{
             app_stats.push({
                 app: rec.app._id,
                 name: rec.app.name,
@@ -1024,33 +1020,33 @@ exports.update_project_stats = async function (project, cb) {
 
         //TODO query task/resource_service_count api
         let resource_usage = await rp.get({
-            url: config.amaretti.api + "/task/resource_usage", json: true,
+            url: config.amaretti.api+"/task/resource_usage", json: true,
             qs: {
-                find: JSON.stringify({/*status: {$ne: "finished"},*/ _group_id: project.group_id }),
+                find: JSON.stringify({/*status: {$ne: "finished"},*/ _group_id: project.group_id}),
             },
-            headers: { authorization: "Bearer " + config.warehouse.jwt, },
+            headers: { authorization: "Bearer "+config.warehouse.jwt, },
         });
 
         //TODO resource_usage api returns group with no resource_id attached.. (bug?) let's filter them out for now
-        resource_usage = resource_usage.filter(r => r._id.resource_id !== undefined);
+        resource_usage = resource_usage.filter(r=>r._id.resource_id !== undefined);
 
         //load resource details to be merged into the resource_usage info
-        let resource_ids = resource_usage.map(raw => raw._id.resource_id);
+        let resource_ids = resource_usage.map(raw=>raw._id.resource_id);
 
         //dedupe resource_ids
         resource_ids = [...new Set(resource_ids)];
-        let { resources } = await rp.get({
-            url: config.amaretti.api + "/resource", json: true,
+        let {resources} = await rp.get({
+            url: config.amaretti.api+"/resource", json: true,
             qs: {
-                find: JSON.stringify({ _id: { $in: resource_ids }, user_id: null }),
+                find: JSON.stringify({_id: {$in: resource_ids}, user_id: null}),
             },
-            headers: { authorization: "Bearer " + config.warehouse.jwt, },
+            headers: { authorization: "Bearer "+config.warehouse.jwt, },
         });
-        let resource_stats = resource_usage.map(raw => {
-            let resource = resources.find(r => r._id == raw._id.resource_id);
+        let resource_stats = resource_usage.map(raw=>{
+            let resource = resources.find(r=>r._id == raw._id.resource_id);
             return {
                 service: raw._id.service,
-                resource_id: raw._id.resource_id,
+                resource_id: raw._id.resource_id, 
 
                 //resource detail for quick reference
                 name: resource.name,
@@ -1062,102 +1058,98 @@ exports.update_project_stats = async function (project, cb) {
             }
         });
 
-        let publications = await db.Publications.countDocuments({ project });
-        let newproject = await db.Projects.findOneAndUpdate({ _id: project._id }, {
-            $set: {
-                "stats.rules": rules,
-                "stats.resources": resource_stats,
-                "stats.apps": app_stats,
-                "stats.publications": publications,
-                "stats.instances": instance_counts,
-            }
-        }, { new: true });
+        let publications = await db.Publications.countDocuments({project});
+        let newproject = await db.Projects.findOneAndUpdate({_id: project._id}, {$set: {
+            "stats.rules": rules, 
+            "stats.resources": resource_stats, 
+            "stats.apps": app_stats, 
+            "stats.publications": publications,
+            "stats.instances": instance_counts,
+        }}, {new: true});
 
         //only publish some stats
-        exports.publish("project.update.warehouse." + project._id, {
-            stats: {
-                rules: rules,
-                instances: instance_counts,
-                //apps: app_stats, 
-                //publications: publications,
-                //resources: resource_stats,
-            }
-        })
+        exports.publish("project.update.warehouse."+project._id, {stats: {
+            rules: rules,
+            instances: instance_counts,
+            //apps: app_stats, 
+            //publications: publications,
+            //resources: resource_stats,
+        }})
 
-        if (cb) cb(null, newproject);
+        if(cb) cb(null, newproject);
 
     } catch (err) {
-        if (cb) cb(err);
+        if(cb) cb(err);
         else console.error(err);
     }
 }
 
-exports.update_rule_stats = function (rule_id, cb) {
-    axios.get(config.amaretti.api + "/task", {
+exports.update_rule_stats = function(rule_id, cb) {
+    axios.get(config.amaretti.api+"/task", {
         params: {
-            find: JSON.stringify({ 'config._rule.id': rule_id, status: { $ne: "removed" } }),
-            select: 'status',
+            find: JSON.stringify({'config._rule.id': rule_id, status: {$ne: "removed"}}),
+            select: 'status', 
             limit: 3000,
         },
-        headers: { authorization: "Bearer " + config.warehouse.jwt, },
-    }).then(res => {
+        headers: { authorization: "Bearer "+config.warehouse.jwt, },
+    }).then(res=>{
         let tasks = res.data.tasks;
-        if (!tasks) return cb(body);
+        if(!tasks) return cb(body);
         let stats = {}
-        tasks.forEach(task => {
-            if (stats[task.status] === undefined) stats[task.status] = 0;
-            stats[task.status] += 1;
+        tasks.forEach(task=>{
+            if(stats[task.status] === undefined) stats[task.status] = 0;
+            stats[task.status]+=1;
         });
-        db.Rules.findOneAndUpdate({ _id: rule_id }, { $set: { "stats.tasks": stats } }, { new: true }, (err, rule) => {
-            if (cb) cb(err, rule);
+        db.Rules.findOneAndUpdate({_id: rule_id}, {$set: {"stats.tasks": stats}}, {new: true}, (err, rule)=>{
+            if(cb) cb(err, rule);
             let sub = "warehouse";
-            exports.publish("rule.update." + sub + "." + rule.project + "." + rule._id, rule)
+            exports.publish("rule.update."+sub+"."+rule.project+"."+rule._id, rule)
         });
     }).catch(cb);
 }
 
-exports.dataset_to_filename = function (dataset) {
-    let path = "dt-" + dataset.datatype.name.replace(/\//g, '-');
-    dataset.datatype_tags.forEach(tag => {
+exports.dataset_to_filename = function(dataset) {
+    let path ="dt-"+dataset.datatype.name.replace(/\//g, '-');
+    dataset.datatype_tags.forEach(tag=>{
         //null is getting injected into datatype_tags.. until I find where it's coming from, 
         //I need to patch this by ignoring this
-        if (!tag) return;
-        path += ".tag-" + tag.replace(/\./g, '-'); //'.' is used as delimiter
+        if(!tag) return; 
+        path+=".tag-"+tag.replace(/\./g, '-'); //'.' is used as delimiter
     });
-    if (dataset.meta.run) path += ".run-" + dataset.meta.run;
-    path += ".id-" + dataset._id;
+    if(dataset.meta.run) path += ".run-"+dataset.meta.run;
+    path+= ".id-"+dataset._id;
     return path;
 }
 
-exports.publish = (key, message, cb) => {
-    if (!message) message = {};
-    message.timestamp = (new Date().getTime()) / 1000; //it's crazy that amqp doesn't set this?
-    if (!warehouse_ex) {
+exports.publish = (key, message, cb)=>{
+    if(!message) message = {};
+    message.timestamp = (new Date().getTime())/1000; //it's crazy that amqp doesn't set this?
+    if(!warehouse_ex) { 
         console.error("warehouse_ex not connected yet.. can't publish");
     } else warehouse_ex.publish(key, message, {}, cb);
 }
 
-exports.isadmin = (user, rec) => {
-    if (user) {
-        if (user.scopes.warehouse && ~user.scopes.warehouse.indexOf('admin')) return true;
-        if (rec.admins && ~rec.admins.indexOf(user.sub.toString())) return true;
+exports.isadmin = (user, rec)=>{
+    if(user) {
+        if(user.scopes.warehouse && ~user.scopes.warehouse.indexOf('admin')) return true;
+        if(rec.admins && ~rec.admins.indexOf(user.sub.toString())) return true;
     }
     return false;
 }
 
-exports.ismember = (user, rec) => {
-    if (user) {
-        if (user.scopes.warehouse && ~user.scopes.warehouse.indexOf('admin')) return true;
-        if (rec.members && ~rec.members.indexOf(user.sub.toString())) return true;
+exports.ismember = (user, rec)=>{
+    if(user) {
+        if(user.scopes.warehouse && ~user.scopes.warehouse.indexOf('admin')) return true;
+        if(rec.members && ~rec.members.indexOf(user.sub.toString())) return true;
     }
     return false;
 }
 
-exports.users_general = async () => {
+exports.users_general = async ()=>{
     console.log("loading users");
     try {
         let users = await rp.get({
-            url: config.auth.api + "/profile/list", json: true,
+            url: config.auth.api+"/profile/list", json: true,
             qs: {
                 find: JSON.stringify({
                     active: true,
@@ -1165,7 +1157,7 @@ exports.users_general = async () => {
                 }),
                 limit: 3000,
             },
-            headers: { authorization: "Bearer " + config.warehouse.jwt },
+            headers: { authorization: "Bearer "+config.warehouse.jwt },
         });
         return users.profiles;
     } catch (err) {
@@ -1174,7 +1166,7 @@ exports.users_general = async () => {
 }
 
 
-exports.cast_mongoid = function (node) {
+exports.cast_mongoid = function(node) {
     //mongoose doesn't cast object id on aggregate pipeline .. https://github.com/Automattic/mongoose/issues/1399
     //somewhat futile attempt to convert all string that looks like objectid to objectid.
     //mongoose.Types.ObjectId.isValid by itself doesn't work (https://github.com/Automattic/mongoose/issues/1959#issuecomment-97583033) 
@@ -1188,19 +1180,19 @@ exports.cast_mongoid = function (node) {
             }
         } else {
             return false
-        }
+        }  
     }
 
-    for (let k in node) {
+    for(let k in node) {
         let v = node[k];
-        if (v === null) continue;
-        if (isObjectIdValid(v)) {
+        if(v === null) continue;
+        if(isObjectIdValid(v)) {
             node[k] = mongoose.Types.ObjectId(v);
-        } else if (typeof v == 'object') exports.cast_mongoid(v); //recurse
+        } else if(typeof v == 'object') exports.cast_mongoid(v); //recurse
     }
 }
 
-exports.list_users = async () => {
+exports.list_users = async ()=>{
     let year_ago = new Date();
     year_ago.setDate(year_ago.getDate() - 365);
 
@@ -1208,24 +1200,24 @@ exports.list_users = async () => {
     week_ago.setDate(year_ago.getDate() - 7);
 
     let users = await rp.get({
-        url: config.auth.api + "/profile/list", json: true,
+        url: config.auth.api+"/profile/list", json: true,
         qs: {
             find: JSON.stringify({
                 active: true,
             }),
             limit: 3000,
         },
-        headers: { authorization: "Bearer " + config.warehouse.jwt },
+        headers: { authorization: "Bearer "+config.warehouse.jwt },
     });
     let lists = {
         active: [],
         inactive: [],
         recent: [],
     }
-    users.profiles.forEach(user => {
-        if (!user) return;
+    users.profiles.forEach(user=>{
+        if(!user) return;
 
-        if (user.times && (
+        if(user.times && (
             new Date(user.times.github_login) > year_ago ||
             new Date(user.times.google_login) > year_ago ||
             new Date(user.times.local_login) > year_ago ||
@@ -1235,78 +1227,78 @@ exports.list_users = async () => {
             lists.inactive.push(user);
         }
 
-        if (user.times && new Date(user.times.register) > week_ago) lists.recent.push(user);
+        if(user.times && new Date(user.times.register) > week_ago) lists.recent.push(user);
     });
     return lists;
 }
 
-exports.aggregateDatasetsByApps = query => {
-    return new Promise((resolve, reject) => {
+exports.aggregateDatasetsByApps = query=>{
+    return new Promise((resolve, reject)=>{
         db.Datasets.aggregate()
-            .match(query)
-            .group({
-                _id: {
-                    app: "$prov.task.config._app",
-                    service: "$prov.task.service",
-                    service_branch: "$prov.task.service_branch"
-                },
-                count: { $sum: 1 },
-            })
-            .project({
-                _id: 0,
-                app: "$_id.app",
-                count: "$count",
-                service: "$_id.service",
-                service_branch: "$_id.service_branch",
-            })
-            .exec((err, recs) => {
-                if (err) return reject(err);
+        .match(query)
+        .group({
+            _id: { 
+                app: "$prov.task.config._app", 
+                service: "$prov.task.service",
+                service_branch: "$prov.task.service_branch"
+            },
+            count: {$sum: 1},
+        })
+        .project({
+            _id: 0, 
+            app: "$_id.app", 
+            count: "$count",
+            service: "$_id.service",
+            service_branch: "$_id.service_branch",
+        })
+        .exec((err, recs)=>{
+            if(err) return reject(err);
 
-                //load apps used
-                let app_ids = [];
-                recs.forEach(rec => {
-                    if (rec.app) app_ids.push(rec.app);
-                });
-                db.Apps.find({
-                    _id: { $in: app_ids },
-                    projects: [], //only show *public* apps
-                })
-                    //.populate(req.query.populate || '')
-                    .exec((err, apps) => {
-                        if (err) return reject(err);
-
-                        //make it easier to lookup apps
-                        let app_obj = {};
-                        apps.forEach(app => {
-                            app_obj[app._id] = app;
-                        });
-
-                        //now populate apps
-                        let populated = [];
-                        recs.forEach(rec => {
-                            if (rec.app) {
-
-                                rec.app = app_obj[rec.app];
-                                if (!rec.app) {
-                                    console.error("dataset(%s) is set to use invalid app id(%s)", rec._id, rec.app);
-                                } else {
-                                    populated.push(rec);
-                                }
-                            }
-                        });
-
-                        //sort by app name
-                        populated.sort((a, b) => {
-                            return a.app.name.localeCompare(b.app.name);
-                        });
-                        resolve(populated);
-                    });
+            //load apps used
+            let app_ids = [];
+            recs.forEach(rec=>{ 
+                if(rec.app) app_ids.push(rec.app); 
             });
+            db.Apps.find({
+                _id: {$in: app_ids},
+                projects: [], //only show *public* apps
+            })
+            //.populate(req.query.populate || '')
+            .exec((err, apps)=>{
+                if(err) return reject(err);
+
+                //make it easier to lookup apps
+                let app_obj = {};
+                apps.forEach(app=>{
+                    app_obj[app._id] = app;
+                });
+
+                //now populate apps
+                let populated = [];
+                recs.forEach(rec=>{
+                    if(rec.app) {
+
+                        rec.app = app_obj[rec.app];
+                        if(!rec.app) {
+                            console.error("dataset(%s) is set to use invalid app id(%s)", rec._id, rec.app);
+                        } else {
+                            populated.push(rec);
+                        }
+                    }
+                });
+
+                //sort by app name
+                populated.sort((a,b)=>{
+                    return a.app.name.localeCompare(b.app.name);  
+                });
+                resolve(populated);
+            });
+        });
     });
 }
 
 //wrapper for express-jwt to set some required default options
-exports.jwt = opt => {
+exports.jwt = opt=>{
     return jwt(Object.assign({
         secret: config.express.pubkey,
         algorithms: ['RS256'],
