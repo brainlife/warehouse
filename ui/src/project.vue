@@ -164,7 +164,7 @@
                         <hr>
                         <ol>
                             <li v-for="paper in selected.mag.papers" :key="Id" >
-                               <div><p class="capitalize"> {{paper.title}} <span style="font-style: italic;"> {{ paper.venue }} ( {{new Date(paper.publicationDate).getFullYear()}} )</span></p></div>
+                               <div><p class="paper-title"> {{paper.title}} <span style="font-style: italic;"> {{ paper.venue }} ( {{new Date(paper.publicationDate).getFullYear()}} )</span></p></div>
                                <hr>
                             </li>
                         </ol>
@@ -855,7 +855,7 @@ padding: 5px 10px;
 OL LI::marker {
     font-size: 2em;
 }
-.capitalize {
+.paper-title {
     text-transform: capitalize;
 }
 </style>
