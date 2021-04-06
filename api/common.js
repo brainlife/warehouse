@@ -421,7 +421,7 @@ exports.generateQuery = function(str){
     let fil = str.toLowerCase()
     .split(' ').
     filter((word) => !stopwords.includes(word)).
-    map((word) => `W='${word}'`).join();
+    map((word) => `W='${word}'`).join(',');
     return "OR("+fil+")"
 }
 
@@ -456,7 +456,7 @@ exports.updateProjectMag = function(project,cb){
                 return modifiedAuthors;
             })
             if(paper.F){
-                object.fields = paper.F.map((name) => name.FN).join()
+                object.fields = paper.F.map((name) => name.FN).join(',');
             }
             if(paper.IA){
                 object.abstract = Object.keys(paper.IA.InvertedIndex).join(' ');
