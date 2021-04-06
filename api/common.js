@@ -20,7 +20,6 @@ const db = require('./models');
 const mongoose = require('mongoose');
 
 
-
 //connect to redis - used to store letious shared caches
 //TODO - user needs to call redis.quit();
 exports.redis = redis.createClient(config.redis.port, config.redis.server);
@@ -417,8 +416,7 @@ exports.load_github_detail = function(service_name, cb) {
 
 
 exports.generateQuery = function(str){
-    stopwords.add('');
-    let result=stopwords.cleanText(str).split(' ').map((word) => `W='${word}'`).join(',');
+    let result=stopwords.cleanText(str).split(' ').filter(e => String(e).trim()).map((word) => `W='${word}'`).join(',');
     return "OR("+result+")"
 }
 
