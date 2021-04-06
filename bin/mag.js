@@ -1,11 +1,9 @@
 #!/usr/bin/env node
-
 const winston = require('winston');
 const async = require('async');
 const axios = require('axios');
 const fs = require('fs');
 const redis = require('redis');
-
 const config = require('../api/config');
 const logger = winston.createLogger(config.logger.winston);
 const db = require('../api/models');
@@ -18,21 +16,17 @@ const stopwords = ["'",",/\n"," ","","\n","!","-","a","a's" , "able" , "about" ,
 db.init(function(err) {
     if(err) throw err;
     run();
+    // process.exit(1);
 });
-
 
 function run() {
 	db.Projects.find({
         removed: false,
     })
     .exec((err, projects)=>{
-		if(err) throw err;
-        async.eachSeries(projects, handleProject, err=>{
-            if(err) logger.error(err);
-            console.log("done going through all projects sleeping.....");
-            setTimeout(run, 1000*3600*3);
-        });
+		projects.forEach(project => handleProject(project));
 	});
+
 }
 
 
@@ -46,18 +40,10 @@ function generateQuery(str){
 
 
 
-function handleProject(project, cb) {
+function handleProject(project) {
     logger.debug("....................... %s %s", project.name, project._id.toString());
-    const query = generateQuery(project.name+" "+project.desc)
-    async.series([
-        next=>{
-           common.updateProjectMag(query,project.id)
-           next()
-        },
-    ], err=>{
-        if(err) console.error(err);
-        cb(); //let it continue
-    });
+    const query = generateQuery(project.name+" "+project.desc);
+    common.updateProjectMag(project);
 }
 
 
