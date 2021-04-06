@@ -60,8 +60,6 @@ function generateQuery(str){
     .split(' ').
     filter((word) => !stopwords.includes(word)).
     map((word) => `W='${word}'`).join();
-    console.log(fil);
-    console.log(string);
     return "OR("+fil+")"
 }
 
