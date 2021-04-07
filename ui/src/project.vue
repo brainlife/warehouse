@@ -164,7 +164,7 @@
                         <hr>
                         <ol>
                             <li v-for="paper in selected.mag.papers" :key="Id" >
-                               <div><p class="paper-title"> {{paper.title}} <span style="font-style: italic;"> {{ paper.venue }} ( {{new Date(paper.publicationDate).getFullYear()}} )</span></p></div>
+                               <p class="paper-title"> {{paper.title}} <span style="font-style: italic;"> {{ paper.venue }} ( {{new Date(paper.publicationDate).getFullYear()}} )</span></p>
                                <hr>
                             </li>
                         </ol>

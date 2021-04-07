@@ -420,7 +420,7 @@ exports.generateQuery = function(str){
     return "OR("+result+")"
 }
 
-exports.updateProjectMag = function(project,cb){
+exports.updateProjectMag = function(project){
     if(!config.mag) return console.log("no mag config");
     let headers = {
         'Ocp-Apim-Subscription-Key': config.mag.subscription_key,
@@ -429,20 +429,13 @@ exports.updateProjectMag = function(project,cb){
     const query = exports.generateQuery(project.name+" "+project.desc);
     let urlMag = "https://api.labs.cognitive.microsoft.com/academic/v1.0/evaluate?expr="+query+"&model=latest&count=10&offset=0&attributes=Id,AA.AfId,AA.AfN,AA.AuId,AA.AuN,AA.DAuN,CC,CN,D,Ti,F.FId,F.FN,Y,VFN,DOI,IA"
 
-    const papers = () => axios.get(urlMag,{headers}).then(res =>{
-        if(res.status !=200){
-            console.error(res.status);
-            return cb("Failed to get related papers");
-        }
-        return res.data.entities.filter(papers => papers.logprob > -15);        
-    }).catch(cb);
-
+    
     let dataMag= []
-    papers().then(papers => {
+    axios.get(urlMag,{headers}).then(response => {
+        let papers = response.data.entities;
         papers.forEach(function(paper){
             let object = {};
-            let date = Date.parse(paper.D);      // get Date and 
-            object.publicationDate = new Date(date);        
+            object.publicationDate = new Date(paper.D);        
             object.citationCount = paper.CC; // add Citation Count
             object.title = paper.Ti; // add Title
             object.venue = paper.VFN; // add venue
@@ -450,22 +443,22 @@ exports.updateProjectMag = function(project,cb){
                 const modifiedAuthors = {"institution" : author.AfN, "name" : author.DAuN };
                 return modifiedAuthors;
             })
-            if(paper.F){
-                object.fields = paper.F.map((name) => name.FN).join(',');
-            }
-            if(paper.IA){
+            if(paper.F)
+                object.fields = paper.F.map((name) => name.FN);
+            
+            if(paper.IA)
                 object.abstract = Object.keys(paper.IA.InvertedIndex).join(' ');
-            }
+            
             dataMag.push(object);
         });
 
         if(dataMag.length >0){
-            const updateData = {[`papers`]: dataMag,};
+            const updateData = {papers: dataMag};
 
-            db.Projects.findByIdAndUpdate(project.id, {$set: {"mag": updateData}},{ new: true, upsert: true, }, function (err, updatedproject) {
+            db.Projects.findByIdAndUpdate(project.id, {$set: {mag: updateData}},{ new: true, upsert: true, }, function (err, updatedproject) {
                 if (err) {
                     console.log(err);
-                }else{
+                }else {
                     console.log("updated project");
                 }})
         }

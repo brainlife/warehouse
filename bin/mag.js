@@ -23,7 +23,6 @@ function run() {
     .exec((err, projects)=>{
 	    projects.forEach(project => handleProject(project));
 	});
-
 }
 
 function handleProject(project) {
