@@ -423,7 +423,7 @@ exports.generateQuery = function(str){
 exports.updateProjectMag = function(project){
     if(!config.mag) return console.log("no mag config");
     let headers = {
-        'Ocp-Apim-Subscription-Key': config.mag.subscription_key,
+        'Ocp-Apim-Subscription-Key': config.mag.subscriptionKey,
         'User-Agent': 'brainlife',
     }
     const query = exports.generateQuery(project.name+" "+project.desc);
