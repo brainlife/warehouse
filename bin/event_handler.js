@@ -334,6 +334,7 @@ function handle_task(task, cb) {
 
                         //we want to run on the same resource that task has run on
                         follow_task_id: task._id,
+                        nice: task.nice, //mirror niceness of the parent
 
                         //we need to submit with admin jwt so we can set follow_task_id, 
                         //but the task itself needs to be owned by the user so that user
@@ -541,7 +542,8 @@ function handle_task(task, cb) {
                             //app_task_id: task.follow_task_id, //the main app task (used to query secondary archive task)
                         },
                         remove_date,
-                        //user_id: task.user_id, 
+
+                        nice: task.nice, //mirror niceness of the parent
                     }),
                     headers: {
                         //authorization: "Bearer "+config.warehouse.jwt,

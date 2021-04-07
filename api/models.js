@@ -166,14 +166,6 @@ var projectSchema = mongoose.Schema({
 
     quota: {type: Number, default: 1000000000000}, //maximum archive size (1TB by default)
 
-    /*
-    //TODO - will be deprecated when datalad goes online
-    //for openneuro proxy project (not set if it's not openneuro)
-    openneuro: {
-        dataset_id: String,
-    },
-    */
-
     //datalad datasets that data on this project was imported from
     //TODO - we can just query the list of datasets stored on this project 
     //to figure out where they came from
