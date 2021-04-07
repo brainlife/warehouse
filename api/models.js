@@ -160,10 +160,18 @@ var projectSchema = mongoose.Schema({
 
     quota: {type: Number, default: 1000000000000}, //maximum archive size (1TB by default)
     mag: {
-        papers: {
-            type: Array,
-          }
-      },    /*
+        papers: { type: 
+            [{  publicationDate : {type : Date}, 
+               citationCount : Number, 
+               title : String,
+               venue : String, 
+               authors : Array,
+               fields: Array,
+               abstract : String,     
+            }]
+
+      }
+        },    /*
     //TODO - will be deprecated when datalad goes online
     //for openneuro proxy project (not set if it's not openneuro)
     openneuro: {
