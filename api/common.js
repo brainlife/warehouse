@@ -445,7 +445,7 @@ exports.updateProjectMag = function(project,cb){
             return cb();
         }
         console.log("I have response");
-        let papers = response.data.entities;
+        let papers = response.data.entities.filter(a => a.logprob > -15);
         papers.forEach(function(paper){
             let object = {};
             object.publicationDate = new Date(paper.D);        
