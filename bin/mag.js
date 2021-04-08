@@ -1,11 +1,9 @@
 #!/usr/bin/env node
-const winston = require('winston');
 const async = require('async');
 const axios = require('axios');
 const fs = require('fs');
 const redis = require('redis');
 const config = require('../api/config');
-const logger = winston.createLogger(config.logger.winston);
 const db = require('../api/models');
 const common = require('../api/common');
 
@@ -20,14 +18,17 @@ function run() {
 	db.Projects.find({
         removed: false,
     })
-    .exec((err, projects)=>{
-	    projects.forEach(project => handleProject(project));
+    .exec((err,projects)=>{
+	   async.eachSeries(projects,function(project,outCb){
+            console.log("....................... %s %s", project.name, project._id.toString());
+            common.updateProjectMag(project,outCb);
+        }, function(err) {
+            // Finished
+            console.log("Finished writing MAG papers");
+            process.exit(1);
+          })
 	});
 }
 
-function handleProject(project) {
-    console.log("....................... %s %s", project.name, project._id.toString());
-    common.updateProjectMag(project);
-}
 
 

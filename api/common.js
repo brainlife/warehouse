@@ -416,22 +416,35 @@ exports.load_github_detail = function(service_name, cb) {
 
 
 exports.generateQuery = function(str){
-    let result=stopwords.cleanText(str).split(' ').filter(e => String(e).trim()).map((word) => `W='${word}'`).join(',');
-    return "OR("+result+")"
+    let result=stopwords.cleanText(str).split(' ').filter(e => String(e).trim());
+    if(result.length >0) {
+        result = result.map((word) => `W='${word}'`).join(',');
+        return "OR("+result+")"
+    }
+    return -1;
 }
 
-exports.updateProjectMag = function(project){
+exports.updateProjectMag = function(project,cb){
     if(!config.mag) return console.log("no mag config");
     let headers = {
         'Ocp-Apim-Subscription-Key': config.mag.subscriptionKey,
         'User-Agent': 'brainlife',
     }
     const query = exports.generateQuery(project.name+" "+project.desc);
+    if(query === -1)
+        return cb();
     let urlMag = "https://api.labs.cognitive.microsoft.com/academic/v1.0/evaluate?expr="+query+"&model=latest&count=10&offset=0&attributes=Id,AA.AfId,AA.AfN,AA.AuId,AA.AuN,AA.DAuN,CC,CN,D,Ti,F.FId,F.FN,Y,VFN,DOI,IA"
 
     
     let dataMag= []
+    try{
     axios.get(urlMag,{headers}).then(response => {
+
+        if(response.status != 200) {
+            console.error(res);
+            return cb();
+        }
+        console.log("I have response");
         let papers = response.data.entities;
         papers.forEach(function(paper){
             let object = {};
@@ -446,8 +459,15 @@ exports.updateProjectMag = function(project){
             if(paper.F)
                 object.fields = paper.F.map((name) => name.FN);
             
-            if(paper.IA)
-                object.abstract = Object.keys(paper.IA.InvertedIndex).join(' ');
+            if(paper.IA) {
+            let abstract = [];
+            for(const word in paper.IA.InvertedIndex) {
+                paper.IA.InvertedIndex[word].forEach(idx=>{
+                    abstract[idx] = word;
+                });
+            }
+            object.abstract = abstract.join(' ');
+            }
             
             dataMag.push(object);
         });
@@ -458,11 +478,24 @@ exports.updateProjectMag = function(project){
             db.Projects.findByIdAndUpdate(project.id, {$set: {mag: updateData}},{ new: true, upsert: true, }, function (err, updatedproject) {
                 if (err) {
                     console.log(err);
+                    return cb();
                 }else {
-                    console.log("updated project");
-                }})
+                    console.log("Written into database")
+                    return cb();
+                }});
+        }else{
+            console.log("Don't have papers");
+            return cb();
         }
-    }).catch(error => console.log(error));
+    }).catch(function(error) { 
+        console.log(error); 
+        return cb();
+    });
+
+} catch (err) {
+    console.log(error); 
+    return cb();
+}
 }
 
 exports.compose_app_datacite_metadata = function(app) {
