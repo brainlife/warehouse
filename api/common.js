@@ -444,7 +444,6 @@ exports.updateProjectMag = function(project,cb){
             console.error(res);
             return cb();
         }
-        console.log("I have response");
         let papers = response.data.entities.filter(a => a.logprob > -15);
         papers.forEach(function(paper){
             let object = {};
@@ -480,11 +479,9 @@ exports.updateProjectMag = function(project,cb){
                     console.log(err);
                     return cb();
                 }else {
-                    console.log("Written into database")
                     return cb();
                 }});
         }else{
-            console.log("Don't have papers");
             return cb();
         }
     }).catch(function(error) { 
