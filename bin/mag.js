@@ -11,11 +11,11 @@ db.init(function(err) {
 });
 
 function run() {
-	db.Projects.find({
+    db.Projects.find({
         removed: false,
     })
     .exec((err,projects)=>{
-        async.eachSeries(projects, common.updateProjectMag, err => {
+        async.eachSeries(projects, common.updateProjectMag, err=>{
             if (err) {
                 console.error(err);
                 process.exit(1);
@@ -23,7 +23,7 @@ function run() {
             console.log("all projects processed successfully");
             process.exit(0);
         });
-	});
+    });
 }
 
 

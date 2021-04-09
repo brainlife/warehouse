@@ -75,7 +75,7 @@ exports.validate_projects = function(user, project_ids, cb) {
         canwrite_project_ids = canwrite_project_ids.map(id=>id.toString());
 
         //iterate each ids to see if user has access
-        let err = null;
+        err = null;
         project_ids.forEach(id=>{
             if(!~canwrite_project_ids.indexOf(id)) err = "you("+user+") don't have write access to project:"+id;
         });
@@ -415,80 +415,73 @@ exports.load_github_detail = function(service_name, cb) {
 }
 
 
-exports.generateQuery = str => {
+exports.generateQuery = function(str) {
     let result=stopwords.cleanText(str).split(' ').filter(e => String(e).trim());
-    if(result.length >0) {
-        result = result.map((word) => `W='${word}'`).join(',');
-        return "OR("+result+")"
-    }
-    return null;
+    if(result.length == 0) return null;
+    result = result.map((word) => `W='${word}'`).join(',');
+    return "OR("+result+")"
 }
 
-exports.updateProjectMag = function (project, cb) {
+exports.updateProjectMag = function(project, cb) {
     console.log("....................... %s %s", project.name, project._id.toString());
-    if (!config.mag) return console.log("no mag config");
-    let headers = {
-        'Ocp-Apim-Subscription-Key': config.mag.subscriptionKey,
-        'User-Agent': 'brainlife',
-    }
+
+    if (!config.mag) cb("no mag config!!");
+
     const query = exports.generateQuery(project.name + " " + project.desc);
     if (!query) return cb();
-    let urlMag = "https://api.labs.cognitive.microsoft.com/academic/v1.0/evaluate?expr=" + query
-    const attributes = 'Id,AA.AfId,AA.AfN,AA.AuId,AA.AuN,AA.DAuN,CC,CN,D,Ti,F.FId,F.FN,Y,VFN,DOI,IA';
-    let dataMag = []
-    try {
-        axios.get(urlMag, { headers, params: { count: 10, offset: 0, model: 'latest', attributes: attributes } }).then(response => {
-            if (response.status != 200) {
-                console.error(res);
-                return cb();
+
+    axios.get("https://api.labs.cognitive.microsoft.com/academic/v1.0/evaluate", { 
+        headers: {
+            'Ocp-Apim-Subscription-Key': config.mag.subscriptionKey,
+            'User-Agent': 'brainlife',
+        },
+        params: { 
+            expr: query,
+            count: 10, 
+            offset: 0, 
+            model: 'latest', 
+            attributes: 'Id,AA.AfId,AA.AfN,AA.AuId,AA.AuN,AA.DAuN,CC,CN,D,Ti,F.FId,F.FN,Y,VFN,DOI,IA',
+        } 
+    }).then(res=>{
+        if (res.status != 200) return cb("failed to call mag api");
+
+        let papers = res.data.entities
+        .filter(a => a.logprob > -15)
+        .map(paper=>{
+            const ret = {
+                publicationDate: new Date(paper.D),
+                citationCount: paper.CC, // add Citation Count
+                title: paper.Ti, // add Title
+                venue: paper.VFN, // add venue
+                authors: paper.AA.map(author=>({institution: author.AfN, name: author.DAuN })),
             }
-            let papers = response.data.entities.filter(a => a.logprob > -15);
-            papers.forEach(function (paper) {
-                let object = {};
-                object.publicationDate = new Date(paper.D);
-                object.citationCount = paper.CC; // add Citation Count
-                object.title = paper.Ti; // add Title
-                object.venue = paper.VFN; // add venue
-                object.authors = paper.AA.map(author => {
-                    return { "institution": author.AfN, "name": author.DAuN };
-                });
-                if (paper.F) object.fields = paper.F.map((name) => name.FN);
-                if (paper.IA) {
-                    let abstract = [];
-                    for (const word in paper.IA.InvertedIndex) {
-                        paper.IA.InvertedIndex[word].forEach(idx => {
-                            abstract[idx] = word;
-                        });
-                    }
-                    object.abstract = abstract.join(' ');
+
+            if(paper.F) ret.fields = paper.F.map(name=>name.FN);
+            if(paper.IA) {
+                let abstract = [];
+                for (const word in paper.IA.InvertedIndex) {
+                    paper.IA.InvertedIndex[word].forEach(idx=>{
+                        abstract[idx] = word;
+                    });
                 }
-
-                dataMag.push(object);
-            });
-
-            if (dataMag.length > 0) {
-                const updateData = { papers: dataMag };
-
-                db.Projects.findByIdAndUpdate(project.id, { $set: { mag: updateData } }, { new: true, upsert: true, }, function (err, updatedproject) {
-                    if (err) {
-                        console.log(err);
-                        return cb();
-                    } else {
-                        return cb();
-                    }
-                });
-            } else {
-                return cb();
+                ret.abstract = abstract.join(' ');
             }
-        }).catch(function (error) {
-            console.log(error);
-            return cb();
+            return ret;
         });
+        if (papers.length == 0) return cb();
 
-    } catch (err) {
-        console.log(error);
-        return cb();
-    }
+        if(!project.mag) project.mag = {}; //not sure if we need this or not
+
+        project.mag.papers = papers;
+        project.markModified("mag");
+        project.save(cb);
+
+    }).catch(res=>{
+        console.log(res.toString());
+        //mag api returns 500 if paper doesn't exist.. so we can not tell the difference between
+        //api issue v.s. empty papwers.. so we return null object to cb()
+        cb();
+    });
 }
 
 exports.compose_app_datacite_metadata = function(app) {
