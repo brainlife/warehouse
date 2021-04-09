@@ -15,14 +15,14 @@ function run() {
         removed: false,
     })
     .exec((err,projects)=>{
-	   async.eachSeries(projects,function(project,outCb){
-            console.log("....................... %s %s", project.name, project._id.toString());
-            common.updateProjectMag(project,outCb);
-        }, function(err) {
-            // Finished
-            console.log("Finished writing MAG papers");
-            process.exit(1);
-          })
+        async.eachSeries(projects, common.updateProjectMag, err => {
+            if (err) {
+                console.error(err);
+                process.exit(1);
+            }
+            console.log("all projects processed successfully");
+            process.exit(0);
+        });
 	});
 }
 
