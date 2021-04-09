@@ -39,6 +39,7 @@
     "mkdirp": "^0.5.5",
     "mongoose": "^5.11.18",
     "morgan": "^1.10.0",
+    "n-stopwords": "^1.1.2",
     "nocache": "^2.0.0",
     "nodemailer": "^6.4.18",
     "pkgcloud": "^1.6.0",

@@ -2,7 +2,7 @@
 //TODO switch to axios!
 const request = require('request');
 const rp = require('request-promise-native');
-
+const stopwords=require('n-stopwords')(['en']);
 const tmp = require('tmp');
 const mkdirp = require('mkdirp');
 const path = require('path');
@@ -19,7 +19,8 @@ const config = require('./config');
 const db = require('./models');
 const mongoose = require('mongoose');
 
-//connect to redis - used to store various shared caches
+
+//connect to redis - used to store letious shared caches
 //TODO - user needs to call redis.quit();
 exports.redis = redis.createClient(config.redis.port, config.redis.server);
 exports.redis.on('error', err=>{throw err});
@@ -74,7 +75,7 @@ exports.validate_projects = function(user, project_ids, cb) {
         canwrite_project_ids = canwrite_project_ids.map(id=>id.toString());
 
         //iterate each ids to see if user has access
-        var err = null;
+        let err = null;
         project_ids.forEach(id=>{
             if(!~canwrite_project_ids.indexOf(id)) err = "you("+user+") don't have write access to project:"+id;
         });
@@ -413,6 +414,83 @@ exports.load_github_detail = function(service_name, cb) {
     }).catch(cb)
 }
 
+
+exports.generateQuery = str => {
+    let result=stopwords.cleanText(str).split(' ').filter(e => String(e).trim());
+    if(result.length >0) {
+        result = result.map((word) => `W='${word}'`).join(',');
+        return "OR("+result+")"
+    }
+    return null;
+}
+
+exports.updateProjectMag = function (project, cb) {
+    console.log("....................... %s %s", project.name, project._id.toString());
+    if (!config.mag) return console.log("no mag config");
+    let headers = {
+        'Ocp-Apim-Subscription-Key': config.mag.subscriptionKey,
+        'User-Agent': 'brainlife',
+    }
+    const query = exports.generateQuery(project.name + " " + project.desc);
+    if (!query) return cb();
+    let urlMag = "https://api.labs.cognitive.microsoft.com/academic/v1.0/evaluate?expr=" + query
+    const attributes = 'Id,AA.AfId,AA.AfN,AA.AuId,AA.AuN,AA.DAuN,CC,CN,D,Ti,F.FId,F.FN,Y,VFN,DOI,IA';
+    let dataMag = []
+    try {
+        axios.get(urlMag, { headers, params: { count: 10, offset: 0, model: 'latest', attributes: attributes } }).then(response => {
+            if (response.status != 200) {
+                console.error(res);
+                return cb();
+            }
+            let papers = response.data.entities.filter(a => a.logprob > -15);
+            papers.forEach(function (paper) {
+                let object = {};
+                object.publicationDate = new Date(paper.D);
+                object.citationCount = paper.CC; // add Citation Count
+                object.title = paper.Ti; // add Title
+                object.venue = paper.VFN; // add venue
+                object.authors = paper.AA.map(author => {
+                    return { "institution": author.AfN, "name": author.DAuN };
+                });
+                if (paper.F) object.fields = paper.F.map((name) => name.FN);
+                if (paper.IA) {
+                    let abstract = [];
+                    for (const word in paper.IA.InvertedIndex) {
+                        paper.IA.InvertedIndex[word].forEach(idx => {
+                            abstract[idx] = word;
+                        });
+                    }
+                    object.abstract = abstract.join(' ');
+                }
+
+                dataMag.push(object);
+            });
+
+            if (dataMag.length > 0) {
+                const updateData = { papers: dataMag };
+
+                db.Projects.findByIdAndUpdate(project.id, { $set: { mag: updateData } }, { new: true, upsert: true, }, function (err, updatedproject) {
+                    if (err) {
+                        console.log(err);
+                        return cb();
+                    } else {
+                        return cb();
+                    }
+                });
+            } else {
+                return cb();
+            }
+        }).catch(function (error) {
+            console.log(error);
+            return cb();
+        });
+
+    } catch (err) {
+        console.log(error);
+        return cb();
+    }
+}
+
 exports.compose_app_datacite_metadata = function(app) {
     //publication year
     let year = app.create_date.getFullYear();
@@ -630,9 +708,9 @@ exports.deref_contact = function(id) {
 
 //for split_product
 Array.prototype.unique = function() {
-    var a = this.concat();
-    for(var i=0; i<a.length; ++i) {
-        for(var j=i+1; j<a.length; ++j) {
+    let a = this.concat();
+    for(let i=0; i<a.length; ++i) {
+        for(let j=i+1; j<a.length; ++j) {
             if(a[i] === a[j])
                 a.splice(j--, 1);
         }
@@ -1123,8 +1201,8 @@ exports.cast_mongoid = function(node) {
         }  
     }
 
-    for(var k in node) {
-        var v = node[k];
+    for(let k in node) {
+        let v = node[k];
         if(v === null) continue;
         if(isObjectIdValid(v)) {
             node[k] = mongoose.Types.ObjectId(v);
