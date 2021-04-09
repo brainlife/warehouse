@@ -427,8 +427,16 @@ exports.updateProjectMag = function(project, cb) {
 
     if (!config.mag) cb("no mag config!!");
 
+    if(!project.mag) project.mag = {}; //not sure if we need this or not
+    project.markModified("mag");
+
     const query = exports.generateQuery(project.name + " " + project.desc);
-    if (!query) return cb();
+
+    if (!query) {
+        project.mag.papers = [];
+        project.save(cb);
+        return;
+    }
 
     axios.get("https://api.labs.cognitive.microsoft.com/academic/v1.0/evaluate", { 
         headers: {
@@ -445,14 +453,15 @@ exports.updateProjectMag = function(project, cb) {
     }).then(res=>{
         if (res.status != 200) return cb("failed to call mag api");
 
-        let papers = res.data.entities
+        project.mag.papers = res.data.entities
         .filter(a => a.logprob > -15)
         .map(paper=>{
             const ret = {
                 publicationDate: new Date(paper.D),
-                citationCount: paper.CC, // add Citation Count
-                title: paper.Ti, // add Title
-                venue: paper.VFN, // add venue
+                citationCount: paper.CC,
+                title: paper.Ti, 
+                doi: paper.DOI,
+                venue: paper.VFN, 
                 authors: paper.AA.map(author=>({institution: author.AfN, name: author.DAuN })),
             }
 
@@ -468,12 +477,6 @@ exports.updateProjectMag = function(project, cb) {
             }
             return ret;
         });
-        if (papers.length == 0) return cb();
-
-        if(!project.mag) project.mag = {}; //not sure if we need this or not
-
-        project.mag.papers = papers;
-        project.markModified("mag");
         project.save(cb);
 
     }).catch(res=>{

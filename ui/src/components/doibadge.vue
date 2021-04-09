@@ -1,5 +1,5 @@
 <template>
-    <div v-if="doi" style="display: inline-block">
+    <div v-if="doi" style="display: inline-block" :class="{clickable: jump}">
         <b-badge v-if="doi" @click="show()" pill class="bigpill" title="Registration Date">
             <b style="opacity: 0.5">doi</b>&nbsp;&nbsp;{{doi}}
         </b-badge>
@@ -15,7 +15,7 @@ export default {
     props: ['doi', 'jump'],
     methods: {
         show: function() {
-            if(this.jump) document.location = "https://doi.org/"+this.doi;
+            if(this.jump) window.open("https://doi.org/"+this.doi, this.doi);
             else prompt("DOI URL", "https://doi.org/"+this.doi);
         },
     },
@@ -24,9 +24,15 @@ export default {
 
 <style scoped>
 img {
-cursor: pointer;
+    cursor: pointer;
 }
 .bigpill {
 line-height: 150%;
+}
+.clickable {
+    cursor: pointer;
+}
+.clickable:hover .bigpill {
+    background-color: #ddd;
 }
 </style>

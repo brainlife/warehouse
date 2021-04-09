@@ -170,6 +170,7 @@ var projectSchema = mongoose.Schema({
         papers: [{  
                 publicationDate : Date, 
                 citationCount : Number, 
+                doi: String,
                 title : String,
                 venue : String, 
                 authors : Array,

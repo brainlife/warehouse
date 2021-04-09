@@ -162,21 +162,31 @@
                         </b-row>
                     </div>
 
-                    <div class="box" v-if="selected.mag">
-                        <h3> Related Articles </h3>
-                        <p>We found the following journals/articles related to this project based on name/description through MAG</p>
-                        <hr>
-                        <ol>
-                            <li v-for="paper in selected.mag.papers" :key="Id" >
-                               <p class="paper-title"> {{paper.title}} <span style="font-style: italic;"> {{ paper.venue }} ( {{new Date(paper.publicationDate).getFullYear()}} )</span></p>
-                               <hr>
-                            </li>
-                        </ol>
+                    <div class="box" v-if="selected.mag && selected.mag.papers && selected.mag.papers.length > 0">
+                        <span class="form-header">Related Articles</span>
+                        <small>We found the following journals/articles related to this project based on name/description through MAG</small>
+                        <div v-for="paper in selected.mag.papers" :key="Id" >
+                            <doibadge :doi="paper.doi" v-if="paper.doi" jump="true" style="float: right"/>
+
+                            {{paper.title}}
+
+                            <span class="mag-venue">
+                                <!--<icon name="calendar" style="opacity: 0.4;"/>&nbsp;&nbsp;-->
+                                {{ paper.venue }} | {{new Date(paper.publicationDate).getFullYear()}}
+                            </span>
+    <br>
+
+                           {{paper}}
+                           <hr>
+                        </div>
                     </div>
+
+                    <!--
                     <div class="box" v-else>
                         <h3> Related Articles </h3>
                         <p>We couldn't find related articles please add more details to the description of the project</p>
                     </div>
+                    -->
 
 
                     <div v-if="selected.readme" class="box">
@@ -325,6 +335,8 @@ import stateprogress from '@/components/stateprogress'
 import resource from '@/components/resource'
 import datatypetag from '@/components/datatypetag'
 import participants from '@/components/participants'
+import doibadge from '@/components/doibadge'
+
 import { Plotly } from 'vue-plotly'
 
 //modals
@@ -337,7 +349,6 @@ let ps;
 
 export default {
     components: { 
-        //TODO - use inline import..
         projectaccess, 
         pageheader,     
         contact, 
@@ -352,6 +363,7 @@ export default {
         agreements, 
         datatypetag, 
         participants,
+        doibadge,
 
         'groupAnalysis': ()=> import('@/components/groupanalysis'),
 
@@ -846,7 +858,13 @@ padding: 5px 10px;
 OL LI::marker {
     font-size: 2em;
 }
+/*
 .paper-title {
     text-transform: capitalize;
+}
+*/
+.mag-venue {
+    text-transform: italic;
+    opacity: 0.8;
 }
 </style>
