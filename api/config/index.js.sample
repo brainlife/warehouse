@@ -155,6 +155,10 @@ exports.datacite = {
     api: "https://mds.test.datacite.org",
 }
 
+exports.mag = {
+    subscriptionKey: fs.readFileSync(__dirname+'/mag.key', {encoding: "ascii"}).trim(),
+}
+
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 //
 //  storage system where we can archive data

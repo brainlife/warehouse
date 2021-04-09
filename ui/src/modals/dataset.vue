@@ -188,6 +188,8 @@
                                         <span title="Backup of this data-object exists in Scholarly Data Archive (SDA) system." v-if="dataset.backup_date" class="text-success">
                                             <b-badge variant="success"><icon name="archive" scale="0.7"/> SDA Backup</b-badge>
                                         </span>
+
+                                        <span><small>Task ID: {{dataset.archive_task_id}}</small></span>
                                     </p>
                                 </b-col>
                             </b-row>

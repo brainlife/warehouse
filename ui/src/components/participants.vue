@@ -12,9 +12,7 @@
                         </span>
                     </th>
                     <th scope="col" @click="updateSort(key)" v-for="(column, key) in columns" :key="key" class="header" :class="{headerSorted: sort == key}">
-                        {{column.LongName}}
-                        &nbsp;
-                        <span style="width: 15px;">
+                        {{column.LongName||key}}&nbsp;<span style="width: 15px;">
                             <icon name="caret-up" v-if="sort == key && sort_reverse"/>
                             <icon name="caret-down" v-if="sort == key && !sort_reverse"/>
                         </span>
@@ -95,8 +93,9 @@ export default {
 
 <style scoped>
 .table .header {
-cursor: pointer;
-font-size: 80%;
+    cursor: pointer;
+    font-size: 80%;
+    font-weight: normal;
 }
 .table tbody {
 background-color: white;

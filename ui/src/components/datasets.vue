@@ -27,7 +27,7 @@
 
         <div class="page-content" ref="scrolled-area" @scroll="page_scrolled">
             <div v-if="!loading && total_datasets == 0" style="margin: 20px; opacity: 0.8;">
-                Please upload datasets by clicking the button on the right bottom corner of the page. You can also copy datasets from another project.
+                Please upload data by clicking the button on the right bottom corner of the page. You can also copy data from another project.
             </div>
             
             <!--start of dataset list-->
@@ -130,7 +130,7 @@
             </div>
         </div>
 
-        <p style="opacity: 0.5; margin: 10px">You can select multiple datasets by holding the shift key on first and last datasets that you'd like to select.</p>
+        <p style="opacity: 0.5; margin: 10px">You can select multiple objects by holding the shift key on first and last object that you'd like to select.</p>
         <br clear="both">
     </div>
 </div>
@@ -729,16 +729,16 @@ export default {
         },
 
         remove() {
-            if(confirm("Do you really want to remove all selected datasets?")) {
+            if(confirm("Do you really want to remove all selected objects?")) {
                 this.check_agreements(this.project, ()=>{
-                    this.$notify({type: "info", text: "Removing all selected datasets.."});
+                    this.$notify({type: "info", text: "Removing all selected objects.."});
                     this.removing = true;
                     axios({
                         method: 'delete',
                         url: '/dataset',
                         data: { ids: Object.keys(this.selected) },
                     }).then(res=>{
-                        this.$notify({type: "success", text: "Removed "+res.data.removed+" datasets"});
+                        this.$notify({type: "success", text: "Removed "+res.data.removed+" objects"});
                         Object.values(this.selected).forEach(dataset=>{dataset.removed = true;});
                         this.clear_selected();
                         this.removing = false;
@@ -907,7 +907,7 @@ margin-bottom: 5px;
     opacity: inherit; 
 }
 
-/*why don't I just *hide* removed datasets? because remove() doesn't recalculate page height to preseve the current scroll position*/
+/*why don't I just *hide* removed objects? because remove() doesn't recalculate page height to preseve the current scroll position*/
 .removed {
 background-color: #ccc;
 color: white;

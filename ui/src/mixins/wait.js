@@ -9,15 +9,17 @@ export default {
         return {
             task: null, 
             ws: null,
+            cb: null,
         }
     },
     destroyed() {
         this.ws.close();
-        //clearTimeout(this.ws);
     },
     methods: {
         wait(taskid, cb) {
-            console.log("waiting for taskid", taskid);
+            //waiting for taskid and call cb when finishes
+            //TODO it also restart the job if it's removed (should it be this mixin's reponsibility?)
+            this.cb = cb;
 
             var url = Vue.config.event_ws+"/subscribe?jwt="+Vue.config.jwt;
             if(this.ws) this.ws.close();
@@ -68,14 +70,18 @@ export default {
             case 'failed':
             case 'stopped':
             case 'finished':
-                this.ws.close();
-                cb(this.task); 
+                //this.ws.close();
+
+                //only call cb once
+                if(this.cb) this.cb(this.task); 
+                this.cb = null;
+
                 break;
             case 'removed':
                 console.debug("rerunning");
                 this.$http.put(Vue.config.wf_api+'/task/rerun/'+this.taskid).then(res => {
                     console.log("rerunning task");
-                    this.ws = setTimeout(()=>{this.wait(taskid, cb)}, 1000);
+                    //setTimeout(()=>{this.wait(taskid, cb)}, 1000);
                 });
                 break;
             }

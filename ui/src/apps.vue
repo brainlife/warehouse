@@ -47,7 +47,7 @@
             <h3 v-if="apps.length == 0" style="opacity: 0.8; margin: 40px;" variant="secondary">No matching Apps</h3>
 
             <div v-if="app_groups['_new']" class="newapps" id="_new" style="position: relative">
-                <h4 class="group-title colored">New Apps</h4> 
+                <h4 class="group-title">New Apps</h4> 
                 <div v-for="app in app_groups['_new']" :key="app._id" class="app">
                     <app :app="app" height="220px" class="app-card"/>
                 </div>
@@ -73,7 +73,7 @@
 
             <!-- mine -->
             <div style="position: relative;" id="_mine" class="myapps" v-if="my_apps && my_apps.length > 0" ref="category-_mine">
-                <h4 class="group-title colored">My Apps <!--<small style="float: right">{{my_apps.length}} Apps</small>--> </h4> 
+                <h4 class="group-title">My Apps</h4> 
                 <div v-for="app in my_apps" :key="app._id" class="app">
                     <app :app="app" height="220px" class="app-card" v-if="visible_category.includes('_mine')"/>
                 </div>
@@ -334,71 +334,73 @@ export default {
 
 <style scoped>
 .group-title {
-color: #999;
-text-transform: uppercase;
-padding: 15px 20px;
-margin-bottom: 10px;
-background-color: white;
-position: sticky;
-top: 0px;
-z-index: 1;
-opacity: 0.8;
+    color: #999;
+    text-transform: uppercase;
+    padding: 15px 20px;
+    margin-bottom: 10px;
+    background-color: white;
+    position: sticky;
+    top: 0px;
+    z-index: 1;
+    opacity: 0.9;
+    box-shadow: 2px 0 3px #0002;
 }
 .page-content {
-top: 50px;
-margin-right: 240px;
+    top: 50px;
+    margin-right: 240px;
 }
 .group-list {
-position: fixed;
-top: 50px;
-bottom: 0px;
-width: 240px;
-background-color: #ddd;
+    position: fixed;
+    top: 50px;
+    bottom: 0px;
+    width: 240px;
+    background-color: #ddd;
 }
 .group-list h4 {
-font-size: 18px;
-font-weight: bold;
-padding: 20px 10px;
-text-transform: uppercase;
-margin-bottom: 0px;
-color: #777;
+    font-size: 18px;
+    font-weight: bold;
+    padding: 20px 10px;
+    text-transform: uppercase;
+    margin-bottom: 0px;
+    color: #777;
 }
 .group-list .item {
-text-transform: uppercase;
-padding: 5px 10px;
-margin-bottom: 0px;
-font-size: 80%;
+    text-transform: uppercase;
+    padding: 5px 10px;
+    margin-bottom: 0px;
+    font-size: 80%;
 }
 .group-list .item:hover {
-cursor: pointer;
-background-color: white;
+    cursor: pointer;
+    background-color: white;
 }
 .group-list .item.active {
-background-color: #007bff;
-color: white;
+    background-color: #007bff;
+    color: white;
 }
 .newapps {
-background-image: linear-gradient(#1966b3, #2693ff);
-/*background-attachment: fixed; ... this causes flickering*/
-padding-bottom: 30px;
+    background-image: linear-gradient(#1966b3, #2693ff);
+    padding-bottom: 30px;
 }
 .myapps {
-background-image: linear-gradient(#1a613d, #159957);
-/*background-attachment: fixed; ... this causes flickering*/
+    background-image: linear-gradient(#1a613d, #159957);
 }
-.group-title.colored {
-background-color: inherit;
-color: white;
+.newapps h4 {
+    color: white;
+    background-color: #1966b3;
+}
+.myapps h4 {
+    color: white;
+    background-color: #1a613d;
 }
 .app {
-margin-left: 10px;
-margin-bottom: 10px;
-width: 325px;
-height: 220px;
-float: left;
-position: relative;
-top: 0;
-transition: box-shadow 0.3s ease;
+    margin: 6px;
+    width: 325px;
+    height: 220px;
+    float: left;
+    position: relative;
+    top: 0;
+    transition: box-shadow 0.3s ease;
 }
 .app:hover {
 box-shadow: 2px 2px 6px rgba(0,0,0,0.2);

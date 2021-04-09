@@ -311,8 +311,8 @@ router.beforeEach(function (to, from, next) {
     if (!to.meta.public && !Vue.config.jwt) {
         console.log("authentication required", document.location.href);
         if(!Vue.config.debug) {
-            document.location = Vue.config.auth_signin;
             sessionStorage.setItem('auth_redirect', document.location.href);
+            document.location = Vue.config.auth_signin;
         }
         return;
     }

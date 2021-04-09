@@ -124,6 +124,10 @@ function handle_rule(rule, cb) {
         next=>{
             if(!rule.project) return next("project not specified");
             if(!rule.app) return next("app not specified");
+
+            //TODO - load project and check to make sure it's not removed
+            //I should probably do this check in some house keeping script somewhere else? go through remove project, and disable pipeline rules
+
             next();
         },
         

@@ -27,12 +27,12 @@ router.get('/list/:projectid', async (req, res, next)=>{
             params: {
                 select: 'config.requests instance_id',
                 find: JSON.stringify({
-                    'finish_date': {$exists: true},
+                    'finish_date': {$exists: true}, //status is probably "removed" by now
                     'service': 'brainlife/app-archive-secondary',
                     '_group_id': project.group_id,
                 }),
-                limit: 20000, //TODO.. how scalable is this!?
-                sort: 'create_date',
+                limit: 100000, //TODO.. how scalable is this!?
+                //sort: 'create_date', //this seems to slow things down
             },
             headers: { authorization: "Bearer "+config.warehouse.jwt },
         });
@@ -43,8 +43,21 @@ router.get('/list/:projectid', async (req, res, next)=>{
         console.log("iterating tasks", _res.data.tasks.length);
         _res.data.tasks.forEach(task=>{
             if(!task.config.requests) return; //old format?
+
+
             task.config.requests.forEach(request=>{
-                if(!request.datatype) return; //should only happen on dev
+                
+                //filter out some extra metadata that's too big to store..
+                if(request.output && request.output.meta) {
+                    for(let k in request.output.meta) {
+                        if(typeof request.output.meta[k] == 'object') request.output.meta[k] = "_suppresed_";
+                    }
+                }
+
+                //we only want objects with datatype set (for group analysis datatypes)
+                //validator output archive won't have datatype set (see event handler) 
+                //so we can filter them out by looking for this.
+                if(!request.datatype) return; 
 
                 //slim down datatype
                 //I don't think I have to do this anymore as secondary archiver should only 
@@ -63,11 +76,14 @@ router.get('/list/:projectid', async (req, res, next)=>{
                     //these might not exist on old objects during development
                     app: request.app||{},
                     output: request.output||{},
-                    finish_date: request.finish_date||{},
+                    finish_date: new Date(request.finish_date),
                 };
-                console.debug(o);
                 objects.push(o);
             });
+        });
+
+        objects.sort((a,b)=>{
+            return a.finish_date - b.finish_date;
         });
 
         console.log("returning json");

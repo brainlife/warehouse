@@ -51,8 +51,9 @@
             <b-button variant="primary" :disabled="!ezBIDS" @click="submit()">Submit</b-button>
         </b-form-group>
         <b-form-group v-if="task">
+            <b-button @click="task = null" variant="warning">Re-submit</b-button>
             <b-button @click="cancelImport" v-if="task.status == 'running' || task.status == 'requested'">Cancel</b-button>
-            <b-button @click="close" v-else>Close</b-button>
+            <b-button @click="openProject" v-if="task.status == 'finished'" variant="primary">Open Project</b-button>
         </b-form-group>
     </div>
 </b-modal>
@@ -108,8 +109,27 @@ export default {
                 this.project_name = this.ezBIDS.datasetDescription.Name;
                 this.project_desc = this.ezBIDS.readme;
             }).catch(err=>{
-                this.$notify({type: 'error', text: "Failed to load the specified ezBIDS session"});
+                this.$notify({type: 'error', text: "Failed to load the specified ezBIDS session. Please contact brainlife.io team"});
                 this.close();
+            });
+
+            //load existing task if it's already imported
+            this.$http.get(Vue.config.amaretti_api+'/task', {
+                params: {
+                    find: JSON.stringify({
+                        name: "bids-import."+this.sessionId,
+                        service: "brainlife/app-bids-import",
+                    })
+                },
+            }).then(res=>{
+                if(res.data.tasks.length != 0) {
+                    console.log("importer already submitted!");
+                    this.task = res.data.tasks[res.data.tasks.length-1];
+                    this.subscribeTask(this.task);
+                }
+            }).catch(err=>{
+                console.error(err);
+                this.$notify({type: 'error', text: err.body.message});
             });
 
             this.$refs.modal.show();
@@ -120,6 +140,11 @@ export default {
         close() {
             if(this.ws) this.ws.close();
             this.$refs.modal.hide();
+        },
+
+        openProject() {
+            this.$router.push("/project/"+this.task.config.project);
+            this.close();
         },
 
         submit() {
@@ -156,7 +181,7 @@ export default {
                 }
                 this.$http.post(Vue.config.amaretti_api+'/task', params).then(res=>{
                     this.task = res.data.task;
-                    this.subscribeInstance(instance);
+                    this.subscribeTask(this.task);
                 }).catch(err=>{
                     console.error(err);
                     this.$notify({type: 'error', text: err.body.message});
@@ -186,29 +211,27 @@ export default {
             });
         },
 
-        subscribeInstance(instance) {
+        subscribeTask(task) {
             //lastly, subscribe to the whole instance task events
             var url = Vue.config.event_ws+"/subscribe?jwt="+Vue.config.jwt;
             this.ws = new ReconnectingWebSocket(url, null, {debug: Vue.config.debug, reconnectInterval: 3000});
             this.ws.onopen = (e)=>{
-                console.log("websocket opened binding to wf.task", instance._id+".#");
                 this.ws.send(JSON.stringify({
                   bind: {
                     ex: "wf.task",
-                    key: instance._id+".#",
+                    key: task.instance_id+"."+task._id,
                   }
                 }));
             }
             this.ws.onmessage = (json)=>{
-                console.debug(json);
                 var event = JSON.parse(json.data);
-                if(event.error) {
-                    console.error(event.error);
-                    return;
-                }
+                if(event.error) return;
                 var task = event.msg;
                 if(!task) return;
                 for(let k in task) Vue.set(this.task, k, task[k]);
+                if(task.status == "finished") {
+                    console.log("finished!");
+                }
             }
         },
 

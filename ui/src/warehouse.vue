@@ -30,15 +30,33 @@ export default {
         }
     },
 
-    mounted() {
-        //handle hashrequest
-        if(document.location.hash.startsWith("#ezbids")) {
-            const sessionId = document.location.hash.substring(8);
-            this.$root.$emit("ezbidsimporter.open", {sessionId});
-
-            history.replaceState(undefined, undefined, "#"); //remove hashrequest
+    watch: {
+        '$route': function() {
+            this.handleHashRequest();
         }
-    }
+    },
+
+    mounted() {
+        this.handleHashRequest();
+    },
+    
+    methods: {
+        handleHashRequest() {
+            console.log("parsing hash request", document.location.hash);
+            if(document.location.hash.startsWith("#ezbids")) {
+                if(!Vue.config.jwt) {
+                    sessionStorage.setItem('auth_redirect', document.location.href);
+                    document.location = Vue.config.auth_signin;
+                } else {
+                    const sessionId = document.location.hash.substring(8);
+                    console.log("opeining session", sessionId);
+                    this.$root.$emit("ezbidsimporter.open", {sessionId});
+                    //history.replaceState(undefined, undefined, "#"); //remove hashrequest
+                }
+            }
+        },
+    },
+
 }
 </script>
 

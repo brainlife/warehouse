@@ -36,7 +36,7 @@ exports.init = (cb)=>{
         mongoose.connect(config.mongodb, {
             useNewUrlParser: true,
             useUnifiedTopology: true,
-            server: { auto_reconnect: true },
+            auto_reconnect: true,
         }, err=>{
             if(err) return cb(err);
             console.log("connected to mongo");
@@ -156,9 +156,16 @@ var projectSchema = mongoose.Schema({
         //counts of publications (updated by common.update_project_stats)
         publications: Number,
 
+        groupanalysis: {
+            sessions: [{
+                task_id: String, //amaretti task id
+                config: mongoose.Schema.Types.Mixed,
+            }]
+        },
     },
 
     quota: {type: Number, default: 1000000000000}, //maximum archive size (1TB by default)
+
     mag: {
         papers: [{  
                 publicationDate : Date, 
@@ -247,7 +254,7 @@ var participantsSchema = mongoose.Schema({
     //    "scandate" : "19-02-15",
     //    "scan_time" : "16:30"
     //},
-});
+}, {minimize: false}); //to keep empty object ({}) from disappearing
 exports.Participants = mongoose.model("Participants", participantsSchema);
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -759,6 +766,7 @@ var dlDatasetSchema = mongoose.Schema({
     //openneuro dataset can be removed.. if that happens, we need to flag it
     removed: { type: Boolean, default: false },
 });
+
 dlDatasetSchema.index({path: 1, name: 1}, {unique: true}); 
 dlDatasetSchema.index({'$**': 'text'}) //make all text fields searchable
 exports.DLDatasets = mongoose.model('DLDatasets', dlDatasetSchema);

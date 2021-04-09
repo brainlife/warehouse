@@ -245,11 +245,9 @@ function handle_task(task, cb) {
                 if(!datatype.validator) return; //no validator for this datatype..
                 
                 //see if we already submitted validator for this output
-                //task can be resubmitted, and if it does, amaretti will
-                //automatically rerun it
-                //TODO - even if it's failed?
+                //TODO - I should probably key by the resource_id also? if user resubmit a jobs on different resource
+                //we probably want to resubmit validator on the different resource also? - in case the resource is disabled and such
                 let find = {
-                    //service: { $regex: "^brainlife/validator-" },
                     "deps_config.task": task._id,
                     "config._outputs.id": output.id,
 
@@ -313,9 +311,8 @@ function handle_task(task, cb) {
                     }
                 });
 
-                //we shouldn't remove it too soon.
-                //let remove_date = new Date();
-                //remove_date.setDate(remove_date.getDate()+7); //remove in 7 days(?)
+                let remove_date = new Date();
+                remove_date.setDate(remove_date.getDate()+1); //remove in 1 day
                 
                 //submit datatype validator - if not yet submitted
                 let dtv_task = await rp.post({
@@ -329,10 +326,15 @@ function handle_task(task, cb) {
                         deps_config: [ {task: task._id, subdirs} ],
                         config: validator_config,
                         //max_runtime: 1000*3600, //1 hour should be enough for most..(nope.. it could be queued for a lone time)
-                        remove_date: task.remove_date, //remove when source task is removed
+                        
+                        //remove when source task is removed (but now I task handler has to keep checking the status from validatortor)
+                        //maybe we could remove this a lot sooner now that secondary output is archived to secondary storage?
+                        //remove_date: task.remove_date,  //or maybe I shouldn't remove it too soon?
+                        remove_date,
 
                         //we want to run on the same resource that task has run on
                         follow_task_id: task._id,
+                        nice: task.nice, //mirror niceness of the parent
 
                         //we need to submit with admin jwt so we can set follow_task_id, 
                         //but the task itself needs to be owned by the user so that user
@@ -409,10 +411,20 @@ function handle_task(task, cb) {
             } else next();
         },
         
-        //submit secondary archiver
+        //submit secondary archiver for validation tasks to store UI output to secondary storage
+        //also submit secondary archive for the group analysis which is also stored on secondary storage but it's not "UI" output.
         async next=>{
-            if(task.status != "finished") {// || !isValidationTask(task)) {
-                return;
+            if(task.status != "finished") return;
+            //if(task.service == "brainlife/app-stage") return;
+
+            //let's go ahead and resubmit secondary archiver - to force the secondary output to be re-achived if "force_secondary" is not set
+            if(task.service == "brainlife/app-stage"){ 
+                if(task.config.forceSecondary) {
+                    console.log("processing with secondary archive for app-stage (forceSecondary is set)");
+                } else {
+                    //don't run seconary archive for app-stage
+                    return;
+                }
             }
 
             if(!task.config) {
@@ -437,19 +449,15 @@ function handle_task(task, cb) {
                         task_id: task._id,
                         subdir: output.id,
 
-                        //used to create object index
-                        datatype: {
-                            _id: datatype._id,
-                            name: datatype.name,
-                            //desc: datatype.desc,
-                        }, 
                         output,
+
                         app: {
                             service: task.service,
                             service_branch: task.service_branch,
                             commit_id: task.commit_id,
                             name: task.name,
                         },
+
                         finish_date: task.finish_date,
                     }
 
@@ -467,7 +475,18 @@ function handle_task(task, cb) {
 
                         request.validator = true; //used to let UI know that this was output from validator
                     } else {
+                        //group analysys output is more straightfoward
+                        //TODO - for legacy root-output apps, we shouldn't set subdir (and need to apply override?)
+                        //or.. do I say secondary output won't work with legacy app anymore?
                         subdirs.push(output.id);
+                        
+                        //datatype field is used to tell which secondary archive is for group analysis
+                        //this is only set for group analysis (not validation task) because secondary output from validation task
+                        //is only for UI
+                        request.datatype = {
+                            _id: datatype._id,
+                            name: datatype.name,
+                        }
                     }
                     requests.push(request);
                 }
@@ -477,6 +496,7 @@ function handle_task(task, cb) {
                     return;
                 }
 
+                console.log("number of requests", requests);
                 if(requests.length == 0) return;
 
                 //see if we already submitted secondary archiver for this task
@@ -522,7 +542,8 @@ function handle_task(task, cb) {
                             //app_task_id: task.follow_task_id, //the main app task (used to query secondary archive task)
                         },
                         remove_date,
-                        //user_id: task.user_id, 
+
+                        nice: task.nice, //mirror niceness of the parent
                     }),
                     headers: {
                         //authorization: "Bearer "+config.warehouse.jwt,
@@ -533,20 +554,6 @@ function handle_task(task, cb) {
                 //console.log(JSON.stringify(newtask, null, 4));
             });
         },
-
-        /* we are going to do this on demand
-        //update secondary archive index
-        next=>{
-            if(task.status != "finished" || task.service != "brainlife/app-archive-secondary") {
-                return next();
-            }
-            debounce("update_secondary_index."+task._group_id, async ()=>{
-                let project = await db.Projects.findOne({group_id: task._group_id});
-                await common.update_secondary_index(project);
-            }, 1000*10); 
-            next();
-        },
-        */
 
         //report archive status back to user through dataset_config
         next=>{

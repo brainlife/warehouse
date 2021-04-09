@@ -106,6 +106,7 @@ function handle_app(app, cb) {
                     }
                 });
                 app.markModified('stats');
+
                 common.update_appinfo(app, next);
             }).catch(next);
         },
@@ -130,7 +131,7 @@ function handle_app(app, cb) {
         next=>{
             let url = "https://doi.org/"+app.doi;
             console.log("checking doi", url);
-            if(config.debug) url = "https://doi.org/10.25663/brainlife.app.448";
+            //if(config.debug) url = "https://doi.org/10.25663/brainlife.app.448";
             axios.get(url).then(res=>{
                 if(!res.status == 200) return next(app.doi+" "+res.status)
                 console.log(app.doi+" is good");

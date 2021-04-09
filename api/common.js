@@ -697,6 +697,9 @@ exports.cache_contact = function(cb) {
 }
 
 exports.cache_contact();
+
+//TODO - this make any script that uses common to not terminate!
+//start this loop in demand
 setInterval(exports.cache_contact, 1000*60*30); //cache every 30 minutes
 
 exports.deref_contact = function(id) {
@@ -896,36 +899,6 @@ exports.update_secondary_index = async function(project) {
         headers: { authorization: "Bearer "+config.warehouse.jwt },
     });
 
-    /*
-    //let validator_ids = _res.data.tasks.map(task=>task.config.validator_task._id);
-    let datatype_ids = [];
-    _res.data.tasks.forEach(task=>{
-        let id = task.config.requests.config._outputs[0].datatype;
-        if(!datatype_ids.includes(id)) datatype_ids.push(id);
-    });
-
-    //lookup datatype names
-    let datatypes = await db.Datatypes.find({_id: {$in: datatype_ids}}, {name:1,desc:1,files:1}).lean();
-    let datatypes_obj = {};
-    datatypes.forEach(rec=>{
-        datatypes_obj[rec._id] = rec;
-    });
-    */
-
-    /*
-    let sectasks = _res.data.tasks.map(task=>{
-        let output = task.config.validator_task.config._outputs[0];
-        return {
-            datatype: datatypes_obj[output.datatype],
-            meta: output.meta,
-            tags: output.tags,
-            datatype_tags: output.datatype_tags,
-
-            path: task.instance_id+"/"+task.config.validator_task.follow_task_id+"/"+output.id+"/secondary",
-        }
-    });
-    */
-
     //merge sectasks into participants.subjects
     let index = {
         //project,
@@ -933,16 +906,6 @@ exports.update_secondary_index = async function(project) {
         objects: [],
         participants,
     };
-
-    /*
-    if(participants) {
-        index.columns = participants.columns;
-        for(let subject in participants.subjects) {
-            if(!index.subjects[subject]) index.subjects[subject] = {}
-            index.subjects[subject].phenotype = participants.subjects[subject];
-        }
-    }
-    */
 
     //merge all output requests into a single list
     _res.data.tasks.forEach(task=>{
@@ -995,8 +958,10 @@ exports.update_secondary_index = async function(project) {
 }
 
 exports.update_project_stats = async function(project, cb) {
-    console.log("updateing project stats project:", project._id)
+    console.log("updating project stats project:", project._id)
     try {
+
+        //console.debug("loading instance counts");
         let counts = await rp.get({
             url: config.amaretti.api+"/instance/count", json: true,
             qs: {
@@ -1006,6 +971,8 @@ exports.update_project_stats = async function(project, cb) {
         });
         let instance_counts = counts[0]; //there should be only 1
 
+        //rule stats --------------------------------------------------------
+        //console.debug("aggregating Rules", project._id);
         let stats = await db.Rules.aggregate()
             .match({removed: false, project: project._id})
             .group({_id: { "active": "$active" }, count: {$sum: 1}});
@@ -1018,6 +985,43 @@ exports.update_project_stats = async function(project, cb) {
             if(rec._id.active) rules.active = rec.count;
             else rules.inactive = rec.count;
         });
+
+        //group analysis--------------------------------------------------------
+        //console.debug("loading groupanslysis sessions");
+        let groupanalysis = {
+            sessions: [],
+        }
+        let gaInstanceRes = await axios(config.amaretti.api+"/instance", {
+            params: {
+                find: JSON.stringify({
+                    group_id: project.group_id,
+                    name: "ga-launchers", //must match from ui' components[groupanslysis.vue]
+                }),
+            },
+            headers: { authorization: "Bearer "+config.warehouse.jwt, },
+        });
+        let gaInstances = gaInstanceRes.data.instances;
+        if(gaInstances.length > 0) {
+            let instance = gaInstances[0]; //there should be only 1
+            //load existing sessions
+            let sessionsRes = await axios(config.amaretti.api+"/task", {
+                params: {
+                    find: JSON.stringify({
+                        status: {$ne: "removed"},
+                        instance_id: instance._id,
+                    }),
+                    select: 'config.container'
+                },
+                headers: { authorization: "Bearer "+config.warehouse.jwt, },
+            });
+            groupanalysis.sessions = sessionsRes.data.tasks.map(t=>{
+                return {
+                    task_id: t._id,
+                    config: t.config,
+                }
+            });
+        }
+        //app stats -------------------------------------------------------------
 
         let recs = await exports.aggregateDatasetsByApps({project:project._id})
         let app_stats = [];
@@ -1080,15 +1084,14 @@ exports.update_project_stats = async function(project, cb) {
             "stats.apps": app_stats, 
             "stats.publications": publications,
             "stats.instances": instance_counts,
+            "stats.groupanalysis": groupanalysis,
         }}, {new: true});
 
         //only publish some stats
         exports.publish("project.update.warehouse."+project._id, {stats: {
-            rules: rules,
+            rules,
             instances: instance_counts,
-            //apps: app_stats, 
-            //publications: publications,
-            //resources: resource_stats,
+            //groupanalysis,
         }})
 
         if(cb) cb(null, newproject);

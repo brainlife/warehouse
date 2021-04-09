@@ -23,10 +23,9 @@
         </p>
         -->
 
-        <div>
+        <div v-if="sessions.length >0">
             <br>
-            <h4 style="padding-left:10px">Sessions</h4>
-            <small v-if="sessions.length == 0">Please launch a new session.</small>
+            <h4 style="padding-left: 20px">Sessions</h4>
             <div v-for="task in sessions" :key="task._id" class="session">
                 <b-row>
                     <b-col cols="4">
@@ -211,10 +210,10 @@ export default {
                     switch(event.dinfo.exchange) {
                     case "wf.task":
                         let task = event.msg;
-                        let existing_task = this.tasks.find(t=>t._id == task._id);
+                        let existing_task = this.sessions.find(t=>t._id == task._id);
                         if(existing_task) {
                             for(let k in task) existing_task[k] = task[k];
-                        } else this.tasks.push(task); //new task
+                        } else this.sessions.push(task); //new task
 
                         if(this.openWhenReady == task._id && task.status == "running" && task.status_msg == "running") {
                             this.openWhenReady = null;
@@ -224,7 +223,7 @@ export default {
                 }
             }
 
-            //load initial list of tasks
+            //load initial list of sessions
             this.$http.get(Vue.config.amaretti_api+'/task', {
                 params: {
                     find: JSON.stringify({
@@ -233,25 +232,27 @@ export default {
                     }),
                 }
             }).then(res=>{
-                this.tasks = res.data.tasks;
+                this.sessions = res.data.tasks;
                 this.ready = true;
             });
         });
     },
 
     computed: {
+        /*
         sessions() {
             return this.tasks.filter(task=>task.status != 'removed');
         }   
+        */
     },
 
     methods: {
 
         find_or_create_instance(cb) {
-            //find or create an instance to host all ga tasks
+            //find or create an instance to host all ga tasks .. must match in api/common/update_project_stats
             let key = {
                 group_id: this.project.group_id,
-                name: "ga-launchers",
+                name: "ga-launchers", 
             }
             this.$http.get(Vue.config.amaretti_api+'/instance', {
                 params: {
@@ -396,7 +397,7 @@ iframe {
 
 .session {
     box-shadow: 1px 1px 2px #0002;
-    padding: 10px;    
+    padding: 20px;    
     background-color: white;
 }
 
