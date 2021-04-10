@@ -445,6 +445,7 @@ small {
 
 pre {
     margin-bottom: 0px;
+    white-space: pre-wrap;
 }
 
 /*default vue-animate.css effect is too slow*/
