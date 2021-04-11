@@ -34,18 +34,18 @@
             <div v-for="(page, page_idx) in pages" v-if="datatypes" :key="page_idx" style="font-size: 12px;">
                 <div v-if="page_info[page_idx] && !page_info[page_idx].visible" :style="{'height': page_info[page_idx].height+'px'}">
                 </div>
-                <b-row class="subjects" v-for="(datasets, group) in page" :key="group" :ref="'sub-'+group" v-else>
+                <b-row class="subjects" v-for="group in Object.keys(page).sort()" :key="group" :ref="'sub-'+group" v-else>
                     <b-col cols="2" class="subject-column truncate">
                         <strong>{{group}}</strong>
 
                         <div class="participants truncate" v-if="participants">
-                            <span v-if="participants" v-for="(v, k) in participants[datasets._subject]" :key="k">
+                            <span v-if="participants" v-for="(v, k) in participants[page[group]._subject]" :key="k">
                                 <small>{{k}}</small> {{v}}
                             </span>
                         </div>
                     </b-col>
                     <b-col cols="10">
-                        <div v-for="dataset in datasets" :key="dataset._id" @click="open(dataset._id)" class="dataset clickable" 
+                        <div v-for="dataset in page[group]" :key="dataset._id" @click="open(dataset._id)" class="dataset clickable" 
                             :class="{selected: dataset.checked, removed: dataset.removed}">
                             <b-row v-if="visible_subjects.includes(group)">
                                 <b-col cols="3" class="truncate">
@@ -284,7 +284,7 @@ export default {
             if(nv == ov) return; //why does this happen?
             this.query = ""; //clear query to avoid confusion
             if(this.loading) {
-                console.log("canceling load");
+                //console.log("canceling load");
                 source.cancel('cancel due to project navigation');
                 this.loading = false;
             }
@@ -493,7 +493,26 @@ export default {
             let query = this.get_mongo_query();
             //add "skip" statements. The actual mongo skip is too slow
             if(this.last_meta) {
-                let or = [];
+                if(!this.last_meta.session) {
+                    //we don't have session, so just start from the last subject
+                    query["meta.subject"] = {$gte: this.last_meta.subject};
+                } else {
+                    //we have both subject/session. this is a bit tricky because we want to skip the
+                    //sessions already loaded for the current subject
+                    query["$or"] = [
+                        //we want following session on the last subject
+                        {
+                            "meta.subject": this.last_meta.subject,
+                            "meta.session": {$gte: this.last_meta.session},
+                        },
+
+                        //and all subjects/session greater than the current one
+                        {
+                            "meta.subject": {$gt: this.last_meta.subject}
+                        }                    
+                    ];
+                }
+                /*
                 if(this.last_meta.subject) or.push({
                     "meta.subject": {$gte: this.last_meta.subject},
                 });
@@ -501,10 +520,10 @@ export default {
                     "meta.subject": this.last_meta.subject,
                     "meta.session": {$gte: this.last_meta.session},
                 });
-                query["$or"] = or;
+                */
             }
 
-            console.dir(query);
+            //console.dir(query);
             this.$http.get('dataset', {
                 params: {
                     find: JSON.stringify(query),
@@ -522,7 +541,10 @@ export default {
                 }
                 let groups = this.last_groups; //start with the last subject group from previous load
                 let last_group = null;
-                //console.log("loaded", res.data.datasets.length);
+
+                //console.log("query", query);
+                //console.log("returned", res.data.datasets.length);
+
                 res.data.datasets.forEach((dataset, idx)=>{
                     dataset.checked = this.selected[dataset._id]; //TODO - what is this?
                     var group = "nosub"; //not all datasets has subject tag(TODO - should be required?)
@@ -539,12 +561,13 @@ export default {
                     //first group. I need to "dedupe" if that happens
                     let duplicate = groups[group].find(d=>d._id == dataset._id);
                     if(!duplicate) {
-                        //debug.. dataset.desc = (loaded+1)+" "+dataset.sec;
+                        //dataset.desc = (loaded+1)+" "+dataset.sec; //debug
                         groups[group].push(dataset);
+                        //console.log(group, dataset.desc);
                         loaded++;
                     }
                 });
-                //console.log("loaded count", loaded);
+                //console.log("total datasets added", loaded);
 
                 this.last_groups = {};
                 if(this.total_datasets != loaded) {
@@ -552,7 +575,10 @@ export default {
                     this.last_groups[last_group] = groups[last_group];
                     delete groups[last_group];
                 }
-                Vue.set(this.pages, this.pages.length, groups);
+
+                //Vue.set(this.pages, this.pages.length, groups);
+                this.pages.push(groups);
+
                 this.$nextTick(this.rememberHeights);
                 this.loading = false;
             }, err=>{

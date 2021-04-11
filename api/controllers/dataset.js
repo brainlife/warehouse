@@ -102,7 +102,7 @@ router.get('/', common.jwt({secret: config.express.pubkey, credentialsRequired: 
 
     common.getprojects(req.user, (err, canread_project_ids, canwrite_project_ids)=>{
         if(err) return next(err);
-        let query = construct_dataset_query(req.query/*, canread_project_ids*/);
+        let query = construct_dataset_query(req.query);
         db.Datasets.find(query)
         .populate(populate)
         .select(req.query.select)
