@@ -494,15 +494,17 @@ export default {
             //add "skip" statements. The actual mongo skip is too slow
             if(this.last_meta) {
                 let or = [];
-                if(this.last_meta.subject) or.push({"meta.subject": {$gt: this.last_meta.subject}});
+                if(this.last_meta.subject) or.push({
+                    "meta.subject": {$gte: this.last_meta.subject},
+                });
                 if(this.last_meta.session) or.push({
                     "meta.subject": this.last_meta.subject,
-                    "meta.session": {$gte: this.last_meta.session}
+                    "meta.session": {$gte: this.last_meta.session},
                 });
-                //query.push({$or: or});
                 query["$or"] = or;
             }
 
+            console.dir(query);
             this.$http.get('dataset', {
                 params: {
                     find: JSON.stringify(query),
@@ -520,6 +522,7 @@ export default {
                 }
                 let groups = this.last_groups; //start with the last subject group from previous load
                 let last_group = null;
+                //console.log("loaded", res.data.datasets.length);
                 res.data.datasets.forEach((dataset, idx)=>{
                     dataset.checked = this.selected[dataset._id]; //TODO - what is this?
                     var group = "nosub"; //not all datasets has subject tag(TODO - should be required?)
@@ -531,16 +534,19 @@ export default {
                     last_group = group;
                     if(!groups[group]) Vue.set(groups, group, []);
                     groups[group]._subject = dataset.meta.subject; //to help with displaying meta data for this subject
+                    //when reload the next page, we start from the last subject/session to load remaining
+                    //items for that subject/session. this means we could end up with duplicate items on the
+                    //first group. I need to "dedupe" if that happens
                     let duplicate = groups[group].find(d=>d._id == dataset._id);
                     if(!duplicate) {
+                        //debug.. dataset.desc = (loaded+1)+" "+dataset.sec;
                         groups[group].push(dataset);
                         loaded++;
                     }
                 });
+                //console.log("loaded count", loaded);
 
                 this.last_groups = {};
-                //loaded += res.data.datasets.length;
-                //console.log("loaded", loaded);
                 if(this.total_datasets != loaded) {
                     //don't add last subject group - in case we might have more datasets for that key in the next page - so that we can join them together
                     this.last_groups[last_group] = groups[last_group];
