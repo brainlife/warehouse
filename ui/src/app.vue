@@ -182,11 +182,13 @@
                                                 <p v-if="output.desc" style="margin-bottom: 0px; font-size: 80%;">{{output.desc}}</p>
                                             </template>
                                         </datatype>
-                                        <small style="position: relative" v-if="output.output_on_root && output.files"> 
-                                            <b>Output Mapping</b>
-                                            <!--<pre v-highlightjs v-if="output.files"><code class="json hljs">{{output.files}}</code></pre>-->
-                                            <editor v-if="output.files" v-bind:value="JSON.stringify(output.files, null, 4)" @init="editorInit" lang="json" theme="chrome"></editor>
-                                        </small>
+                                        <div style="position: relative" v-if="output.output_on_root">
+                                            <small class="text-danger">The output will be generated on the workdir root (deprecated).</small><br>
+                                            <small v-if="output.files">
+                                                <b>Output Mapping</b>
+                                                <editor v-bind:value="JSON.stringify(output.files, null, 4)" @init="editorInit" lang="json" theme="chrome"></editor>
+                                            </small>
+                                        </div>
                                     </div>
                                 </div>
                             </div>

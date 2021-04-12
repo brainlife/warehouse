@@ -164,7 +164,9 @@
 
                     <div class="box" v-if="selected.mag && selected.mag.papers && selected.mag.papers.length > 0">
                         <span class="form-header">Related Articles</span>
-                        <small>We found the following journals/articles related to this project based on name/description through MAG</small>
+                        <p>
+                            <small>We found the following journals/articles related to this project based on name/description through MAG</small>
+                        </p>
                         <div v-for="paper in selected.mag.papers" :key="Id" >
                             <mag  :paper="paper"/>
                         </div>

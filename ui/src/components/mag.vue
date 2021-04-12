@@ -1,27 +1,25 @@
 <template>
 <div>
-        <b-badge pill class="bigpill" title="Publication Date" style="float: right">
-            <icon name="calendar" style="opacity: 0.4" />{{ new Date(paper.publicationDate).toLocaleDateString() }}
-        </b-badge>
-        <doibadge :doi="paper.doi" jump="true" style="float: right"/>
-        <h5 class="paper-title">{{ paper.title }}</h5>
-        <p style="opacity: 0.8; line-height: 180%; max-height: 125px; overflow: auto">
-            {{ paper.abstract }}
-        </p>
-        <p>
-            <b-badge v-for="tag in paper.fields" :key="tag" class="topic">{{tag}}</b-badge>
-        </p>
-        <div style="display: inline-block; margin-top: 0; margin-bottom: 1rem">
-            <div v-for="contact in paper.authors" :key="institution" class="contact">
-                <img src="http://www.gravatar.com/avatar/4b521b9f5d633c24bf827c91781fd8e3?s=20&d=mp"/>
-                <div class="name">{{ contact.name }}</div>
-            </div>
+    <b-badge pill class="bigpill" title="Publication Date" style="float: right">
+        <icon name="calendar" style="opacity: 0.4" />{{ new Date(paper.publicationDate).toLocaleDateString() }}
+    </b-badge>
+    <doibadge :doi="paper.doi" jump="true" style="float: right"/>
+    <h5 class="paper-title">{{ paper.title }}</h5>
+    <span class="mag-venue">
+        {{ paper.venue }} | {{ new Date(paper.publicationDate).getFullYear() }}
+    </span>
+    <p style="opacity: 0.8; line-height: 180%; max-height: 125px; overflow: auto">
+        {{ paper.abstract }}
+    </p>
+    <div style="display: inline-block; margin-top: 0; margin-bottom: 1rem">
+        <div v-for="contact in paper.authors" :key="institution" class="contact">
+            <img src="http://www.gravatar.com/avatar/?s=20&d=mp"/>
+            <div class="name">{{ contact.name }}</div>
         </div>
-        <br>
-        <span class="mag-venue">
-            {{ paper.venue }} | {{ new Date(paper.publicationDate).getFullYear() }}
-        </span>
-    <br>
+    </div>
+    <p>
+        <b-badge v-for="tag in paper.fields" :key="tag" class="topic">{{tag}}</b-badge>
+    </p>
     <hr>
 </div>
 </template>
@@ -29,21 +27,11 @@
 <script>
 import Vue from "vue";
 
-import contact from "@/components/contact";
 import doibadge from "@/components/doibadge";
 
 export default {
-    components: { contact, doibadge },
+    components: { doibadge },
     props: ["paper"],
-    data() {
-        return {
-            config: Vue.config,
-        };
-    },
-
-    methods: {},
-
-    mounted: function () {},
 };
 </script>
 
@@ -72,8 +60,8 @@ transition: color 0.3s;
 }
 
 .mag-venue {
-text-transform: italic;
-opacity: 0.8;
+font-style: italic;
+opacity: 0.6;
 }
 .topic {
 padding: 4px; 
