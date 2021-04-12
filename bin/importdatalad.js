@@ -75,7 +75,6 @@ db.init(async err=>{
             console.log("\nskipped dataset");
             console.dir(skipped);
         }
-        process.exit(0);
     });
 });
 

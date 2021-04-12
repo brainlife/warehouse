@@ -1,5 +1,5 @@
 
-const amqp = require("amqp");
+//const amqp = require("amqp");
 const mongoose = require("mongoose");
 
 const config = require("./config");
@@ -7,18 +7,14 @@ const common = require("./common"); //circular?
 
 mongoose.set("debug", config.mongoose_debug);
 
-let amqp_conn = null;
+//let amqp_conn = null;
+//let dataset_ex; //deprecated by warehouse_ex
 
-//deprecated by warehouse_ex
-let dataset_ex;
-//let rule_ex;
-
+/*
 function init_amqp(cb) {
-    common.get_amqp_connection((err, conn)=>{
+    common.connectAMQP((err, conn)=>{
         if(err) throw err;
-
         amqp_conn = conn;
-
         //deprecated by warehouse_ex
         amqp_conn.exchange("warehouse.dataset", {autoDelete: false, durable: true, type: 'topic', confirm: true}, (ex)=>{
             dataset_ex = ex;
@@ -26,28 +22,21 @@ function init_amqp(cb) {
         cb();
     });
 }
+*/
 
 exports.init = (cb)=>{
-    console.debug("connecting to amqp");
-    init_amqp(err=>{
+    mongoose.connect(config.mongodb, {
+        useNewUrlParser: true,
+        useUnifiedTopology: true,
+        auto_reconnect: true,
+    }, err=>{
         if(err) return cb(err);
-
-        console.debug("connecting to mongo");
-        mongoose.connect(config.mongodb, {
-            useNewUrlParser: true,
-            useUnifiedTopology: true,
-            auto_reconnect: true,
-        }, err=>{
-            if(err) return cb(err);
-            console.log("connected to mongo");
-            cb();
-        });
+        cb();
     });
 }
 
 exports.disconnect = function(cb) {
     mongoose.disconnect(cb);
-    common.disconnect_amqp(); //I don't think this works..
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////

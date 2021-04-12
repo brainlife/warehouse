@@ -4,11 +4,9 @@ const async = require('async');
 const request = require('request');
 const fs = require('fs');
 const tar = require('tar');
-const winston = require('winston');
 const ssh2 = require('ssh2');
 
 const config = require('../api/config');
-const logger = winston.createLogger(config.logger.winston);
 const db = require('../api/models');
 const mongoose = require("mongoose");
 
@@ -26,10 +24,8 @@ db.init(function(err) {
         remove_failed,
     ], err=>{
         if(err) throw err;
-        logger.info("all done.. disconnecting");
-        db.disconnect(()=>{
-            process.exit(0);
-        });
+        console.info("all done.. disconnecting");
+        db.disconnect();
     });
 });
 
@@ -45,7 +41,7 @@ function remove_from_removed_projects(cb) {
     }).exec((err, projects)=>{
         if(err) return cb(err);
         if(!projects) return cb(); // no project removed?
-        logger.debug("removed projects "+projects.length);
+        console.debug("removed projects "+projects.length);
         
         //now query datasets that are not removed on removed projects
         db.Datasets.find({
@@ -58,11 +54,11 @@ function remove_from_removed_projects(cb) {
         .exec((err,datasets)=>{
             if(err) return cb(err);
             if(!datasets) return cb(); //no datasets to clean up
-            logger.debug("orphaned datasets needs removed: %d", datasets.length);
+            console.debug("orphaned datasets needs removed: %d", datasets.length);
             let count = 0;
             async.eachSeries(datasets, (dataset, next_dataset)=>{
                 count++;
-                logger.debug("removing orphaned dataset %d %s", count, dataset._id.toString());
+                console.debug("removing orphaned dataset %d %s", count, dataset._id.toString());
                 dataset.remove_date = new Date();
                 dataset.removed = true;
                 dataset.save(next_dataset);
@@ -79,8 +75,8 @@ function free_storage(cb) {
     for(var id in config.storage_systems) {
         if(config.storage_systems[id].remove) storages.push(id);
     }
-    logger.debug("removable storage:");
-    logger.debug(JSON.stringify(storages, null, 4));
+    console.debug("removable storage:");
+    console.debug(JSON.stringify(storages, null, 4));
 
     let month_ago = new Date();
     month_ago.setMonth(month_ago.getMonth() - 3);
@@ -105,7 +101,7 @@ function free_storage(cb) {
     .limit(limit) 
     .exec((err,datasets)=>{
         if(err) return cb(err);
-        logger.debug("datasets to be freed: %d",datasets.length);
+        console.debug("datasets to be freed: %d",datasets.length);
         let count = 0;
         async.eachSeries(datasets, (dataset, next_dataset)=>{
             count++;
@@ -114,7 +110,7 @@ function free_storage(cb) {
                 if(err) return cb(err);
                 if(copy) return cb(); //has copy.. we can't remove this
 
-                logger.debug("freeing storage for dataset %d %s", count, dataset._id.toString());
+                console.debug("freeing storage for dataset %d %s", count, dataset._id.toString(), dataset.storage);
                 var system = config.storage_systems[dataset.storage];
                 system.remove(dataset, err=>{
                     if(err) return next_dataset(err);
@@ -141,53 +137,16 @@ function remove_failed(cb) {
     .exec((err,datasets)=>{
         if(err) return cb(err);
         if(datasets.length == 0) return cb(); //no record to remove
-        logger.debug("failed to store datasets needs removed "+datasets.length);
+        console.debug("failed to store datasets needs removed "+datasets.length);
         let count = 0;
         async.eachSeries(datasets, (dataset, next_dataset)=>{
             count++;
-            logger.debug("removing failed dataset "+count+" "+dataset._id.toString());
+            console.debug("removing failed dataset "+count+" "+dataset._id.toString());
             dataset.status = "failed"; //in case it's "storing*.. event_handler only re-archive if dataset is failed & removed
             dataset.removed = true;
             dataset.save(next_dataset);
         }, cb);
     });
 }
-
-/* we should not remove dataset - data might be needed through published dataset
-function move_removed(cb) {
-    let month_ago = new Date();
-    month_ago.setDate(month_ago.getDate()-90);
-    
-    //find datasets that failed to archive
-    db.Datasets.find({
-        removed: true,
-        $or: [
-            {remove_date: {$lt: month_ago } }, //only remove if it's old enough
-            {remove_date: {$exists: false} }, //or remove_date is not set (super old?)
-        ]
-    })
-    .limit(limit) 
-    .exec((err,datasets)=>{
-        if(err) return cb(err);
-        if(datasets.length == 0) return cb();
-        logger.debug("removing old removed recoreds to datasets_removed:"+datasets.length);
-        let ids = datasets.map(dataset=>dataset._id);
-        mongoose.connection.db.collection('datasets_removed').remove({_id: {$in: ids}}, (err, res)=>{
-            mongoose.connection.db.collection('datasets_removed').insertMany(datasets,(err,success)=>{
-                if(err) return cb(err);
-                logger.debug("permanently puring records");
-                //console.dir(datasets[0]);
-                console.dir(ids);
-                db.Datasets.remove({_id: {$in: ids}})
-                .exec((err, res)=>{
-                    if(err) return cb(err);
-                    logger.debug("removed");
-                    cb();
-                });
-            });
-        });
-    });
-}
-*/
 
 

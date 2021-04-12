@@ -16,12 +16,8 @@ function run() {
     })
     .exec((err,projects)=>{
         async.eachSeries(projects, common.updateProjectMag, err=>{
-            if (err) {
-                console.error(err);
-                process.exit(1);
-            }
+            if (err) throw err;
             console.log("all projects processed successfully");
-            process.exit(0);
         });
     });
 }

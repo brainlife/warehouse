@@ -1182,16 +1182,13 @@ function get_project_agreements(project_id, cb) {
 
 let cache = {};
 //listen to user profile update event
-common.get_amqp_connection((err, conn)=>{
-    if(err) {
-        console.error("failed to obtain amqp connection");
-    }
-    console.log("amqp connection ready.. subscribing to auth user.update events");
+common.connectAMQP((err, conn)=>{
+    if(err) return console.error("failed to obtain amqp connection");
+    console.log("subscribing to auth user.update events");
     conn.queue('', q=>{
         q.bind("auth", "user.update.*", ()=>{ //no err..
             q.subscribe((message, header, deliveryInfo, messageObject)=>{
                 let sub = deliveryInfo.routingKey.split(".")[2];
-                //console.debug("user.update event", sub);
                 cache[sub] = message.profile.private.agreements;
             });
         });

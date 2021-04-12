@@ -20,7 +20,7 @@ let rule_ex;
 db.init(function(err) {
     if(err) throw err;
 
-    common.get_amqp_connection((err, conn)=>{
+    common.connectAMQP((err, conn)=>{
         acon = conn;
         logger.info("connected to amqp.. now setting up warehouse.rule exchange");
         acon.exchange("warehouse.rule", {autoDelete: false, durable: true, type: 'topic', confirm: true}, (ex)=>{

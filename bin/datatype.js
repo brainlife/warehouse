@@ -20,7 +20,6 @@ function run() {
             if(err) console.error(err);
             console.log("all done");
             db.disconnect();
-            process.exit(0);
         });
 	});
 }

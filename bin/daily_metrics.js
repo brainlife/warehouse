@@ -90,8 +90,6 @@ db.init(async function(err) {
     await count_project(today); 
     await count_public_project(today); 
     await count_private_project(today); 
-    db.disconnect(err=>{
-        process.exit(0);
-    });
+    db.disconnect();
 });
 

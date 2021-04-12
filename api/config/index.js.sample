@@ -411,6 +411,7 @@ exports.storage_systems.osiris = {
         connect_osiris((err, conn, sftp)=>{
             if(err) return cb(err);
             let _path = get_osiris_archive_path(dataset);
+            console.log("rm -f "+_path);
             conn.exec("rm -f "+_path, (err, stream)=>{
                 if(err) {
                     conn.end();
@@ -802,10 +803,19 @@ exports.storage_systems["datalad"] = {
 //config used to backup data from warehouse 
 exports.sda = {
     ssh: {
-        username: "hayashis",
         host: "sftp.sdarchive.iu.edu",
-        privateKey: fs.readFileSync('/home/hayashis/.ssh/id_rsa').toString(),
+        username: "brlife",
+        
+        //privateKey: fs.readFileSync('/home/hayashis/.ssh/id_rsa').toString(),
+        //passphrase: "..."
+
+        //privateKey: fs.readFileSync(__dirname+'/brlife.id_rsa'),
+
+        agent: process.env["SSH_AUTH_SOCK"] ,
+        
         //debug: console.log,
+        //readyTime: 1000*30,
+        //tryKeyboard: true, 
     },
     basedir: "test",
 }

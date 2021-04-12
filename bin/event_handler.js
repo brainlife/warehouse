@@ -15,22 +15,17 @@ const db = require('../api/models');
 const common = require('../api/common');
 
 // TODO  Look for failed tasks and report to the user/dev?
-var acon, rcon;
+
+let acon, rcon;
 
 console.log("connected to mongo");
 db.init(err=>{
-    common.get_amqp_connection((err, conn)=>{
+    common.connectAMQP((err, conn)=>{
         acon = conn;
-        console.log("connected to amqp");
         subscribe();
     });
 
-    rcon = redis.createClient(config.redis.port, config.redis.server);
-    rcon.on('error', console.error);
-    rcon.on('ready', ()=>{
-        console.log("connected to redis");
-    });
-
+    rcon = common.connectRedis();
     setInterval(emit_counts, 1000*config.metrics.counts.interval); 
 });
 

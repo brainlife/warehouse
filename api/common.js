@@ -19,11 +19,15 @@ const config = require('./config');
 const db = require('./models');
 const mongoose = require('mongoose');
 
-
-//connect to redis - used to store letious shared caches
-//TODO - user needs to call redis.quit();
-exports.redis = redis.createClient(config.redis.port, config.redis.server);
-exports.redis.on('error', err=>{throw err});
+//TODO - user needs to call redis.quit() to quit?
+//exports.redis = redis.createClient(config.redis.port, config.redis.server);
+//exports.redis.on('error', err=>{throw err});
+exports.connectRedis = function() {
+    const con = redis.createClient(config.redis.port, config.redis.server);
+    con.on('error', console.error);
+    con.on('ready', ()=>{ console.log("connected to redis") });
+    return con;
+}
 
 //TODO - should be called something like "get_project_accessiblity"?
 exports.getprojects = function(user, cb) {
@@ -414,7 +418,6 @@ exports.load_github_detail = function(service_name, cb) {
     }).catch(cb)
 }
 
-
 exports.generateQuery = function(str) {
     let result=stopwords.cleanText(str).split(' ').filter(e => String(e).trim());
     if(result.length == 0) return null;
@@ -488,13 +491,15 @@ exports.updateProjectMag = function(project, cb) {
 }
 
 exports.compose_app_datacite_metadata = function(app) {
+    if(!~exports.cachedContacts) throw "Please call startContactCache first";
+    //
     //publication year
     let year = app.create_date.getFullYear();
     let publication_year = "<publicationYear>"+year+"</publicationYear>";
 
     let creators = [];
     app.admins.forEach(sub=>{
-        let contact = cached_contacts[sub];
+        let contact = cachedContacts[sub];
         if(!contact) {
             console.debug("missing contact", sub);
             return;
@@ -547,6 +552,7 @@ exports.compose_app_datacite_metadata = function(app) {
 
 //https://schema.datacite.org/meta/kernel-4.1/doc/DataCite-MetadataKernel_v4.1.pdf
 exports.compose_pub_datacite_metadata = function(pub) {
+    if(!~exports.cachedContacts) throw "Please call startContactCache first";
 
     //publication year
     let year = pub.create_date.getFullYear();
@@ -558,7 +564,7 @@ exports.compose_pub_datacite_metadata = function(pub) {
 
     let creators = [];
     pub.authors.forEach(sub=>{
-        let contact = cached_contacts[sub];
+        let contact = cachedContacts[sub];
         if(!contact) {
             console.debug("missing contact", sub);
             return;
@@ -569,7 +575,7 @@ exports.compose_pub_datacite_metadata = function(pub) {
 
     let contributors = [];
     pub.contributors.forEach(sub=>{
-        let contact = cached_contacts[sub];
+        let contact = cachedContacts[sub];
         if(!contact) {
             console.debug("missing contact", sub);
             return;
@@ -668,38 +674,41 @@ exports.doi_put_url = function(doi, url, cb) {
     });
 }
 
-//TODO - update cache from amqp events
-let cached_contacts = {};
-exports.cache_contact = function(cb) {
-    console.debug("cachign contacts");
-    axios.get(config.auth.api+"/profile/list", {
-        params: {
-            limit: 5000, //TODO -- really!?
-        },
-        headers: { authorization: "Bearer "+config.warehouse.jwt }, //config.auth.jwt is deprecated
-    }).then(res=>{
-        if(res.status != 200) console.error("couldn't cache auth profiles. code:"+res.status);
-        else {
-            res.data.profiles.forEach(profile=>{
-                cached_contacts[profile.sub] = profile;
-            });
-            //console.log("cached profile len:", res.data.profiles.length);
-            if(cb) cb();
-        }
-    }).catch(err=>{
-        if(cb) cb(err);
-        else console.error(err);
-    });
+//call this if you want to use API that uses contact cache
+//TODO - update cache from amqp events instead?
+let cachedContacts = null;
+exports.startContactCache = function(cb) {
+    function cacheContact(_cb) {
+        console.debug("caching contacts");
+        axios.get(config.auth.api+"/profile/list", {
+            params: {
+                limit: 5000, //TODO -- really!?
+            },
+            headers: { authorization: "Bearer "+config.warehouse.jwt }, //config.auth.jwt is deprecated
+        }).then(res=>{
+            if(res.status != 200) console.error("couldn't cache auth profiles. code:"+res.status);
+            else {
+                cachedContacts = {};
+                res.data.profiles.forEach(profile=>{
+                    cachedContacts[profile.sub] = profile;
+                });
+                //console.log("cached profile len:", res.data.profiles.length);
+                if(_cb) _cb();
+            }
+        }).catch(err=>{
+            if(_cb) _cb(err);
+            else console.error(err);
+        });
+    }
+
+    console.log("starting contactCache");
+    setInterval(cacheContact, 1000*60*30); //cache every 30 minutes
+    cacheContact(cb);
 }
 
-exports.cache_contact();
-
-//TODO - this make any script that uses common to not terminate!
-//start this loop in demand
-setInterval(exports.cache_contact, 1000*60*30); //cache every 30 minutes
-
 exports.deref_contact = function(id) {
-    return cached_contacts[id];
+    if(!~cachedContacts) throw "Please call startContactCache first";
+    return cachedContacts[id];
 }
 
 //for split_product
@@ -767,51 +776,37 @@ exports.sensu_name = function(name) {
     return name;
 }
 
-let amqp_conn;
-let connect_amqp = new Promise((resolve, reject)=>{
-    console.log("creating connection to amqp server");
-    amqp_conn = amqp.createConnection(config.event.amqp, {reconnectBackoffTime: 1000*10});
-    amqp_conn.once("ready", ()=>{
-        resolve(amqp_conn);
-    });
-    amqp_conn.on("error", err=>{
-        console.error(err);
-        reject();
-    });
-});
-
+let amqpConn = null;
 let warehouse_ex;
-exports.get_amqp_connection = function(cb) {
-    connect_amqp.then(conn=>{
+exports.connectAMQP = function(cb) {
+    let conn = amqp.createConnection(config.event.amqp, {reconnectBackoffTime: 1000*10});
+    conn.once("ready", err=>{
+        if(err) return cb(err);
+        console.log("connected to amqp server");
         conn.exchange("warehouse", {autoDelete: false, durable: true, type: 'topic', confirm: true}, ex=>{
             warehouse_ex = ex;
+            amqpConn = conn;
             cb(null, conn);
         })
-    }).catch(cb);
+    });
+    conn.on("error", cb);
 }
 
-exports.disconnect_amqp = function(cb) {
-    if(amqp_conn) {
-        console.debug("disconnecting from amqp");
-        amqp_conn.setImplOptions({reconnect: false}); //https://github.com/postwait/node-amqp/issues/462
-        amqp_conn.disconnect();
-    }
+exports.disconnectAMQP = function(cb) {
+    if(!amqpConn) return console.error("AMQP not connected");
+    console.debug("disconnecting from amqp");
+    amqpConn.setImplOptions({reconnect: false}); //https://github.com/postwait/node-amqp/issues/462
+    amqpconn.disconnect();
 }
 
 //connect to the amqp exchange and wait for a event to occur
 exports.wait_for_event = function(exchange, key, cb) {
-    exports.get_amqp_connection((err, conn)=>{
-        if(err) {
-            console.error("failed to obtain amqp connection");
-            return cb(err);
-        }
-        console.debug("amqp connection ready.. creating exchanges");
-        conn.queue('', q=>{
-            q.bind(exchange, key, ()=>{
-                q.subscribe((message, header, deliveryInfo, messageObject)=>{
-                    q.destroy();
-                    cb(null, message);
-                });
+    if(!amqpConn) return console.error("wait_for_event called before connecting to amqp");
+    amqpConn.queue('', q=>{
+        q.bind(exchange, key, ()=>{
+            q.subscribe((message, header, deliveryInfo, messageObject)=>{
+                q.destroy();
+                cb(null, message);
             });
         });
     });

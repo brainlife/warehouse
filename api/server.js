@@ -9,6 +9,7 @@ const nocache = require('nocache');
 //const common = require('./common');
 const config = require('./config');
 const db = require('./models');
+const common = require('./common');
 
 //init express
 const app = express();
@@ -47,6 +48,8 @@ process.on('uncaughtException', function (err) {
 
 exports.app = app;
 exports.start = function(cb) {
+    common.startContactCache();
+
     var port = process.env.PORT || config.express.port || '8081';
     var host = process.env.HOST || config.express.host || 'localhost';
     db.init((err)=>{

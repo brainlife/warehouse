@@ -18,16 +18,8 @@ db.init(function(err) {
         run(sftp, err=>{
             if(err) throw err;
             console.debug("all done.. disconnecting");
-
             conn.end();
             db.disconnect();
-
-            //amqp disconnect() is broken
-            //https://github.com/postwait/node-amqp/issues/462
-            setTimeout(()=>{
-                console.log("killing myself - until node-amqp bug is fixed");
-                process.exit(0);
-            }, 1000);
         });
     });
 });
@@ -37,8 +29,10 @@ function connect_sda(cb) {
     let Client = require('ssh2');
     let conn = new Client();
     conn.on('ready', ()=>{
-        console.log('ssh ready');
+        console.log('ssh ready - opening sftp');
         conn.sftp((err, sftp)=>{
+            if(err) return cb(err);
+            console.log('sftp ready');
             cb(err, conn, sftp);
         });
     });
