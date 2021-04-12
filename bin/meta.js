@@ -33,7 +33,7 @@ db.init(err=>{
     [
         next=>{
             logger.info("caching contact");
-            common.cache_contact(next);
+            common.startContactCache(next);
         },
         next=>{
             logger.info("processing apps");
