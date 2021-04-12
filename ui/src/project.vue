@@ -166,18 +166,7 @@
                         <span class="form-header">Related Articles</span>
                         <small>We found the following journals/articles related to this project based on name/description through MAG</small>
                         <div v-for="paper in selected.mag.papers" :key="Id" >
-                            <doibadge :doi="paper.doi" v-if="paper.doi" jump="true" style="float: right"/>
-
-                            {{paper.title}}
-
-                            <span class="mag-venue">
-                                <!--<icon name="calendar" style="opacity: 0.4;"/>&nbsp;&nbsp;-->
-                                {{ paper.venue }} | {{new Date(paper.publicationDate).getFullYear()}}
-                            </span>
-    <br>
-
-                           {{paper}}
-                           <hr>
+                            <mag  :paper="paper"/>
                         </div>
                     </div>
 
@@ -336,6 +325,10 @@ import resource from '@/components/resource'
 import datatypetag from '@/components/datatypetag'
 import participants from '@/components/participants'
 import doibadge from '@/components/doibadge'
+import mag from '@/components/mag'
+
+
+
 
 import { Plotly } from 'vue-plotly'
 
@@ -363,6 +356,7 @@ export default {
         agreements, 
         datatypetag, 
         participants,
+        mag,
         doibadge,
 
         'groupAnalysis': ()=> import('@/components/groupanalysis'),
@@ -854,17 +848,5 @@ padding: 5px 10px;
     .main {
         margin-right: 20px;
     }
-}
-OL LI::marker {
-    font-size: 2em;
-}
-/*
-.paper-title {
-    text-transform: capitalize;
-}
-*/
-.mag-venue {
-    text-transform: italic;
-    opacity: 0.8;
 }
 </style>
