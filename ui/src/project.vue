@@ -58,7 +58,7 @@
         </div>
         <div v-if="tabs[tab].id == 'detail'">
             <div class="page-content">
-            <!--detail-->
+                <!--detail-->
                 <div class="project-header">
                     <projectavatar :project="selected" :height="140" :width="140" style="float: right; margin: -20px 100px 0 30px;"/>
                     <p style="line-height: 2.5em; margin-bottom: 0px; position: relative; top: -8px">
@@ -84,10 +84,9 @@
                             <small>Group ID</small>
                         </b-badge>
                     </p>
-                    <p style="opacity: 0.8;  padding-bottom: 10px; height: 85px; overflow-y: auto;">
+                    <p style="opacity: 0.8; margin-bottom: 0">
                         {{selected.desc||'no description.'}}
                     </p>
-                    <br clear="left">
                 </div><!--project header-->
 
                 <b-alert :show="selected.removed" style="border-radius: 0px" variant="secondary">This project has been removed.</b-alert>
@@ -160,16 +159,6 @@
                                 <br>
                             </b-col>
                         </b-row>
-                    </div>
-
-                    <div class="box" v-if="selected.mag && selected.mag.papers && selected.mag.papers.length > 0">
-                        <span class="form-header">Related Articles</span>
-                        <p>
-                            <small>We found the following journals/articles related to this project based on name/description through MAG</small>
-                        </p>
-                        <div v-for="paper in selected.mag.papers" :key="Id" >
-                            <mag  :paper="paper"/>
-                        </div>
                     </div>
 
                     <!--
@@ -248,6 +237,17 @@
                                     <i>{{resource_citation.citation}}</i>
                                 </p>
                             </div>
+                        </div>
+                    </div>
+
+                    <div class="box" v-if="selected.mag && selected.mag.papers && selected.mag.papers.length > 0">
+                        <span class="form-header">Related Articles</span>
+                        <p>
+                            <small>We found the following journals/articles related to this project based on name/description through MAG</small>
+                        </p>
+                        <div v-for="paper in selected.mag.papers" :key="Id" >
+                            <hr>
+                            <mag  :paper="paper"/>
                         </div>
                     </div>
 
@@ -754,10 +754,8 @@ top: 95px;
 padding: 20px; 
 box-shadow: 0 0 2px #ccc;
 background-color: white;
-position: sticky;
 top: 0px;
 z-index: 7;
-height: 140px;
 overflow: hidden;
 }
 .tabs {
@@ -836,7 +834,7 @@ padding: 5px 10px;
     width: 280px; 
     padding: 20px; 
     position: sticky; 
-    top: 140px;
+    top: 0px;
 }
 .main {
     margin: 20px; 

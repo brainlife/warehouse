@@ -426,10 +426,9 @@ exports.generateQuery = function(str) {
 }
 
 exports.updateProjectMag = function(project, cb) {
-    console.log("....................... %s %s", project.name, project._id.toString());
+    console.log("--- %s %s", project.name, project._id.toString());
 
     if (!config.mag) cb("no mag config!!");
-
     if(!project.mag) project.mag = {}; //not sure if we need this or not
     project.markModified("mag");
 
@@ -440,7 +439,7 @@ exports.updateProjectMag = function(project, cb) {
         project.save(cb);
         return;
     }
-
+    console.debug(query);
     axios.get("https://api.labs.cognitive.microsoft.com/academic/v1.0/evaluate", { 
         headers: {
             'Ocp-Apim-Subscription-Key': config.mag.subscriptionKey,
@@ -455,10 +454,12 @@ exports.updateProjectMag = function(project, cb) {
         } 
     }).then(res=>{
         if (res.status != 200) return cb("failed to call mag api");
-
+        
+        console.debug("got ", res.data.entities.length, "papers");
         project.mag.papers = res.data.entities
-        .filter(a => a.logprob > -15)
+        .filter(a => a.logprob > config.mag.lowestProb)
         .map(paper=>{
+            console.debug("probability:", paper.logprob, paper.Ti, paper.DOI);
             const ret = {
                 publicationDate: new Date(paper.D),
                 citationCount: paper.CC,

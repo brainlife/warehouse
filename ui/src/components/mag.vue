@@ -1,14 +1,16 @@
 <template>
 <div>
     <b-badge pill class="bigpill" title="Publication Date" style="float: right">
-        <icon name="calendar" style="opacity: 0.4" />{{ new Date(paper.publicationDate).toLocaleDateString() }}
+        <icon name="calendar" style="opacity: 0.4" />
+        &nbsp;
+        {{ new Date(paper.publicationDate).toLocaleDateString() }}
     </b-badge>
-    <doibadge :doi="paper.doi" jump="true" style="float: right"/>
+    <doibadge :doi="paper.doi" jump="true" style="float: right; margin-right: 10px;"/>
     <h5 class="paper-title">{{ paper.title }}</h5>
     <span class="mag-venue">
         {{ paper.venue }} | {{ new Date(paper.publicationDate).getFullYear() }}
     </span>
-    <p style="opacity: 0.8; line-height: 180%; max-height: 125px; overflow: auto">
+    <p style="opacity: 0.8; line-height: 180%;">
         {{ paper.abstract }}
     </p>
     <div style="display: inline-block; margin-top: 0; margin-bottom: 1rem">
@@ -20,7 +22,6 @@
     <p>
         <b-badge v-for="tag in paper.fields" :key="tag" class="topic">{{tag}}</b-badge>
     </p>
-    <hr>
 </div>
 </template>
 
@@ -55,7 +56,6 @@ margin-bottom: 2px;
 text-transform: capitalize;
 color: #333;
 padding: 0px;
-padding-top: 10px;
 transition: color 0.3s;
 }
 
