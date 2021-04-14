@@ -419,10 +419,10 @@ exports.load_github_detail = function(service_name, cb) {
 }
 
 exports.generateQuery = function(str) {
-    let result=stopwords.cleanText(str).split(' ').filter(e => String(e).trim());
+    let result=stopwords.cleanText(str.replaceAll(/[^a-zA-Z ]/g,"")).split(' ').filter(e => String(e).trim());
     if(result.length == 0) return null;
     result = result.map((word) => `W='${word}'`).join(',');
-    return "OR("+result+")"
+    return "And(OR("+result+"),Composite(F.FN=='neuroscience'))"
 }
 
 exports.updateProjectMag = function(project, cb) {
@@ -487,6 +487,70 @@ exports.updateProjectMag = function(project, cb) {
         console.log(res.toString());
         //mag api returns 500 if paper doesn't exist.. so we can not tell the difference between
         //api issue v.s. empty papwers.. so we return null object to cb()
+        cb();
+    });
+}
+
+exports.updatePublicationMag = function(publication,cb){
+    console.log("--- %s %s", publication.name, publication._id.toString());
+    if (!config.mag) cb("no mag config!!");
+    if(!publication.mag) publication.mag = {}; //not sure if we need this or not
+    publication.markModified("mag");
+
+    const query = exports.generateQuery(publication.name+" "+publication.desc+" "+publication.readme);
+
+    if(!query){
+        publication.mag.papers = [];
+        publication.save(cb);
+        return;
+    }
+    console.debug(query);
+    axios.get("https://api.labs.cognitive.microsoft.com/academic/v1.0/evaluate", { 
+        headers: {
+            'Ocp-Apim-Subscription-Key': config.mag.subscriptionKey,
+            'User-Agent': 'brainlife',
+        },
+        params: { 
+            expr: query,
+            count: 10, 
+            offset: 0, 
+            model: 'latest', 
+            attributes: 'Id,AA.AfId,AA.AfN,AA.AuId,AA.AuN,AA.DAuN,CC,CN,D,Ti,F.FId,F.FN,Y,VFN,DOI,IA',
+        } 
+    }).then(res=>{
+        if (res.status != 200) return cb("failed to call mag api");
+        
+        console.debug("got ", res.data.entities.length, "papers");
+        publication.mag.papers = res.data.entities
+        .filter(a => a.logprob > config.mag.lowestProb)
+        .map(paper=>{
+            console.debug("probability:", paper.logprob, paper.Ti, paper.DOI);
+            const ret = {
+                publicationDate: new Date(paper.D),
+                citationCount: paper.CC,
+                title: paper.Ti, 
+                doi: paper.DOI,
+                venue: paper.VFN, 
+                authors: paper.AA.map(author=>({institution: author.AfN, name: author.DAuN })),
+            }
+
+            if(paper.F) ret.fields = paper.F.map(name=>name.FN);
+            if(paper.IA) {
+                let abstract = [];
+                for (const word in paper.IA.InvertedIndex) {
+                    paper.IA.InvertedIndex[word].forEach(idx=>{
+                        abstract[idx] = word;
+                    });
+                }
+                ret.abstract = abstract.join(' ');
+            }
+            return ret;
+        });
+        publication.save();
+        cb();
+
+    }).catch(res=>{
+        console.log(res.toString());
         cb();
     });
 }
