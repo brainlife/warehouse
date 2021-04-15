@@ -157,16 +157,17 @@
                     </b-col>
                 </b-row>
 
-                 <div class="box" v-if="pub.mag && pub.mag.papers && pub.mag.papers.length > 0">
-                        <span class="form-header">Related Articles</span>
-                        <p>
-                            <small>We found the following journals/articles related to this project based on name/description through MAG</small>
-                        </p>
-                        <div v-for="paper in pub.mag.papers" :key="Id" >
-                            <hr>
+                 <b-row>
+                     <b-col cols="2">
+                         <span class="form-header">Related Articles</span>
+                     </b-col>    
+                     <b-col>
+                         <div v-for="paper in pub.mag.papers" :key="Id" >
                             <mag :paper="paper"/>
+                            <hr>
                         </div>
-                    </div>
+                     </b-col>   
+                 </b-row>    
             
                 <hr>
                 <vue-disqus shortname="brain-life" :identifier="pub._id"/>
