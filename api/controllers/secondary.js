@@ -176,7 +176,6 @@ router.post('/launchga', common.jwt(), (req, res, next)=>{
     let task_config = {};
     if(req.body.config) Object.assign(task_config, req.body.config);
 
-    let project = null;
     let instance = null;
     let jwt = null;
     let task = null;
@@ -201,7 +200,7 @@ router.post('/launchga', common.jwt(), (req, res, next)=>{
         next=>{
             axios.get(config.auth.api+"/jwt/"+req.user.sub, {
                 params: {
-                    claim: JSON.stringify({gids: [config.groupanalysis.gid]}),
+                    claim: JSON.stringify({gids: [instance.group_id, config.groupanalysis.gid]}),
                 },
                 headers: { authorization: "Bearer "+ config.warehouse.jwt }
             }).then(_res=>{
@@ -210,13 +209,17 @@ router.post('/launchga', common.jwt(), (req, res, next)=>{
             }).catch(next);
         },
 
-        //load project
+        //lookup project ID from group_id (ga-launcher uses it to set PROJECT_ID)
         next=>{
             db.Projects.findOne({group_id: instance.group_id}, (err, _project)=>{
                 if(err) return next(err);
                 if(!_project) return next("can't find project with group_id:"+instance.group_id);
-                project = _project;
-                task_config.project = _project;
+
+                //ga-launcher just need id..
+                task_config.project = {
+                    _id: _project._id, 
+                    name: _project.name, //just in case ..
+                };
                 next();
             });
         },

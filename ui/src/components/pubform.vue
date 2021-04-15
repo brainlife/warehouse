@@ -49,7 +49,7 @@
     </b-form-group>
     <b-form-group label="Releases" horizontal>
         <p>
-            <small opacity="0.7">Release is where you can list datasets that you'd like to publish.</small>
+            <small opacity="0.7">This is where you list data objects you'd like to publish, and group analysis notebooks (if any).</small>
         </p>
         <b-card v-for="(release, idx) in pub.releases" v-if="!release.removed" :key="release._id||idx" style="margin-bottom: 5px;">
             <b-row>
@@ -68,14 +68,29 @@
                 </b-col>
             </b-row>
             <br>
-            <p v-for="(set, idx) in release.sets">
-                <datatypetag :datatype="set.datatype" :tags="set.datatype_tags"/> 
-                <span v-if="set.subjects && set.subjects.length == 0">{{set.count}} datasets ({{set.size|filesize}})</span>
-                <span v-if="set.add" @click="remove_set(release, idx)" style="opacity: 0.5;">
-                    <icon name="trash" scale="0.9"/>
-                </span>
-            </p>
-            <b-button v-if="!release._id" type="button" variant="outline-success" @click="add_datasets(release)" size="sm"><icon name="plus"/> Add Datasets</b-button>
+
+            <div style="padding-bottom: 10px">
+                <p v-for="(set, idx) in release.sets" style="margin-bottom: 5px">
+                    <datatypetag :datatype="set.datatype" :tags="set.datatype_tags"/> 
+                    <span v-if="set.subjects && set.subjects.length == 0">{{set.count}} objects ({{set.size|filesize}})</span>
+                    <span v-if="set.add" @click="remove_set(release, idx)" style="opacity: 0.5;">
+                        <icon name="trash" scale="0.9"/>
+                    </span>
+                </p>
+                <b-button v-if="!release._id" type="button" variant="outline-success" @click="add_datasets(release)" size="sm"><icon name="plus"/> Add Data Objects</b-button>
+            </div>
+
+            <div style="padding-bottom: 10px">
+                <p v-for="gaarchive in release.gaarchives" style="margin-bottom: 5px;">
+                    <span @click="removeGAArchive(release, gaarchive)" style="opacity: 0.5; float: right;">
+                        <icon name="trash" scale="0.9"/>
+                    </span>
+                    <b>Session:</b> {{gaarchive.name}}</b><br>
+                    Notebook: {{gaarchive.notebook}}
+                    <br>
+                </p>
+                <b-button v-if="!release._id && release.gaarchives.length == 0" type="button" variant="outline-success" @click="add_ga(release)" size="sm"><icon name="plus"/> Add Group Analysis Result</b-button>
+            </div>
         </b-card>
         <b-button type="button" @click="new_release" size="sm"><icon name="plus"/> Add New Release</b-button>
     </b-form-group>
@@ -85,6 +100,11 @@
     <br>
     <br>
     <br>
+
+    <div v-if="config.debug">
+        <pre>{{pub}}</pre>
+    </div>
+
     <div class="page-footer">
         <b-button type="button" @click="cancel">Cancel</b-button>
         <b-button type="submit" variant="primary">Submit</b-button>
@@ -93,6 +113,7 @@
 </template>
 
 <script>
+import Vue from 'vue'
 
 import select2 from '@/components/select2'
 import license from '@/components/license'
@@ -121,6 +142,8 @@ export default {
                 {value: 'odc.by', text: 'ODC BY 1.0'},
             ],
             oldtags: null,
+
+            config: Vue.config,
         }
     },
 
@@ -186,6 +209,11 @@ export default {
             this.$emit("cancel");
         },
 
+        removeGAArchive(release, ga) {
+            const idx = release.gaarchives.indexOf(ga);
+            release.gaarchives.splice(idx, 1);
+        },
+
         submit(evt) {
             evt.preventDefault();
             
@@ -209,6 +237,8 @@ export default {
                 name: (this.pub.releases.length+1).toString(),
                 removed: false,
                 sets: [],
+
+                gaarchives: [],
             })
         },
 
@@ -223,6 +253,13 @@ export default {
                 release.sets = release.sets.concat(sets); //TODO - dedupe this
                 this.$forceUpdate(); //to show new sets..
             });
+        },
+
+        add_ga(release) {
+            this.$root.$emit("gaarchiver.open", {project: this.project, release, cb: (err, ga)=>{
+                console.log("created new ga", ga);
+                release.gaarchives.push(ga);
+            }});
         },
 
         remove_set(release, idx) {

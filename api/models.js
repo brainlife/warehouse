@@ -248,11 +248,27 @@ var participantsSchema = mongoose.Schema({
 exports.Participants = mongoose.model("Participants", participantsSchema);
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
+var gaArchiveSchema = mongoose.Schema({
+});
+exports.GAArchive = mongoose.model("GAArchive", gaArchiveSchema);
 
 var releaseSchema = mongoose.Schema({
     name: String, //"1", "2", etc..
     create_date: { type: Date, default: Date.now }, //release date
     removed: { type: Boolean, default: false },  //release should not removed.. but just in case
+
+    //TODO - store some info about released objects
+    stats: {
+        counts: Number, //number of objects
+        size: Number, //total size of the data
+    },
+
+    //group analysis releases
+    gaarchives: [ {
+        task_id: String, //amaretti task id for nbconvert
+        name: String, //name of the session archived
+        notebook: String, //file path for the notebook displayed
+    } ],
 });
 mongoose.model("Releases", releaseSchema);
 
@@ -287,6 +303,7 @@ var publicationSchema = mongoose.Schema({
     removed: { type: Boolean, default: false }, //only admin can remove publication for now (so that doi won't break)
 });
 exports.Publications = mongoose.model("Publications", publicationSchema);
+
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 //

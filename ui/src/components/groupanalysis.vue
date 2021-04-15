@@ -14,15 +14,6 @@
     </div>
 
     <div v-if="!selected && ready" class="page-content">
-        <!-- instructions -->
-        <!--
-        <p>
-            <b-alert :show="true" variant="secondary">
-                Once you complete your subject level processing, you can run group analysis on jupyter notebook hosted on brainlife.io.
-            </b-alert>
-        </p>
-        -->
-
         <div v-if="sessions.length >0">
             <br>
             <h4 style="padding-left: 20px">Sessions</h4>
@@ -55,18 +46,6 @@
         <div class="new">
             <h4>Launch New Session</h4>
             <b-form-select v-model="selectedNewApp" @change="selectNewApp" :options="apps" placeholder="Please select a class to launch"/>
-            <!--
-            <div style="display: inline-block; width: 200px; margin-right: 10px; margin-bottom: 10px;" v-for="(app, idx) in apps" :key="idx">
-                <div class="card ga-card">
-                    <div class="card-body">
-                        <b-card-text style="min-height: 60px; font-size: 90%">{{app.desc}}</b-card-text>
-                        <p>
-                            <b-button variant="success" size="sm" @click="launch(app)"><icon name="play"/> Launch</b-button>
-                        </p>
-                    </div>
-                </div>
-            </div>
-            -->
             <div v-if="newApp">
                 <p>
                     <small>{{newApp.container}}:{{newApp.tag}}</small>
@@ -90,14 +69,18 @@ import Vue from 'vue'
 import axios from 'axios'
 
 import agreementMixin from '@/mixins/agreement'
+import gainstance from '@/mixins/gainstance'
 import ReconnectingWebSocket from 'reconnectingwebsocket'
 
 export default {
-    mixins: [agreementMixin],
+    mixins: [
+        agreementMixin,
+        gainstance,
+    ],
     components: {
-        'contact': ()=> import('@/components/contact'),
-        'statustag': ()=> import('@/components/statustag'),
-        'statusicon': ()=> import('@/components/statusicon'),
+        contact: ()=> import('@/components/contact'),
+        statustag: ()=> import('@/components/statustag'),
+        statusicon: ()=> import('@/components/statusicon'),
     },
 
     props: {
@@ -189,9 +172,10 @@ export default {
             this.host = "https://dev1.soichi.us";
         }
 
-        this.find_or_create_instance((err, instance)=>{
+        this.createOrFindGAInstance(this.project, (err, instance)=>{
             if(err) return console.error(err); //TODO notify?
             this.instance = instance;
+            console.log("using instance", instance);
 
             //subscribe to task update
             var url = Vue.config.event_ws+"/subscribe?jwt="+Vue.config.jwt;
@@ -229,6 +213,7 @@ export default {
                     find: JSON.stringify({
                         status: {$ne: "removed"},
                         instance_id: this.instance._id,
+                        "config.container": {$exists: true}, //we only want to pull ga container
                     }),
                 }
             }).then(res=>{
@@ -247,25 +232,6 @@ export default {
     },
 
     methods: {
-
-        find_or_create_instance(cb) {
-            //find or create an instance to host all ga tasks .. must match in api/common/update_project_stats
-            let key = {
-                group_id: this.project.group_id,
-                name: "ga-launchers", 
-            }
-            this.$http.get(Vue.config.amaretti_api+'/instance', {
-                params: {
-                    find: JSON.stringify(key),
-                },
-            }).then(res=>{
-                if(res.data.instances.length == 1) return cb(null, res.data.instances[0]);
-                //create new instance
-                this.$http.post(Vue.config.amaretti_api+'/instance', key).then(res=>{
-                    cb(null, res.data);
-                }).catch(cb);
-            }).catch(cb);
-        },
 
         selectNewApp(app) {
             this.newApp = Object.assign({}, this.newApp, {
@@ -293,7 +259,10 @@ export default {
                     let task = res.data;
                     this.$notify("Creating Analysis..");
                     this.openWhenReady = task._id;
-                }).catch(console.error);
+                }).catch(err=>{
+                    console.error(err);
+                    this.$notify({type: 'error', text: err.response.data.message});
+                });
             });
         },
 

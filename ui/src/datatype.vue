@@ -51,7 +51,7 @@
                         <p>{{datatype.desc}}</p>
                     </b-container>
                 </div><!--sub header-->
-                <b-alert show variant="secondary" v-if="datatype.groupAnalysis"><b-container>The data can be used for group analysis</b-container></b-alert>
+                <b-alert show variant="secondary" v-if="datatype.groupAnalysis"><b-container>The data will be copied to secondary archive and can be accessed for group analysis</b-container></b-alert>
                 <b-container>
                     <br>
                     <div class="box">

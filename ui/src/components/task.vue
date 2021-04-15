@@ -133,7 +133,7 @@
 
             <div v-if="task.resource_ids.length > 0">
                 <div @click="toggle('rawoutput')" class="toggler">
-                    <icon name="chevron-right" class="caret" :class="{'caret-open': activeSections.rawoutput}"/> Raw Output
+                    <icon name="chevron-right" class="caret" :class="{'caret-open': activeSections.rawoutput}"/> Files / Logs
                 </div>
                 <transition name="fadeHeight">
                     <div v-if="activeSections.rawoutput" style="background-color: #fafafa;">

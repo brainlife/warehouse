@@ -332,10 +332,11 @@ function handle_release(release, project, cb) {
             if(nin.length > 0) find.tags["$nin"] = nin;
         }
 
+        /*
         console.dir(find);
-
         console.log("handling release");
         console.log(JSON.stringify(find, null, 4));
+        */
 
         db.Datasets.update(find, {$addToSet: {publications: release._id}}, {multi: true}, next_set);
     }, cb);

@@ -17,6 +17,7 @@
         <appsubmit/>
         <participants/>
         <galauncher/>
+        <gaarchiver/>
 
         <dataladimporter/>
         <ezbidsimporter/>
@@ -41,6 +42,7 @@ import appsubmit from '@/modals/appsubmit'
 import copytarget from '@/modals/copytarget'
 import participants from '@/modals/participants'
 import galauncher from '@/modals/galauncher'
+import gaarchiver from '@/modals/gaarchiver'
 
 import dataladimporter from '@/modals/dataladimporter'
 import ezbidsimporter from '@/modals/ezbidsimporter'
@@ -60,6 +62,7 @@ export default {
         copytarget, 
         participants,
         galauncher,
+        gaarchiver,
         dataladimporter, 
         ezbidsimporter, 
     },

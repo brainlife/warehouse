@@ -240,7 +240,7 @@
                         </div>
                     </div>
                 </b-tab>
-                <b-tab title="Metadata">
+                <b-tab title="Metadata/Sidecar">
                     <div class="dataset-meta">
                         <div>
                             <span class="form-header metadata">Metadata / sidecar <small v-if="dataset._canedit">(editable)</small></span>

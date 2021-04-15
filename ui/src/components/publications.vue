@@ -35,11 +35,28 @@
                 <p style="line-height: 180%; margin-bottom: 5px;" v-if="pub.tags.length > 0">
                     <small><tags :tags="pub.tags"/></small>
                 </p>
+
+                <br>
+                <p>
+                    <b>Releases</b>
+                </p>
+                <b-alert show="pub.releases.length == 0" variant="danger">No Releases</b-alert>
+                <div v-for="release in pub.releases" :key="release._id">
+                    <b-badge pill class="bigpill" title="Release Date" style="float: right;">
+                        <icon name="calendar" style="opacity: 0.4;"/>&nbsp;&nbsp;
+                        {{new Date(release.create_date).toLocaleDateString()}}
+                    </b-badge>
+                    {{release.name}}
+
+                    <p>
+                        {{release.gaarchives}}
+                    </p>
+                </div>
+
                 <!--<span style="float: right; opacity: 0.7;"><b>{{new Date(pub.publish_date||pub.create_date).toLocaleDateString()}}</b></span>-->
             </div>
             <!--space to make sure add button won't overwrap the pub list-->
             <p style="padding-top: 100px;">&nbsp;</p>
-
             <b-button v-if="isadmin() || ismember()" @click="newpub" class="button-fixed">
                 New Publication
             </b-button>
@@ -186,10 +203,8 @@ export default {
         },
 
         edit(pub) {
-            //if(this.ismember() || this.isadmin()) {
             this.$router.replace("/project/"+this.project._id+"/pub/"+pub._id);
             this.editing = pub;
-            //} 
         },
 
         cancel() {
