@@ -162,7 +162,7 @@
                          <span class="form-header">Related Articles</span>
                      </b-col>    
                      <b-col>
-                         <div v-for="paper in pub.mag.papers" :key="Id" >
+                         <div v-for="paper in pub.relatedPapers" :key="Id" >
                             <mag :paper="paper"/>
                             <hr>
                         </div>
