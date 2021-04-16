@@ -425,35 +425,36 @@ exports.generateQuery = function(str) {
     return "And(OR("+result+"),Composite(F.FN=='neuroscience'))"
 }
 
+exports.getRelatedPaper = function(query) {
+    let params = {
+        expr: query,
+        count: 10, 
+        offset: 0, 
+        model: 'latest', 
+        attributes: 'Id,AA.AfId,AA.AfN,AA.AuId,AA.AuN,AA.DAuN,CC,CN,D,Ti,F.FId,F.FN,Y,VFN,DOI,IA',
+    }
+    const headers = {
+        'Ocp-Apim-Subscription-Key': config.mag.subscriptionKey,
+        'User-Agent': 'brainlife',
+    }
+
+    return axios.get("https://api.labs.cognitive.microsoft.com/academic/v1.0/evaluate",{headers,params});
+}
+
 exports.updateProjectMag = function(project, cb) {
     console.log("--- %s %s", project.name, project._id.toString());
 
-    if (!config.mag) cb("no mag config!!");
+    if(!config.mag) cb("no mag config!!");
     if(!project.mag) project.mag = {}; //not sure if we need this or not
     project.markModified("mag");
-
     const query = exports.generateQuery(project.name + " " + project.desc);
-
-    if (!query) {
+    if(!query) {
         project.mag.papers = [];
         project.save(cb);
         return;
     }
-    console.debug(query);
-    axios.get("https://api.labs.cognitive.microsoft.com/academic/v1.0/evaluate", { 
-        headers: {
-            'Ocp-Apim-Subscription-Key': config.mag.subscriptionKey,
-            'User-Agent': 'brainlife',
-        },
-        params: { 
-            expr: query,
-            count: 10, 
-            offset: 0, 
-            model: 'latest', 
-            attributes: 'Id,AA.AfId,AA.AfN,AA.AuId,AA.AuN,AA.DAuN,CC,CN,D,Ti,F.FId,F.FN,Y,VFN,DOI,IA',
-        } 
-    }).then(res=>{
-        if (res.status != 200) return cb("failed to call mag api");        
+    exports.getRelatedPaper(query).then(res=>{
+        if(res.status != 200) return cb("failed to call mag api");        
         project.mag.papers = res.data.entities
         .filter(a => a.logprob > config.mag.lowestProb)
         .map(paper=>{
@@ -488,35 +489,22 @@ exports.updateProjectMag = function(project, cb) {
     });
 }
 
-exports.updatePublicationMag = function(publication,cb){
+exports.updatePublicationMag = function(publication,cb) {
     console.log("--- %s %s", publication.name, publication._id.toString());
-    if (!config.mag) cb("no mag config!!");
+    if(!config.mag) cb("no mag config!!");
     if(!publication.mag) publication.mag = {}; //not sure if we need this or not
     publication.markModified("mag");
 
     const query = exports.generateQuery(publication.name+" "+publication.desc+" "+publication.readme);
 
-    if(!query){
-        publication.mag.papers = [];
+    if(!query) {
+        publication.relatedPapers = [];
         publication.save(cb);
         return;
     }
-    console.debug(query);
-    axios.get("https://api.labs.cognitive.microsoft.com/academic/v1.0/evaluate", { 
-        headers: {
-            'Ocp-Apim-Subscription-Key': config.mag.subscriptionKey,
-            'User-Agent': 'brainlife',
-        },
-        params: { 
-            expr: query,
-            count: 10, 
-            offset: 0, 
-            model: 'latest', 
-            attributes: 'Id,AA.AfId,AA.AfN,AA.AuId,AA.AuN,AA.DAuN,CC,CN,D,Ti,F.FId,F.FN,Y,VFN,DOI,IA',
-        } 
-    }).then(res=>{
-        if (res.status != 200) return cb("failed to call mag api");
-        publication.mag.papers = res.data.entities
+    exports.getRelatedPaper(query).then(res=>{
+        if(res.status != 200) return cb("failed to call mag api");
+        publication.relatedPapers = res.data.entities
         .filter(a => a.logprob > config.mag.lowestProb)
         .map(paper=>{
             const ret = {
