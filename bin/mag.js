@@ -16,20 +16,18 @@ function run() {
             db.Projects.find({
                 removed: false,
             }).exec((err, projects) => {
-                async.eachSeries(projects, common.updateProjectMag, err => {
-                    if (err) throw err;
-                    next();
-                });
+                if(err) return next(err);
+                async.eachSeries(projects, common.updateProjectMag, next);
             });
         }, next => {
             db.Publications.find({
                 removed: false,
             }).exec((err, publications) => {
-                async.eachSeries(publications, common.updatePublicationMag, err => {
-                    if (err) throw err;
-                    next();
-                });
+                async.eachSeries(publications, common.updatePublicationMag, next);
             });
         }
-    ], err => { console.log("all done"); })
+    ], err => {
+        if(err) throw err;
+        console.log("all done");
+    })
 }
