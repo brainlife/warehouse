@@ -285,8 +285,7 @@ var publicationSchema = mongoose.Schema({
     create_date: { type: Date, default: Date.now },
 
     removed: { type: Boolean, default: false }, //only admin can remove publication for now (so that doi won't break)
-    mag: {
-        papers: [{  
+    relatedPapers: [{  
                 publicationDate : Date, 
                 citationCount : Number, 
                 doi: String,
@@ -295,8 +294,8 @@ var publicationSchema = mongoose.Schema({
                 authors : Array,
                 fields: Array,
                 abstract : String,     
-            }]
-        },
+            }],
+        
 });
 exports.Publications = mongoose.model("Publications", publicationSchema);
 
