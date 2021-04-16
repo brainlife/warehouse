@@ -11,29 +11,25 @@ db.init(function(err) {
 });
 
 function run() {
-    // db.Projects.find({
-    //     removed: false,
-    // })
-    // .exec((err,projects)=>{
-    //     async.eachSeries(projects, common.updateProjectMag, err=>{
-    //         if (err) throw err;
-    //         console.log("all projects processed successfully");
-    //     });
-    // });
-
-    updatePublication();
-
+    async.series([
+        next => {
+            db.Projects.find({
+                removed: false,
+            }).exec((err, projects) => {
+                async.eachSeries(projects, common.updateProjectMag, err => {
+                    if (err) throw err;
+                    next();
+                });
+            });
+        }, next => {
+            db.Publications.find({
+                removed: false,
+            }).exec((err, publications) => {
+                async.eachSeries(publications, common.updatePublicationMag, err => {
+                    if (err) throw err;
+                    next();
+                });
+            });
+        }
+    ], err => { console.log("all done"); })
 }
-
-function updatePublication() {
-    db.Publications.find({
-        removed: false,
-    })
-    .exec((err,publications)=>{
-        async.eachSeries(publications, common.updatePublicationMag, err=>{
-            if (err) throw err;
-            console.log("all publications processed successfully");
-        });
-    });
-}
-

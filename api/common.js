@@ -453,13 +453,10 @@ exports.updateProjectMag = function(project, cb) {
             attributes: 'Id,AA.AfId,AA.AfN,AA.AuId,AA.AuN,AA.DAuN,CC,CN,D,Ti,F.FId,F.FN,Y,VFN,DOI,IA',
         } 
     }).then(res=>{
-        if (res.status != 200) return cb("failed to call mag api");
-        
-        console.debug("got ", res.data.entities.length, "papers");
+        if (res.status != 200) return cb("failed to call mag api");        
         project.mag.papers = res.data.entities
         .filter(a => a.logprob > config.mag.lowestProb)
         .map(paper=>{
-            console.debug("probability:", paper.logprob, paper.Ti, paper.DOI);
             const ret = {
                 publicationDate: new Date(paper.D),
                 citationCount: paper.CC,
@@ -519,12 +516,9 @@ exports.updatePublicationMag = function(publication,cb){
         } 
     }).then(res=>{
         if (res.status != 200) return cb("failed to call mag api");
-        
-        console.debug("got ", res.data.entities.length, "papers");
         publication.mag.papers = res.data.entities
         .filter(a => a.logprob > config.mag.lowestProb)
         .map(paper=>{
-            console.debug("probability:", paper.logprob, paper.Ti, paper.DOI);
             const ret = {
                 publicationDate: new Date(paper.D),
                 citationCount: paper.CC,
