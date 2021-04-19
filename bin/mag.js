@@ -11,16 +11,23 @@ db.init(function(err) {
 });
 
 function run() {
-    db.Projects.find({
-        removed: false,
+    async.series([
+        next => {
+            db.Projects.find({
+                removed: false,
+            }).exec((err, projects) => {
+                if(err) return next(err);
+                async.eachSeries(projects, common.updateProjectMag, next);
+            });
+        }, next => {
+            db.Publications.find({
+                removed: false,
+            }).exec((err, publications) => {
+                async.eachSeries(publications, common.updatePublicationMag, next);
+            });
+        }
+    ], err => {
+        if(err) throw err;
+        console.log("all done");
     })
-    .exec((err,projects)=>{
-        async.eachSeries(projects, common.updateProjectMag, err=>{
-            if (err) throw err;
-            console.log("all projects processed successfully");
-        });
-    });
 }
-
-
-
