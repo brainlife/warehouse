@@ -195,6 +195,8 @@ router.get('/inventory', common.jwt({secret: config.express.pubkey, credentialsR
         if(err) return next(err);
         canread_project_ids = canread_project_ids.map(id=>id.toString());
         if(!canread_project_ids.includes(find.project.toString())) return next("no read access to specified project:"+find.project);
+        
+        //similar code in controller/pub.js handle_release
         db.Datasets.aggregate()
         .match(find)
         .group({_id: {
@@ -832,8 +834,8 @@ function generate_prov(origin_dataset_id, cb) {
 
 /**
  * @apiGroup Dataset
- * @api {post} /dataset                 Create new dataset from wf service task
- * @apiDescription                      Make a request to create a new dataset from wf service taskdir
+ * @api {post} /dataset                 Create new dataset from amaretti task
+ * @apiDescription                      Make a request to create a new dataset from amaretti taskdir
  *
  * @apiParam {String} project           Project ID used to store this dataset under
  * @apiParam {String} task_id           WF service Task ID (of output task)

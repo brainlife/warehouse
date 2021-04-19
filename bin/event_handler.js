@@ -533,8 +533,8 @@ function handle_task(task, cb) {
                         deps_config: [ {task: task._id, subdirs} ],
                         config: {
                             requests, 
-                            //validator_task: task, //deprecated by requests
-                            //app_task_id: task.follow_task_id, //the main app task (used to query secondary archive task)
+                            
+                            _public: task.config._public,
                         },
                         remove_date,
 

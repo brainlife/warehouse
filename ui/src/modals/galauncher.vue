@@ -72,7 +72,7 @@ export default {
                 {
                     name: "Brainlife dipy Jupyter Notebook", 
                     img: "https://kanoki.org/wp-content/uploads/2017/07/Screen-Shot-2017-07-15-at-04.59.36.png",
-                    desc: "Jupyter Datascience Notebook (lab-2.1.1) with Dipy and Fury",
+                    desc: "Jupyter Datascience Notebook (lab-2.1.1) with Dipy/Fury and git",
                     container: "brainlife/ga-dipy",
                     tag: "1.0",
                 },
@@ -83,6 +83,7 @@ export default {
                     container: "brainlife/ga-octave",
                     tag: "1.0",
                 },
+                /*
                 {
                     name: "Jupyter Datascience Lab", 
                     img: "https://kanoki.org/wp-content/uploads/2017/07/Screen-Shot-2017-07-15-at-04.59.36.png",
@@ -104,6 +105,7 @@ export default {
                     container: "jupyter/tensorflow-notebook", 
                     tag: "latest",
                 },
+                */
             ],
 
             config: Vue.config,

@@ -49,18 +49,22 @@
     </b-form-group>
     <b-form-group label="Releases" horizontal>
         <p>
-            <small opacity="0.7">This is where you list data objects you'd like to publish, and group analysis notebooks (if any).</small>
+            <small opacity="0.7">This is where you list data objects you'd like to publish, and group analysis notebooks.</small>
         </p>
         <b-card v-for="(release, idx) in pub.releases" v-if="!release.removed" :key="release._id||idx" style="margin-bottom: 5px;">
             <b-row>
                 <b-col>
                     <b-input-group prepend="Release Name">
-                        <b-form-input :disabled="!!release._id" type="text" required v-model="release.name" placeholder=""/>
+                        <b-form-input type="text" required v-model="release.name" placeholder=""/>
                     </b-input-group>
+                    <br>
+
+                    <b>Description</b>
+                    <b-form-textarea v-model="release.desc" :rows="3" placeholder="A short description for this release"/>
                 </b-col>
                 <b-col>
                     <b-input-group prepend="Release Date">
-                        <b-form-input :disabled="!!release._id" type="date" required v-model="release._create_date" placeholder=""/>
+                        <b-form-input type="date" required v-model="release._create_date" placeholder=""/>
                     </b-input-group>
                 </b-col>
                 <b-col sm="1">
@@ -69,28 +73,29 @@
             </b-row>
             <br>
 
-            <div style="padding-bottom: 10px">
-                <p v-for="(set, idx) in release.sets" style="margin-bottom: 5px">
-                    <datatypetag :datatype="set.datatype" :tags="set.datatype_tags"/> 
-                    <span v-if="set.subjects && set.subjects.length == 0">{{set.count}} objects ({{set.size|filesize}})</span>
-                    <span v-if="set.add" @click="remove_set(release, idx)" style="opacity: 0.5;">
-                        <icon name="trash" scale="0.9"/>
-                    </span>
-                </p>
-                <b-button v-if="!release._id" type="button" variant="outline-success" @click="add_datasets(release)" size="sm"><icon name="plus"/> Add Data Objects</b-button>
-            </div>
-
-            <div style="padding-bottom: 10px">
-                <p v-for="gaarchive in release.gaarchives" style="margin-bottom: 5px;">
-                    <span @click="removeGAArchive(release, gaarchive)" style="opacity: 0.5; float: right;">
-                        <icon name="trash" scale="0.9"/>
-                    </span>
-                    <b>Session:</b> {{gaarchive.name}}</b><br>
-                    Notebook: {{gaarchive.notebook}}
-                    <br>
-                </p>
-                <b-button v-if="!release._id && release.gaarchives.length == 0" type="button" variant="outline-success" @click="add_ga(release)" size="sm"><icon name="plus"/> Add Group Analysis Result</b-button>
-            </div>
+            <b-row>
+                <b-col>
+                    <div v-for="(set, idx) in release.sets" :key="idx" style="margin-bottom: 5px">
+                        <span v-if="set.add" @click="remove_set(release, idx)" style="opacity: 0.5;">
+                            <icon name="trash" scale="0.9"/>
+                        </span>
+                        <releaseset :set="set"/>
+                    </div>
+                    <b-button type="button" variant="outline-success" @click="add_datasets(release)" size="sm"><icon name="plus"/> Add Data Objects</b-button>
+                </b-col>
+                <b-col>
+                    <div v-for="(gaarchive, idx) in release.gaarchives" :key="idx">
+                        <span @click="removeGAArchive(release, gaarchive)" style="opacity: 0.5; float: right;">
+                            <icon name="trash" scale="0.9"/>
+                        </span>
+                        <gaarchive :gaarchive="gaarchive"/>
+                    </div>
+                    <b-button type="button" variant="outline-success" @click="add_ga(release)" size="sm"><icon name="plus"/> Add Group Analysis Result</b-button>
+                </b-col>
+                <b-col sm="1">
+                    <!--placeholder to match the releasename/date field-->
+                </b-col>
+            </b-row>
         </b-card>
         <b-button type="button" @click="new_release" size="sm"><icon name="plus"/> Add New Release</b-button>
     </b-form-group>
@@ -101,9 +106,11 @@
     <br>
     <br>
 
-    <div v-if="config.debug">
+    <!--
+    <div v-if="config.debug" style="background-color: gray;">
         <pre>{{pub}}</pre>
     </div>
+    -->
 
     <div class="page-footer">
         <b-button type="button" @click="cancel">Cancel</b-button>
@@ -118,13 +125,18 @@ import Vue from 'vue'
 import select2 from '@/components/select2'
 import license from '@/components/license'
 import contactlist from '@/components/contactlist'
-import datatypetag from '@/components/datatypetag'
+import gaarchive from '@/components/gaarchive'
+import releaseset from '@/components/releaseset'
 
 const async = require("async");
 
 export default {
     components: { 
-        select2, license, contactlist, datatypetag,
+        select2, 
+        license, 
+        contactlist, 
+        gaarchive,
+        releaseset,
     },
 
     props: {
@@ -154,52 +166,6 @@ export default {
         if(!this.pub.releases) this.$set(this.pub, 'releases', []);
         this.pub.releases.forEach(release=>{
             release._create_date = (new Date(release.create_date)).toISOString().split('T')[0];
-            if(!release.sets) release.sets = [];
-
-            //load list of datasets published (grouped by subject/datatype/tags)
-            let sets = {};
-            this.$http.get('dataset/inventory', { params: {
-                find: JSON.stringify({ 
-                    //removed: false,
-                    project: this.project._id,
-                    publications: release._id,
-                }),
-            }})
-            .then(res=>{
-                //regroup to datatype/tags (we don't need to split by subject)
-                let datatype_ids = [];
-                res.data.forEach(rec=>{
-                    let subject = rec._id.subject;
-                    let datatype = rec._id.datatype;
-                    if(!datatype_ids.includes(datatype)) datatype_ids.push(datatype);
-                    let datatype_tags = rec._id.datatype_tags;
-
-                    let key = datatype + "."+JSON.stringify(rec._id.datatype_tags);
-                    if(!sets[key]) sets[key] = {datatype, datatype_tags, size: rec.size, count: rec.count}; 
-                    else {
-                        sets[key].size += rec.size;
-                        sets[key].count += rec.count;
-                    }
-                });
-
-                //load datatype details
-                return this.$http.get('datatype', {params: {
-                    find: JSON.stringify({_id: {$in: datatype_ids}}),
-                }});
-            }) 
-            .then(res=>{
-                let datatypes = {};
-                res.data.datatypes.forEach((d)=>{
-                    datatypes[d._id] = d;
-                });
-
-                //lookup datatype and "populate" datatypes
-                for(var key in sets) {
-                    sets[key].datatype = datatypes[sets[key].datatype];
-                } 
-                release.sets = Object.values(sets);
-                this.$forceUpdate();
-            }).catch(console.error);
         });
     },
 
@@ -236,8 +202,8 @@ export default {
                 _create_date: (new Date()).toISOString().split('T')[0],
                 name: (this.pub.releases.length+1).toString(),
                 removed: false,
-                sets: [],
 
+                sets: [],
                 gaarchives: [],
             })
         },

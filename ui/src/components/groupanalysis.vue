@@ -19,17 +19,19 @@
             <h4 style="padding-left: 20px">Sessions</h4>
             <div v-for="task in sessions" :key="task._id" class="session">
                 <b-row>
-                    <b-col cols="4">
-                        <small>{{task.name}}</small>
+                    <b-col cols="3">
+                        <small>{{task.name}}</small><br>
                         {{task.desc}}
                         <!--{{task.desc}}<br> -->
                     </b-col>
-                    <b-col cols="3">
-                        <statusicon :status="task.status"/> <small>{{task._id}}</small><br>
-                        <pre>{{task.status_msg}}</pre>
+                    <b-col cols="4">
+                        <statusicon :status="task.status"/> {{task.status_msg}}<br>
+                        <small>{{task._id}}</small><br>
                     </b-col>
                     <b-col cols="2">
-                        Created on <b>{{new Date(task.create_date).toLocaleDateString()}}</b>
+                        <b-badge pill class="bigpill">
+                            <icon name="calendar" style="opacity: 0.4;"/>&nbsp;&nbsp;&nbsp;<small>Created</small>&nbsp;&nbsp;<time>{{new Date(task.create_date).toLocaleDateString()}}</time>
+                        </b-badge>
                     </b-col>
                     <b-col cols="3">
                         <b-button variant="primary" size="sm" @click="open(task)" :disabled="task._id == openWhenReady">
@@ -175,13 +177,11 @@ export default {
         this.createOrFindGAInstance(this.project, (err, instance)=>{
             if(err) return console.error(err); //TODO notify?
             this.instance = instance;
-            console.log("using instance", instance);
 
             //subscribe to task update
             var url = Vue.config.event_ws+"/subscribe?jwt="+Vue.config.jwt;
             this.ws = new ReconnectingWebSocket(url, null);
             this.ws.onopen = (e)=>{
-                console.log("subscribing to group analysis instance");
                 //wf.task will be deprecated by ex:amaretti
                 this.ws.send(JSON.stringify({
                     bind: {
@@ -201,6 +201,7 @@ export default {
 
                         if(this.openWhenReady == task._id && task.status == "running" && task.status_msg == "running") {
                             this.openWhenReady = null;
+                            this.$root.$emit("loading", {show: false});
                             this.jump(task); 
                         }
                     }
@@ -259,6 +260,7 @@ export default {
                     let task = res.data;
                     this.$notify("Creating Analysis..");
                     this.openWhenReady = task._id;
+                    this.$root.$emit("loading", {show: true});
                 }).catch(err=>{
                     console.error(err);
                     this.$notify({type: 'error', text: err.response.data.message});
@@ -270,6 +272,9 @@ export default {
             if(confirm("Do you really want to remove this session?")) {
                 this.$http.delete(Vue.config.amaretti_api+"/task/"+task._id).then(res=>{
                     if(res.status == 200) {
+                        this.sessions.splice(this.sessions.find(s=>s._id == task._id), 1);
+                        this.$forceUpdate();
+
                         this.$notify("Removal request submitted");
                     }
                 });
@@ -280,6 +285,7 @@ export default {
             switch(task.status) {
             case "requested":
                 this.openWhenReady = task._id;
+                this.$root.$emit("loading", {show: true});
                 break;
             case "stop_requested":
             case "stopped":
@@ -289,6 +295,7 @@ export default {
                     if(res.status == 200) {
                         this.$notify("Rerun request submitted");
                         this.openWhenReady = task._id;
+                        this.$root.$emit("loading", {show: true});
                     }
                 });
                 break;

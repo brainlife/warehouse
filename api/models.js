@@ -248,24 +248,96 @@ var participantsSchema = mongoose.Schema({
 exports.Participants = mongoose.model("Participants", participantsSchema);
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-var gaArchiveSchema = mongoose.Schema({
+//
+// defines data type entry points (allowing user to upload)
+//
+
+var datatypeSchema = mongoose.Schema({
+    name: String, //"neuro/anat/t1w"
+    desc: String, 
+    readme: String,  //in markdown
+
+    admins: [ String ], //list of users who can administer this datatype
+    
+    //file inventory for this datatype
+    files: [ new mongoose.Schema({ //mongoose.Schema allows for *missing*
+        id: String,
+
+        //either filename or dirname should be set
+        filename: String,
+        dirname: String, 
+
+        desc: String,
+        ext: String, //ui accept filter (for datatypes with validator)
+        required: Boolean
+    })],
+
+    //list of *official* datatypes
+    datatype_tags: [
+        {
+            datatype_tag: String,
+            desc: String,
+        }
+    ],
+
+    //list of *unofficial* datatypes
+    _datatype_tags: [ String ],
+
+    //name of ABCD service that is used to validate this data (if not set, user can't import this datatype via UI)
+    validator: String, 
+    validator_branch: String,  
+
+    //spec used to export this datatype to bids
+    bids: new mongoose.Schema({
+        //should I move derivatives to maps - so that 1 dataset can output files for more than 1 modality?
+        derivatives: String, //dwi/func/anat (meaningless if maps is empty)
+        maps: [ {
+            src: String, //file pattern "dwi_aligned*.nii.gz"
+            dest: String, //bids file suffix.ext (dwi.nii.gz)
+            json: String, //bids sidecar filename (dwi.json) (optional)
+        }],
+    }),
+
+    //registered UIs for this datatype
+    uis: [{type: mongoose.Schema.Types.ObjectId, ref: 'UIs'}], 
+
+    //published dataset that can be used as a sample dataset
+    samples: [{type: mongoose.Schema.Types.ObjectId, ref: 'Datasets'}],
+
+    //data will be used for group analysis
+    groupAnalysis: { type: Boolean, default: false}, 
+
+    create_date: { type: Date, default: Date.now },
 });
-exports.GAArchive = mongoose.model("GAArchive", gaArchiveSchema);
+exports.Datatypes = mongoose.model('Datatypes', datatypeSchema);
 
 var releaseSchema = mongoose.Schema({
     name: String, //"1", "2", etc..
+    desc: String, 
     create_date: { type: Date, default: Date.now }, //release date
     removed: { type: Boolean, default: false },  //release should not removed.. but just in case
 
-    //TODO - store some info about released objects
-    stats: {
+    sets: [
+        /*
         counts: Number, //number of objects
         size: Number, //total size of the data
-    },
+        */
+        {
+            datatype: datatypeSchema,
+            datatype_tags: [String],
+            tags: [String],
+            subjects: [String],
+
+            //set by querying dataset-inventory when the set is updated
+            size: Number,
+            count: Number,
+        }
+    ],
 
     //group analysis releases
     gaarchives: [ {
-        task_id: String, //amaretti task id for nbconvert
+        sectask_id: String, //amaretti task id for nbconvert secondary output containing html page for notebook specified in notebook
+        dataset_id: String, //dataset ID for published(archived) notebook
         name: String, //name of the session archived
         notebook: String, //file path for the notebook displayed
     } ],
@@ -453,70 +525,6 @@ var UISchema = mongoose.Schema({
     docker: { type: Boolean, default: false}, //UI runs on docker container
 });
 exports.UIs = mongoose.model('UIs', UISchema);
-
-///////////////////////////////////////////////////////////////////////////////////////////////////
-//
-// defines data type entry points (allowing user to upload)
-//
-
-var datatypeSchema = mongoose.Schema({
-    name: String, //"neuro/anat/t1w"
-    desc: String, 
-    readme: String,  //in markdown
-
-    admins: [ String ], //list of users who can administer this datatype
-    
-    //file inventory for this datatype
-    files: [ new mongoose.Schema({ //mongoose.Schema allows for *missing*
-        id: String,
-
-        //either filename or dirname should be set
-        filename: String,
-        dirname: String, 
-
-        desc: String,
-        ext: String, //ui accept filter (for datatypes with validator)
-        required: Boolean
-    })],
-
-    //list of *official* datatypes
-    datatype_tags: [
-        {
-            datatype_tag: String,
-            desc: String,
-        }
-    ],
-
-    //list of *unofficial* datatypes
-    _datatype_tags: [ String ],
-
-    //name of ABCD service that is used to validate this data (if not set, user can't import this datatype via UI)
-    validator: String, 
-    validator_branch: String,  
-
-    //spec used to export this datatype to bids
-    bids: new mongoose.Schema({
-        //should I move derivatives to maps - so that 1 dataset can output files for more than 1 modality?
-        derivatives: String, //dwi/func/anat (meaningless if maps is empty)
-        maps: [ {
-            src: String, //file pattern "dwi_aligned*.nii.gz"
-            dest: String, //bids file suffix.ext (dwi.nii.gz)
-            json: String, //bids sidecar filename (dwi.json) (optional)
-        }],
-    }),
-
-    //registered UIs for this datatype
-    uis: [{type: mongoose.Schema.Types.ObjectId, ref: 'UIs'}], 
-
-    //published dataset that can be used as a sample dataset
-    samples: [{type: mongoose.Schema.Types.ObjectId, ref: 'Datasets'}],
-
-    //data will be used for group analysis
-    groupAnalysis: { type: Boolean, default: false}, 
-
-    create_date: { type: Date, default: Date.now },
-});
-exports.Datatypes = mongoose.model('Datatypes', datatypeSchema);
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 

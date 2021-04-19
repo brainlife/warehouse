@@ -208,20 +208,23 @@ router.post('/', common.jwt(), (req, res, next)=>{
                     //then attach url to it (to "mint" it!)
                     let url = config.warehouse.url+"/pub/"+pub._id;  //TODO make it configurable?
                     common.doi_put_url(pub.doi, url, err=>{
-                        if(err) logger.error(err);
+                        if(err) console.error(err);
                     });
                 });
                 
+                /*
                 //I have to use req.body.releases which has "sets", but not release._id
                 //so let's set release._id on req.body.releases and use that list to 
                 //handle new publications
                 req.body.releases.forEach((release, idx)=>{
                     release._id = pub.releases[idx]._id;
                 });
-                async.eachSeries(req.body.releases, (release, next_release)=>{
-                    handle_release(release, pub.project, next_release);
+                */
+                async.eachSeries(pub.releases, (release, next_release)=>{
+                    updateRelease(release, pub.project, next_release);
                 }, err=>{
-                    if(err) logger.error(err);
+                    if(err) console.error(err);
+                    console.log("done processing releases");
                 });
            }); 
         });
@@ -270,41 +273,45 @@ router.put('/:id', common.jwt(), (req, res, next)=>{
             delete req.body.create_date;
             //delete req.body.removed; //let's secretly allow removal for now..
 
-            //update pub record
+            //update pub record to make sure all new releases has id
             for(let k in req.body) pub[k] = req.body[k];
             pub.save((err, pub)=>{
                 if(err) return next(err);
                 res.json(pub); 
-
-                if(!pub.doi) {
-                    logger.error("no doi set.. skippping metadata update");
-                } else {
-                    //update doi meta
+                
+                //update doi metadata (TODO - why could doi not be set?)
+                if(pub.doi) {
                     let metadata = common.compose_pub_datacite_metadata(pub);
                     common.doi_post_metadata(metadata, err=>{
-                        if(err) logger.error(err);
+                        if(err) console.error(err);
                     });
                 }
 
+                /*
                 //I have to use req.body.releases which has "sets", but not release._id
                 //so let's set release._id on req.body.releases and use that list to 
                 //handle new publications
                 req.body.releases.forEach((release, idx)=>{
                     release._id = pub.releases[idx]._id;
                 });
-                async.eachSeries(req.body.releases, (release, next_release)=>{
-                    handle_release(release, pub.project, next_release);
+                */
+                //async.eachOfSeries(req.body.releases, (release, idx, next_release)=>{
+
+                async.eachSeries(pub.releases, (release, next_release)=>{
+                    updateRelease(release, pub.project, next_release);
                 }, err=>{
-                    if(err) logger.error(err);
+                    if(err) console.error(err);
                 });
             });
+
         });
     });
 });
 
-function handle_release(release, project, cb) {
+function updateRelease(release, project, cb) {
+
+    //publish all new release sets
     async.eachSeries(release.sets, (set, next_set)=>{
-        if(!set.add) return next_set();
         let find = {
             project,
             removed: false,
@@ -313,7 +320,6 @@ function handle_release(release, project, cb) {
         if(set.datatype_tags.length > 0) {
             find.datatype_tags = {$all: set.datatype_tags};
         }
-
         if(set.subjects.length > 0) {
             find["meta.subject"] = {$in: set.subjects};
         }
@@ -332,14 +338,19 @@ function handle_release(release, project, cb) {
             if(nin.length > 0) find.tags["$nin"] = nin;
         }
 
-        /*
-        console.dir(find);
-        console.log("handling release");
-        console.log(JSON.stringify(find, null, 4));
-        */
-
         db.Datasets.update(find, {$addToSet: {publications: release._id}}, {multi: true}, next_set);
-    }, cb);
+    }, err=>{
+        if(err) return cb(err);
+        
+        //also publish group analysis archives
+        async.eachSeries(release.gaarchives, (ga, next_ga)=>{
+            if(!ga.dataset_id) return next_ga(); //for dev
+            console.log("publishing ga archive dataset", ga);
+            db.Datasets.findByIdAndUpdate(ga.dataset_id, 
+                {$addToSet: {publications: release._id}}, 
+                next_ga);
+        }, cb);
+    });
 }
 
 //proxy doi.org doi resolver

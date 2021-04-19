@@ -22,6 +22,7 @@ export default {
     },
     mounted: function() {               
         this.$root.$on("loading", opt=>{
+            this.message = "Processing...";
             if(opt.message) this.message = opt.message;
             if(opt.show == undefined) opt.show = true;
             this.show = opt.show;
@@ -49,7 +50,7 @@ export default {
     text-align: center;
     color: black;
     font-size: 125%;
-    text-shadow: 0px 0px 4px #fff6;
+    text-shadow: 0px 0px 4px #fff9;
     padding: 30px;
     margin: 25%;
 }

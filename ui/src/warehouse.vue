@@ -563,6 +563,10 @@ pre {
 .bigpill svg {
     min-height: 16px;
 }
+.bigpill.clickable:hover {
+    background-color: #ccc;
+    cursor: pointer;
+}
 
 .scroll-shadow {
     /*https://stackoverflow.com/questions/9333379/check-if-an-elements-content-is-overflowing*/

@@ -186,19 +186,25 @@ exports.groupanalysis = {
     getSecondaryDownloadStream(path, cb) {
         connect_osiris((err, conn, sftp)=>{
             if(err) return cb(err);
-            //TODO - why not use the sftp?
-            conn.exec("cat "+path, (err, stream)=>{
+
+            //make sure file exists
+            sftp.stat(path, (err,stats)=>{
+                if(err) {
+                    conn.end();
+                    return cb(err);
+                }
+
+                //now stream!
+                let stream = sftp.createReadStream(path);
                 stream.on('error', err=>{
-                    console.error("stream failed but train has already left the station", err);
+                    console.error(err);
                 });
                 stream.on('close', code=>{
+                    console.log("stream closed.. ending connection", code);
                     conn.end();
                 });
-                //I believe listening to stream is required for close event to fire..?
-                stream.stderr.on('data', data=>{
-                    console.error(data.toString());
-                });
-                cb(err, stream);
+
+                cb(null, stream);
             });
         });
     },
@@ -386,6 +392,8 @@ exports.storage_systems.osiris = {
             let filename = path.split("/").pop();
             //console.debug(["loading...", path, filename]);
             console.log("streaming from", path)
+
+            //TODO why not use sftp?
             conn.exec("cat "+path, (err, stream)=>{
                 stream.on('error', err=>{
                     console.error("stream failed but train has already left the station", err);

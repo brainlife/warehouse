@@ -77,8 +77,8 @@ export default {
 
         single_dataset_url() {
             if(this.query && this.query.find && this.query.find._id && this.query.find._id.length == 1) {
-                let dataset_id = this.query.find._id[0];
-                var url = Vue.config.api+'/dataset/download/'+dataset_id;
+                const dataset_id = this.query.find._id[0];
+                let url = Vue.config.api+'/dataset/download/'+dataset_id;
                 if(Vue.config.user) url += '?at='+Vue.config.jwt; //guest can download without jwt for published datasets
                 return url;
             }

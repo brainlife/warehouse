@@ -16,9 +16,11 @@
             <p v-if="p.desc" style="background-color: white; padding: 5px 10px; margin: 0;"><small>{{p.desc}}</small></p>
             <Plotly v-if="tab == $idx && p.data" :data="p.data" :layout="p.layout" :options="p.options" ref="plotrefs" :autoResize="true" :watchShallow="true"/>
         </b-tab>
+        <!-- product.json is now just used to pass small info back to ui
         <b-tab title="product.json" v-if="others">
             <editor v-model="others" @init="editorInit" lang="json"></editor>
         </b-tab>
+        -->
         <b-tab v-for="(p, $idx) in images" :title="p.name||$idx" :key="$idx">
             <p v-if="p.desc"><small>{{p.desc}}</small></p>
             <a :download="'image.'+p.type.split('/')[1]" :href="'data:'+p.type+';base64,'+p.base64">

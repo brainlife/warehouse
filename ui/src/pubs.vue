@@ -65,9 +65,9 @@ export default {
 
 <style scoped>
 .pub {
-border-bottom: 1px solid #eee;
 background-color: white;
 transition: box-shadow 0.3s ease;
+margin-bottom: 10px;
 }
 .pub:hover {
 box-shadow: 1px 1px 2px rgba(0,0,0,0.1);

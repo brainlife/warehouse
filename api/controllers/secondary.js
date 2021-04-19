@@ -98,11 +98,14 @@ router.get('/list/:projectid', async (req, res, next)=>{
  * @apiGroup Secondary
  * @api {get} /secondary/:task_id/:path
  *                          Download secondary content for a given dtv task / and path
+ *                          jwt token is optional for task with config._public set to allow secondary content 
+ *                          exposed for published secondary data
  * @apiHeader {String} authorization 
  *                          A valid JWT token "Bearer: xxxxx"
  * @apiSuccess {Object}     Directory structure of secondary content
  */
 router.get('/:task_id/*', common.jwt({
+    credentialsRequired: false,
     //similar to dataset/download
     getToken: function(req) { 
         //load token from req.headers as well as query.at
@@ -113,41 +116,43 @@ router.get('/:task_id/*', common.jwt({
         }
         return null;
     }
-}), (req, res, next)=>{
+}), async (req, res, next)=>{
     const task_id = req.params.task_id;
     const p = req.query.p || req.params[0];
+    const taskres = await axios.get(config.amaretti.api+"/task/"+task_id);
+    if(taskres.status != 200) return next("failed to load task "+task_id);
+    const task = taskres.data;
 
-    axios.get(config.amaretti.api+"/task/"+task_id).then(taskres=>{
-        if(taskres.status != 200) return next("failed to load task "+task_id);
-        const task = taskres.data;
+    if(!task.config._public) {
+        //if not public output, restrict access
         const gids = req.user.gids||[];
         if(task.user_id != req.user.sub && !~gids.indexOf(task._group_id)) return next("you don't own this task or member of a group "+task._group_id);
+    }
 
-        //ok looks good.. 
-        const follow_task_id = task.deps_config[0].task;
-        const prefix = config.groupanalysis.secondaryDir+"/"+task._group_id+"/"+task.instance_id+"/"+follow_task_id;
+    //ok looks good.. 
+    const parent_task_id = task.deps_config[0].task;
+    const prefix = config.groupanalysis.secondaryDir+"/"+task._group_id+"/"+task.instance_id+"/"+parent_task_id;
 
-        //make sure path looks safe
-        const clean_p = path.resolve(prefix+"/"+p);
-        console.debug("clean_p", clean_p);
-        console.debug("prefix", prefix);
-        if(!clean_p.startsWith(prefix)) return next("invalid path");
+    //make sure path looks safe
+    const clean_p = path.resolve(prefix+"/"+p);
 
-        //const readstream = fs.createReadStream(clean_p);
-        config.groupanalysis.getSecondaryDownloadStream(clean_p, (err, readstream)=>{
-            if(err) return next(err);
+    console.debug("p", p);
+    console.debug("clean_p", clean_p);
+    console.debug("prefix", prefix);
 
-            readstream.pipe(res);   
-            readstream.on('error', err=>{
-                console.error("failed to pipe", err);
-                next(err); 
-            });
-            res.on('finish', ()=>{
-                common.publish("secondary.download."+req.user.sub+"."+task._group_id+"."+task._id, {headers: req.headers, path: clean_p});
-            });
+    if(!clean_p.startsWith(prefix)) return next("invalid path");
+
+    //const readstream = fs.createReadStream(clean_p);
+    config.groupanalysis.getSecondaryDownloadStream(clean_p, (err, readstream)=>{
+        if(err) return next(err);
+        readstream.pipe(res);   
+        readstream.on('error', err=>{
+            console.error("failed to pipe", err);
+            next(err); 
         });
-    }).catch(err=>{
-        next(err);
+        res.on('finish', ()=>{
+            common.publish("secondary.download."+req.user.sub+"."+task._group_id+"."+task._id, {headers: req.headers, path: clean_p});
+        });
     });
 });
 
