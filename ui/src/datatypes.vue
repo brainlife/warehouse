@@ -16,7 +16,7 @@
                 </p>
             </b-container>
         </div>
-        <div v-if="filtered.length ==0">
+        <div>
             <h4 class="header-sticky"><b-container>neuro/</b-container></h4> 
             <b-container>
                 <b-card-group columns style="margin: 15px 0px;">
@@ -30,15 +30,6 @@
             <b-container>
                 <b-card-group columns style="margin: 15px 0px;">
                     <b-card no-body v-for="datatype in get_not_datatypes('neuro/')" :key="datatype._id" @click="open(datatype)" class="datatype-card">
-                        <datatype :datatype="datatype"/>
-                    </b-card>
-                </b-card-group>
-            </b-container>
-        </div>
-        <div v-else>
-            <b-container>
-                <b-card-group columns style="margin: 15px 0px;">
-                    <b-card no-body v-for="datatype in filtered" :key="datatype._id" @click="open(datatype)" class="datatype-card">
                         <datatype :datatype="datatype"/>
                     </b-card>
                 </b-card-group>
@@ -147,7 +138,6 @@ export default {
         clearQuery() {
             this.query = ''
             this.change_query();
-            this.filtered = [];
         },
 
         change_query_debounce() {
@@ -172,19 +162,26 @@ export default {
             if(this.query){
                 console.log(this.query);
                 this.query.split(" ").forEach(q=>{
-                    if(q == "") return this.filtered = [];
+                    if(q == "") return;
 
-                    let filtered = [];
-                    for(var id in this.datatypes) {
-                        if(this.datatypes[id].name.toLowerCase().includes(q.toLowerCase())) {
-                            filtered.push(this.datatypes[id]);
+                   this.datatypes = this.datatypes.filter((datatype) =>{
+                        if(datatype.name.toLowerCase().includes(q.toLowerCase())){
+                            console.log(datatype.name+" "+q);
+                            return datatype;
                         }
-                    }
-                    this.filtered = filtered;
+                    });
+                    console.log("------")
+                    console.log(this.datatypes);
                 });
             }else {
-                this.filtered = [];  
-            }
+                this.$http.get('datatype', {params: {
+                sort: 'name',
+                select: 'name desc admins files groupAnalysis',
+                }}).then(res=>{
+                this.datatypes = res.data.datatypes;
+                console.log("datatype loaded");
+                }).catch(console.error);
+                }
         }
     }, //methods
 }
