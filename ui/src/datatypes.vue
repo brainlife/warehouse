@@ -1,5 +1,12 @@
 <template>
 <div>
+    <div class="page-header">
+        <div class="search-box onRight">
+            <b-form-input v-model="query" type="text" placeholder="Search Datatypes" @input="change_query_debounce" class="input"/>
+            <icon name="search" class="search-icon" scale="1.5"/>
+            <icon name="times" class="clear-search" scale="1.5" @click="clearQuery()" v-if="query != ''"/>
+        </div>
+    </div>
     <div class="page-content" ref="scrolled">
         <div class="header">
             <b-container>
@@ -9,25 +16,42 @@
                 </p>
             </b-container>
         </div>
-
+        <div v-if="filtered.length ==0">
+            <h4 class="header-sticky"><b-container>neuro/</b-container></h4> 
         <h4 class="header-sticky"><b-container>neuro/</b-container></h4> 
-        <b-container>
-            <b-card-group columns style="margin: 15px 0px;">
-                <b-card no-body v-for="datatype in get_datatypes('neuro/')" :key="datatype._id" @click="open(datatype)" class="datatype-card">
-                    <datatype :datatype="datatype"/>
-                </b-card>
-            </b-card-group>
-        </b-container>
+            <h4 class="header-sticky"><b-container>neuro/</b-container></h4> 
+        <h4 class="header-sticky"><b-container>neuro/</b-container></h4> 
+            <h4 class="header-sticky"><b-container>neuro/</b-container></h4> 
+            <b-container>
+                <b-card-group columns style="margin: 15px 0px;">
+                    <b-card no-body v-for="datatype in get_datatypes('neuro/')" :key="datatype._id" @click="open(datatype)" class="datatype-card">
+                        <datatype :datatype="datatype"/>
+                    </b-card>
+                </b-card-group>
+            </b-container>
 
+            <h4 class="header-sticky"><b-container>other</b-container></h4> 
         <h4 class="header-sticky"><b-container>other</b-container></h4> 
-        <b-container>
-            <b-card-group columns style="margin: 15px 0px;">
-                <b-card no-body v-for="datatype in get_not_datatypes('neuro/')" :key="datatype._id" @click="open(datatype)" class="datatype-card">
-                    <datatype :datatype="datatype"/>
-                </b-card>
-            </b-card-group>
-        </b-container>
-
+            <h4 class="header-sticky"><b-container>other</b-container></h4> 
+        <h4 class="header-sticky"><b-container>other</b-container></h4> 
+            <h4 class="header-sticky"><b-container>other</b-container></h4> 
+            <b-container>
+                <b-card-group columns style="margin: 15px 0px;">
+                    <b-card no-body v-for="datatype in get_not_datatypes('neuro/')" :key="datatype._id" @click="open(datatype)" class="datatype-card">
+                        <datatype :datatype="datatype"/>
+                    </b-card>
+                </b-card-group>
+            </b-container>
+        </div>
+        <div v-else>
+            <b-container>
+                <b-card-group columns style="margin: 15px 0px;">
+                    <b-card no-body v-for="datatype in filtered" :key="datatype._id" @click="open(datatype)" class="datatype-card">
+                        <datatype :datatype="datatype"/>
+                    </b-card>
+                </b-card-group>
+            </b-container>
+        </div>
         <b-button v-if="config.has_role('datatype.create')" class="button-fixed" @click="newdatatype">
             New Datatype
         </b-button>
@@ -47,7 +71,7 @@ import pageheader from '@/components/pageheader'
 import contact from '@/components/contact'
 import app from '@/components/app'
 import tags from '@/components/tags'
-
+let query_debounce;
 export default {
     components: { 
         pageheader, datatype, app, VueMarkdown, contact, tags,
@@ -56,6 +80,8 @@ export default {
     data () {
         return {
             datatypes: null,
+            query: "",
+            filtered : [],
 
             //for selected item
             apps: [], //apps that uses selected datatype
@@ -69,6 +95,11 @@ export default {
         }
     },
 
+    watch : {
+        query : function (){
+            this.load();
+        }
+    },
     mounted() {
         console.log("datatype loaded");
         this.$http.get('datatype', {params: {
@@ -121,14 +152,54 @@ export default {
             }); 
         },
 
+        clearQuery() {
+            this.query = ''
+            this.change_query();
+            this.filtered = [];
+        },
+
+        change_query_debounce() {
+            clearTimeout(query_debounce);
+            query_debounce = setTimeout(this.change_query, 300);        
+        },
+
+        change_query() {
+            if(!this.datatypes) return setTimeout(this.change_query, 300);
+            //document.location="#"; //clear hash //TODO what is this?
+            sessionStorage.setItem("datatypes.query", this.query);
+            this.load();
+        },
+
+        load(){
+            let ands = [
+                {$or: [
+                    { removed: false },
+                    { removed: {$exists: false }},
+                ]}
+            ];
+            if(this.query){
+                console.log(this.query);
+                this.query.split(" ").forEach(q=>{
+                    if(q == "") return this.filtered = [];
+
+                    let filtered = [];
+                    for(var id in this.datatypes) {
+                        if(this.datatypes[id].name.toLowerCase().includes(q.toLowerCase())) {
+                            filtered.push(this.datatypes[id]);
+                        }
+                    }
+                    this.filtered = filtered;
+                });
+            }else {
+                this.filtered = [];  
+            }
+        }
     }, //methods
 }
 </script>
 
 <style scoped>
-.page-content {
-top: 0px;
-}
+
 .page-content h2 {
 margin-bottom: 0px;
 padding: 10px 0px;
@@ -203,6 +274,10 @@ cursor: pointer;
 } 
 .sample-dataset:hover {
 background-color: #ddd;
+}
+
+.search-box .clear-search {
+right: 260px;
 }
 </style>
 
