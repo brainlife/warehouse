@@ -1,5 +1,12 @@
 <template>
 <div>
+    <div class="page-header">
+        <div class="search-box onRight">
+            <b-form-input v-model="query" type="text" placeholder="Search Projects" @input="change_query_debounce" class="input"/>
+            <icon name="search" class="search-icon" scale="1.5"/>
+            <icon name="times" class="clear-search" scale="1.5" @click="clearQuery()" v-if="query != ''"/>
+        </div>
+    </div>
     <div class="mode-toggler onRight" v-if="my_projects">
         <b-form-group>
         <b-form-radio-group v-model="mode" buttons button-variant="outline-secondary">
