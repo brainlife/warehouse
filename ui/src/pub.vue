@@ -156,6 +156,18 @@
                         <br>
                     </b-col>
                 </b-row>
+
+                 <b-row>
+                     <b-col cols="2">
+                         <span class="form-header">Related Articles</span>
+                     </b-col>    
+                     <b-col>
+                         <div v-for="paper in pub.relatedPapers" :key="Id" >
+                            <mag :paper="paper"/>
+                            <hr>
+                        </div>
+                     </b-col>   
+                 </b-row>    
             
                 <hr>
                 <vue-disqus shortname="brain-life" :identifier="pub._id"/>
@@ -260,6 +272,7 @@ import tags from '@/components/tags'
 import citation from '@/components/citation'
 import app from '@/components/app'
 import doibadge from '@/components/doibadge'
+import mag from '@/components/mag'
 
 import agreementMixin from '@/mixins/agreement'
 
@@ -275,7 +288,8 @@ export default {
         tags, 
         app, 
         citation,
-        doibadge, 
+        doibadge,
+        mag 
     },
 
     //https://help.altmetric.com/support/solutions/articles/6000141419-what-metadata-is-required-to-track-our-content-
