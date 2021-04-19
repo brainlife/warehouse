@@ -61,7 +61,7 @@
                     <b-col cols="2">
                         <span class="form-header">Authors</span>
                     </b-col>
-                    <b-col col="10">
+                    <b-col cols="10">
                         <p>
                             <span v-for="contact in pub.authors" :key="contact._id">
                                 <contact :fullname="contact.fullname" :email="contact.email"></contact>
@@ -157,7 +157,7 @@
                     </b-col>
                 </b-row>
 
-                 <b-row>
+                 <b-row v-if="pub.relatedPapers && pub.relatedPapers.length > 0">
                      <b-col cols="2">
                          <span class="form-header">Related Articles</span>
                      </b-col>    
@@ -165,7 +165,7 @@
                          <div v-for="paper in pub.relatedPapers" :key="Id" >
                             <mag :paper="paper"/>
                             <hr>
-                        </div>
+                         </div>
                      </b-col>   
                  </b-row>    
             

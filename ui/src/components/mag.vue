@@ -13,12 +13,11 @@
     <p style="opacity: 0.8; line-height: 180%;">
         {{ paper.abstract }}
     </p>
-    <div style="display: inline-block; margin-top: 0; margin-bottom: 1rem">
-        <div v-for="contact in paper.authors" :key="institution" class="contact">
-            <img src="http://www.gravatar.com/avatar/?s=20&d=mp"/>
-            <div class="name">{{ contact.name }}</div>
-        </div>
-    </div>
+    <p> 
+        <span v-for="(contact, idx) in paper.authors" :key="idx" >
+            {{ contact.name }} <small>|</small>
+        </span>
+    </p>
     <p>
         <b-badge v-for="tag in paper.fields" :key="tag" class="topic">{{tag}}</b-badge>
     </p>

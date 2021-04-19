@@ -157,7 +157,8 @@ exports.datacite = {
 
 exports.mag = {
     subscriptionKey: fs.readFileSync(__dirname+'/mag.key', {encoding: "ascii"}).trim(),
-    lowestProb: -15,
+    //lowestProb: -15,
+    lowestProb: -18,
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////

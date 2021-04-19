@@ -419,10 +419,11 @@ exports.load_github_detail = function(service_name, cb) {
 }
 
 exports.generateQuery = function(str) {
-    let result=stopwords.cleanText(str.replaceAll(/[^a-zA-Z ]/g,"")).split(' ').filter(e => String(e).trim());
-    if(result.length == 0) return null;
-    result = result.map((word) => `W='${word}'`).join(',');
-    return "And(OR("+result+"),Composite(F.FN=='neuroscience'))"
+    const alphastr = str.replace(/[^a-z ]/gi, "");
+    const cleanstr = stopwords.cleanText(alphastr);
+    const queries = cleanstr.split(' ').filter(e=>!!e).map(word=>`W='${word}'`);
+    if(queries.length == 0) return null;
+    return "And(OR("+queries.join(',')+"),Composite(F.FN=='neuroscience'))"
 }
 
 exports.getRelatedPaper = function(query) {
@@ -453,11 +454,14 @@ exports.updateProjectMag = function(project, cb) {
         project.save(cb);
         return;
     }
+
+    console.log("mag query", query);
     exports.getRelatedPaper(query).then(res=>{
         if(res.status != 200) return cb("failed to call mag api");        
         project.mag.papers = res.data.entities
         .filter(a => a.logprob > config.mag.lowestProb)
         .map(paper=>{
+            console.log(paper.logprob, paper.DOI, paper.Ti);
             const ret = {
                 publicationDate: new Date(paper.D),
                 citationCount: paper.CC,
@@ -480,11 +484,11 @@ exports.updateProjectMag = function(project, cb) {
             return ret;
         });
         project.save(cb);
-
     }).catch(res=>{
         console.log(res.toString());
         //mag api returns 500 if paper doesn't exist.. so we can not tell the difference between
         //api issue v.s. empty papwers.. so we return null object to cb()
+        console.log("skipping to the next paper");
         cb();
     });
 }
@@ -502,11 +506,14 @@ exports.updatePublicationMag = function(publication,cb) {
         publication.save(cb);
         return;
     }
+
+    console.log("mag query", query);
     exports.getRelatedPaper(query).then(res=>{
         if(res.status != 200) return cb("failed to call mag api");
         publication.relatedPapers = res.data.entities
         .filter(a => a.logprob > config.mag.lowestProb)
         .map(paper=>{
+            console.log(paper.logprob, paper.DOI, paper.Ti);
             const ret = {
                 publicationDate: new Date(paper.D),
                 citationCount: paper.CC,
@@ -528,11 +535,12 @@ exports.updatePublicationMag = function(publication,cb) {
             }
             return ret;
         });
-        publication.save();
-        cb();
-
+        publication.save(cb);
     }).catch(res=>{
         console.log(res.toString());
+        //mag api returns 500 if paper doesn't exist.. so we can not tell the difference between
+        //api issue v.s. empty papwers.. so we return null object to cb()
+        console.log("skipping to the next paper");
         cb();
     });
 }

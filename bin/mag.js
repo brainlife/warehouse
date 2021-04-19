@@ -19,7 +19,9 @@ function run() {
                 if(err) return next(err);
                 async.eachSeries(projects, common.updateProjectMag, next);
             });
-        }, next => {
+        }, 
+
+        next => {
             db.Publications.find({
                 removed: false,
             }).exec((err, publications) => {
@@ -29,5 +31,6 @@ function run() {
     ], err => {
         if(err) throw err;
         console.log("all done");
+        db.disconnect();
     })
 }
