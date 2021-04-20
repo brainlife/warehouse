@@ -426,7 +426,7 @@ exports.generateQuery = function(str) {
     return "And(OR("+queries.join(',')+"),Composite(F.FN=='neuroscience'))"
 }
 
-exports.getRelatedPaper = function(query) {
+exports.getRelatedPaper = async function(query) {
     let params = {
         expr: query,
         count: 10, 
@@ -442,71 +442,17 @@ exports.getRelatedPaper = function(query) {
     return axios.get("https://api.labs.cognitive.microsoft.com/academic/v1.0/evaluate",{headers,params});
 }
 
-exports.updateProjectMag = function(project, cb) {
-    console.log("--- %s %s", project.name, project._id.toString());
-
-    if(!config.mag) cb("no mag config!!");
-    if(!project.mag) project.mag = {}; //not sure if we need this or not
-    project.markModified("mag");
-    const query = exports.generateQuery(project.name + " " + project.desc);
-    if(!query) {
-        project.mag.papers = [];
-        project.save(cb);
-        return;
-    }
-
-    console.log("mag query", query);
-    exports.getRelatedPaper(query).then(res=>{
-        if(res.status != 200) return cb("failed to call mag api");        
-        project.mag.papers = res.data.entities
-        .filter(a => a.logprob > config.mag.lowestProb)
-        .map(paper=>{
-            console.log(paper.logprob, paper.DOI, paper.Ti);
-            const ret = {
-                publicationDate: new Date(paper.D),
-                citationCount: paper.CC,
-                title: paper.Ti, 
-                doi: paper.DOI,
-                venue: paper.VFN, 
-                authors: paper.AA.map(author=>({institution: author.AfN, name: author.DAuN })),
-            }
-
-            if(paper.F) ret.fields = paper.F.map(name=>name.FN);
-            if(paper.IA) {
-                let abstract = [];
-                for (const word in paper.IA.InvertedIndex) {
-                    paper.IA.InvertedIndex[word].forEach(idx=>{
-                        abstract[idx] = word;
-                    });
-                }
-                ret.abstract = abstract.join(' ');
-            }
-            return ret;
-        });
-        project.save(cb);
-    }).catch(res=>{
-        console.log(res.toString());
-        //mag api returns 500 if paper doesn't exist.. so we can not tell the difference between
-        //api issue v.s. empty papwers.. so we return null object to cb()
-        console.log("skipping to the next paper");
-        cb();
-    });
-}
-
-exports.updatePublicationMag = function(publication,cb) {
+exports.updateRelatedPaperMag = function(publication,cb) {
     console.log("--- %s %s", publication.name, publication._id.toString());
     if(!config.mag) cb("no mag config!!");
-    if(!publication.mag) publication.mag = {}; //not sure if we need this or not
-    publication.markModified("mag");
-
+    if(!publication.relatedPapers) publication.relatedPapers = []; //not sure if we need this or not
+    publication.markModified("relatedPapers");
     const query = exports.generateQuery(publication.name+" "+publication.desc+" "+publication.readme);
-
     if(!query) {
         publication.relatedPapers = [];
         publication.save(cb);
         return;
     }
-
     console.log("mag query", query);
     exports.getRelatedPaper(query).then(res=>{
         if(res.status != 200) return cb("failed to call mag api");
