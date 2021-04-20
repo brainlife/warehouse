@@ -117,6 +117,14 @@ export default {
 
         get_datatypes(prefix) {
             if(!this.datatypes) return false;
+            if(this.filtered.length >0){
+                return this.filtered.filter(d=>{
+                    if(~d.name.indexOf(prefix)) {
+                        return true;
+                    }
+                    return false;
+                }); 
+            }
             return this.datatypes.filter(d=>{
                 if(~d.name.indexOf(prefix)) {
                     return true;
@@ -127,6 +135,14 @@ export default {
 
         get_not_datatypes(prefix) {
             if(!this.datatypes) return false;
+            if(this.filtered.length >0){
+                return this.filtered.filter(d=>{
+                    if(!~d.name.indexOf(prefix)) {
+                        return true;
+                    }
+                    return false;
+                }); 
+            }
             return this.datatypes.filter(d=>{
                 if(!~d.name.indexOf(prefix)) {
                     return true;
@@ -153,35 +169,20 @@ export default {
         },
 
         load(){
-            let ands = [
-                {$or: [
-                    { removed: false },
-                    { removed: {$exists: false }},
-                ]}
-            ];
             if(this.query){
                 console.log(this.query);
                 this.query.split(" ").forEach(q=>{
                     if(q == "") return;
-
-                   this.datatypes = this.datatypes.filter((datatype) =>{
+                    this.filtered = this.datatypes.filter((datatype) =>{
                         if(datatype.name.toLowerCase().includes(q.toLowerCase())){
                             console.log(datatype.name+" "+q);
                             return datatype;
                         }
                     });
-                    console.log("------")
-                    console.log(this.datatypes);
                 });
             }else {
-                this.$http.get('datatype', {params: {
-                sort: 'name',
-                select: 'name desc admins files groupAnalysis',
-                }}).then(res=>{
-                this.datatypes = res.data.datatypes;
-                console.log("datatype loaded");
-                }).catch(console.error);
-                }
+                this.filtered = [];
+            }
         }
     }, //methods
 }
