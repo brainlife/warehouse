@@ -17,7 +17,7 @@ function run() {
                 removed: false,
             }).exec((err, projects) => {
                 if(err) return next(err);
-                async.eachSeries(projects, common.updateProjectMag, next);
+                async.eachSeries(projects, common.updateRelatedPaperMag, next);
             });
         }, 
 
@@ -25,7 +25,7 @@ function run() {
             db.Publications.find({
                 removed: false,
             }).exec((err, publications) => {
-                async.eachSeries(publications, common.updatePublicationMag, next);
+                async.eachSeries(publications, common.updateRelatedPaperMag, next);
             });
         }
     ], err => {
