@@ -19,6 +19,8 @@ const config = require('./config');
 const db = require('./models');
 const mongoose = require('mongoose');
 
+stopwords.add('undefined');
+
 //TODO - user needs to call redis.quit() to quit?
 //exports.redis = redis.createClient(config.redis.port, config.redis.server);
 //exports.redis.on('error', err=>{throw err});
@@ -426,7 +428,7 @@ exports.generateQuery = function(str) {
     return "And(OR("+queries.join(',')+"),Composite(F.FN=='neuroscience'))"
 }
 
-exports.getRelatedPaper = async function(query) {
+exports.getRelatedPaper = function(query) {
     let params = {
         expr: query,
         count: 10, 
