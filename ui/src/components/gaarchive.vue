@@ -1,8 +1,9 @@
 <template>
 <div>
-    <icon name="folder"/>
-    {{gaarchive.name}}<br>
+    <icon name="sticky-note" title="Group Analysis notebook"/> {{gaarchive.name}} <small>{{gaarchive.container}}</small>
+    <!--
     <pre>{{gaarchive.notebook}}</pre> <small v-if="config.debug"><pre>{{gaarchive}}</pre></small>
+    -->
 </div>
 </template>
 <script>

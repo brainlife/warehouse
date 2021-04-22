@@ -8,18 +8,39 @@
                         <icon name="times" scale="1.5"/>
                     </div>
                 </div>
-                <h4 style="margin-top: 5px;">Launch Group Analysis</h4>
+                <h4 style="margin-top: 5px;">Launch New Analysis</h4>
             </div><!--header-->
 
             <!--container selecter-->
-            <div v-if="!selected" style="margin: 10px;">
-                <p>Please select the type of analysis you'd like to perform.</p>
-                <b-card-group columns v-if="!selected">
-                    <b-card v-for="(app, idx) in apps" :key="idx" :title="app.name" :img-src="app.img" @click="selected = app" class="app">
-                        <b-card-text>{{app.desc}}</b-card-text>
-                        <template v-slot:footer>
-                            <small class="text-muted">{{app.container}}:{{app.tag}}</small>
-                        </template>
+            <div v-if="!selected" class="app-selecter">
+                <h5 style="opacity:0.8">Published Notebooks</h5>
+                <span class="loading" v-if="!notebooks">Loading..</span>
+                <b-card-group columns>
+                    <b-card v-for="(app, idx) in notebooks" :key="idx" :title="app.name" :img-src="app.img" @click="selected = app" class="app">
+                        Publication: {{app.pub.name}}<br>
+                        Authors: {{app.pub.authors}}<br>
+
+                        Release: {{app.release.name}}<br>
+                        Release Desc: {{app.release.desc}}<br>
+                        create_date: {{app.release.create_date}}<br>
+
+                        container: {{app.container}}<br>
+                        dataset_id: {{app.dataset_id}}<br>
+
+                        <b>{{app.text}}</b><br>
+                        <small>{{app.desc}}</small><br>
+                        <!-- {{notebook.archive}}-->
+                        
+                    </b-card> 
+                </b-card-group>
+
+                <h5 style="opacity:0.8">Templates</h5>
+                <p>Or.. start from a template session</p>
+                <b-card-group columns>
+                    <b-card v-for="(app, idx) in templates" :key="idx" :title="app.name" :img-src="app.img" @click="selected = app" class="app">
+                        <b>{{app.text}}</b><br>
+                        <small>{{app.desc}}</small><br>
+                        <small class="text-muted">{{app.container}}</small>
                     </b-card> 
 
                 </b-card-group>
@@ -28,14 +49,29 @@
             <!--configurator-->
             <div v-if="selected">
                 <b-form @submit="submit">
-                <div class="submit-form">
-                    <pre>{{selected}}</pre>
-                    TODO - show any parameters to set..
-                    <b-form-textarea v-model="form.desc" placeholder="Optional description for this analysis" :rows="3" :max-rows="6"/>
-                </div>
-                <div class="form-action">
-                    <b-button variant="primary" type="submit">Launch</b-button>
-                </div>
+                    <div style="padding: 10px; background-color: #ddd;">
+                        <!--selected session detail-->
+                        <b>{{selected.text}}</b><br>
+                        <small>{{selected.desc}}</small><br>
+                        <small class="text-muted">{{selected.container}}</small>
+                    </div>
+
+                    <div style="padding: 10px">
+                        <p>
+                            <span class="form-header">Project</span>
+                            <projectselecter canwrite="true" v-model="project" placeholder="Project you'd like to create this session" :required="true"/>
+                        </p>
+
+                        <p>
+                            <span class="form-header">Description</span>
+                            <b-form-textarea v-model="form.desc" placeholder="Optional description for this data analysis" :rows="3" :max-rows="6"/>
+                        </p>
+                    </div>
+
+                    <div class="form-action">
+                        <b-button variant="secondary" type="button" @click="selected = null">Back</b-button>
+                        <b-button variant="primary" type="submit">Launch</b-button>
+                    </div>
                 </b-form>
             </div>
         </b-container>
@@ -46,12 +82,17 @@
 <script>
 import Vue from 'vue'
 
-//const async = require("async");
 //import agreementMixin from '@/mixins/agreement'
+import projectselecter from '@/components/projectselecter'
+import gainstance from '@/mixins/gainstance' //for createOrFindGAInstance
 
 export default {
-    //mixins: [agreementMixin],
-
+    components: { projectselecter },
+    mixins: [
+        //agreementMixin,
+        projectselecter,
+        gainstance,
+    ],
     data () {
         return {
             open: false,
@@ -61,52 +102,32 @@ export default {
                 config: {},
             },
             
-            //project: null, //project to submit this under
-            instance: null, //project to submit this under
+            instance: null, //instance to submit the session
             cb: null, //cb to call when launcher is submitted
 
-            selected: null, //selected app
+            project: null, //project to submit the session
+            notebooks: null, //published notebooks that user can launch
 
-            //will come from db someday
-            apps: [
+            templates: [
                 {
-                    name: "Brainlife dipy Jupyter Notebook", 
-                    img: "https://kanoki.org/wp-content/uploads/2017/07/Screen-Shot-2017-07-15-at-04.59.36.png",
-                    desc: "Jupyter Datascience Notebook (lab-2.1.1) with Dipy/Fury and git",
-                    container: "brainlife/ga-dipy",
-                    tag: "1.0",
+                    text: "python/dipy", 
+                    //img: "https://kanoki.org/wp-content/uploads/2017/07/Screen-Shot-2017-07-15-at-04.59.36.png",
+                    desc: "Jupyter Datascience Notebook (lab-2.1.1) with Dipy(1.3.0) and Fury",
+
+                    container: "brainlife/ga-dipy:lab211-dipy130",
+                    //app: "soichih/ga-test",
+                    dataset_id: "11111111", //TODO - archive ga-test?
                 },
                 {
-                    name: "Brainlife Octave(matlab) Jupyter Notebook", 
-                    img: "https://kanoki.org/wp-content/uploads/2017/07/Screen-Shot-2017-07-15-at-04.59.36.png",
+                    text: "Octave(matlab)", 
+                    //img: "https://kanoki.org/wp-content/uploads/2017/07/Screen-Shot-2017-07-15-at-04.59.36.png",
                     desc: "Jupyter Datascience Notebook (lab-2.1.1) with Octave",
-                    container: "brainlife/ga-octave",
-                    tag: "1.0",
+                    container: "brainlife/ga-octave:1.0",
+                    //app: "soichih/ga-test",
+                    dataset_id: "11111111", //TODO - archive ga-test?
                 },
-                /*
-                {
-                    name: "Jupyter Datascience Lab", 
-                    img: "https://kanoki.org/wp-content/uploads/2017/07/Screen-Shot-2017-07-15-at-04.59.36.png",
-                    desc: "Jupyter Datascience Notebook (lab-2.1.1)",
-                    container: "jupyter/datascience-notebook", 
-                    tag: "lab-2.1.1", 
-                },
-                {
-                    name: "Jupyter Scipy Notebook", 
-                    img: "https://www.dataquest.io/wp-content/uploads/2019/01/interface-screenshot.png",
-                    desc: "Jupyter Notebook Scientific Python Stack from https://github.com/jupyter/docker-stacks",
-                    container: "jupyter/scipy-notebook", 
-                    tag: "latest",
-                },   
-                {
-                    name: "Jupyter Tensorflow Notebook", 
-                    img: "https://i.imgur.com/n0PmXQn.gif",
-                    desc: "Jupyter Notebook Scientific Python Stack w/ Tensorflow from https://github.com/jupyter/docker-stacks",
-                    container: "jupyter/tensorflow-notebook", 
-                    tag: "latest",
-                },
-                */
             ],
+            selected: null, 
 
             config: Vue.config,
         }
@@ -119,9 +140,11 @@ export default {
             this.form.config = {};
             this.selected = null;
 
+            //set from opts
+            this.project = opts.project; //default project
             this.cb = opts.cb;
-            this.instance = opts.instance;
 
+            if(!this.notebooks) this.loadNotebooks();
             this.open = true;
         });
 
@@ -142,19 +165,94 @@ export default {
         submit(evt) {
             evt.preventDefault();
 
-            //prevent double submit
-            if(!this.open) return; 
-            this.open = false;
-
-            this.$http.post('secondary/launchga', {
-                instance_id: this.instance._id,
-                container: this.selected.container,
-                tag: this.selected.tag,
-                desc: this.form.desc,
-                config: this.form.config,
+            //lookup group_id of selected project
+            this.$http.get("project", {
+                params: {
+                    find: JSON.stringify({_id: this.project}),
+                }
             }).then(res=>{
-                this.cb(null, res.data);
-            }).catch(this.cb);
+                const project = res.data.projects[0];
+                //use that to find ga instance
+                this.createOrFindGAInstance(project.group_id, (err, instance)=>{
+                    if(err) throw err;
+
+                    //stage notebook archive
+                    this.$http.post('dataset/stage', {
+                        instance_id: instance._id,
+                        dataset_ids: [ this.selected.dataset_id ],
+                    }).then(res=>{
+                        const stageTask = res.data.task;
+                        console.log("stageTask");
+                        console.dir(stageTask);
+
+                        //then launchga in it
+                        this.$http.post('secondary/launchga', {
+                            instance_id: instance._id,
+                            name: "todo..", //this.selected.container+":"+this.selected.tag,
+                            desc: this.form.desc, 
+                            deps_config: [{task: stageTask._id}],
+                            config: { 
+                                //archive: this.selected.archive,
+                                //app: this.selected.app, //only for template
+                                notebook: "../"+stageTask._id+"/"+this.selected.dataset_id+"/notebook",
+                                container: this.selected.container,
+                            }, 
+                        }).then(res=>{
+                            let task = res.data;
+                            this.open = false;
+                            this.cb(null, task, this.selected);
+                        }).catch(err=>{
+                            console.error(err);
+                            this.$notify({type: 'error', text: err.response.data.message});
+                        });
+                    });
+                });
+            });
+
+        },
+
+        loadNotebooks() {
+            console.log("loading notebooks");
+
+            //load published notebooks
+            this.$http.get('/pub', {
+                params: {
+                    find: JSON.stringify({
+                        //can't get the query to work..
+                        //"releases.gaarchives": {$exists: true, $ne: []},
+                        //"releases.removed": false,
+                    }),
+                    select: "releases name authors",
+                }
+            }).then(res=>{
+                console.dir(res.data);
+                this.notebooks = [];
+                res.data.pubs.forEach(pub=>{
+
+                    if(pub.removed) return;
+                    if(!pub.releases) return;
+
+                    pub.releases.forEach(release=>{
+
+                        if(release.removed) return;
+                        if(!release.gaarchives) return;
+
+                        release.gaarchives.forEach(archive=>{
+                            this.notebooks.push({
+                                text: archive.name+" from "+release.name+" "+release.desc,
+                                desc: archive.desc||"(no-desc)",
+
+                                container: archive.container,
+                                dataset_id: archive.dataset_id,
+
+                                pub,
+                                release,
+                                archive,
+                            });
+                        });
+                    });
+                });
+            });
         },
     }
 }
@@ -188,5 +286,15 @@ transition: box-shadow 0.5s;
 .app:hover {
 cursor: pointer;
 box-shadow: 0 0 5px #0004;
+}
+.app-selecter {
+    position: absolute;
+    left: 0px;
+    right: 0px;
+    top: 60px;
+    bottom: 0px;
+    background-color: #f9f9f9;
+    overflow: auto;
+    padding: 10px;
 }
 </style>

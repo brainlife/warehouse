@@ -1,9 +1,9 @@
 <template>
-    <div v-if="doi" style="display: inline-block">
-        <b-badge v-if="doi" @click="show()" pill class="bigpill" :class="{clickable: jump}" :title="doi">
-            <b style="opacity: 0.5">doi</b>&nbsp;&nbsp;{{doi}}
-        </b-badge>
-    </div>
+<div v-if="doi" style="display: inline-block">
+    <b-badge v-if="doi" @click="show()" pill class="bigpill" :class="{clickable: jump}" :title="doi">
+        <b style="opacity: 0.5">doi</b>&nbsp;&nbsp;{{doi}}
+    </b-badge>
+</div>
 </template>
 
 <script>

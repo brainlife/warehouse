@@ -161,12 +161,10 @@ router.get('/:task_id/*', common.jwt({
  * @api {put} /secondary/launchga   Launch Group Analysis Container
  *                              
  * @apiParam {String} instance_id  Instance to launch the group analysis 
- * @apiParam {String} container     Name of the container to submit
- * @apiParam {String} tag           Tag of the container
  * @apiParam {String} [name]        Name for this analysis
  * @apiParam {String} [desc]        Description for this analysis
  * @apiParam {Object} [config]      Configuration to send to the launcher
- * @apiParam {String} app           App to initialize inside the container (like soichih/ga-test)
+ * @apiParam {Object} [deps_config] amaretti dep_config for dataset id?
  *
  * @apiHeader {String} authorization 
  *                                  A valid JWT token "Bearer: xxxxx"
@@ -175,11 +173,17 @@ router.get('/:task_id/*', common.jwt({
  */
 router.post('/launchga', common.jwt(), (req, res, next)=>{
     if(!req.body.instance_id) return next("instance_id is not set");
+    /*
     if(!req.body.container) return next("container name is not set");
     if(!req.body.tag) return next("container tag is not set");
+    */
+    if(!req.body.config) return next("please set config");
+    if(!req.body.config.container) return next("please set contianer (with tag)");
 
-    let task_config = {};
-    if(req.body.config) Object.assign(task_config, req.body.config);
+    let _config = Object.assign({}, req.body.config);
+
+    //let task_config = {};
+    //Object.assign(task_config, req.body.config);
 
     let instance = null;
     let jwt = null;
@@ -221,7 +225,7 @@ router.post('/launchga', common.jwt(), (req, res, next)=>{
                 if(!_project) return next("can't find project with group_id:"+instance.group_id);
 
                 //ga-launcher just need id..
-                task_config.project = {
+                _config.project = {
                     _id: _project._id, 
                     name: _project.name, //just in case ..
                 };
@@ -231,10 +235,15 @@ router.post('/launchga', common.jwt(), (req, res, next)=>{
 
         //submit the launcher
         next=>{
+            /*
             task_config.container = req.body.container+":"+req.body.tag;
             task_config.group = instance.group_id;
             task_config.app = req.body.app; //like.. soichih/ga-test
+            */
+            _config.group = instance.group_id;
 
+            console.dir("subnmitting ga-launcher")
+            console.dir(req.body);
             axios.post(config.amaretti.api+"/task", {
                 name: req.body.name,
                 desc: req.body.desc,
@@ -242,7 +251,8 @@ router.post('/launchga', common.jwt(), (req, res, next)=>{
                 service_branch: "master", //TODO
                 instance_id : instance._id,
                 max_runtime: 24*1000*3600, //24 hour should be enough?
-                config: task_config,
+                deps_config: req.body.deps_config,
+                config: _config,
             }, {
                 headers: { authorization: "Bearer "+jwt, }
             }).then(_res=>{

@@ -3,7 +3,9 @@
     <div class="page-content">
         <div class="header">
             <b-container>
+                <!--
                 <a href="https://brainlife.io/docs/user/publication/" target="doc" style="margin: 10px; opacity: 0.4; float: right;"><icon name="book" scale="1.5"/></a>
+                -->
                 <h3>Publications</h3>
                 <p style="opacity: 0.7; margin: 0px;">
                     Brainlife allows users to create snapshots of archived datasets from Brainlife project 
@@ -67,7 +69,7 @@ export default {
 .pub {
 background-color: white;
 transition: box-shadow 0.3s ease;
-margin-bottom: 10px;
+margin-bottom: 20px;
 }
 .pub:hover {
 box-shadow: 1px 1px 2px rgba(0,0,0,0.1);

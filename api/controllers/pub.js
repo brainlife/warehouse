@@ -42,8 +42,8 @@ function can_publish(req, project_id, cb) {
  */
 router.get('/', (req, res, next)=>{
     let find = {};
-	let skip = req.query.skip || 0;
-	let limit = req.query.limit || 100;
+    let skip = req.query.skip || 0;
+    let limit = req.query.limit || 100;
     if(req.query.find) {
         find = JSON.parse(req.query.find);
     }
@@ -61,8 +61,8 @@ router.get('/', (req, res, next)=>{
 
             //dereference user ID to name/email
             if(req.query.deref_contacts) pubs.forEach(pub=>{
-                pub.authors = pub.authors.map(common.deref_contact);
-                pub.contributors = pub.contributors.map(common.deref_contact);
+                pub.authors = pub.authors.map(common.deref_contact).filter(c=>!!c);
+                pub.contributors = pub.contributors.map(common.deref_contact).filter(c=>!!c);
             });
             /*
             if(req.user) pubs.forEach(pub=>{
@@ -128,8 +128,8 @@ router.get('/apps/:releaseid', async (req, res, next)=>{
  */
 router.get('/datasets/:releaseid', (req, res, next)=>{
     let find = {};
-	let skip = req.query.skip || 0;
-	let limit = req.query.limit || 100;
+    let skip = req.query.skip || 0;
+    let limit = req.query.limit || 100;
     if(req.query.find) find = JSON.parse(req.query.find);
     let query = {$and: [ find, {publications: req.params.releaseid}]};
     db.Datasets.find(query)

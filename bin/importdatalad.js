@@ -104,8 +104,6 @@ function handle_bids(key, bids, cb) {
         if(bids.participants) dldataset.participants = bids.participants;
         if(bids.participants_json) dldataset.participants_info = bids.participants_json;
 
-        //if(!bids.dataset_description.Name) bids.dataset_description.Name = "untitled";
-       
         //count
         let unique_subjects = [];
         let unique_sessions = [];
@@ -153,7 +151,6 @@ function handle_bids(key, bids, cb) {
                 let itemkey = {
                     dldataset: dldataset._id,
                     "dataset.datatype": item.dataset.datatype,
-                    //"dataset.desc": item.dataset.desc,
                     "dataset.meta.subject": item.dataset.meta.subject,
                 };
                 if(item.dataset.meta.session) {

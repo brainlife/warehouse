@@ -337,9 +337,12 @@ var releaseSchema = mongoose.Schema({
     //group analysis releases
     gaarchives: [ {
         sectask_id: String, //amaretti task id for nbconvert secondary output containing html page for notebook specified in notebook
+        notebook: String, //file path for the notebook displayed
+
+        container: String, //name of docker container to host this notebok in (with tag)
+
         dataset_id: String, //dataset ID for published(archived) notebook
         name: String, //name of the session archived
-        notebook: String, //file path for the notebook displayed
     } ],
 });
 mongoose.model("Releases", releaseSchema);
@@ -374,15 +377,15 @@ var publicationSchema = mongoose.Schema({
 
     removed: { type: Boolean, default: false }, //only admin can remove publication for now (so that doi won't break)
     relatedPapers: [{  
-                publicationDate : Date, 
-                citationCount : Number, 
-                doi: String,
-                title : String,
-                venue : String, 
-                authors : Array,
-                fields: Array,
-                abstract : String,     
-            }],
+        publicationDate : Date, 
+        citationCount : Number, 
+        doi: String,
+        title : String,
+        venue : String, 
+        authors : Array,
+        fields: Array,
+        abstract : String,     
+    }],
         
 });
 exports.Publications = mongoose.model("Publications", publicationSchema);

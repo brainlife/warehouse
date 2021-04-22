@@ -619,15 +619,15 @@ export default {
 <style scoped>
 .app-selecter,
 .submit-form {
-position: absolute;
-left: 0px;
-right: 0px;
-top: 60px;
-bottom: 0px;
-background-color: #f9f9f9;
+    position: absolute;
+    left: 0px;
+    right: 0px;
+    top: 60px;
+    bottom: 0px;
+    background-color: #f9f9f9;
 }
 .app-selecter {
-overflow: auto;
+    overflow: auto;
 }
 .form-body {
 position: absolute;

@@ -8,10 +8,10 @@ export default {
     },
 
     methods: {
-        createOrFindGAInstance(project, cb) {
+        createOrFindGAInstance(group_id, cb) {
             //find or create an instance to host all ga tasks .. must match in api/common/update_project_stats
             let key = {
-                group_id: project.group_id,
+                group_id: group_id,
                 name: "ga-launchers", 
             }
             console.log("looking for an instance", key);

@@ -9,9 +9,6 @@
         </p>
         <div v-if="!nbtask">
             <b-form-group horizontal label="Session">
-                <!--
-                <small>Select a group Analysis session to archive for your publication</small>
-                -->
                 <b-form-select v-model="selected" :options="sessions" required></b-form-select>
                 <small>Select the group analysis session that you'd like to archive and publish as part of this release. Then entire directory under /notebook will be made public (please be sure to remove or move sensitive data outside of /notebook directory if you don't want it to be part of the publication.</small>
             </b-form-group>
@@ -20,67 +17,6 @@
                 <small>The notebook to showcase on the publication/release page</small>
             </b-form-group>
         </div>
-        
-        <!--
-        <div v-for="task in sessions" :key="task._id" class="session">
-            <b-row>
-                <b-col cols="4">
-                    <small>{{task.name}}</small>
-                    {{task.desc}}
-                </b-col>
-                <b-col cols="3">
-                    <pre>{{task.status_msg}}</pre>
-                </b-col>
-                <b-col cols="2">
-                    Created on <b>{{new Date(task.create_date).toLocaleDateString()}}</b>
-                </b-col>
-            </b-row>
-            <pre>{{task}}</pre>
-        </div>
-        -->
-        <!--
-        <b-row>
-           <b-col class="text-muted" cols="3">ezBIDS Session ID</b-col>
-            <b-col>
-                <b-form-input v-model="sessionId" readonly></b-form-input>
-                <br>
-            </b-col>
-        </b-row>
-        -->
-
-        <!--
-        <b-row>
-            <b-col class="text-muted" cols="3">Project</b-col>
-            <b-col>
-                <b-form-radio-group v-model="createnew" style="margin-bottom: 5px;">
-                    <b-form-radio :value="true">Create a new Project</b-form-radio>
-                    <b-form-radio :value="false">Import to an existing Project</b-form-radio>
-                </b-form-radio-group>
-                <div v-if="createnew">
-                    <span class="form-header">Project Name</span>
-                    <b-form-input type="text" v-model="project_name" placeholder="Enter Name for the new project" required/>
-                    <br>
-                    <span class="form-header">Project Desc</span>
-                    <b-form-textarea rows="3" v-model="project_desc" placeholder="Enter Description for the new project" required/>
-                </div>
-                <div v-if="!createnew">
-                    <projectselecter canwrite="true" v-model="project" :required="true"/> 
-                    <small class="text-muted">Select a project where you want to import this dataset to</small>
-                </div>
-                <br>
-            </b-col>
-        </b-row>
-
-        <b-row>
-            <b-col class="text-muted" cols="3">Dataset Description</b-col>
-            <b-col>
-                <div v-if="ezBIDS" style="max-height: 250px; font-size:80%"><pre>{{ezBIDS.datasetDescription}}</pre></div>
-                <small v-else><icon name="cog" scale="1.25" spin/>  Loading ezBIDS info ...</small>
-                <br>
-            </b-col>
-        </b-row>
-        -->
-
     </div>
 
     <div v-if="nbtask">
@@ -93,8 +29,9 @@
     </div>
 
     <div v-if="config.debug">
+        <b>debug</b>
+        {{selected}}
         archiveStatus: {{archiveStatus}}
-
         dataset:
         <pre>
             {{dataset}}
@@ -105,9 +42,6 @@
         <b-form-group>
             <b-button @click="close">Cancel</b-button>
             <b-button variant="primary" @click="archive" v-if="!nbtask">Archive</b-button>
-            <!--
-            <b-button variant="primary" @click="done" v-if="sectask && sectask.status == 'finished'">Done!</b-button>
-            -->
         </b-form-group>
     </div>
 </b-modal>
@@ -167,7 +101,7 @@ export default {
             this.dataset = null;
             this.archiveStatus = null;
 
-            this.createOrFindGAInstance(this.project, (err, instance)=>{
+            this.createOrFindGAInstance(this.project.group_id, (err, instance)=>{
                 this.instance = instance;
                 this.subscribeInstance(instance);
 
@@ -186,35 +120,16 @@ export default {
                         return {
                             value: task._id,
                             text: task.name+" "+task.desc+" "+task.status_msg,
+                            container: task.config.container,
                         }
                     });
+                    console.dir(this.sessions);
 
                     //select the last one
                     this.selected = this.sessions[0].value;
                 });
             });
  
-            /*
-            //load existing task if it's already imported
-            this.$http.get(Vue.config.amaretti_api+'/task', {
-                params: {
-                    find: JSON.stringify({
-                        name: "bids-import."+this.sessionId,
-                        service: "brainlife/app-bids-import",
-                    })
-                },
-            }).then(res=>{
-                if(res.data.tasks.length != 0) {
-                    console.log("importer already submitted!");
-                    this.task = res.data.tasks[res.data.tasks.length-1];
-                    this.subscribeTask(this.task);
-                }
-            }).catch(err=>{
-                console.error(err);
-                this.$notify({type: 'error', text: err.body.message});
-            });
-            */
-
             //find group analysis sessions
             //TODO..
 
@@ -318,20 +233,6 @@ export default {
                     this.sectask = task; 
                 }
                 this.checkState();
-
-                /*
-                if(this.sectask && this.sectask.status == "finished" &&
-                    this.atask && this.atask.status == "finished") {
-                    const session = this.sessions.find(s=>s.value == this.selected);
-                    this.cb(null, {
-                        sectask_id: this.sectask._id,
-                        atask_id: this.sectask._id,
-                        name: session.text,
-                        notebook : this.notebook,
-                    });
-                    this.close();
-                }
-                */
             }
         },
 
@@ -343,25 +244,11 @@ export default {
                     sectask_id: this.sectask._id,
                     name: session.text,
                     notebook : this.notebook,
+                    container: session.container, 
                 });
                 this.close();
             }
         },
-
-        /*
-        //not really necessary?
-        cancelNBTask() {
-            this.$http.put(Vue.config.wf_api+'/task/stop/'+this.nbtask._id)
-            .then(res=>{
-                this.$notify({ text: res.data.message, type: 'success'});
-                this.close();
-            })
-            .catch(err=>{
-                console.error(err); 
-            });
-        },
-        */
-
     },
 }
 </script>

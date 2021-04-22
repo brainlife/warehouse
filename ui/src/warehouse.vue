@@ -421,6 +421,9 @@ small {
 .readme {
     line-height: 175%;
 }
+.pub p {
+    line-height: 180%;
+}
 
 .readme img {
     max-width: 100%;
@@ -441,6 +444,16 @@ small {
 .readme h5,
 .readme h6 {
     font-size: 1.1rem;
+}
+
+.readme .table {
+    font-size: 90%;
+}
+.readme .table th {
+    font-size: 80%;
+}
+.readme .table td {
+    padding: 2px 4px;
 }
 
 pre {

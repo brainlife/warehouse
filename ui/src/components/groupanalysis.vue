@@ -17,30 +17,32 @@
         <div v-if="sessions.length >0">
             <br>
             <h4 style="padding-left: 20px">Sessions</h4>
-            <div v-for="task in sessions" :key="task._id" class="session">
-                <b-row>
-                    <b-col cols="3">
-                        <small>{{task.name}}</small><br>
-                        {{task.desc}}
-                        <!--{{task.desc}}<br> -->
-                    </b-col>
-                    <b-col cols="4">
-                        <statusicon :status="task.status"/> {{task.status_msg}}<br>
-                        <small>{{task._id}}</small><br>
-                    </b-col>
-                    <b-col cols="2">
-                        <b-badge pill class="bigpill">
-                            <icon name="calendar" style="opacity: 0.4;"/>&nbsp;&nbsp;&nbsp;<small>Created</small>&nbsp;&nbsp;<time>{{new Date(task.create_date).toLocaleDateString()}}</time>
-                        </b-badge>
-                    </b-col>
-                    <b-col cols="3">
-                        <b-button variant="primary" size="sm" @click="open(task)" :disabled="task._id == openWhenReady">
+            <div v-for="task in sessions" :key="task._id">
+                <div class="session" v-if="['running', 'requested'].includes(task.status)">
+                    <b-row>
+                        <b-col>
+                            <b-button variant="primary" size="sm" @click="open(task)" v-if="!openWhenReady" style="float: right;">
+                                Open
+                            </b-button>
                             <span v-if="task._id == openWhenReady"><icon name="cog" spin/> Opening..</span>
-                            <span v-else><!--<icon name="play"/>-->Open</span>
-                        </b-button>
-                        <b-button variant="secondary" size="sm" @click="remove(task)"><!--<icon name="trash"/>-->Remove</b-button>
-                    </b-col>
-                </b-row>
+                            <small>{{task.name}}</small><br>
+                            {{task.desc}}
+                            <!--{{task.desc}}<br> -->
+                        </b-col>
+                        <b-col>
+                            <statustag :status="task.status"/> {{task.status_msg}}<br>
+                            <small>{{task._id}}</small><br>
+                        </b-col>
+                        <b-col>
+                            <b-badge pill class="bigpill">
+                                <icon name="calendar" style="opacity: 0.4;"/>&nbsp;&nbsp;&nbsp;<small>Created</small>&nbsp;&nbsp;<time>{{new Date(task.create_date).toLocaleDateString()}}</time>
+                            </b-badge>
+                            <b-button variant="secondary" size="sm" @click="remove(task)" style="float: right">
+                                <icon name="trash"/>
+                            </b-button>
+                        </b-col>
+                    </b-row>
+                </div>
             </div>
             <br>
         </div>
@@ -60,8 +62,8 @@
                 <br clear="right">
             </div>
         </div>
-
     </div>
+    <b-button class="button-fixed" @click="newsession">New Session</b-button>
 </div>
 </template>
 
@@ -69,10 +71,10 @@
 import Vue from 'vue'
 
 import axios from 'axios'
+import ReconnectingWebSocket from 'reconnectingwebsocket'
 
 import agreementMixin from '@/mixins/agreement'
 import gainstance from '@/mixins/gainstance'
-import ReconnectingWebSocket from 'reconnectingwebsocket'
 
 export default {
     mixins: [
@@ -82,7 +84,8 @@ export default {
     components: {
         contact: ()=> import('@/components/contact'),
         statustag: ()=> import('@/components/statustag'),
-        statusicon: ()=> import('@/components/statusicon'),
+        //statusicon: ()=> import('@/components/statusicon'),
+        statustag: ()=> import('@/components/statustag'),
     },
 
     props: {
@@ -129,6 +132,7 @@ export default {
                         tag: "1.0",
                     }
                 },
+                /*
                 {
                     text: "jupyter/datascience-notebook", 
                     //img: "https://kanoki.org/wp-content/uploads/2017/07/Screen-Shot-2017-07-15-at-04.59.36.png",
@@ -158,6 +162,7 @@ export default {
                         tag: "latest",
                     }
                 },
+                */
             ],
 
             ready: false,
@@ -174,7 +179,7 @@ export default {
             this.host = "https://dev1.soichi.us";
         }
 
-        this.createOrFindGAInstance(this.project, (err, instance)=>{
+        this.createOrFindGAInstance(this.project.group_id, (err, instance)=>{
             if(err) return console.error(err); //TODO notify?
             this.instance = instance;
 
@@ -183,6 +188,7 @@ export default {
             this.ws = new ReconnectingWebSocket(url, null);
             this.ws.onopen = (e)=>{
                 //wf.task will be deprecated by ex:amaretti
+                console.log("listening to", this.instance._id);
                 this.ws.send(JSON.stringify({
                     bind: {
                         ex: "wf.task",
@@ -194,11 +200,19 @@ export default {
                     switch(event.dinfo.exchange) {
                     case "wf.task":
                         let task = event.msg;
+                        console.log("received event", task._id, task.service, task.status);
+                        if(task.service != "brainlife/ga-launcher") return; //don't care.
                         let existing_task = this.sessions.find(t=>t._id == task._id);
                         if(existing_task) {
                             for(let k in task) existing_task[k] = task[k];
-                        } else this.sessions.push(task); //new task
+                        } else {
+                            console.log("got new task", task);
+                            this.sessions.push(task); //new task
+                        }
+                        this.$forceUpdate();
 
+                        console.log("checking for openWhenReady");
+                        console.log(this.openWhenReady, task._id, task.status);
                         if(this.openWhenReady == task._id && task.status == "running" && task.status_msg == "running") {
                             this.openWhenReady = null;
                             this.$root.$emit("loading", {show: false});
@@ -214,7 +228,8 @@ export default {
                     find: JSON.stringify({
                         status: {$ne: "removed"},
                         instance_id: this.instance._id,
-                        "config.container": {$exists: true}, //we only want to pull ga container
+                        //"config.container": {$exists: true}, //we only want to pull ga container
+                        service: "brainlife/ga-launcher",
                     }),
                 }
             }).then(res=>{
@@ -234,6 +249,7 @@ export default {
 
     methods: {
 
+        //deprecated by newsession?
         selectNewApp(app) {
             this.newApp = Object.assign({}, this.newApp, {
                 desc: app.desc,
@@ -242,6 +258,7 @@ export default {
             });
         },
 
+        //deprecated by newsession
         launchNewApp() {
             this.check_agreements(this.project, err=>{
                 if(err) return this.cb(err);
@@ -333,6 +350,17 @@ export default {
                 setTimeout(()=>{
                     this.waitProxy(url, cb);
                 }, 1500);
+            });
+        },
+
+        newsession() {
+            const me = this;
+            this.$root.$emit("galauncher.open", {
+                project: this.project._id, //default project to submit ga to
+                cb(err, task, app) {
+                    if(err) throw err;
+                    me.openWhenReady = task._id;
+                },
             });
         },
     }
