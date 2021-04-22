@@ -14,8 +14,8 @@
         {{ paper.abstract }}
     </p>
     <p> 
-        <span v-for="(contact, idx) in paper.authors" :key="idx" >
-            {{ contact.name }} <small v-if="idx != paper.authors.length - 1">|</small>
+        <span class="contact" v-for="(contact, idx) in paper.authors" :key="idx" >
+            {{ contact.name }}
         </span>
     </p>
     <p>
@@ -87,10 +87,13 @@ float: left;
 height: 20px;
 background:#999;
 }
-
 .name {
 background-color: #fff;
 display: inline-block;
 padding: 0px 10px;
+}
+.contact:not(:last-child):after {
+    content:' | ';
+    color: #666;
 }
 </style>
