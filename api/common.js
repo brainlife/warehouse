@@ -444,26 +444,28 @@ exports.getRelatedPaper = function(query) {
     return axios.get("https://api.labs.cognitive.microsoft.com/academic/v1.0/evaluate",{headers,params});
 }
 
-exports.updateRelatedPaperMag = function(publication,cb) {
-    console.log("--- %s %s", publication.name, publication._id.toString());
+exports.updateRelatedPaperMag = function(rec,cb) {
+    let query;
+    console.log("--- %s %s", rec.name, rec._id.toString());
     if(!config.mag) cb("no mag config!!");
-    if(!publication.relatedPapers) publication.relatedPapers = []; //not sure if we need this or not
-    publication.markModified("relatedPapers");
-    const query = exports.generateQuery(publication.name+" "+publication.desc+" "+publication.readme);
+    if(!rec.relatedPapers) rec.relatedPapers = []; //not sure if we need this or not
+    rec.markModified("relatedPapers");
+    if(!rec.readMe) query = exports.generateQuery(rec.name+" "+rec.desc+" "+rec.readme);
+    else query = exports.generateQuery(rec.name+" "+rec.desc);
     if(!query) {
-        publication.relatedPapers = [];
-        publication.save(cb);
+        rec.relatedPapers = [];
+        rec.save(cb);
         return;
     }
     console.log("mag query", query);
     exports.getRelatedPaper(query).then(res=>{
         if(res.status != 200) return cb("failed to call mag api");
-        publication.relatedPapers = res.data.entities
+        rec.relatedPapers = res.data.entities
         .filter(a => a.logprob > config.mag.lowestProb)
         .map(paper=>{
             console.log(paper.logprob, paper.DOI, paper.Ti);
             const ret = {
-                publicationDate: new Date(paper.D),
+                recDate: new Date(paper.D),
                 citationCount: paper.CC,
                 title: paper.Ti, 
                 doi: paper.DOI,
@@ -483,7 +485,7 @@ exports.updateRelatedPaperMag = function(publication,cb) {
             }
             return ret;
         });
-        publication.save(cb);
+        rec.save(cb);
     }).catch(res=>{
         console.log(res.toString());
         //mag api returns 500 if paper doesn't exist.. so we can not tell the difference between
