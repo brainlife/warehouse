@@ -2,19 +2,17 @@
 <div>
     <div class="page-header">
         <div class="search-box onRight">
-            <b-form-input v-model="query" type="text" placeholder="Search Datatypes" @input="change_query_debounce" class="input"/>
+            <b-form-input v-model="query" type="text" placeholder="Search Datatypes" @input="changeQueryDebounce" class="input"/>
             <icon name="search" class="search-icon" scale="1.5"/>
-            <icon name="times" class="clear-search" scale="1.5" @click="clearQuery()" v-if="query != ''"/>
+            <icon name="times" class="clear-search" scale="1.5" @click="clearQuery()" v-if="query"/>
         </div>
     </div>
     <div class="page-content" ref="scrolled">
         <div class="header">
-            <b-container>
                 <h2>Datatypes</h2>
                 <p style="opacity: 0.7;">
                     Datatypes allow Apps to exchange data. Please visit <a href="https://app.slack.com/client/T3X5ND3U1/C946FA6PK">#datatype slack channel</a> to register new datatypes.
                 </p>
-            </b-container>
         </div>
         <div>
             <h4 class="header-sticky"><b-container>neuro/</b-container></h4> 
@@ -54,7 +52,7 @@ import pageheader from '@/components/pageheader'
 import contact from '@/components/contact'
 import app from '@/components/app'
 import tags from '@/components/tags'
-let query_debounce;
+let queryDebounce;
 export default {
     components: { 
         pageheader, datatype, app, VueMarkdown, contact, tags,
@@ -117,52 +115,32 @@ export default {
 
         get_datatypes(prefix) {
             if(!this.datatypes) return false;
-            if(this.filtered.length >0){
-                return this.filtered.filter(d=>{
-                    if(~d.name.indexOf(prefix)) {
-                        return true;
-                    }
-                    return false;
-                }); 
+            if(this.filtered.length){
+                return this.filtered.filter(d=>~d.name.indexOf(prefix));
             }
-            return this.datatypes.filter(d=>{
-                if(~d.name.indexOf(prefix)) {
-                    return true;
-                }
-                return false;
-            }); 
+            return this.datatypes.filter(d=>~d.name.indexOf(prefix));
         },
 
         get_not_datatypes(prefix) {
             if(!this.datatypes) return false;
-            if(this.filtered.length >0){
-                return this.filtered.filter(d=>{
-                    if(!~d.name.indexOf(prefix)) {
-                        return true;
-                    }
-                    return false;
-                }); 
+            if(this.filtered.length){
+                return this.filtered.filter(d=>!d.name.includes(prefix));
             }
-            return this.datatypes.filter(d=>{
-                if(!~d.name.indexOf(prefix)) {
-                    return true;
-                }
-                return false;
-            }); 
+            return this.datatypes.filter(d=>!d.name.includes(prefix));
         },
 
         clearQuery() {
             this.query = ''
-            this.change_query();
+            this.changeQuery();
         },
 
-        change_query_debounce() {
-            clearTimeout(query_debounce);
-            query_debounce = setTimeout(this.change_query, 300);        
+        changeQueryDebounce() {
+            clearTimeout(queryDebounce);
+            queryDebounce = setTimeout(this.changeQuery, 300);        
         },
 
-        change_query() {
-            if(!this.datatypes) return setTimeout(this.change_query, 300);
+        changeQuery() {
+            if(!this.datatypes) return setTimeout(this.changeQuery, 300);
             //document.location="#"; //clear hash //TODO what is this?
             sessionStorage.setItem("datatypes.query", this.query);
             this.load();
@@ -170,15 +148,10 @@ export default {
 
         load(){
             if(this.query){
-                console.log(this.query);
                 this.query.split(" ").forEach(q=>{
                     if(q == "") return;
-                    this.filtered = this.datatypes.filter((datatype) =>{
-                        if(datatype.name.toLowerCase().includes(q.toLowerCase())){
-                            console.log(datatype.name+" "+q);
-                            return datatype;
-                        }
-                    });
+                    this.filtered = this.datatypes.filter((datatype) =>
+                        (datatype.name.toLowerCase().includes(q.toLowerCase())));
                 });
             }else {
                 this.filtered = [];
