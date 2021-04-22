@@ -15,7 +15,7 @@
     </p>
     <p> 
         <span v-for="(contact, idx) in paper.authors" :key="idx" >
-            {{ contact.name }} <small>|</small>
+            {{ contact.name }} <small v-if="idx != paper.authors.length - 1">|</small>
         </span>
     </p>
     <p>

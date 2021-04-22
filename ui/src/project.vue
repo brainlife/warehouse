@@ -240,12 +240,12 @@
                         </div>
                     </div>
 
-                    <div class="box" v-if="selected.mag && selected.mag.papers && selected.mag.papers.length > 0">
+                    <div class="box" v-if="selected.relatedPapers && selected.relatedPapers.length > 0">
                         <span class="form-header">Related Articles</span>
                         <p>
                             <small>We found the following journals/articles related to this project based on name/description through MAG</small>
                         </p>
-                        <div v-for="paper in selected.mag.papers" :key="Id" >
+                        <div v-for="paper in selected.relatedPapers" :key="Id" >
                             <hr>
                             <mag  :paper="paper"/>
                         </div>
