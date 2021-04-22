@@ -17,7 +17,7 @@
         <b-container>
             <div v-if="!pubs" style="margin: 40px;"><h3>Loading ..</h3></div>
             <div v-else style="margin: 10px 0px;">
-                <div v-for="pub in pubs" :key="pub._id" class="pub">
+                <div v-for="pub in pubs" :key="pub._id" style="margin-bottom: 30px; box-shadow: 1px 1px 4px #9996">
                     <pubcard :pub="pub"/>
                 </div>
             </div>
@@ -66,17 +66,9 @@ export default {
 </script>
 
 <style scoped>
-.pub {
-background-color: white;
-transition: box-shadow 0.3s ease;
-margin-bottom: 20px;
-}
-.pub:hover {
-box-shadow: 1px 1px 2px rgba(0,0,0,0.1);
-position: relative;
-}
 .page-content {
 top: 0px;
+background-color: white;
 }
 .page-content h3 {
 margin-bottom: 0px;

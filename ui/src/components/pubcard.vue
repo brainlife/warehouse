@@ -2,7 +2,7 @@
 <div class="pubcard" :class="{'pub-removed': pub.removed}">
     <div>
         <div style="float: right;">
-            <projectavatar v-if="pub.project" :project="pub.project" :width="100" :height="100" style="margin: 10px;"/>
+            <projectavatar v-if="pub.project" :project="pub.project" :width="100" :height="100" style="margin: 0 0 10px 10px;"/>
             <br>
             <div class='altmetric-embed'
                 data-badge-type-dis='donut'
@@ -33,7 +33,7 @@
         <div v-for="(release, idx) in pub.releases" :key="idx">
             <div v-if="!release.removed" style="clear: both; border-top: 1px solid #e6e6e6; padding: 5px; padding-left: 20px;">
                 <span class="form-header" style="opacity: 0.7; display: inline-block;">Release</span> <b>{{release.name}}</b>
-                <small style="float: right;">{{new Date(release.create_date).toLocaleDateString()}}</small>
+                <small style="float: right; padding-right: 10px;">{{new Date(release.create_date).toLocaleDateString()}}</small>
                 <br>
                 <small v-if="release.desc">{{release.desc}}<br></small>
                 <div v-if="release.sets" v-for="(set, idx) in release.sets" :key="idx" style="margin-right: 5px; display: inline-block;">
@@ -50,13 +50,15 @@
             </div>
         </div>
 
-        <div style="background-color: #f6f6f6; padding: 10px;">
-            <doibadge :doi="pub.doi"/>
-            <b-badge pill class="bigpill" title="Registration Date">
-                <icon name="calendar" style="opacity: 0.4;"/>&nbsp;&nbsp;&nbsp;<small>Registerd</small>&nbsp;&nbsp;{{new Date(pub.create_date).toLocaleDateString()}}
-            </b-badge>
+        <div style="background-color: #f0f0f0; padding: 10px;">
+            <span style="float: right">
+                <doibadge :doi="pub.doi"/>
+                <b-badge pill class="bigpill" title="Registration Date">
+                    <icon name="calendar" style="opacity: 0.4;"/>&nbsp;&nbsp;&nbsp;<small>Registerd</small>&nbsp;&nbsp;{{new Date(pub.create_date).toLocaleDateString()}}
+                </b-badge>
+            </span>
+            <br clear="both">
         </div>
-
     </div>
 </div>
 </template>
