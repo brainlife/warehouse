@@ -148,11 +148,14 @@ export default {
 
         load(){
             if(this.query){
-                this.query.split(" ").forEach(q=>{
-                    if(q == "") return;
-                    this.filtered = this.datatypes.filter((datatype) =>
-                        (datatype.name.toLowerCase().includes(q.toLowerCase())));
+                console.log(this.query);
+                this.filtered = this.datatypes.filter((datatype) =>{
+                    const sub_query = this.query.split(' ');
+                    sub_query.forEach((token) =>{
+                        if(datatype.name.toLowerCase().includes(token.toLowerCase()) && datatype.desc.toLowerCase().includes(token.toLowerCase())) return true;
+                    });
                 });
+                console.log(this.filtered);
             }else {
                 this.filtered = [];
             }
