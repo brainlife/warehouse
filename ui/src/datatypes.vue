@@ -14,8 +14,8 @@
                     Datatypes allow Apps to exchange data. Please visit <a href="https://app.slack.com/client/T3X5ND3U1/C946FA6PK">#datatype slack channel</a> to register new datatypes.
                 </p>
         </div>
-        <div v-if="filtered.length ==0 && query.length > 0">
-            <h3>No matching Datatypes</h3>
+        <div v-if="!filtered.length && query.length">
+            <h3 style="opacity: 0.8; margin: 40px;" variant="secondary">No matching Datatypes</h3>
         </div>
         <div v-else>
             <h4 class="header-sticky"><b-container>neuro/</b-container></h4> 
@@ -155,7 +155,6 @@ export default {
                     let subQuery = this.query.split(" ");
                     return subQuery.every(token => datatype.name.toLowerCase().includes(token.toLowerCase()) && datatype.desc.toLowerCase().includes(token.toLowerCase()))
                 });
-                console.log(this.filtered);
             }else {
                 this.filtered = [];
             }

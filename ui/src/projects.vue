@@ -16,6 +16,9 @@
         </b-form-group>
     </div>
     <div class="page-content" v-if="my_projects">
+        <div v-if="query.length && !other_projects.length && !my_projects.length">
+            <h3 style="opacity: 0.8; margin: 40px;" variant="secondary">No matching Projects</h3>
+        </div>
         <div v-if="loading" style="margin: 40px; opacity: 0.5"><h3><icon name="cog" spin scale="2"/> Loading ..</h3></div>
         <div v-if="config.user" class="position: relative">
             <h4 class="group-title">My Projects</h4>
@@ -34,7 +37,6 @@
             </p>
             <br v-if="my_projects.length > 0" clear="both">
         </div>
-
         <div v-if="other_projects && other_projects.length > 0" style="position: relative;">
             <h4 class="group-title">Public<small>/Protected</small> Projects</h4>
             <div style="padding: 10px;" v-if="mode == 'tile'">
