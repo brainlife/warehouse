@@ -148,12 +148,9 @@ export default {
 
         load(){
             if(this.query){
-                console.log(this.query);
                 this.filtered = this.datatypes.filter((datatype) =>{
-                    const sub_query = this.query.split(' ');
-                    sub_query.forEach((token) =>{
-                        if(datatype.name.toLowerCase().includes(token.toLowerCase()) && datatype.desc.toLowerCase().includes(token.toLowerCase())) return true;
-                    });
+                    let subQuery = this.query.split(" ");
+                    return subQuery.every(token => datatype.name.toLowerCase().includes(token.toLowerCase()) && datatype.desc.toLowerCase().includes(token.toLowerCase()))
                 });
                 console.log(this.filtered);
             }else {
