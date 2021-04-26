@@ -14,7 +14,10 @@
                     Datatypes allow Apps to exchange data. Please visit <a href="https://app.slack.com/client/T3X5ND3U1/C946FA6PK">#datatype slack channel</a> to register new datatypes.
                 </p>
         </div>
-        <div>
+        <div v-if="filtered.length ==0 && query.length > 0">
+            <h3>No matching Datatypes</h3>
+        </div>
+        <div v-else>
             <h4 class="header-sticky"><b-container>neuro/</b-container></h4> 
             <b-container>
                 <b-card-group columns style="margin: 15px 0px;">
