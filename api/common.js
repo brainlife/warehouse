@@ -465,7 +465,7 @@ exports.updateRelatedPaperMag = function(rec,cb) {
         .map(paper=>{
             console.log(paper.logprob, paper.DOI, paper.Ti);
             const ret = {
-                recDate: new Date(paper.D),
+                publicationDate: new Date(paper.D),
                 citationCount: paper.CC,
                 title: paper.Ti, 
                 doi: paper.DOI,
