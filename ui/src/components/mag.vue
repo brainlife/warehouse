@@ -1,4 +1,5 @@
 <template>
+<<<<<<< HEAD
 <div class="mag">
     <div style="padding-left: 10px;">
         <h5 class="paper-title">{{ paper.title }}</h5>
@@ -17,6 +18,24 @@
             <b-badge v-for="tag in paper.fields" :key="tag" class="topic">{{tag}}</b-badge>
         </p>
     </div>
+=======
+<div>
+    <h5 class="paper-title">{{ paper.title }}</h5>
+    <span class="mag-venue">
+        {{ paper.venue }} | {{ new Date(paper.publicationDate).getFullYear() }}
+    </span>
+    <p>
+        {{ paper.abstract }}
+    </p>
+    <p> 
+        <span v-for="(contact, idx) in paper.authors" :key="idx" >
+             <small v-if="idx">|</small> {{ contact.name }} 
+        </span>
+    </p>
+    <p>
+        <b-badge v-for="tag in paper.fields" :key="tag" class="topic">{{tag}}</b-badge>
+    </p>
+>>>>>>> 89f104fc9423a4e4b6267688de597e7956d8bc84
 
     <div style="background-color: #eee; padding: 10px; text-align: right;">
         <doibadge :doi="paper.doi" jump="true"/>
@@ -94,7 +113,6 @@ float: left;
 height: 20px;
 background:#999;
 }
-
 .name {
 background-color: #fff;
 display: inline-block;
