@@ -8,33 +8,39 @@
         </div>
     </div>
     <div class="page-content" ref="scrolled">
+        <!--
         <div class="header">
                 <h2>Datatypes</h2>
                 <p style="opacity: 0.7;">
                     Datatypes allow Apps to exchange data. Please visit <a href="https://app.slack.com/client/T3X5ND3U1/C946FA6PK">#datatype slack channel</a> to register new datatypes.
                 </p>
         </div>
+        -->
         <div v-if="!filtered.length && query.length">
-            <h3 style="opacity: 0.8; margin: 40px;" variant="secondary">No matching Datatypes</h3>
+            <p style="opacity: 0.5; margin: 20px; font-size: 120%;">No matching Datatypes</p>
         </div>
         <div v-else>
-            <h4 class="header-sticky"><b-container>neuro/</b-container></h4> 
-            <b-container>
-                <b-card-group columns style="margin: 15px 0px;">
-                    <b-card no-body v-for="datatype in get_datatypes('neuro/')" :key="datatype._id" @click="open(datatype)" class="datatype-card">
-                        <datatype :datatype="datatype"/>
-                    </b-card>
-                </b-card-group>
-            </b-container>
+            <div v-if="get_datatypes('neuro/').length">
+                <h4 class="header-sticky"><b-container>neuro/</b-container></h4> 
+                <b-container>
+                    <b-card-group columns style="margin: 15px 0px;">
+                        <b-card no-body v-for="datatype in get_datatypes('neuro/')" :key="datatype._id" @click="open(datatype)" class="datatype-card">
+                            <datatype :datatype="datatype"/>
+                        </b-card>
+                    </b-card-group>
+                </b-container>
+            </div>
 
-            <h4 class="header-sticky"><b-container>other</b-container></h4> 
-            <b-container>
-                <b-card-group columns style="margin: 15px 0px;">
-                    <b-card no-body v-for="datatype in get_not_datatypes('neuro/')" :key="datatype._id" @click="open(datatype)" class="datatype-card">
-                        <datatype :datatype="datatype"/>
-                    </b-card>
-                </b-card-group>
-            </b-container>
+            <div v-if="get_not_datatypes('neuro/').length">
+                <h4 class="header-sticky"><b-container>other</b-container></h4> 
+                <b-container>
+                    <b-card-group columns style="margin: 15px 0px;">
+                        <b-card no-body v-for="datatype in get_not_datatypes('neuro/')" :key="datatype._id" @click="open(datatype)" class="datatype-card">
+                            <datatype :datatype="datatype"/>
+                        </b-card>
+                    </b-card-group>
+                </b-container>
+            </div>
         </div>
         <b-button v-if="config.has_role('datatype.create')" class="button-fixed" @click="newdatatype">
             New Datatype
@@ -80,8 +86,8 @@ export default {
     },
 
     watch : {
-        query : function (){
-            this.load();
+        query() {
+            this.applyFilter();
         }
     },
     mounted() {
@@ -146,18 +152,26 @@ export default {
             if(!this.datatypes) return setTimeout(this.changeQuery, 300);
             //document.location="#"; //clear hash //TODO what is this?
             sessionStorage.setItem("datatypes.query", this.query);
-            this.load();
+            this.applyFilter();
         },
 
-        load(){
-            if(this.query){
-                this.filtered = this.datatypes.filter((datatype) =>{
-                    let subQuery = this.query.split(" ");
-                    return subQuery.every(token => datatype.name.toLowerCase().includes(token.toLowerCase()) && datatype.desc.toLowerCase().includes(token.toLowerCase()))
+        applyFilter(){
+            let tokens = this.query.split(" ").map(token=>token.toLowerCase());
+            this.filtered = this.datatypes.filter(datatype=>{
+                //pull all the tokens I want to search from datatype
+                let stuff = [
+                    datatype.name,
+                    datatype.desc,
+                ];
+                datatype.files.forEach(file=>{
+                    stuff.push(file.desc);
+                    stuff.push(file.filename);
+                    stuff.push(file.dirname);
                 });
-            }else {
-                this.filtered = [];
-            }
+                //then apply searching. every token has to have some stuff matching
+                stuff = stuff.filter(thing=>!!thing).map(thing=>thing.toLowerCase());
+                return tokens.every(token=>stuff.some(thing=>thing.includes(token)));
+            });
         }
     }, //methods
 }
@@ -169,12 +183,6 @@ export default {
 margin-bottom: 0px;
 padding: 10px 0px;
 font-size: 20pt;
-}
-.page-content h3 {
-background-color: white;
-color: gray;
-padding: 20px;
-margin-bottom: 0px;
 }
 .page-content h4 {
 padding: 15px 20px;
@@ -239,10 +247,6 @@ cursor: pointer;
 } 
 .sample-dataset:hover {
 background-color: #ddd;
-}
-
-.search-box .clear-search {
-right: 260px;
 }
 </style>
 
