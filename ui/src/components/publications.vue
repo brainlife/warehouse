@@ -36,29 +36,15 @@
                     <small><tags :tags="pub.tags"/></small>
                 </p>
 
-                <br>
-
-                <b>Releases</b>
                 <b-alert show="pub.releases.length == 0" variant="danger">No Releases</b-alert>
                 <div v-for="release in pub.releases.filter(r=>!r.removed)" :key="release._id" style="clear: both; padding: 5px 0; margin: 5px 0; border-top: 1px solid #eee; margin-bottom: 5px">
-                    <b-badge pill class="bigpill" title="Release Date" style="float: right;">
-                        <icon name="calendar" style="opacity: 0.4;"/>&nbsp;&nbsp;
-                        {{new Date(release.create_date).toLocaleDateString()}}
-                    </b-badge>
+                    <span style="float: right">
+                        <icon name="calendar" style="opacity: 0.4;"/> {{new Date(release.create_date).toLocaleDateString()}}
+                    </span>
 
                     <h6><span style="opacity: 0.5">Release</span> {{release.name}}</h6>
-                    <b-row>
-                        <b-col>
-                            <div v-for="(set, idx) in release.sets" :key="idx" style="margin-bottom: 5px;">
-                                <releaseset :set="set"/>
-                            </div>
-                        </b-col>
-                        <b-col>
-                            <div v-for="(gaarchive, idx) in release.gaarchives" :key="idx" style="margin-bottom: 5px;">
-                                <gaarchive :gaarchive="gaarchive"/>
-                            </div>
-                        </b-col>
-                    </b-row>
+                    <releaseset v-for="(set, idx) in release.sets" :key="idx" style="margin-right: 10px; display: inline-block;" :set="set"/>
+                    <gaarchive v-for="(gaarchive, idx) in release.gaarchives" :key="idx" style="margin-right: 10px; display: inline-block;" :gaarchive="gaarchive"/>
                 </div>
 
                 <!--<span style="float: right; opacity: 0.7;"><b>{{new Date(pub.publish_date||pub.create_date).toLocaleDateString()}}</b></span>-->
@@ -255,6 +241,7 @@ box-shadow: 1px 1px 3px rgba(0,0,0,0.3);
 font-size: 88%;
 cursor: pointer;
 transition: background-color 0.3s;
+margin-bottom: 20px;
 }
 .pub:hover {
 background-color: #f8f8f8;

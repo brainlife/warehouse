@@ -180,7 +180,10 @@ transition: color 0.5s;
 opacity: 0.85;
 margin-top: 0px;
 padding: 7px;
+/*
 margin-bottom: 32px;
+*/
+
 font-size: 11px;
 color: #444;
 }

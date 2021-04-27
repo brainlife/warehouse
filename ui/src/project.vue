@@ -385,9 +385,9 @@ export default {
             tabs: [
                 {id: "detail", label: "Detail"},
                 {id: "dataset", label: "Archive"},
-                {id: "process", label: "Process"},
+                {id: "process", label: "Preprocess"},
                 {id: "pipeline", label: "Pipeline"},
-                {id: "groupanalysis", label: "Group Analysis"},
+                {id: "groupanalysis", label: "Analysis"},
                 {id: "pub", label: "Publication"},
             ],
             tab: 0, //initial tab top open

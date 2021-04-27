@@ -344,6 +344,8 @@ var releaseSchema = mongoose.Schema({
         dataset_id: String, //dataset ID for published(archived) notebook
         name: String, //name of the session archived
     } ],
+
+    apps: [ mongoose.Schema.Types.Mixed ], //TODO..
 });
 mongoose.model("Releases", releaseSchema);
 
@@ -446,7 +448,7 @@ var datasetSchema = mongoose.Schema({
     product: mongoose.Schema.Types.Mixed,
 
     //storing - dataset is currently being archived (default)
-    //stored -  dataset is stored on storage system
+    //stored -  dataset is stored on storage system (removed flag might be set to true if it's "logically" removed - but data still exists)
     //failed -  failed to archive to storage system (remove_datastes.js will remove it in a week)
     //removed - (freed) dataset is freed from storage system (remove_dataset.js will free)
     status: { type: String, default: "storing" },

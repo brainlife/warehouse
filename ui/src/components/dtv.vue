@@ -2,11 +2,15 @@
 <div>
     <div v-if="task.finish_date" class="validated">
         <timeago class="text-muted" style="float: right" :datetime="task.finish_date" :auto-update="10"/>
-        <span v-if="task.product && task.product.errors.length == 0 && task.product.warnings.length == 0" style="opacity: 0.5;">
+        <span v-if="task.product && 
+            task.product.errors && 
+            task.product.errors.length == 0 && 
+            task.product.warnings && 
+            task.product.warnings.length == 0">
             <icon name="check" scale="0.8"/> <b style="opacity: 0.8">Validated</b>
-            <small>by {{task.service}} {{task.service_branch}} <small>{{task._id}}</small></small>
-            <br> Found no issues
+            <!-- <br> Found no issues-->
         </span>
+        <small>by {{task.service}} {{task.service_branch}} <small>{{task._id}}</small></small>
         <div v-if="task.product" style="margin-bottom: 5px;">
             <b-alert show v-for="(error, idx) in task.product.errors" :key="idx" variant="danger" class="dtv-alert"><b>Error</b> {{error}}</b-alert>
             <b-alert show v-for="(warning, idx) in task.product.warnings" :key="idx" variant="secondary" class="dtv-alert"><b>Warning</b> {{warning}}</b-alert>

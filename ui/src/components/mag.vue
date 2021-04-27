@@ -1,28 +1,29 @@
 <template>
-<div>
-    <h5 class="paper-title">{{ paper.title }}</h5>
-    <span class="mag-venue">
-        {{ paper.venue }} | {{ new Date(paper.publicationDate).getFullYear() }}
-    </span>
-    <p>
-        {{ paper.abstract }}
-    </p>
-    <p> 
-        <span v-for="(contact, idx) in paper.authors" :key="idx" >
-            {{ contact.name }} <small>|</small>
-        </span>
-    </p>
-    <p>
-        <b-badge v-for="tag in paper.fields" :key="tag" class="topic">{{tag}}</b-badge>
-    </p>
+<div class="mag">
+    <div style="padding-left: 10px;">
+        <h5 class="paper-title">{{ paper.title }}</h5>
+        <p>
+            <span class="mag-venue">
+                {{ paper.venue }} | {{ new Date(paper.publicationDate).getFullYear() }}
+            </span>
+        </p>
+        <p> {{ paper.abstract }} </p>
+        <p> 
+            <span v-for="(contact, idx) in paper.authors" :key="idx" >
+                {{ contact.name }} <small>|</small>
+            </span>
+        </p>
+        <p>
+            <b-badge v-for="tag in paper.fields" :key="tag" class="topic">{{tag}}</b-badge>
+        </p>
+    </div>
 
-    <div style="background-color: #eee; padding: 10px;">
+    <div style="background-color: #eee; padding: 10px; text-align: right;">
         <doibadge :doi="paper.doi" jump="true"/>
         <b-badge pill class="bigpill" title="Publication Date">
             <icon name="calendar" style="opacity: 0.4" />&nbsp;{{ new Date(paper.publicationDate).toLocaleDateString() }}
         </b-badge>
     </div>
-
 </div>
 </template>
 
@@ -38,6 +39,9 @@ export default {
 </script>
 
 <style scoped>
+.mag {
+    border-left: 3px solid #f0f0f0;
+}
 h4 {
 font-size: 15px;
 font-weight: bold;
@@ -58,6 +62,7 @@ text-transform: capitalize;
 color: #333;
 padding: 0px;
 transition: color 0.3s;
+font-size: 130%;
 }
 
 .mag-venue {

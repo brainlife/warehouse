@@ -1,6 +1,6 @@
 <template>
 <div v-if="taskconfig && appconfig">
-    <span style="opacity: 0.4;" v-if="Object.keys(taskconfig).length == 0">No configuration</span>
+    <small style="opacity: 0.5" v-if="Object.keys(taskconfig).length == 0">No configuration</small>
     <table width="100%">
         <tr v-for="(v,k) in taskconfig" :key="k" class="config-row" :class="{ default: is_default(k) }">
             <th>{{k}}</th>

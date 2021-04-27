@@ -93,7 +93,7 @@ router.get('/datasets-inventory/:releaseid', (req, res, next)=>{
     });
 });
 
-//TODO - cache this in publication record?
+//DEPRECATED .. it's cached into pub record when it's updated
 /**
  * @apiGroup Publications 
  * @api {get} /pub/apps/:releaseid
@@ -101,6 +101,7 @@ router.get('/datasets-inventory/:releaseid', (req, res, next)=>{
  * @apiSuccess {Object[]}       Application objects
  * 
  */
+/*
 router.get('/apps/:releaseid', async (req, res, next)=>{
     try {
         let apps = await common.aggregateDatasetsByApps({
@@ -111,6 +112,7 @@ router.get('/apps/:releaseid', async (req, res, next)=>{
         next(err);
     }
 });
+*/
 
 /**
  * @apiGroup Publications
@@ -197,8 +199,7 @@ router.post('/', common.jwt(), (req, res, next)=>{
             pub.doi = doi;
             pub.save(err=>{
                 if(err) return next(err);
-
-                //return to the caller
+                //return to the caller already
                 res.json(pub);
 
                 //now post metadata and set url
@@ -212,30 +213,38 @@ router.post('/', common.jwt(), (req, res, next)=>{
                     });
                 });
                 
-                /*
-                //I have to use req.body.releases which has "sets", but not release._id
-                //so let's set release._id on req.body.releases and use that list to 
-                //handle new publications
-                req.body.releases.forEach((release, idx)=>{
-                    release._id = pub.releases[idx]._id;
-                });
-                */
                 async.eachSeries(pub.releases, (release, next_release)=>{
-                    updateRelease(release, pub.project, next_release);
+                    releaseDataset(release, pub.project, err=>{
+                        if(err) return next_release(err);
+                        updateReleaseCache(pub, release, next_release);
+                    });
                 }, err=>{
                     if(err) console.error(err);
-                    console.log("done processing releases");
+                    console.log("done processing releases - resaving releases - we've added some cache");
+                    pub.markModified('releases');
+                    pub.save();
                 });
            }); 
         });
     });
 });
 
+function updateReleaseCache(pub, release, next) {
+    //list apps used to produce this release
+    //console.log("aggregateing dataset publised under release", release._id);
+    common.aggregateDatasetsByApps({
+        publications: release._id,
+    }).then(apps=>{
+        release.apps = apps;
+        next();
+    });
+}
+
 /**
  * @apiGroup Publications
- * @api {put} /pub/:pubid          Update Publication
+ * @api {put} /pub/:pubid               Update Publication
  *                              
- * @apiDescription              Update Publication
+ * @apiDescription                      Update Publication
  *
  * @apiParam {String} license           License used for this publication
  * @apiParam {Object[]} fundings        Array of {funder, id}
@@ -271,6 +280,7 @@ router.put('/:id', common.jwt(), (req, res, next)=>{
             delete req.body.project;
             delete req.body.doi;
             delete req.body.create_date;
+            delete req.body.__v; //could cause VersionError
             //delete req.body.removed; //let's secretly allow removal for now..
 
             //update pub record to make sure all new releases has id
@@ -298,9 +308,15 @@ router.put('/:id', common.jwt(), (req, res, next)=>{
                 //async.eachOfSeries(req.body.releases, (release, idx, next_release)=>{
 
                 async.eachSeries(pub.releases, (release, next_release)=>{
-                    updateRelease(release, pub.project, next_release);
+                    releaseDataset(release, pub.project, err=>{
+                        if(err) return next_release(err);
+                        updateReleaseCache(pub, release, next_release);
+                    });
                 }, err=>{
                     if(err) console.error(err);
+                    console.log("resaving releases - we've added some cache");
+                    pub.markModified('releases');
+                    pub.save();
                 });
             });
 
@@ -308,7 +324,7 @@ router.put('/:id', common.jwt(), (req, res, next)=>{
     });
 });
 
-function updateRelease(release, project, cb) {
+function releaseDataset(release, project, cb) {
 
     //publish all new release sets
     async.eachSeries(release.sets, (set, next_set)=>{

@@ -1298,8 +1298,15 @@ exports.list_users = async ()=>{
 
 exports.aggregateDatasetsByApps = query=>{
     return new Promise((resolve, reject)=>{
+
+        query["prov.task"] = {$exists: true};
         db.Datasets.aggregate()
         .match(query)
+        /*
+        .replaceWith({
+            "$prov.task.service_branch": { }.
+        })
+        */
         .group({
             _id: { 
                 app: "$prov.task.config._app", 
@@ -1307,27 +1314,48 @@ exports.aggregateDatasetsByApps = query=>{
                 service_branch: "$prov.task.service_branch"
             },
             count: {$sum: 1},
+            task: { "$first": "$prov.task"}, //pick the first task as a sample
         })
         .project({
             _id: 0, 
-            app: "$_id.app", 
+            //app: "$_id.app", 
             count: "$count",
-            service: "$_id.service",
-            service_branch: "$_id.service_branch",
+            //service: "$_id.service",
+            //service_branch: "$_id.service_branch",
+
+            //aconfig: "$aconfig",
+            app: "$task.config._app",
+            task: "$task",
         })
         .exec((err, recs)=>{
             if(err) return reject(err);
+            //do some clean up of data
+            recs.forEach(rec=>{
+                if(!rec.service_branch) rec.service_branch = "master";
+                for(const k in rec.task.config) {
+                    if(k == "_app") continue; //we need this for <taskconfig>
+                    if(k.startsWith("_")) delete rec.task.config[k]; //hidden parameters
+                }
+            });
+            
+            //dedupe records if branch is empty and other with "master"
+            const keys = [];
+            const dedupedRecs = recs.filter(rec=>{
+                const key = [rec.service, rec.service_branch, rec.app].join(".");
+                if(keys.includes(key)) return false;
+                keys.push(key);
+                return true;
+            });
 
             //load apps used
             let app_ids = [];
-            recs.forEach(rec=>{ 
+            dedupedRecs.forEach(rec=>{ 
                 if(rec.app) app_ids.push(rec.app); 
             });
             db.Apps.find({
                 _id: {$in: app_ids},
                 projects: [], //only show *public* apps
             })
-            //.populate(req.query.populate || '')
             .exec((err, apps)=>{
                 if(err) return reject(err);
 
@@ -1339,7 +1367,7 @@ exports.aggregateDatasetsByApps = query=>{
 
                 //now populate apps
                 let populated = [];
-                recs.forEach(rec=>{
+                dedupedRecs.forEach(rec=>{
                     if(rec.app) {
 
                         rec.app = app_obj[rec.app];

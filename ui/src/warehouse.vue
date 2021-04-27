@@ -448,6 +448,10 @@ small {
 
 .readme .table {
     font-size: 90%;
+    /*
+    table-layout: fixed;
+    */
+    background-color: white;
 }
 .readme .table th {
     font-size: 80%;

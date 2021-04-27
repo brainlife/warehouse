@@ -1,108 +1,133 @@
 <template>
-<div v-if="pub" class="pub">
-    <div class="page-content">
-        <div class="header">
-            <b-container style="position: relative;">
-                <!--
-                        inspiration
-                        https://dataverse.harvard.edu/dataset.xhtml?persistentId=doi:10.7910/DVN/24301
-                        https://searchworks.stanford.edu/view/rt034xr8593
-                        https://chemrxiv.org/articles/Repurposing_Therapeutics_for_the_Wuhan_Coronavirus_nCov-2019_Supercomputer-Based_Docking_to_the_Viral_S_Protein_and_Human_ACE2_Interface/11871402/3
-                -->
-                <div style="background-color: white;"><!--hide avatar when screen is narrow-->
-                    <h4 style="color: #666; margin-bottom: 5px;">
-                        {{pub.name}} 
-                    </h4>
-                    
-                    <b-tabs class="brainlife-tab" v-model="tab_index">
-                        <b-tab title="Detail"/>
-                        <b-tab v-for="release in pub.releases" :key="release._id">
-                            <template slot="title">Release {{release.name}}</template>
-                        </b-tab>
-                    </b-tabs>
-                </div>
-                <b-alert :show="pub.removed" variant="secondary">This publication has been removed</b-alert>
-            </b-container>
-        </div><!--header-->
-
-        <!-- detail -->
-        <div v-if="tab_index == 0">
-            <div style="background-color: white; padding-top: 15px; border-bottom: 1px solid #ddd;">
-                <b-container>
-                    <div style="border-bottom: 1px solid #eee; margin-bottom: 10px;">
-                        <projectavatar :project="pub.project" :height="125" :width="125" style="float: right; position: relative; top: -15px; margin-left: 15px;"/>
-                        <p>
-                            <doibadge :doi="pub.doi" jump="true"/>
-                            <b-badge pill class="bigpill">
-                                <icon name="calendar" style="opacity: 0.4;"/>&nbsp;&nbsp;&nbsp;<small>Published</small>&nbsp;&nbsp;<time>{{new Date(pub.create_date).toLocaleDateString()}}</time>
-                            </b-badge>
-                        </p>
-                        <p>{{pub.desc}}</p>
-
-                        <p>
-                            <span v-for="contact in pub.authors" :key="contact._id">
-                                <contact :fullname="contact.fullname" :email="contact.email"></contact>
-                            </span>
-                        </p>
-
-                        <p style="line-height: 250%;" v-if="pub.tags.length > 0"> 
-                            <b-badge v-for="topic in pub.tags" :key="topic" class="topic">{{topic}}</b-badge>
-                        </p>
-                    </div>
-                    <b-row style="min-height: 50px;">
-                        <b-col>
-                            <div class='altmetric-embed' 
-                                data-badge-type='donut' 
-                                data-badge-details="right" 
-                                data-hide-no-mentions="false" 
-                                :data-doi="pub.doi||config.debug_doi"/>
-                        </b-col>
-                    </b-row>
-                </b-container>
-                <br clear="right">
+<div v-if="pub" class="pub page-content">
+    <!--
+    <div class="header">
+        <b-container style="position: relative;">
+            <div style="background-color: white;">
+                <h4 style="color: #666; margin-bottom: 5px;">
+                    {{pub.name}} 
+                </h4>
+                <b-tabs class="brainlife-tab" v-model="tab_index">
+                    <b-tab title="Detail"/>
+                    <b-tab v-for="release in pub.releases" :key="release._id">
+                        <template slot="title">Release {{release.name}}</template>
+                    </b-tab>
+                </b-tabs>
             </div>
-            <b-container>
+            <b-alert :show="pub.removed" variant="secondary">This publication has been removed</b-alert>
+        </b-container>
+    </div>
+    -->
+
+    <b-alert :show="pub.removed" variant="secondary">This publication has been removed</b-alert>
+
+    <div style="background-color: white; padding-top: 5px; border-bottom: 1px solid #ddd;">
+        <b-container>
+            <div class="rightside">
+                <projectavatar :project="pub.project" :height="125" :width="125"/>
                 <br>
-                <!--
-                <b-row>
-                    <b-col cols="2">
-                        <span class="form-header">Authors</span>
-                    </b-col>
-                    <b-col cols="10">
+                <br>
+
+                <div v-if="pub.tags.length > 0"> 
+                    <div class="content-subheader border-bottom">Topics</div>
+                    <p style="line-height: 200%;">
+                        <b-badge v-for="topic in pub.tags" :key="topic" class="topic">{{topic}}</b-badge>
+                    </p>
+                </div>
+                <br>
+
+                <div style="position: sticky; top: 0;">
+                    <div v-if="pub.releases.length">
+                        <!--<div class="content-header">Contents</div>-->
+                        <div class="content-subheader border-bottom">Releases</div>
+                        <div v-for="release in pub.releases" :key="release._id" class="content-item">
+                            <small style="float: right">
+                                {{new Date(release.create_date).toLocaleDateString()}}
+                            </small>
+                            <span>{{release.name}}</span>
+                            <p v-if="release.desc"><small>{{release.desc}}</small></p>
+                        </div>
+                    </div>
+                    <br>
+
+                    <!--
+                    <div class="content-subheader">Citation</div>
+                    <br>
+                    -->
+
+                    <div v-if="pub.contributors.length">
+                        <div class="content-subheader">Contributors</div>
                         <p>
-                            <span v-for="contact in pub.authors" :key="contact._id">
-                                <contact :fullname="contact.fullname" :email="contact.email"></contact>
+                            <span v-for="(contact, idx) in pub.contributors" :key="contact._id">
+                                <span v-if="idx" style="opacity: 0.5;"> | </span> {{contact.fullname}} 
                             </span>
                         </p>
                         <br>
-                    </b-col>
-                </b-row>
-                -->
+                    </div>
 
-                <b-row v-if="pub.contributors.length > 0">
-                    <b-col cols="2">
-                        <span class="form-header">Contributors</span>
-                    </b-col>
-                    <b-col cols="10">
-                        <p>
-                            <span v-for="contact in pub.contributors" :key="contact._id">
-                                <contact :fullname="contact.fullname" :email="contact.email"></contact>
-                            </span>
-                        </p>
+                    <div class="content-subheader">
+                        License
+                        <b-badge>{{pub.license}}</b-badge>
                         <br>
-                    </b-col>
-                </b-row>
-
-                <b-row v-if="pub.readme">
-                    <b-col cols="2">
-                        <span class="form-header">README</span>
-                    </b-col>
-                    <b-col cols="10">
-                        <vue-markdown :source="pub.readme" class="readme"></vue-markdown>
                         <br>
-                    </b-col>
-                </b-row>  
+                    </div>
 
+                    <div class="content-subheader" v-if="pub.relatedPapers">
+                        Related Articles <b-badge>{{pub.relatedPapers.length}}</b-badge>
+                    </div>
+                    <br>
+
+                    <div class="content-subheader">Disqus</div>
+                    <br>
+
+                    <div class="content-subheader border-bottom">Project</div>
+                    <small class="text-muted">This publication was processed in the following brainlife.io project</small>
+                    <br>
+                    <div @click="openproject(pub.project._id)" class="clickable" style="background-color: #ddd; padding: 5px 10px; border-left: 3px solid #999;">
+                        <b>{{pub.project.name}}</b><br>
+                        <small>{{pub.project.desc}}</small>
+                    </div>
+
+                </div>
+            </div>
+
+            <!--main content-->
+            <div style="margin-right: 250px">
+                <h4 style="color: #666; padding-top: 15px; padding-bottom: 5px; ">
+                    {{pub.name}} 
+                </h4>
+                <p>
+                    <doibadge :doi="pub.doi"/>
+                    <b-badge pill class="bigpill">
+                        <icon name="calendar" style="opacity: 0.4;"/>&nbsp;&nbsp;&nbsp;<small>Published</small>&nbsp;&nbsp;<time>{{new Date(pub.create_date).toLocaleDateString()}}</time>
+                    </b-badge>
+                </p>
+                <p>{{pub.desc}}</p>
+                <p>
+                    <span v-for="contact in pub.authors" :key="contact._id">
+                        <contact :fullname="contact.fullname" :email="contact.email"></contact>
+                    </span>
+                </p>
+                <hr>
+                <div v-if="pub.readme" class="readme" style="margin-bottom: 20px;">
+                    <vue-markdown :source="pub.readme"/>
+                </div>
+                </b-col>
+
+                <!--<span class="form-header">Releases</span>-->
+                <release v-for="release in pub.releases" :key="release._id" :release="release" :project="pub.project"/>
+
+            </div>
+        </b-container>
+        <br clear="right">
+    </div>
+
+    <!--footer-->
+    <b-container>
+        <br>
+        <b-row>
+            <b-col>
+                <!--main footer-->
                 <b-row>
                     <b-col cols="2">
                         <span class="form-header">Citation</span>
@@ -125,9 +150,23 @@
                         <br>
 
                     </b-col>
-               </b-row>  
+                </b-row>  
 
-               <b-row v-if="pub.fundings.length > 0">
+                <b-row v-if="pub.contributors.length > 0">
+                    <b-col cols="2">
+                        <span class="form-header">Contributors</span>
+                    </b-col>
+                    <b-col cols="10">
+                        <p>
+                            <span v-for="contact in pub.contributors" :key="contact._id">
+                                <contact :fullname="contact.fullname" :email="contact.email"></contact>
+                            </span>
+                        </p>
+                        <br>
+                    </b-col>
+                </b-row>
+
+                <b-row v-if="pub.fundings.length > 0">
                     <b-col cols="2">
                         <span class="form-header">Funded By</span>
                     </b-col>
@@ -153,150 +192,52 @@
                     </b-col>
                 </b-row> 
 
+                <!--
                 <b-row>
                     <b-col cols="2">
                         <span class="form-header">Project</span>
                     </b-col>
                     <b-col>
-                        <p><small class="text-muted">This publication is hosted in the following Brainlife project</small></p>
-                        <a href="javascript:void(0)" @click="openproject(pub.project._id)"><h5><icon name="shield-alt"/> {{pub.project.name}}</h5></a>
-                        <p class="text">{{pub.project.desc}}</p>
+                        <p><small class="text-muted">This publication is hosted in the following brainlife.io project</small></p>
+                        <div style="background-color: white; padding: 10px;" @click="openproject(pub.project._id)" class="clickable">
+                            <h5><icon name="shield-alt"/> {{pub.project.name}}</h5>
+                            <small>{{pub.project.desc}}</small>
+                        </div>
                         <br>
                     </b-col>
                 </b-row>
-
-                 <b-row v-if="pub.relatedPapers && pub.relatedPapers.length > 0">
-                     <b-col cols="2">
-                         <span class="form-header">Related Articles</span>
-                     </b-col>    
-                     <b-col>
-                         <div v-for="paper in pub.relatedPapers" :key="Id" >
+                -->
+                
+                <b-row v-if="pub.relatedPapers && pub.relatedPapers.length > 0">
+                    <b-col cols="2">
+                        <span class="form-header">Related Articles</span>
+                    </b-col>    
+                    <b-col>
+                        <div v-for="paper in pub.relatedPapers.slice(0, relatedPaperLimit)" :key="paper.Id" style="margin-bottom: 25px;">
                             <mag :paper="paper"/>
-                            <br>
-                         </div>
-                     </b-col>   
-                 </b-row>    
-            
+                        </div>
+                        <center>
+                            <b-button size="sm" v-if="relatedPaperLimit != -1" variant="outline-secondary" @click="relatedPaperLimit = -1">&nbsp;&nbsp;&nbsp;Show More&nbsp;&nbsp;&nbsp;</b-button> 
+                        </center>
+                    </b-col>   
+                </b-row>    
+
                 <hr>
                 <vue-disqus shortname="brain-life" :identifier="pub._id"/>
-            </b-container>
-        </div>
+            </b-col>
+            <b-col cols="2">
+                <!--side footer-->
+                <div class='altmetric-embed' 
+                    data-badge-type='donut' 
+                    data-badge-details="right" 
+                    data-hide-no-mentions="false" 
+                    :data-doi="pub.doi||config.debug_doi"/>
+            </b-col>
+        </b-row>
+    </b-container>
 
-        <!-- release -->
-        <div v-if="tab_index > 0">
-            <div style="background-color: white; padding: 15px 0; margin-bottom: 15px; border-bottom: 1px solid #ddd;">
-                <b-container>
-                    <p>
-                        <b-badge pill class="bigpill">
-                            <icon name="calendar" style="opacity: 0.4;"/>&nbsp;&nbsp;&nbsp;<small>Released</small>&nbsp;&nbsp;<time>{{new Date(release.create_date).toLocaleDateString()}}</time>
-                        </b-badge>
-                    </p>
-
-                    <p>
-                        <small>The following Apps were used to generate the data in this release.</small>
-                    </p>
-                    <table class="table table-sm">
-                        <thead>
-                            <tr>
-                                <th>Name</th>
-                                <th>DOI</th>
-                                <th>Github</th>
-                                <th>Branch</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr v-for="rec in apps" :key="rec.app.doi">
-                                <td>{{rec.app.name}}</td>
-                                <td><a :href="'https://doi.org/'+rec.app.doi" :target="'doi_'+rec.app.doi">{{rec.app.doi}}</a></td>
-                                <td><a :href="'https://github.com/'+rec.service+'/tree/'+(rec.service_branch||'master')" :target="'github_'+rec.service">{{rec.service}}</a></td>
-                                <td>{{rec.service_branch||'master'}}</td>
-                            </tr>
-                        </tbody>
-                    </table>
-                    <!--
-                    <small>You can copy and paste this table into Google doc to edit it</small>
-                    -->
-                </b-container>
-            </div>
-
-            <b-container>
-                <div v-if="dataset_groups">
-                    <span class="button" @click="downscript({})">
-                        <b>{{total.subjects}}</b> Subjects <span style="opacity: 0.2">|</span> 
-                        <b>{{total.count}} objects</b> <span v-if="total.size"> ({{total.size|filesize}} Total)</span>
-                        <icon name="download" scale="0.8" style="opacity: 0.5; position: relative; top: -2px;"/> 
-                    </span>
-                    <!-- <span class="form-header">Data Release</span> -->
-                </div>
-                <div v-else style="opacity: 0.5">Loading ... <icon name="cog" spin/></div>
-
-                <div style="background-color: white">
-                    <div class="group" v-for="(group, subject) in dataset_groups" :key="subject">
-                        <b-row>
-                            <b-col cols="2">
-                                &nbsp;
-                                <span class="button" @click="downscript({'meta.subject': subject})">
-                                    <b>{{subject}}</b>
-                                    <icon name="download" class="download-subject" scale="0.8"/>
-                                </span>
-                            </b-col>
-                            <b-col>
-                                <div v-for="(datatype, datatype_id) in group.datatypes" :key="datatype_id">
-                                    <div v-for="(block, datatype_tags_s) in datatype.datatype_tags" :key="datatype_tags_s" style="margin-bottom: 3px;">
-                                        <div @click="toggle(block, subject, datatype_id, JSON.parse(datatype_tags_s))" class="toggler">
-                                            <div style="width: 20px; display: inline-block;" class="text-muted">
-                                                <icon name="caret-right" v-if="!block.show"/> 
-                                                <icon name="caret-down" v-if="block.show"/> 
-                                            </div>
-                                            <datatypetag :datatype="datatypes[datatype_id]" :tags="JSON.parse(datatype_tags_s)" :clickable="false"/>
-                                            &nbsp;
-                                            <small class="text-muted" style="float: right;">{{block.count}} objects <span v-if="block.size">{{block.size|filesize}}</span></small>
-                                        </div>
-                                        <transition name="fadeHeight">
-                                            <b-list-group class="datasets" v-if="block.show && block.datasets">
-                                                <b-list-group-item v-for="(dataset, idx) in block.datasets" :key="idx" class="dataset" @click="view(dataset._id)">
-                                                    {{dataset.desc}}
-                                                    <span v-if="!dataset.desc" class="text-muted">{{dataset._id}}.tar.gz</span>
-                                                    <tags :tags="dataset.tags"/>
-                                                    <div style="float: right; width: 90px; text-align: right">{{new Date(dataset.create_date).toLocaleDateString()}}</div>
-                                                    <div style="float: right; width: 90px;"><span v-if="dataset.size" class="text-muted">{{dataset.size|filesize}}</span>&nbsp;</div>
-                                                    <div style="float: right; width: 90px;"><span v-if="dataset.download_count" class="text-muted"><icon name="download" scale="0.6"/> {{dataset.download_count}} times</span>&nbsp;</div>
-                                                </b-list-group-item>
-                                            </b-list-group>
-                                        </transition>
-                                    </div>
-                                </div>
-                            </b-col>
-                        </b-row>
-                    </div>
-                </div>
-            </b-container>
-
-            <b-container>
-                <div v-if="release.gaarchives && release.gaarchives.length > 0">
-                    <span class="form-header">Group Analysis</span>
-                    <p>
-                        <small>Derived data was analysed by the following group analysis code.</small>
-                    </p>
-                    <div v-for="ga in release.gaarchives" :key="ga._id" style="margin-bottom: 20px;">
-                        <p style="float: right">
-                            <b-badge pill class="bigpill clickable" @click="downloadNotebook(ga)">
-                                <icon name="download" style="opacity: 0.4;"/>&nbsp;&nbsp;&nbsp;<small>Dowload this notebook</small>
-                            </b-badge>
-                            &nbsp;
-                            <b-badge pill class="bigpill clickable" @click="launchGA(release, ga)">
-                                <icon name="calendar" style="opacity: 0.4;"/>&nbsp;&nbsp;&nbsp;<small>Launch this notebook</small>
-                            </b-badge>
-                        </p>
-                        <b style="opacity: 0.5; font-size: 125%;">{{ga.notebook}}</b>
-                        <ganotebook :ga="ga" style="clear: both;"/>
-                    </div>
-                </div>
-            </b-container>
-        </div>
-        <br>
-        <br>
-    </div><!--page-content-->
+    <br>
+    <br>
 </div>
 </template>
 
@@ -306,13 +247,12 @@ import projectavatar from '@/components/projectavatar'
 import contact from '@/components/contact'
 import VueMarkdown from 'vue-markdown'
 import license from '@/components/license'
-import datatypetag from '@/components/datatypetag'
 import tags from '@/components/tags'
 import citation from '@/components/citation'
 import app from '@/components/app'
 import doibadge from '@/components/doibadge'
 import mag from '@/components/mag'
-import ganotebook from '@/components/ganotebook'
+import release from '@/components/release'
 
 import agreementMixin from '@/mixins/agreement'
 
@@ -324,13 +264,12 @@ export default {
         contact, 
         VueMarkdown, 
         license, 
-        datatypetag, 
         tags, 
         app, 
         citation,
         doibadge,
         mag,
-        ganotebook,
+        release,
     },
 
     //https://help.altmetric.com/support/solutions/articles/6000141419-what-metadata-is-required-to-track-our-content-
@@ -359,18 +298,21 @@ export default {
             pub: null, //publication detail
             release: null, //currently opened release
             dataset_groups: null, //datasets inventory grouped 
-            apps: null, //list of apps
 
             datatypes: {}, 
             resource_citations: [],
 
-            tab_index: 0,
+            relatedPaperLimit: 3,
+
+            //apps: null, //list of apps
+            //tab_index: 0,
             query: "",
             config: Vue.config,
         }
     },
 
     watch: {
+        /*
         tab_index() {
             if(this.tab_index == 0) return; //not release view
             this.dataset_groups = null;
@@ -413,21 +355,10 @@ export default {
                 this.apps = res.data;
             });
         }
+        */
     },
 
     computed: {
-/*
-        resource_citations: function() {
-            if(!this.pub) return [];
-            if(!this.pub.project) return [];
-            if(!this.pub.project.stats) return [];
-            let citations = [];
-            this.pub.project.stats.resources.forEach(resource=>{
-                if(resource.citation) citations.push(resource.citation); 
-            });
-        },
-*/
-
         social_url: function() {
             if(this.pub.doi) return "http://doi.org/"+this.pub.doi;
             return null;
@@ -520,6 +451,7 @@ export default {
             this.$router.push('/project/'+project_id);
         },
 
+        /*
         toggle(block, subject, datatype, datatype_tags) {
             block.show = !block.show;
             this.release = this.pub.releases[this.tab_index-1];
@@ -540,25 +472,17 @@ export default {
                 }).catch(console.error);
             }
         },
+        */
 
+        /*
         downscript(query) {
             this.check_agreements(this.pub.project, ()=>{
                 query.publications = this.release._id;
                 this.$root.$emit("downscript.open", {find: query});
             });
         },
+        */
 
-        downloadNotebook(ga) {
-            if(!Vue.config.user) return alert("Please Signup/Login first to download this data-object");
-            this.check_agreements(this.pub.project, ()=>{
-                const url = Vue.config.api+'/dataset/download/'+ga.dataset_id+'?at='+Vue.config.jwt; 
-                window.open(url, ga._id);
-            });
-        },
-
-        launchGA(release, ga) {
-
-        },
     }
 }
 </script>
@@ -594,128 +518,131 @@ color: white;
 
 <style scoped>
 .page-content {
-top: 0px;
-}
-.rightside {
-float: right;
-width: 200px;
-}
-.release-main {
-margin-right: 420px;
-}
-.release-rightside {
-float: right;
-width: 400px;
-}
-@media only screen and (max-width: 800px) {
-    .rightside {
-        width: 100%;
-        float: inherit;
-    }
-}
-
-.header {
-background-color: white;
-padding: 15px 0px 0px 0px;
-border-bottom: 1px solid #eee;
-position: sticky;
-top: 0px;
-z-index: 5;/*has to be above vue-ace line number*/
+    top: 0;
 }
 .topic {
-padding: 6px; 
-background-color: #eee;
-text-transform: uppercase;
-color: #999;
-border-radius: 0px;
-margin-right: 4px;
+    padding: 6px; 
+    background-color: #eee;
+    text-transform: uppercase;
+    color: #999;
+    border-radius: 0px;
+    margin-right: 4px;
 }
 .funder {
-background-color: white;
-margin: 5px;
-display: inline-block;
-padding-right: 10px;
-font-weight: bold;
-color: #999;
+    background-color: white;
+    margin: 5px;
+    display: inline-block;
+    padding-right: 10px;
+    font-weight: bold;
+    color: #999;
 }
 .funder .funder-label {
-color: white;
-display: inline-block;
-padding: 3px 5px;
+    color: white;
+    display: inline-block;
+    padding: 3px 5px;
 }
 .datasets {
-margin: 5px 20px;
+    margin: 5px 20px;
 }
 .dataset {
-font-size: 85%;
+    font-size: 85%;
 }
 .dataset:hover {
-cursor: pointer;
-background-color: #f7f7f7;
+    cursor: pointer;
+    background-color: #f7f7f7;
 }
 .toggler {
-padding: 1px 4px;
-margin: 0 20px;
+    padding: 1px 4px;
+    margin: 0 20px;
 }
 .toggler:hover {
-cursor: pointer;
-background-color: #eee;
+    cursor: pointer;
+    background-color: #eee;
 }
 .fadeHeight-enter-active,
 .fadeHeight-leave-active {
-transition: all 0.2s;
-max-height: 230px;
+    transition: all 0.2s;
+    max-height: 230px;
 }
 .fadeHeight-enter,
 .fadeHeight-leave-to
 {
-opacity: 0;
-max-height: 0px;
+    opacity: 0;
+    max-height: 0px;
 }
 .project h5 {
-color: #007bff;
+    color: #007bff;
 }
 .group {
-margin-top: 10px;
-padding-top: 10px;
-border-top: 1px solid #eee;
+    margin-top: 10px;
+    padding-top: 10px;
+    border-top: 1px solid #eee;
 }
 .download-subject {
-opacity: 0.5;
-position: relative;
-top: -2px;
+    opacity: 0.5;
+    position: relative;
+    top: -2px;
 }
 .group .button:hover .download-subject {
-opacity: 1;
+    opacity: 1;
 }
 .app-download {
-position: absolute;
-bottom: 40px;
-right: 5px;
+    position: absolute;
+    bottom: 40px;
+    right: 5px;
 }
 .box {
-background-color: white;
-padding: 20px;
-margin-bottom: 20px;
-box-shadow: 0 0 3px #0002;
-border-radius: 4px;
+    background-color: white;
+    padding: 20px;
+    margin-bottom: 20px;
+    box-shadow: 0 0 3px #0002;
+    border-radius: 4px;
 }
 .citation-box {
-border: none;
-box-shadow: 2px 2px 3px #0001;
+    border: none;
+    box-shadow: 2px 2px 3px #0001;
 }
 .button-page {
-position: absolute;
-left: -30px;
-z-index: 1;
-opacity: 0.6;
+    position: absolute;
+    left: -30px;
+    z-index: 1;
+    opacity: 0.6;
 }
 .brainlife-logo {
-font-family: "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
-font-size: 19pt;
-font-weight: bold;
-background: linear-gradient(to right, #2693ff, #159957);
--webkit-background-clip: text;
--webkit-text-fill-color: transparent;
+    font-family: "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
+    font-size: 19pt;
+    font-weight: bold;
+    background: linear-gradient(to right, #2693ff, #159957);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
 }
+
+.rightside{
+    float: right; 
+    width: 225px;
+}
+.rightside p {
+    margin-bottom: 10px; 
+    line-height: 125%;
+}
+.content-subheader {
+    font-size: 110%;
+    font-weight: bold;
+    opacity: 0.8;
+    margin-bottom: 5px;
+    line-height: 100%;
+}
+.border-bottom {
+    border-bottom: 1px solid #ddd;
+    padding-bottom: 8px;
+    margin-bottom: 3px;
+}
+.content-item {
+    color: brue;
+    padding: 3px 0;
+}
+
 </style>
+
+
+
