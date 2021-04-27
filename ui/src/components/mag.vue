@@ -9,7 +9,7 @@
     </p>
     <p> 
         <span v-for="(contact, idx) in paper.authors" :key="idx" >
-            {{ contact.name }} <small>|</small>
+             <small v-if="idx">|</small> {{ contact.name }} 
         </span>
     </p>
     <p>
@@ -89,7 +89,6 @@ float: left;
 height: 20px;
 background:#999;
 }
-
 .name {
 background-color: #fff;
 display: inline-block;
