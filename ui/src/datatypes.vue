@@ -156,7 +156,7 @@ export default {
         },
 
         applyFilter(){
-            let tokens = this.query.split(" ").map(token=>token.toLowerCase());
+            let tokens = this.query.toLowerCase().split(" ");
             this.filtered = this.datatypes.filter(datatype=>{
                 //pull all the tokens I want to search from datatype
                 let stuff = [
@@ -165,12 +165,10 @@ export default {
                 ];
                 datatype.files.forEach(file=>{
                     stuff.push(file.desc);
-                    stuff.push(file.filename);
-                    stuff.push(file.dirname);
+                    stuff.push(file.filename||file.dirname);
                 });
-                //then apply searching. every token has to have some stuff matching
-                stuff = stuff.filter(thing=>!!thing).map(thing=>thing.toLowerCase());
-                return tokens.every(token=>stuff.some(thing=>thing.includes(token)));
+                const text = stuff.filter(thing=>!!thing).join(" ").toLowerCase();
+                return tokens.every(token=>text.includes(token));
             });
         }
     }, //methods

@@ -245,9 +245,10 @@
                         <p>
                             <small>We found the following journals/articles related to this project based on name/description through MAG</small>
                         </p>
+                        <hr>
                         <div v-for="paper in selected.relatedPapers" :key="Id" >
-                            <hr>
                             <mag  :paper="paper"/>
+                            <br>
                         </div>
                     </div>
 
