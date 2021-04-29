@@ -8,11 +8,6 @@
             </div>
         </div>
     <div class="page-content">
-        <div class="header">
-            <b-container>
-                <h3>Publications</h3>
-            </b-container>
-        </div>
         <b-container>
             <div v-if="!pubs" style="margin: 40px;"><h3>Loading ..</h3></div>
             <div v-else style="margin: 10px 0px;">
@@ -27,11 +22,10 @@
 
 <script>
 import Vue from 'vue'
-import pageheader from '@/components/pageheader'
 import pubcard from '@/components/pubcard'
 let queryDebounce;
 export default {
-    components: { pubcard, pageheader },
+    components: { pubcard },
     data () {
         return {
             pubs: [],
@@ -47,6 +41,7 @@ export default {
                 removed: false 
             }),
             populate: 'project',
+            select: '-readme', //ignore some heavy stuff
             deref_contacts: true,
         }})
         .then(res=>{
@@ -97,6 +92,9 @@ export default {
                 let stuff = [
                     pub.name,
                     pub.desc,
+                    pub.doi,
+                    pub.license,
+                    ...pub.tags,
                 ];
                 const text = stuff.filter(thing=>!!thing).join(" ").toLowerCase();
                 return tokens.every(token=>text.includes(token));
