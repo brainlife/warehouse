@@ -510,7 +510,7 @@ function handle_task(task, cb) {
                 });
 
                 if(tasks.tasks.length) {
-                    console.log("app-secondary already submitted");
+                    console.log("app-secondary-secondary already submitted");
                     return;
                 }
 
