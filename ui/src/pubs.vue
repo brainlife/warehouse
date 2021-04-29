@@ -16,7 +16,7 @@
         <b-container>
             <div v-if="!pubs" style="margin: 40px;"><h3>Loading ..</h3></div>
             <div v-else style="margin: 10px 0px;">
-                <div v-for="pub in pubs" :key="pub._id" style="margin-bottom: 30px; box-shadow: 1px 1px 4px #9996">
+                <div v-for="pub in getPubs()" :key="pub._id" style="margin-bottom: 30px; box-shadow: 1px 1px 4px #9996">
                     <pubcard :pub="pub"/>
                 </div>
             </div>
@@ -69,6 +69,11 @@ export default {
     },
 
     methods: {
+        getPubs() {
+            if(!this.query) return this.pubs;
+            return this.filtered;
+        },
+
         clearQuery() {
             this.query = ''
             this.changeQuery();
@@ -85,8 +90,17 @@ export default {
             this.applyFilter();
         },
 
-        applyFilter(){
-            console.log(this.query);
+        applyFilter() {
+            let tokens = this.query.toLowerCase().split(" ");
+            this.filtered = this.pubs.filter(pub=>{
+                //pull all the tokens I want to search from publication
+                let stuff = [
+                    pub.name,
+                    pub.desc,
+                ];
+                const text = stuff.filter(thing=>!!thing).join(" ").toLowerCase();
+                return tokens.every(token=>text.includes(token));
+            });
         }
     }
 }
