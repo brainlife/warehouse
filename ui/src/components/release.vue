@@ -1,11 +1,13 @@
 <template>
 <div>
-    <div class="header">
-        <span style="float: right; opacity: 0.8; font-size: 90%; padding-top: 4px;">
-            {{new Date(release.create_date).toLocaleDateString()}}
-        </span>
-        <span class="form-header" style="font-size: 110%;"><small>Release /</small> <b>{{release.name}}</b></span>
-    </div>
+    <a :name="'release.'+release._id">
+        <div class="header">
+            <span style="float: right; opacity: 0.8; font-size: 90%; padding-top: 4px;">
+                {{new Date(release.create_date).toLocaleDateString()}}
+            </span>
+            <span class="form-header" style="font-size: 110%;"><small>Release /</small> <b>{{release.name}}</b></span>
+        </div>
+    </a>
     <small v-if="release.desc">{{release.desc}}</small>
 
     <!--

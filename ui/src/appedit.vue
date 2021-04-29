@@ -588,6 +588,10 @@ export default {
                     if(!dataset.datatype_tags) return;
                     dataset.datatype_tags.forEach(tag=>{
                         var dt = v.datatypes[dataset.datatype];
+                        if(!dt) {
+                            console.error("no datatype defined for ", dataset.datatype);
+                            return;
+                        }
                         if(!~dt._tags.indexOf(tag)) dt._tags.push(tag);
                     });
                 }

@@ -40,7 +40,7 @@
                     <div v-if="pub.releases.length">
                         <!--<div class="content-header">Contents</div>-->
                         <div class="content-subheader border-bottom">Releases</div>
-                        <div v-for="release in pub.releases" :key="release._id" class="content-item">
+                        <div v-for="release in pub.releases" :key="release._id" class="content-item clickable" @click="jump('release.'+release._id)">
                             <small style="float: right">
                                 {{new Date(release.create_date).toLocaleDateString()}}
                             </small>
@@ -55,17 +55,31 @@
                     <br>
                     -->
 
-                    <div v-if="pub.contributors.length">
+                    <div v-if="pub.contributors.length" class="clickable" @click="jump('contributors')">
                         <div class="content-subheader">Contributors</div>
-                        <p>
-                            <span v-for="(contact, idx) in pub.contributors" :key="contact._id">
-                                <span v-if="idx" style="opacity: 0.5;"> | </span> {{contact.fullname}} 
-                            </span>
-                        </p>
+                        <span v-for="(contact, idx) in pub.contributors" :key="contact._id">
+                            <span v-if="idx" style="opacity: 0.5;"> | </span> {{contact.fullname}} 
+                        </span>
+                        <br>
                         <br>
                     </div>
 
-                    <div class="content-subheader">
+                    <div v-if="pub.fundings.length">
+                        <div class="content-subheader clickable" @click="jump('fundings')">
+                            Fundings
+                            <b-badge>{{pub.fundings.length}}</b-badge>
+                        </div>
+                        <ul style="list-style: none; padding: 0px;">
+                            <li v-for="funding in pub.fundings" :key="funding._id" class="funder">
+                                <div v-if="funding.funder == 'NSF'" class="funder-label bg-success">NSF</div>
+                                <div v-else-if="funding.funder == 'NIH'" class="funder-label bg-info">NIH</div>
+                                <div v-else class="funder-label bg-warning">{{funding.funder}}</div>
+                                {{funding.id}}
+                            </li>
+                        </ul>
+                    </div>
+
+                    <div class="content-subheader clickable" @click="jump('license')">
                         License
                         <b-badge>{{pub.license}}</b-badge>
                         <br>
@@ -87,7 +101,8 @@
                         <b>{{pub.project.name}}</b><br>
                         <small>{{pub.project.desc}}</small>
                     </div>
-
+                    
+                    <br>
                 </div>
             </div>
 
@@ -154,6 +169,7 @@
 
                 <b-row v-if="pub.contributors.length > 0">
                     <b-col cols="2">
+                        <a name="contributors"/>
                         <span class="form-header">Contributors</span>
                     </b-col>
                     <b-col cols="10">
@@ -168,6 +184,7 @@
 
                 <b-row v-if="pub.fundings.length > 0">
                     <b-col cols="2">
+                        <a name="fundings"/>
                         <span class="form-header">Funded By</span>
                     </b-col>
                     <b-col>
@@ -183,7 +200,8 @@
                 </b-row>
                 <b-row>
                     <b-col cols="2">
-                        <span class="form-header">License</span>
+                        <a name="license"/>
+                        <span class="form-header" name="license">License</span>
                     </b-col>
                     <b-col>
                         <p><small class="text-muted">Published data is released under the following license.</small></p>
@@ -384,7 +402,6 @@ export default {
         }})
         .then(res=>{
             this.pub = res.data.pubs[0];
-            console.dir(this.pub);
             if(!this.pub.project) alert('no project ');
 
             //sort release by date (new first)
@@ -435,6 +452,13 @@ export default {
 
         }).catch(console.error);
     },
+
+    updated() {
+        //called when vue finishes rendering everything.
+        //after rendering is done, we can jump to things that user might have requested via hash
+        let hash = document.location.hash.split("#")[1];
+        if(hash) this.jump(hash);
+    },
     
     methods: {
         back() {
@@ -445,6 +469,10 @@ export default {
         view(id) {
             document.location.hash = id;
             this.$root.$emit('dataset.view', {id});
+        },
+
+        jump(id) {
+            window.location.href = "#"+id;
         },
 
         openproject(project_id) {
@@ -530,7 +558,7 @@ color: white;
 }
 .funder {
     background-color: white;
-    margin: 5px;
+    margin: 2px 5px;
     display: inline-block;
     padding-right: 10px;
     font-weight: bold;
@@ -640,6 +668,9 @@ color: white;
 .content-item {
     color: brue;
     padding: 3px 0;
+}
+.clickable:hover {
+    color: #2693ff;
 }
 
 </style>

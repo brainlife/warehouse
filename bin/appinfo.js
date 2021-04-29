@@ -13,15 +13,18 @@ const common = require('../api/common');
 
 console.log("running appinfo");
 
-db.init(function(err) {
+common.startContactCache(err=>{
     if(err) throw err;
-    rcon = redis.createClient(config.redis.port, config.redis.server);
-    rcon.on('error', err=>{throw err});
-    rcon.on('ready', ()=>{
-        logger.info("connected to redis");
-        setInterval(health_check, 1000*60*2); //start checking health 
-        setTimeout(health_check, 1000*10); //run shortly after start
-        run();
+    db.init(err=>{
+        if(err) throw err;
+        rcon = redis.createClient(config.redis.port, config.redis.server);
+        rcon.on('error', err=>{throw err});
+        rcon.on('ready', ()=>{
+            logger.info("connected to redis");
+            setInterval(health_check, 1000*60*2); //start checking health 
+            setTimeout(health_check, 1000*10); //run shortly after start
+            run();
+        });
     });
 });
 

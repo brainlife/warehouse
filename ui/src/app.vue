@@ -224,11 +224,14 @@
                     <span class="form-header">Configuration</span>
                     <div v-for="(config, key) in app.config" :for="key">
                         <div v-if="config.type != 'input'">
-                            <icon name="chevron-right" scale="0.6"/> <b>{{key}}</b>: {{config.type}} <span v-if="config.default" style="opacity: 0.5;"> = {{config.default}}</span><br>
+                            <icon name="chevron-right" scale="0.6" style="opacity: 0.5;"/> <b>{{key}}</b>: {{config.type}} 
+                            <span v-if="config.default" style="opacity: 0.5;"> = {{config.default}}</span><br>
+
+                            <!-- for enum-->
                             <div v-if="config.options">
                                 <ul>
                                     <li v-for="(o, idx) in config.options" :key="idx">
-                                        {{o.label}}
+                                        {{o.label}}<small style="">({{o.value}})</small>
                                         <small>{{o.desc}}</small> <b-badge v-if="o.value == config.default">Default</b-badge>
                                     </li>
                                 </ul>

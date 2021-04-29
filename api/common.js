@@ -496,7 +496,7 @@ exports.updateRelatedPaperMag = function(rec,cb) {
 }
 
 exports.compose_app_datacite_metadata = function(app) {
-    if(!~exports.cachedContacts) throw "Please call startContactCache first";
+    if(!cachedContacts) throw "Please call startContactCache first";
     //
     //publication year
     let year = app.create_date.getFullYear();
@@ -557,7 +557,7 @@ exports.compose_app_datacite_metadata = function(app) {
 
 //https://schema.datacite.org/meta/kernel-4.1/doc/DataCite-MetadataKernel_v4.1.pdf
 exports.compose_pub_datacite_metadata = function(pub) {
-    if(!~exports.cachedContacts) throw "Please call startContactCache first";
+    if(!cachedContacts) throw "Please call startContactCache first";
 
     //publication year
     let year = pub.create_date.getFullYear();
@@ -712,7 +712,7 @@ exports.startContactCache = function(cb) {
 }
 
 exports.deref_contact = function(id) {
-    if(!~cachedContacts) throw "Please call startContactCache first";
+    if(!cachedContacts) throw "Please call startContactCache first";
     return cachedContacts[id];
 }
 
