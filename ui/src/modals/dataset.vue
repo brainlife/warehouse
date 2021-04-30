@@ -136,7 +136,7 @@
                                     <p v-if="!isimporttask(dataset.prov.task)">
                                         <a :href="'https://github.com/'+dataset.prov.task.service+'/tree/'+dataset.prov.task.commit_id" title="App Commit ID">
                                             <b-badge pill class="bigpill">
-                                                <icon name="brands/github" style="opacity: 0.4;"/>&nbsp;&nbsp;&nbsp;{{dataset.prov.task.commit_id}}
+                                                <icon name="brands/github" style="opacity: 0.4;"/>&nbsp;&nbsp;Commit ID&nbsp;&nbsp;&nbsp;{{dataset.prov.task.commit_id}}
                                             </b-badge>
                                         </a>
                                     </p>
@@ -189,7 +189,7 @@
                                             <b-badge variant="success"><icon name="archive" scale="0.7"/> SDA Backup</b-badge>
                                         </span>
 
-                                        <span><small>Task ID: {{dataset.archive_task_id}}</small></span>
+                                        <span v-if="dataset.archive_task_id"><small>{{dataset.archive_task_id}}</small></span>
                                     </p>
                                 </b-col>
                             </b-row>
@@ -639,7 +639,7 @@ export default {
             if(!Vue.config.user) return alert("Please Signup/Login first to download this data-object");
             this.check_agreements(this.dataset.project, ()=>{
                 let query = {_id: [this.dataset._id]};
-                this.$root.$emit("downscript.open", {find: query});
+                this.$root.$emit("downscript.open", {query});
             });
         },
 

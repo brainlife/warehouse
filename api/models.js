@@ -185,7 +185,7 @@ var projectSchema = mongoose.Schema({
     create_date: { type: Date, default: Date.now },
 
     //enable group_analysis UI (experimental)
-    group_analysis: { type: Boolean, default: false },
+    //group_analysis: { type: Boolean, default: false },
 
     removed: { type: Boolean, default: false },
 });
@@ -315,6 +315,10 @@ var releaseSchema = mongoose.Schema({
     create_date: { type: Date, default: Date.now }, //release date
     removed: { type: Boolean, default: false },  //release should not removed.. but just in case
 
+    //stats
+    subjects: Number, //number of unique subjects
+    sessions: Number, //number of unique sessions
+
     sets: [
         /*
         counts: Number, //number of objects
@@ -344,6 +348,7 @@ var releaseSchema = mongoose.Schema({
     } ],
 
     apps: [ mongoose.Schema.Types.Mixed ], //TODO..
+
 });
 mongoose.model("Releases", releaseSchema);
 
@@ -354,7 +359,7 @@ var publicationSchema = mongoose.Schema({
 
     license: String, //cc0, ccby.40, etc.
     doi: String, //doi for this dataset (we generate this)
-    paper_doi: String, //doi for the paper (journal should publish this)
+    paper_doi: String, //doi for the paper (journal should publish this) TODO - is this used?t
 
     fundings: [ new mongoose.Schema({funder: String, id: String}) ], 
     

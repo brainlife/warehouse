@@ -41,11 +41,13 @@
                             </div>
                         </span>
                         
-                        <span v-if="tabinfo.id == 'pipeline' && selected.stats && selected.stats.rules && (selected.stats.rules.active||selected.stats.rules.inactive)" title="Number of pipeline rules" style="opacity: 0.6; font-size: 80%;">
+                        <span v-if="tabinfo.id == 'pipeline' && selected.stats && selected.stats.rules && (selected.stats.rules.active||selected.stats.rules.inactive)" 
+                            title="Number of pipeline rules" style="opacity: 0.6; font-size: 80%;">
                             &nbsp;{{selected.stats.rules.active}} <small>/ {{selected.stats.rules.active + selected.stats.rules.inactive}}</small>
                         </span>
 
-                        <span v-if="tabinfo.id == 'groupanalysis' && selected.stats && selected.stats.groupanalysis && selected.stats.groupanalysis.sessions.length > 0" title="Number of Group Analysis Sessions" style="opacity: 0.6; font-size: 80%;">
+                        <span v-if="tabinfo.id == 'groupanalysis' && selected.stats && selected.stats.groupanalysis && selected.stats.groupanalysis.sessions.length > 0" 
+                            title="Number of Group Analysis Sessions" style="opacity: 0.6; font-size: 80%;">
                             &nbsp;{{selected.stats.groupanalysis.sessions.length}}
                         </span>
 
@@ -218,10 +220,12 @@
                                 :watchShallow="true"/>
                     </div>
 
+                    <!--loading citations takes time and LOCK UP THE BROWSER WHILE LOADING IT!!!-->
                     <div v-if="selected.stats.apps && selected.stats.apps.length > 0">
-                        <b-button variant="outline-secondary" size="sm" @click="showCitations = true" v-if="!showCitations">Load Citation</b-button>
-                        <div v-if="showCitations">
-                            <br>
+                        <p v-if="!showCitations">
+                            <b-button variant="outline-secondary" size="sm" @click="showCitations = true">Load Citation</b-button>
+                        </p>
+                        <div class="box" v-if="showCitations">
                             <span class="form-header">Citations</span>
                             <p><small>Please use the following citations to cite the Apps used by this project.</small></p>
                             <p v-for="app in uniqueApps" :key="app._id">
@@ -246,7 +250,7 @@
                             <small>We found the following journals/articles related to this project based on name/description through MAG</small>
                         </p>
                         <hr>
-                        <div v-for="paper in selected.relatedPapers" :key="Id" >
+                        <div v-for="paper in selected.relatedPapers" :key="paper._id">
                             <mag  :paper="paper"/>
                             <br>
                         </div>
@@ -287,11 +291,13 @@
         <div v-if="tabs[tab].id == 'groupanalysis'" class="page-content">
             <b-alert show variant="secondary" v-if="!(ismember()||isadmin())">Only the admins or members of this project can access group analysis page. Please contact the project admin to give you access.</b-alert>
             <div v-else>
-                <groupAnalysis v-if="selected.group_analysis" :project="selected"/>
+                <groupAnalysis :project="selected"/>
+                <!--
                 <div v-else class="margin20 text-muted">
                     <br>
                     Group Analysis is not enable for this project.
                 </div>
+                -->
             </div>
         </div>
 

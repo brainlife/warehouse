@@ -155,13 +155,7 @@ export default {
             sessionStorage.setItem("projects.query", this.query);
             this.load();
         },
-        
-        /*
-        go(path) {
-            this.$router.push(path);
-        },
-        */
-
+       
         newproject() {
             if(Vue.config.user) {
                 this.$router.push('/project/_/edit');

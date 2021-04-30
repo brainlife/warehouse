@@ -68,7 +68,8 @@
                     </b-input-group>
                 </b-col>
                 <b-col sm="1">
-                    <div class="button" @click="release.removed = true"><icon name="trash"/></div>
+                    <!-- we don't have a mechanism to unpublish published data objects-->
+                    <div class="button" v-if="!release._id" @click="release.removed = true"><icon name="trash"/></div>
                 </b-col>
             </b-row>
             <br>
@@ -76,7 +77,7 @@
             <b-row>
                 <b-col>
                     <div v-for="(set, idx) in release.sets" :key="idx" style="margin-bottom: 5px">
-                        <span v-if="set.add" @click="remove_set(release, idx)" style="opacity: 0.5;">
+                        <span v-if="set.add" @click="remove_set(release, idx)" style="opacity: 0.5; float: right;">
                             <icon name="trash" scale="0.9"/>
                         </span>
                         <releaseset :set="set"/>

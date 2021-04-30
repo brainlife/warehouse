@@ -2,18 +2,20 @@
 <div>
     <a :name="'release.'+release._id">
         <div class="header">
+
             <span style="float: right; opacity: 0.8; font-size: 90%; padding-top: 4px;">
                 {{new Date(release.create_date).toLocaleDateString()}}
             </span>
-            <span class="form-header" style="font-size: 110%;"><small>Release /</small> <b>{{release.name}}</b></span>
+            <span style="font-size: 110%;"><small>Release /</small> <b>{{release.name}}</b></span>
+            <b-badge pill class="bigpill" v-if="release.subjects" style="margin-left: 10px;">
+                <icon name="user-friends" style="opacity: 0.4;"/>&nbsp;&nbsp;{{release.subjects}} <small>subjects</small> 
+                <span v-if="release.sessions"><span style="opacity: 0.4"> | </span>{{release.sessions}} <small>sessions</small></span>
+            </b-badge>
         </div>
     </a>
-    <small v-if="release.desc">{{release.desc}}</small>
 
-    <!--
-    <small>This release includes the following data objects</small>
-    -->
-    <p v-if="release.sets && release.sets.length" style="clear: both;">
+    <p v-if="release.desc"><small>{{release.desc}}</small></p>
+    <p v-if="release.sets && release.sets.length">
         <b-badge pill class="bigpill clickable" @click="downloadDataset(release.set)" style="float: right">
             <icon name="download" style="opacity: 0.4;"/>&nbsp;&nbsp;&nbsp;<small>Dowload this dataset</small>
         </b-badge>
@@ -109,10 +111,11 @@
         <!-- <span class="form-header">Group Analysis</span>-->
 
         <!-- <small>Derived data was analysed by the following group analysis code.</small>-->
-        <div v-for="ga in release.gaarchives" :key="ga._id" style="margin-bottom: 20px;">
-            <b style="opacity: 0.8; font-size: 120%;"><gaarchive :gaarchive="ga"/></b><!--for header-->
-            <br>
-            <p style="float: right;">
+        <div v-for="ga in release.gaarchives" :key="ga._id">
+            <p style="border-bottom: 1px solid #eee; margin-bottom: 5px;">
+                <b style="opacity: 0.8; font-size: 100%;"><gaarchive :gaarchive="ga"/></b><!--for header-->
+            </p>
+            <p style="float: right; margin-bottom: 0px;">
                 <b-badge pill class="bigpill clickable" @click="downloadNotebook(ga)">
                     <icon name="download" style="opacity: 0.4;"/>&nbsp;&nbsp;&nbsp;<small>Dowload this notebook</small>
                 </b-badge>
@@ -139,7 +142,11 @@ import app from '@/components/app'
 import taskconfig from '@/components/taskconfig'
 import doibadge from '@/components/doibadge'
 
+import agreementMixin from '@/mixins/agreement'
+
 export default {
+    mixins: [agreementMixin],
+
     components: {
         datatypetag,
         ganotebook,
@@ -157,14 +164,36 @@ export default {
     methods: {
         downloadNotebook(ga) {
             if(!Vue.config.user) return alert("Please Signup/Login first to download this data-object");
-            //this.check_agreements(this.project, ()=>{
+            this.check_agreements(this.project, ()=>{
                 const url = Vue.config.api+'/dataset/download/'+ga.dataset_id+'?at='+Vue.config.jwt; 
                 window.open(url, ga._id);
-            //});
+            });
         },
 
         launchGA(release, ga) {
+            this.$root.$emit("galauncher.open", {
+                //project: this.project._id, //default project to submit ga to
+                preSelectedGAID: ga._id,
+                cb(err, info) {
+                    if(err) throw err;
+                    //me.openWhenReady = task._id;
+                    console.log("TODOD - jumpt to ");
+                    console.dir(info);
+                    this.$router.push('/project/'+info.project+'/groupanalysis#'+info.task._id);
+                },
+            });
+        },
 
+        downloadDataset(set) {
+            this.check_agreements(this.project, ()=>{
+                this.$root.$emit("downscript.open", {
+                    filter: true,
+                    query: {
+                        //project: this.project._id,
+                        publications: this.release._id,
+                    }
+                });
+            });
         },
     },
 }

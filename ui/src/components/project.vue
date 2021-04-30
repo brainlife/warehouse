@@ -16,9 +16,7 @@
                             ({{project.stats.datasets.size | filesize}})
                         </span>
                     </div>
-
                     <span style="opacity: 0.2;">|</span>
-
                     <icon name="id-badge" scale="0.7" style="opacity: 0.6"/> {{project.group_id}}
                 </div>
                 <span class="title">

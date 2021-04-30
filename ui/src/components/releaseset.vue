@@ -1,7 +1,7 @@
 <template>
 <div>
     <datatypetag :datatype="set.datatype" :tags="set.datatype_tags" :clickable="false"/> 
-    <span v-if="set.subjects && set.subjects.length == 0"><b>{{set.count||0}}</b> objects <small>({{(set.size||0)|filesize}})</small></span>
+    <small v-if="set.subjects && set.subjects.length == 0">({{set.count||0}} obj <span style="opacity:0.5">|</span> {{(set.size||0)|filesize}})</small>
 </div>
 </template>
 <script>

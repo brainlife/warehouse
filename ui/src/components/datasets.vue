@@ -38,7 +38,7 @@
                     <b-col cols="2" class="subject-column truncate">
                         <strong>{{group}}</strong>
 
-                        <div class="participants truncate" v-if="participants">
+                        <div class="participants" v-if="participants">
                             <span v-if="participants" v-for="(v, k) in participants[page[group]._subject]" :key="k">
                                 <small>{{k}}</small> {{v}}
                             </span>
@@ -756,7 +756,7 @@ export default {
                     ids.push(id);
                 }
                 let query = {_id: ids};
-                this.$root.$emit("downscript.open", {find: query});
+                this.$root.$emit("downscript.open", {query});
             });
         },
 
@@ -968,6 +968,8 @@ width: 100%;
 }
 .participants {
 font-size: 90%;
+white-space: normal;
+overflow: hidden;
 }
 .subject-column {
 min-height: 35px;

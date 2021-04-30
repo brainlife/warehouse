@@ -103,8 +103,8 @@ Normally, the App description is automatically pulled from github repo descripti
                         </b-col>
                     </b-row>
                     <br>
-                    <p v-if="app.github_branch == 'master'">
-                        <b-alert show variant="danger">You should avoid releasing an App with master branch. Please read <a href="https://brainlife.io/docs/apps/versioning/" target="doc">Versioning Tips</a></b-alert>
+                    <p v-if="app.github_branch == 'master' || app.github_branch == 'main'">
+                        <b-alert show variant="danger">You should avoid releasing an App with master/main branch. Please read <a href="https://brainlife.io/docs/apps/versioning/" target="doc">Versioning Tips</a></b-alert>
                     </p>
                 </b-col>
             </b-row>

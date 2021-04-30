@@ -2,7 +2,7 @@
 <div>
     <div v-if="selected">
         <div class="selected-controller onRight">
-            <div class="button" @click="selected = null" style="padding: 1px 10px; margin-top: 3px;"><icon name="times"/> Close</div>
+            <div class="button" @click="close" style="padding: 1px 10px; margin-top: 3px;"><icon name="times"/> Close</div>
         </div>
         <div class="frame onRight">
             <iframe :src="host+'/ipython/'+selected.port+'/lab?token='+selected.token" frameBorder="0"/>
@@ -47,6 +47,7 @@
             <br>
         </div>
 
+        <!--
         <div class="new">
             <h4>Launch New Session</h4>
             <b-form-select v-model="selectedNewApp" @change="selectNewApp" :options="apps" placeholder="Please select a class to launch"/>
@@ -62,6 +63,7 @@
                 <br clear="right">
             </div>
         </div>
+        -->
     </div>
     <b-button class="button-fixed" @click="newsession">New Session</b-button>
 </div>
@@ -174,6 +176,19 @@ export default {
         if(this.ws) this.ws.close();
     },
 
+    updated() {
+        let taskid = document.location.hash.split("#")[1];
+        if(taskid) {
+            console.log("task id specified in hash.. opening");
+
+            history.replaceState("", document.title, window.location.pathname+window.location.search); //clear hash
+
+            //const task = this.sessions.find(task=>task._id == taskid);
+            //this.open(task);
+            this.openWhenReady = taskid;
+        }
+    },
+
     mounted() {
         if(Vue.config.debug) {
             this.host = "https://dev1.soichi.us";
@@ -215,8 +230,9 @@ export default {
                         console.log(this.openWhenReady, task._id, task.status);
                         if(this.openWhenReady == task._id && task.status == "running" && task.status_msg == "running") {
                             this.openWhenReady = null;
-                            this.$root.$emit("loading", {show: false});
+                            this.$root.$emit("loading", {show: false, message: "Staging notebook and launching new analysis session.."});
                             this.jump(task); 
+
                         }
                     }
                 }
@@ -326,18 +342,27 @@ export default {
         },
 
         jump(task) {
+            console.log("jump called", task);
             this.$http.get(Vue.config.amaretti_api+"/task/download/"+task._id+'/container.json').then(res=>{
                 if(res.status == 200) {
                     //let wait for proxy to go through
                     let url = this.host+'/ipython/'+(res.data.port)+'/';
                     this.waitProxy(url, ()=>{
-                        console.log("commencing open");
+                        console.log("commencing open", task);
                         this.selected = res.data; 
+
+                        //without this it causes infinite loop
+                        //window.location.href = window.location.href.split('#')[0];
                     });
                 } else {
                     this.$notify("failed to load container.json");
                 }
             });
+        },
+
+        close() {
+            this.selected = null;
+            //history.replaceState("", document.title, window.location.pathname+window.location.search); //clear hash
         },
 
         waitProxy(url, cb) {
@@ -357,9 +382,9 @@ export default {
             const me = this;
             this.$root.$emit("galauncher.open", {
                 project: this.project._id, //default project to submit ga to
-                cb(err, task, app) {
+                cb(err, info) {
                     if(err) throw err;
-                    me.openWhenReady = task._id;
+                    me.openWhenReady = info.task._id;
                 },
             });
         },

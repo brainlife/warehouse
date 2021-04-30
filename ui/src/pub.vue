@@ -56,7 +56,7 @@
                     -->
 
                     <div v-if="pub.contributors.length" class="clickable" @click="jump('contributors')">
-                        <div class="content-subheader">Contributors</div>
+                        <div class="content-subheader border-bottom">Contributors</div>
                         <span v-for="(contact, idx) in pub.contributors" :key="contact._id">
                             <span v-if="idx" style="opacity: 0.5;"> | </span> {{contact.fullname}} 
                         </span>
@@ -64,44 +64,49 @@
                         <br>
                     </div>
 
-                    <div v-if="pub.fundings.length">
-                        <div class="content-subheader clickable" @click="jump('fundings')">
-                            Fundings
-                            <b-badge>{{pub.fundings.length}}</b-badge>
+                    <div>
+                        <div class="content-subheader border-bottom">Project</div>
+                        <small class="text-muted">This publication was processed in the following brainlife.io project</small>
+                        <br>
+                        <div @click="openproject(pub.project._id)" class="clickable" style="background-color: #ddd; padding: 5px 10px; border-left: 3px solid #999;">
+                            <b>{{pub.project.name}}</b><br>
+                            <small>{{pub.project.desc}}</small>
                         </div>
-                        <ul style="list-style: none; padding: 0px;">
-                            <li v-for="funding in pub.fundings" :key="funding._id" class="funder">
-                                <div v-if="funding.funder == 'NSF'" class="funder-label bg-success">NSF</div>
-                                <div v-else-if="funding.funder == 'NIH'" class="funder-label bg-info">NIH</div>
-                                <div v-else class="funder-label bg-warning">{{funding.funder}}</div>
-                                {{funding.id}}
-                            </li>
-                        </ul>
+                        <br>
+                        <br>
+                    </div>
+ 
+                    <div v-if="pub.fundings.length" class="clickable" @click="jump('fundings')">
+                        <div class="content-subheader">
+                            Funded By
+                            <!-- <b-badge>{{pub.fundings.length}}</b-badge>-->
+                        </div>
+                        <div v-for="funding in pub.fundings" :key="funding._id" class="funder" style="font-size: 80%;">
+                            <div v-if="funding.funder == 'NSF'" class="funder-label bg-success">NSF</div>
+                            <div v-else-if="funding.funder == 'NIH'" class="funder-label bg-info">NIH</div>
+                            <div v-else class="funder-label bg-warning">{{funding.funder}}</div>
+                            {{funding.id}}
+                        </div>
+                        <br>
+                        <br>
                     </div>
 
                     <div class="content-subheader clickable" @click="jump('license')">
-                        License
-                        <b-badge>{{pub.license}}</b-badge>
-                        <br>
+                        License<br>
+                        <div style="margin-top: 5px; opacity: 0.8; font-weight: normal;">{{pub.license}}</div>
                         <br>
                     </div>
 
-                    <div class="content-subheader" v-if="pub.relatedPapers">
+                    <div class="content-subheader clickable" @click="jump('related')" v-if="pub.relatedPapers">
                         Related Articles <b-badge>{{pub.relatedPapers.length}}</b-badge>
+                        <br>
                     </div>
                     <br>
 
-                    <div class="content-subheader">Disqus</div>
+                    <div class="content-subheader clickable" @click="jump('disqus')">Disqus</div>
                     <br>
 
-                    <div class="content-subheader border-bottom">Project</div>
-                    <small class="text-muted">This publication was processed in the following brainlife.io project</small>
-                    <br>
-                    <div @click="openproject(pub.project._id)" class="clickable" style="background-color: #ddd; padding: 5px 10px; border-left: 3px solid #999;">
-                        <b>{{pub.project.name}}</b><br>
-                        <small>{{pub.project.desc}}</small>
-                    </div>
-                    
+                   
                     <br>
                 </div>
             </div>
@@ -188,14 +193,14 @@
                         <span class="form-header">Funded By</span>
                     </b-col>
                     <b-col>
-                        <ul style="list-style: none; padding: 0px;">
-                            <li v-for="funding in pub.fundings" :key="funding._id" class="funder">
-                                <div v-if="funding.funder == 'NSF'" class="funder-label bg-success">NSF</div>
-                                <div v-else-if="funding.funder == 'NIH'" class="funder-label bg-info">NIH</div>
-                                <div v-else class="funder-label bg-warning">{{funding.funder}}</div>
-                                {{funding.id}}
-                            </li>
-                        </ul>
+                        <div v-for="funding in pub.fundings" :key="funding._id" class="funder">
+                            <div v-if="funding.funder == 'NSF'" class="funder-label bg-success">NSF</div>
+                            <div v-else-if="funding.funder == 'NIH'" class="funder-label bg-info">NIH</div>
+                            <div v-else class="funder-label bg-warning">{{funding.funder}}</div>
+                            {{funding.id}}
+                        </div>
+                        <br>
+                        <br>
                     </b-col>
                 </b-row>
                 <b-row>
@@ -228,6 +233,7 @@
                 
                 <b-row v-if="pub.relatedPapers && pub.relatedPapers.length > 0">
                     <b-col cols="2">
+                        <a name="related"/>
                         <span class="form-header">Related Articles</span>
                     </b-col>    
                     <b-col>
@@ -241,6 +247,7 @@
                 </b-row>    
 
                 <hr>
+                <a name="disqus"/>
                 <vue-disqus shortname="brain-life" :identifier="pub._id"/>
             </b-col>
             <b-col cols="2">
@@ -502,15 +509,6 @@ export default {
         },
         */
 
-        /*
-        downscript(query) {
-            this.check_agreements(this.pub.project, ()=>{
-                query.publications = this.release._id;
-                this.$root.$emit("downscript.open", {find: query});
-            });
-        },
-        */
-
     }
 }
 </script>
@@ -558,7 +556,7 @@ color: white;
 }
 .funder {
     background-color: white;
-    margin: 2px 5px;
+    margin-right: 5px;
     display: inline-block;
     padding-right: 10px;
     font-weight: bold;
@@ -567,7 +565,7 @@ color: white;
 .funder .funder-label {
     color: white;
     display: inline-block;
-    padding: 3px 5px;
+    padding: 0px 5px;
 }
 .datasets {
     margin: 5px 20px;

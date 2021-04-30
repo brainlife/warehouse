@@ -60,6 +60,7 @@
                         <p>
                             <span class="form-header">Project</span>
                             <projectselecter canwrite="true" v-model="project" placeholder="Project you'd like to create this session" :required="true"/>
+                            <small>Project to launch this analysis</small>
                         </p>
 
                         <p>
@@ -127,6 +128,7 @@ export default {
                     dataset_id: "11111111", //TODO - archive ga-test?
                 },
             ],
+            preSelectedGAID: null,
             selected: null, 
 
             config: Vue.config,
@@ -138,7 +140,7 @@ export default {
             //reset form
             this.form.desc = "";
             this.form.config = {};
-            this.selected = null;
+            this.preSelectedGAID = opts.preSelectedGAID;
 
             //set from opts
             this.project = opts.project; //default project
@@ -182,8 +184,6 @@ export default {
                         dataset_ids: [ this.selected.dataset_id ],
                     }).then(res=>{
                         const stageTask = res.data.task;
-                        console.log("stageTask");
-                        console.dir(stageTask);
 
                         //then launchga in it
                         this.$http.post('secondary/launchga', {
@@ -200,7 +200,11 @@ export default {
                         }).then(res=>{
                             let task = res.data;
                             this.open = false;
-                            this.cb(null, task, this.selected);
+                            this.cb(null, {
+                                task, 
+                                project: this.project,
+                                app: this.selected,
+                            });
                         }).catch(err=>{
                             console.error(err);
                             this.$notify({type: 'error', text: err.response.data.message});
@@ -225,7 +229,6 @@ export default {
                     select: "releases name authors",
                 }
             }).then(res=>{
-                console.dir(res.data);
                 this.notebooks = [];
                 res.data.pubs.forEach(pub=>{
 
@@ -251,6 +254,12 @@ export default {
                             });
                         });
                     });
+
+                    //select preselected notebook
+                    if(this.preSelectedGAID) {
+                        this.selected = this.notebooks.find(notebook=>
+                            notebook.archive._id == this.preSelectedGAID);
+                    }
                 });
             });
         },

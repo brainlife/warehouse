@@ -74,6 +74,7 @@ router.get('/', (req, res, next)=>{
     });
 });
 
+//DEPRECATED 
 /**
  * @apiGroup Publications
  * @api {get} /pub/datasets-inventory/:releaseid Get counts of unique subject/datatype/datatype_tags. You can then use /pub/datasets/:releaseid to 
@@ -81,6 +82,7 @@ router.get('/', (req, res, next)=>{
  * @apiSuccess {Object} Object containing counts
  */
 //WARNING: similar code in dataset.js
+/*
 router.get('/datasets-inventory/:releaseid', (req, res, next)=>{
     db.Datasets.aggregate()
     .match({ publications: mongoose.Types.ObjectId(req.params.releaseid) })
@@ -92,6 +94,7 @@ router.get('/datasets-inventory/:releaseid', (req, res, next)=>{
         res.json(stats);
     });
 });
+*/
 
 //DEPRECATED .. it's cached into pub record when it's updated
 /**
@@ -202,7 +205,7 @@ router.post('/', common.jwt(), (req, res, next)=>{
                 //return to the caller already
                 res.json(pub);
 
-                //now post metadata and set url
+                //post metadata to datacite and set url
                 let metadata = common.compose_pub_datacite_metadata(pub);
                 common.doi_post_metadata(metadata, err=>{
                     if(err) return next(err);
@@ -213,10 +216,11 @@ router.post('/', common.jwt(), (req, res, next)=>{
                     });
                 });
                 
+                //handle data/ga release
                 async.eachSeries(pub.releases, (release, next_release)=>{
-                    releaseDataset(release, pub.project, err=>{
+                    doRelease(release, pub.project, err=>{
                         if(err) return next_release(err);
-                        updateReleaseCache(pub, release, next_release);
+                        updateReleaseInfo(pub, release, next_release);
                     });
                 }, err=>{
                     if(err) console.error(err);
@@ -229,15 +233,37 @@ router.post('/', common.jwt(), (req, res, next)=>{
     });
 });
 
-function updateReleaseCache(pub, release, next) {
-    //list apps used to produce this release
-    //console.log("aggregateing dataset publised under release", release._id);
-    common.aggregateDatasetsByApps({
-        publications: release._id,
-    }).then(apps=>{
-        release.apps = apps;
-        next();
-    });
+function updateReleaseInfo(pub, release, cb) {
+    async.series([
+        next=>{
+            //list apps used to produce this release
+            common.aggregateDatasetsByApps({
+                publications: release._id,
+            }).then(apps=>{
+                release.apps = apps;
+                next();
+            });
+        },
+
+        next=>{
+            //count number of subjects for this release (TODO - and sessions?)
+            db.Datasets.find({publications: release._id}).distinct('meta.subject').exec((err, subjects)=>{
+                if(err) return next(err);
+                release.subjects = subjects.length;
+                next();
+            });
+        },
+
+        next=>{
+            //count number of subjects for this release (TODO - and sessions?)
+            db.Datasets.find({publications: release._id}).distinct('meta.session').exec((err, sessions)=>{
+                if(err) return next(err);
+                console.log("number of sessions", sessions.length);
+                release.sessions = sessions.length;
+                next();
+            });
+        },
+    ], cb)
 }
 
 /**
@@ -289,7 +315,7 @@ router.put('/:id', common.jwt(), (req, res, next)=>{
                 if(err) return next(err);
                 res.json(pub); 
                 
-                //update doi metadata (TODO - why could doi not be set?)
+                //update doi metadata to datacite (TODO - why could doi not be set?)
                 if(pub.doi) {
                     let metadata = common.compose_pub_datacite_metadata(pub);
                     common.doi_post_metadata(metadata, err=>{
@@ -307,10 +333,11 @@ router.put('/:id', common.jwt(), (req, res, next)=>{
                 */
                 //async.eachOfSeries(req.body.releases, (release, idx, next_release)=>{
 
+                //handle data/ga release
                 async.eachSeries(pub.releases, (release, next_release)=>{
-                    releaseDataset(release, pub.project, err=>{
+                    doRelease(release, pub.project, err=>{
                         if(err) return next_release(err);
-                        updateReleaseCache(pub, release, next_release);
+                        updateReleaseInfo(pub, release, next_release);
                     });
                 }, err=>{
                     if(err) console.error(err);
@@ -324,7 +351,7 @@ router.put('/:id', common.jwt(), (req, res, next)=>{
     });
 });
 
-function releaseDataset(release, project, cb) {
+function doRelease(release, project, cb) {
 
     //publish all new release sets
     async.eachSeries(release.sets, (set, next_set)=>{

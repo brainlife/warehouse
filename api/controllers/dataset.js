@@ -47,6 +47,7 @@ function construct_dataset_query(body/*, project_ids*/) {
     
     //handle datatype_tags query
     //TODO - deprecate this? let client take care of this themselves?
+    //TODO - who uses this?
     if(body.datatype_tags) {
         let all = [];
         let nin = [];
@@ -61,6 +62,7 @@ function construct_dataset_query(body/*, project_ids*/) {
         if(all.length > 0) query.datatype_tags["$all"] = all;
         if(nin.length > 0) query.datatype_tags["$nin"] = nin;
     }
+    console.log(JSON.stringify(query, null, 4));
     return query;
 }
 
@@ -84,7 +86,7 @@ function construct_dataset_query(body/*, project_ids*/) {
  *
  * @apiSuccess {Object}         List of datasets (maybe limited / skipped) and total count
  */
-router.get('/', common.jwt({secret: config.express.pubkey, credentialsRequired: false}), (req, res, next)=>{
+router.get('/', common.jwt({secret: config.express.pubkey, /*credentialsRequired: false*/}), (req, res, next)=>{
     let skip = req.query.skip||0;
     let limit = req.query.limit||100; //this means if user set it to "0", no limit
     if(req.query.find) req.query.find = JSON.parse(req.query.find);
@@ -161,7 +163,7 @@ router.get('/', common.jwt({secret: config.express.pubkey, credentialsRequired: 
  *
  * @apiSuccess {Object}         List of distinct values
  */
-router.get('/distinct', common.jwt({secret: config.express.pubkey, credentialsRequired: false}), (req, res, next)=>{
+router.get('/distinct', common.jwt({secret: config.express.pubkey/*, credentialsRequired: false*/}), (req, res, next)=>{
     const find = JSON.parse(req.query.find);
     if(!find.project) return next("please specify project query");
     common.cast_mongoid(find);
@@ -186,16 +188,21 @@ router.get('/distinct', common.jwt({secret: config.express.pubkey, credentialsRe
  * @apiSuccess {Object}         Object containing counts
  * 
  */
-//warning.. similar code in pub.js
-router.get('/inventory', common.jwt({secret: config.express.pubkey, credentialsRequired: false}), (req, res, next)=>{
+//warning.. similar code in pub.js (no more!)
+router.get('/inventory', common.jwt({secret: config.express.pubkey/*, credentialsRequired: false*/}), (req, res, next)=>{
+    console.log("query", req.query.find);
     const find = JSON.parse(req.query.find);
-    if(!find.project) return next("please specify project query");
+    if(!find.project && !find.publications) return next("please specify project query");
     common.cast_mongoid(find);
     common.getprojects(req.user, function(err, canread_project_ids, canwrite_project_ids) {
         if(err) return next(err);
-        canread_project_ids = canread_project_ids.map(id=>id.toString());
-        if(!canread_project_ids.includes(find.project.toString())) return next("no read access to specified project:"+find.project);
-        
+
+        //if querying for published dataset, user doesn't have to have membership
+        if(!find.publications) {
+            canread_project_ids = canread_project_ids.map(id=>id.toString());
+            if(!canread_project_ids.includes(find.project.toString())) return next("no read access to specified project:"+find.project);
+        }
+            
         //similar code in controller/pub.js handle_release
         db.Datasets.aggregate()
         .match(find)
@@ -1229,7 +1236,7 @@ function get_user_agreements(sub, authorization, cb) {
  */
 router.get('/download/:id', common.jwt({
     secret: config.express.pubkey,
-    credentialsRequired: false,
+    //credentialsRequired: false,
     getToken: function(req) { 
         //load token from req.headers as well as query.at
         if(req.query.at) return req.query.at; 
@@ -1333,7 +1340,7 @@ router.get('/download/:id', common.jwt({
  */
 router.get('/download/safe/:id', common.jwt({
     secret: config.warehouse.public_key,
-    credentialsRequired: false, //TODO why?
+    //credentialsRequired: false, 
     getToken: function(req) { 
         //load token from req.headers as well as query.at
         if(req.query.at) return req.query.at; 
@@ -1402,9 +1409,11 @@ router.delete('/:id?', common.jwt({secret: config.express.pubkey}), function(req
  *
  * @apiSuccess {String}         generated bash shell script
 */
-router.post('/downscript', common.jwt({secret: config.express.pubkey, credentialsRequired: false}), (req, res, next)=>{
+router.post('/downscript', common.jwt({secret: config.express.pubkey/* credentialsRequired: false*/}), (req, res, next)=>{
     let skip = req.query.skip||0;
     let limit = req.query.limit||100; //this means if user set it to "0", no limit (it's string)
+    if(!req.body.find) return next("please set find parameter");
+
     common.getprojects(req.user, (err, canread_project_ids, canwrite_project_ids)=>{
         if(err) return next(err);
         db.Datasets.find(construct_dataset_query(req.body/*, canread_project_ids*/))
@@ -1427,6 +1436,7 @@ set +e #stop the script if anything fails
             let canread_project_ids_str = canread_project_ids.map(id=>id.toString());
             datasets = datasets.filter(d=>{
                 if(d.publications && d.publications.length > 0) return true; //published datasets can be ready by anyone
+                if(!d.project) return false; //probably only happens for dev
                 return canread_project_ids_str.includes(d.project._id.toString());
             });
             
@@ -1472,6 +1482,8 @@ ${p.desc}`;
             }
             
             datasets.forEach(dataset=>{
+                if(!dataset.meta) return; //probably only happens in dev
+                    
                 //construct a path to put the datasets in
                 let root = "./proj-"+dataset.project._id;
 

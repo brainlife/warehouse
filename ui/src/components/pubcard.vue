@@ -38,6 +38,12 @@
                 </small>
                 <br>
                 <small v-if="release.desc">{{release.desc}}<br></small>
+
+                <b-badge pill class="bigpill" style="margin-right: 5px;" v-if="release.subjects">
+                    <icon name="user-friends" style="opacity: 0.4;"/>&nbsp;&nbsp;{{release.subjects}} <small>subjects</small> 
+                    <span v-if="release.sessions"><span style="opacity: 0.4"> | </span>{{release.sessions}} <small>sessions</small></span>
+                </b-badge>
+
                 <div v-if="release.sets" v-for="(set, idx) in release.sets" :key="idx" style="margin-right: 5px; display: inline-block;">
                     <releaseset :set="set"/>
                 </div>
