@@ -30,7 +30,7 @@
             </p>
         </div>
 
-        <div v-for="(release, idx) in pub.releases" :key="idx">
+        <div v-for="release in pub.releases" :key="release._id">
             <div v-if="!release.removed" style="clear: both; border-top: 1px solid #e6e6e6; padding: 5px; padding-left: 20px;">
                 <span class="form-header" style="opacity: 0.7; display: inline-block;">Release</span> <b>{{release.name}}</b>
                 <small style="float: right; padding-right: 10px;">
@@ -47,12 +47,7 @@
                 <div v-if="release.sets" v-for="(set, idx) in release.sets" :key="idx" style="margin-right: 5px; display: inline-block;">
                     <releaseset :set="set"/>
                 </div>
-                <!--
-                <span class="form-header" v-if="release.gaarchives && release.gaarchives.length > 0" style="opacity: 0.7">
-                    Group Analysis Notebook
-                </span>
-                -->
-                <div v-for="(gaarchive, idx) in release.gaarchives" :key="idx" style="margin: 3px; display: inline-block;">
+                <div v-for="gaarchive in release.gaarchives" :key="gaarchive._id" style="margin: 3px; display: inline-block;">
                     <gaarchive :gaarchive="gaarchive"/>
                 </div>
             </div>

@@ -218,11 +218,19 @@ export default {
             this.page = "filter";
         },
         next() {
+            const datatype_ids = this.inventory.datatypes.filter(it=>it.include).map(it=>it.datatype);
+
+            if(!datatype_ids.length) {
+                alert("Please select at least one datatype to download");
+                return;
+            }
+
             this.page = "download";
 
-            const datatype_ids = this.inventory.datatypes.filter(it=>it.include).map(it=>it.datatype);
             Vue.set(this.query, 'datatype', {$in: datatype_ids});
-            Vue.set(this.query, 'meta.subject', {$in: this.subjects.map(it=>it.subject)});
+            if(this.subjects.length) {
+                Vue.set(this.query, 'meta.subject', {$in: this.subjects.map(it=>it.subject)});
+            }
         },
     },
 } 

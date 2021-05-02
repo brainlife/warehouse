@@ -204,6 +204,8 @@ export default {
                 var task = event.msg;
                 if(!task) return;
 
+                console.dir(task);
+
                 //nbconvert update?
                 if(this.nbtask && task._id == this.nbtask._id) {
                     Object.assign(this.nbtask, task);

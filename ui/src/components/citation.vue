@@ -1,24 +1,8 @@
 <template>
 <p class="citation" @click="show_bibtext">
     <span v-if="!citation" class="text-muted">Resolving {{doi}}.. <icon name="cog" spin/></span>
-    <!--<pre v-if="accept == 'application/x-bibtex'">{{citation}}</pre>-->
     <i v-html="citation"></i>
 </p>
-<!--
-<b-card no-body class="citation-box">
-    <b-tabs pills card>
-        <b-tab title="Text">
-            <p>
-                <citation :doi="pub.doi"/>
-            </p> 
-            <small class="text-muted">in harvard3 format. <a href="https://citation.crosscite.org" target="_blank">Use other format</a></small>
-        </b-tab>
-        <b-tab title="bibtex">
-            <citation :doi="pub.doi" accept="application/x-bibtex"/>
-        </b-tab>
-    </b-tabs>
-</b-card>
--->
 
 </template>
 
@@ -37,13 +21,6 @@ export default {
         }
     },
     mounted: function() {
-        /*
-        if(Vue.config.debug) {
-            console.log("running in debug mode - using test doi");
-            this.doi = "10.25663/bl.p.3"; //for test
-        }
-        */
-  
         this.$http.get('pub/doi', {params: {
             //doi: "10.25663/bl.p.3",
             doi: this.doi,

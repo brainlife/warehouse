@@ -14,7 +14,7 @@
         </div>
     </a>
 
-    <p v-if="release.desc"><small>{{release.desc}}</small></p>
+    <p v-if="release.desc" style="margin-bottom: 0px;"><small>{{release.desc}}</small></p>
     <p v-if="release.sets && release.sets.length">
         <b-badge pill class="bigpill clickable" @click="downloadDataset(release.set)" style="float: right">
             <icon name="download" style="opacity: 0.4;"/>&nbsp;&nbsp;&nbsp;<small>Dowload this dataset</small>
@@ -45,7 +45,7 @@
         </table>
         -->
         <div v-for="rec in release.apps" :key="rec._id" style="margin-top: 10px; border-left: 3px solid #f0f0f0; border-bottom: 1px solid #eee;">
-            <doibadge :doi="rec.app.doi" :jump="true" style="margin: 2px; position: relative; float: right; z-index: 1;"/>
+            <doibadge :doi="rec.app.doi" :jump="true" style="position: relative; float: right; z-index: 1; transform: scale(0.8); transform-origin: right;"/>
             <app :appid="rec.app._id" :branch="rec.service_branch" :compact="true">
                 <taskconfig :task="rec.task" style="margin: 10px;"/>
             </app>
@@ -163,7 +163,7 @@ export default {
 
     methods: {
         downloadNotebook(ga) {
-            if(!Vue.config.user) return alert("Please Signup/Login first to download this data-object");
+            if(!Vue.config.user) return alert("Please Signup/Login first to download this notebook");
             this.check_agreements(this.project, ()=>{
                 const url = Vue.config.api+'/dataset/download/'+ga.dataset_id+'?at='+Vue.config.jwt; 
                 window.open(url, ga._id);
@@ -185,6 +185,7 @@ export default {
         },
 
         downloadDataset(set) {
+            if(!Vue.config.user) return alert("Please Signup/Login first to download this data-object");
             this.check_agreements(this.project, ()=>{
                 this.$root.$emit("downscript.open", {
                     filter: true,

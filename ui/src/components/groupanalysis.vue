@@ -14,11 +14,12 @@
     </div>
 
     <div v-if="!selected && ready" class="page-content">
-        <div v-if="sessions.length >0">
+        <div style="padding: 20px; opacity: 0.5;" v-if="!visibleSessions.length">No Sessions</div>
+        <div v-if="visibleSessions.length">
             <br>
             <h4 style="padding-left: 20px">Sessions</h4>
-            <div v-for="task in sessions" :key="task._id">
-                <div class="session" v-if="['running', 'requested'].includes(task.status)">
+            <div v-for="task in visibleSessions" :key="task._id">
+                <div class="session">
                     <b-row>
                         <b-col>
                             <b-button variant="primary" size="sm" @click="open(task)" v-if="!openWhenReady" style="float: right;">
@@ -182,9 +183,6 @@ export default {
             console.log("task id specified in hash.. opening");
 
             history.replaceState("", document.title, window.location.pathname+window.location.search); //clear hash
-
-            //const task = this.sessions.find(task=>task._id == taskid);
-            //this.open(task);
             this.openWhenReady = taskid;
         }
     },
@@ -261,6 +259,9 @@ export default {
             return this.tasks.filter(task=>task.status != 'removed');
         }   
         */
+        visibleSessions() {
+            return this.sessions.filter(it=>['running', 'requested'].includes(it.status));
+        }
     },
 
     methods: {

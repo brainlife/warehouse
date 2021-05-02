@@ -268,7 +268,10 @@
         </div>
 
         <div v-if="tabs[tab].id == 'dataset'" class="page-content">
-            <b-alert show variant="secondary" v-if="selected.access != 'public' && !(ismember()||isadmin()||isguest())">
+            <b-alert show variant="secondary" v-if="!config.user">
+                Please login to see archived data objects.
+            </b-alert>
+            <b-alert show variant="secondary" v-else-if="selected.access != 'public' && !(ismember()||isadmin()||isguest())">
                 For non public project, only the admin/members/guests of this project can access processes.
             </b-alert>
             <datasets :project="selected" :projects="projects" v-else :participants="participants"/>

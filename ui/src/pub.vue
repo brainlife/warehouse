@@ -30,85 +30,83 @@
 
                 <div v-if="pub.tags.length > 0"> 
                     <div class="content-subheader border-bottom">Topics</div>
-                    <p style="line-height: 200%;">
+                    <p style="line-height: 200%; margin-bottom: 0px;">
                         <b-badge v-for="topic in pub.tags" :key="topic" class="topic">{{topic}}</b-badge>
                     </p>
+                    <br>
+                </div>
+
+                <div v-if="pub.releases.length" class="releases">
+                    <!--<div class="content-header">Contents</div>-->
+                    <div class="content-subheader border-bottom">Releases</div>
+                    <div v-for="release in pub.releases" :key="release._id" class="content-item clickable" @click="jump('release.'+release._id)">
+                        <small style="float: right">
+                            {{new Date(release.create_date).toLocaleDateString()}}
+                        </small>
+                        <span>{{release.name}}</span>
+                        <p v-if="release.desc"><small>{{release.desc}}</small></p>
+                    </div>
                 </div>
                 <br>
 
-                <div style="position: sticky; top: 0;">
-                    <div v-if="pub.releases.length">
-                        <!--<div class="content-header">Contents</div>-->
-                        <div class="content-subheader border-bottom">Releases</div>
-                        <div v-for="release in pub.releases" :key="release._id" class="content-item clickable" @click="jump('release.'+release._id)">
-                            <small style="float: right">
-                                {{new Date(release.create_date).toLocaleDateString()}}
-                            </small>
-                            <span>{{release.name}}</span>
-                            <p v-if="release.desc"><small>{{release.desc}}</small></p>
-                        </div>
-                    </div>
+                <!--
+                <div class="content-subheader">Citation</div>
+                <br>
+                -->
+
+                <div v-if="pub.contributors.length" class="clickable" @click="jump('contributors')">
+                    <div class="content-subheader border-bottom">Contributors</div>
+                    <span v-for="(contact, idx) in pub.contributors" :key="contact._id">
+                        <span v-if="idx" style="opacity: 0.5;"> | </span> {{contact.fullname}} 
+                    </span>
                     <br>
-
-                    <!--
-                    <div class="content-subheader">Citation</div>
-                    <br>
-                    -->
-
-                    <div v-if="pub.contributors.length" class="clickable" @click="jump('contributors')">
-                        <div class="content-subheader border-bottom">Contributors</div>
-                        <span v-for="(contact, idx) in pub.contributors" :key="contact._id">
-                            <span v-if="idx" style="opacity: 0.5;"> | </span> {{contact.fullname}} 
-                        </span>
-                        <br>
-                        <br>
-                    </div>
-
-                    <div>
-                        <div class="content-subheader border-bottom">Project</div>
-                        <small class="text-muted">This publication was processed in the following brainlife.io project</small>
-                        <br>
-                        <div @click="openproject(pub.project._id)" class="clickable" style="background-color: #ddd; padding: 5px 10px; border-left: 3px solid #999;">
-                            <b>{{pub.project.name}}</b><br>
-                            <small>{{pub.project.desc}}</small>
-                        </div>
-                        <br>
-                        <br>
-                    </div>
- 
-                    <div v-if="pub.fundings.length" class="clickable" @click="jump('fundings')">
-                        <div class="content-subheader">
-                            Funded By
-                            <!-- <b-badge>{{pub.fundings.length}}</b-badge>-->
-                        </div>
-                        <div v-for="funding in pub.fundings" :key="funding._id" class="funder" style="font-size: 80%;">
-                            <div v-if="funding.funder == 'NSF'" class="funder-label bg-success">NSF</div>
-                            <div v-else-if="funding.funder == 'NIH'" class="funder-label bg-info">NIH</div>
-                            <div v-else class="funder-label bg-warning">{{funding.funder}}</div>
-                            {{funding.id}}
-                        </div>
-                        <br>
-                        <br>
-                    </div>
-
-                    <div class="content-subheader clickable" @click="jump('license')">
-                        License<br>
-                        <div style="margin-top: 5px; opacity: 0.8; font-weight: normal;">{{pub.license}}</div>
-                        <br>
-                    </div>
-
-                    <div class="content-subheader clickable" @click="jump('related')" v-if="pub.relatedPapers">
-                        Related Articles <b-badge>{{pub.relatedPapers.length}}</b-badge>
-                        <br>
-                    </div>
-                    <br>
-
-                    <div class="content-subheader clickable" @click="jump('disqus')">Disqus</div>
-                    <br>
-
-                   
                     <br>
                 </div>
+
+                <div>
+                    <div class="content-subheader border-bottom">Project</div>
+                    <small class="text-muted">This publication was processed in the following brainlife.io project</small>
+                    <br>
+                    <div @click="openproject(pub.project._id)" class="clickable" style="background-color: #ddd; padding: 5px 10px; border-left: 3px solid #999;">
+                        <b>{{pub.project.name}}</b><br>
+                        <small>{{pub.project.desc}}</small>
+                    </div>
+                    <br>
+                    <br>
+                </div>
+
+                <div v-if="pub.fundings.length" class="clickable" @click="jump('fundings')">
+                    <div class="content-subheader border-bottom">
+                        Funded By
+                        <!-- <b-badge>{{pub.fundings.length}}</b-badge>-->
+                    </div>
+                    <div v-for="funding in pub.fundings" :key="funding._id" class="funder" style="font-size: 80%;">
+                        <div v-if="funding.funder == 'NSF'" class="funder-label bg-success">NSF</div>
+                        <div v-else-if="funding.funder == 'NIH'" class="funder-label bg-info">NIH</div>
+                        <div v-else class="funder-label bg-warning">{{funding.funder}}</div>
+                        {{funding.id}}
+                    </div>
+                    <br>
+                    <br>
+                </div>
+
+                <div class="content-subheader clickable" @click="jump('license')">
+                    License<br>
+                    <div style="margin-top: 5px; opacity: 0.8; font-weight: normal;">{{pub.license}}</div>
+                    <br>
+                </div>
+
+                <div class="content-subheader clickable" @click="jump('related')" v-if="pub.relatedPapers && pub.relatedPapers.length">
+                    Related Articles <b-badge>{{pub.relatedPapers.length}}</b-badge>
+                    <br>
+                </div>
+                <br>
+
+                <div class="content-subheader clickable" @click="jump('disqus')">Disqus</div>
+                <br>
+
+               
+                <br>
             </div>
 
             <!--main content-->
@@ -313,7 +311,6 @@ export default {
             });
         }
         return {
-            //title: "hi", 
             meta,
         } 
     },
@@ -322,7 +319,6 @@ export default {
         return {
             pub: null, //publication detail
             release: null, //currently opened release
-            dataset_groups: null, //datasets inventory grouped 
 
             datatypes: {}, 
             resource_citations: [],
@@ -333,70 +329,6 @@ export default {
             //tab_index: 0,
             query: "",
             config: Vue.config,
-        }
-    },
-
-    watch: {
-        /*
-        tab_index() {
-            if(this.tab_index == 0) return; //not release view
-            this.dataset_groups = null;
-            this.apps = null;
-
-            this.release = this.pub.releases[this.tab_index-1];
-
-            //load release
-            this.$http.get('pub/datasets-inventory/'+this.release._id).then(res=>{
-                let groups = {};
-                res.data.forEach(rec=>{
-                    let subject = rec._id.subject;
-                    let datatype = rec._id.datatype;
-                    let datatype_tags = rec._id.datatype_tags;
-                    let datatype_tags_s = JSON.stringify(rec._id.datatype_tags);
-                    if(!groups[subject]) {
-                        groups[subject] = { size: 0, count: 0, datatypes: {} };
-                    }
-                    if(!groups[subject].datatypes[datatype]) {
-                        groups[subject].datatypes[datatype] = { size: 0, count:0, datatype_tags: {}};
-                    }
-                    if(!groups[subject].datatypes[datatype].datatype_tags[datatype_tags_s]) {
-                        groups[subject].datatypes[datatype].datatype_tags[datatype_tags_s] = {size: 0, count: 0, show: false, datasets: null};
-                    }
-                    groups[subject].datatypes[datatype].datatype_tags[datatype_tags_s].size += rec.size;
-                    groups[subject].datatypes[datatype].datatype_tags[datatype_tags_s].count += rec.count;
-                    groups[subject].datatypes[datatype].size += rec.size;
-                    groups[subject].datatypes[datatype].count += rec.count;
-                    groups[subject].size += rec.size;
-                    groups[subject].count += rec.count;
-                });
-                this.dataset_groups = groups;
-
-                //load apps
-                return this.$http.get('pub/apps/'+this.release._id, {params: {
-                    //populate: 'inputs.datatype outputs.datatype contributors',
-                }});
-            })
-            .then(res=>{
-                this.apps = res.data;
-            });
-        }
-        */
-    },
-
-    computed: {
-        social_url: function() {
-            if(this.pub.doi) return "http://doi.org/"+this.pub.doi;
-            return null;
-        },
-
-        total: function() {
-            let stats = {subjects: 0, count: 0, size: 0};
-            for(var subject in this.dataset_groups) {
-                stats.subjects++; 
-                stats.size += this.dataset_groups[subject].size;
-                stats.count += this.dataset_groups[subject].count;
-            }
-            return stats;
         }
     },
 
@@ -419,6 +351,7 @@ export default {
                     return 0;
                 }).filter(release=>!release.removed);
             }
+/*
 
             //load all datatypes
             return this.$http.get('datatype');
@@ -456,6 +389,7 @@ export default {
                 let resource_citations = this.resource_citations.find(r=>r.resource._id == stat.resource_id);
                 if(!resource_citations) this.resource_citations.push({resource, citation: stat.citation});    
             });
+*/
 
         }).catch(console.error);
     },
@@ -671,7 +605,11 @@ color: white;
     color: #2693ff;
 }
 
+.releases {
+    border: 1px solid #e0e0e0; 
+    border-radius: 5px; 
+    padding: 7px; 
+}
+
 </style>
-
-
 

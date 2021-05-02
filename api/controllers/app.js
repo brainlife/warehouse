@@ -79,7 +79,7 @@ router.get('/', common.jwt({credentialsRequired: false}), (req, res, next)=>{
 /**
  * @apiGroup App
  * @api {get} /app/:id          Get App
- * @apiDescription              Get App detail (no AC as long as a valid App ID is given - requires login)
+ * @apiDescription              Get App detail (no AC as long as a valid App ID is given)
  *
  * @apiParam {String} [select]  Fields to load - multiple fields can be entered with %20 as delimiter
  * @apiParam {String} [populate] Relational fields to populate
@@ -88,7 +88,7 @@ router.get('/', common.jwt({credentialsRequired: false}), (req, res, next)=>{
  *                              A valid JWT token "Bearer: xxxxx"
  * @apiSuccess {Object}         App detail
  */
-router.get('/:id', common.jwt(), (req, res, next)=>{
+router.get('/:id', common.jwt({credentialsRequired: false}), (req, res, next)=>{
     db.Apps.findById(req.params.id)
     .select(req.query.select)
     .populate(req.query.populate || '')

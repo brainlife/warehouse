@@ -400,6 +400,10 @@ function doRelease(release, project, cb) {
 //TODO - why does this exist? should let client directly access it?
 router.get('/doi', (req, res, next)=>{
     logger.debug("querying doi: %s", req.query.doi);
+    if(req.query.doi.includes("bldev")) {
+        return res.send(req.query.doi+" can not be resolved (it's dev)");
+    }
+
     request({
         url: "https://doi.org/"+req.query.doi, //TODO validate!
         headers: {

@@ -167,6 +167,8 @@ export default {
         if(!this.pub.releases) this.$set(this.pub, 'releases', []);
         this.pub.releases.forEach(release=>{
             release._create_date = (new Date(release.create_date)).toISOString().split('T')[0];
+            if(!release.sets) release.sets = [];
+            if(!release.gaarchives) release.gaarchives = [];
         });
     },
 

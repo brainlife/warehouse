@@ -126,6 +126,7 @@ router.get('/:task_id/*', common.jwt({
     if(!task.config._public) {
         //if not public output, restrict access
         const gids = req.user.gids||[];
+        if(!req.user) return next("Please login");
         if(task.user_id != req.user.sub && !~gids.indexOf(task._group_id)) return next("you don't own this task or member of a group "+task._group_id);
     }
 
@@ -136,9 +137,9 @@ router.get('/:task_id/*', common.jwt({
     //make sure path looks safe
     const clean_p = path.resolve(prefix+"/"+p);
 
-    console.debug("p", p);
-    console.debug("clean_p", clean_p);
-    console.debug("prefix", prefix);
+    //console.debug("p", p);
+    //console.debug("clean_p", clean_p);
+    //console.debug("prefix", prefix);
 
     if(!clean_p.startsWith(prefix)) return next("invalid path");
 
@@ -151,7 +152,9 @@ router.get('/:task_id/*', common.jwt({
             next(err); 
         });
         res.on('finish', ()=>{
-            common.publish("secondary.download."+req.user.sub+"."+task._group_id+"."+task._id, {headers: req.headers, path: clean_p});
+            let sub = "guest";
+            if(req.user) sub = req.user.sub;
+            common.publish("secondary.download."+sub+"."+task._group_id+"."+task._id, {headers: req.headers, path: clean_p});
         });
     });
 });
