@@ -138,7 +138,7 @@
                     </p>
                     -->
                     
-                    <p class="text-muted"><small>Key/value dictionary for each subject(participants.tsv). You can use this information for group analysis.</small></p>
+                    <p class="text-muted"><small>Key/value dictionary for each subject(participants.tsv). You can use this information in analysis tab</small></p>
                     <editor v-model="participants" @init="editorInit" lang="json" height="500"/>
 
                     <br>
@@ -209,10 +209,10 @@ export default {
         }
     },
     mounted: function() {
-        let participants_def = {
-            "01": {age: 12, sex: "F"},
-            "02": {age: 34, sex: "M"},
-        }
+        let participants_def = [
+            {subject: "001", age: 12, sex: "F", "handedness": "R"},
+            {subject: "002", age: 34, sex: "M", "handedness": "L"},
+        ]; 
         let participants_columns_def = {
             "gender" : {
                 "LongName" : "gender",
@@ -301,6 +301,16 @@ export default {
                 this.$notify({type: 'error', text: "Participants Info has a syntax error: "+err});
                 return; 
             }        
+
+            //make sure participatns info is structured in the correct way
+            if(!Array.isArray(participants)) {
+                this.$notify({type: 'error', text: "Participants info should be an array"});
+                return; 
+            }
+            if(participants.some(rec=>!rec.subject)) {
+                this.$notify({type: 'error', text: "subject field is missing in some record for participants info"});
+                return false;
+            }
 
             this.submitting = true;
             if(this.project._id) {

@@ -67,7 +67,7 @@
                     <div class="content-subheader border-bottom">Project</div>
                     <small class="text-muted">This publication was processed in the following brainlife.io project</small>
                     <br>
-                    <div @click="openproject(pub.project._id)" class="clickable" style="background-color: #ddd; padding: 5px 10px; border-left: 3px solid #999;">
+                    <div @click="openproject(pub.project._id)" class="clickable" style="background-color: #eee; padding: 5px 10px; border-left: 2px solid #999;">
                         <b>{{pub.project.name}}</b><br>
                         <small>{{pub.project.desc}}</small>
                     </div>

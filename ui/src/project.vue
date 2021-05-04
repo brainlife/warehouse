@@ -180,7 +180,7 @@
                     <div class="box" v-if="participants && Object.keys(participants).length > 0">
                         <span class="form-header">Participants Info</span>     
                         <p><small>Participants info provides information for each subject and can be used for the group analysis.</small></p>                        
-                        <participants :subjects="participants" :columns="participants_columns" style="max-height: 500px; overflow: auto;"/>
+                        <participants :rows="participants" :columns="participants_columns" style="max-height: 500px; overflow: auto;"/>
                     </div>
 
                     <div class="box" v-if="selected.stats.apps && selected.stats.apps.length > 0">

@@ -33,27 +33,24 @@
         <div v-for="release in pub.releases" :key="release._id">
             <div v-if="!release.removed" style="clear: both; border-top: 1px solid #e6e6e6; padding: 5px; padding-left: 20px;">
                 <span class="form-header" style="opacity: 0.7; display: inline-block;">Release</span> <b>{{release.name}}</b>
+                <b-badge pill class="bigpill" style="margin-left: 10px; transform: scale(0.9); transform-origin: left; position: relative; top: -2px;" v-if="release.subjects">
+                    <icon name="user-friends" style="opacity: 0.4;"/>&nbsp;&nbsp;{{release.subjects}} <small>subjects</small> 
+                    <span v-if="release.sessions"><span style="opacity: 0.4"> | </span>{{release.sessions}} <small>sessions</small></span>
+                </b-badge>
+
                 <small style="float: right; padding-right: 10px;">
                     <icon name="calendar" style="opacity: 0.4;"/> {{new Date(release.create_date).toLocaleDateString()}}
                 </small>
                 <br>
                 <small v-if="release.desc">{{release.desc}}<br></small>
 
-                <b-badge pill class="bigpill" style="margin-right: 5px;" v-if="release.subjects">
-                    <icon name="user-friends" style="opacity: 0.4;"/>&nbsp;&nbsp;{{release.subjects}} <small>subjects</small> 
-                    <span v-if="release.sessions"><span style="opacity: 0.4"> | </span>{{release.sessions}} <small>sessions</small></span>
-                </b-badge>
-
-                <div v-if="release.sets" v-for="(set, idx) in release.sets" :key="idx" style="margin-right: 5px; display: inline-block;">
+                 <div v-if="release.sets" v-for="(set, idx) in release.sets" :key="idx" style="margin-right: 5px; display: inline-block;">
                     <releaseset :set="set"/>
                 </div>
-                <div v-for="gaarchive in release.gaarchives" :key="gaarchive._id" style="margin: 3px; display: inline-block;">
-                    <gaarchive :gaarchive="gaarchive"/>
-                </div>
+                <gaarchive v-for="gaarchive in release.gaarchives" :key="gaarchive._id" :gaarchive="gaarchive" style="margin-top: 10px; margin-right: 10px;"/>
             </div>
         </div>
 
-        <br clear="both">
         <div style="background-color: #f0f0f0; padding: 10px;">
             <span style="float: right">
                 <doibadge :doi="pub.doi"/>

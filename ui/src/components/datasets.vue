@@ -38,8 +38,8 @@
                     <b-col cols="2" class="subject-column truncate">
                         <strong>{{group}}</strong>
 
-                        <div class="participants" v-if="participants">
-                            <span v-if="participants" v-for="(v, k) in participants[page[group]._subject]" :key="k">
+                        <div class="participantInfo" v-if="participants">
+                            <span v-for="(v, k) in participantsObj[page[group]._subject]" :key="k">
                                 <small>{{k}}</small> {{v}}
                             </span>
                         </div>
@@ -167,6 +167,8 @@ export default {
         return {
             pages: [], //groups of datasets 
 
+            participantsObj: {},
+
             total_datasets: null, //number of datasets for this project
             total_subjects: null, //number of subjects for this project
             total_size: null,
@@ -271,6 +273,17 @@ export default {
         let subid = this.$route.params.subid;
         if(subid) {
             this.$root.$emit('dataset.view', {id: subid, back: './'});
+        }
+
+        if(this.participants) {
+            if(Array.isArray(this.participants)) {
+                this.participants.forEach(rec=>{
+                    this.participantsObj[rec.subject] = rec;
+                });
+            } else {
+                //deprecated format.. 
+                this.participantsObj = this.participants;
+            }
         }
     },
 
@@ -818,22 +831,22 @@ export default {
 }
 
 .table-column {
-text-transform: uppercase;
+    text-transform: uppercase;
 }
 
 .page-content {
-transition: right 0.2s, left 0.2s;
-top: 165px;
-overflow-y: scroll;
-padding-left: 10px;
-background-color: white;
-overflow-x: hidden;
+    transition: right 0.2s, left 0.2s;
+    top: 165px;
+    overflow-y: scroll;
+    padding-left: 10px;
+    background-color: white;
+    overflow-x: hidden;
 }
 
 h4 {
-font-size: 13px;
-font-weight: bold;
-margin-bottom: 5px;
+    font-size: 13px;
+    font-weight: bold;
+    margin-bottom: 5px;
 }
 
 .rightopen .page-content,
@@ -941,38 +954,36 @@ margin-bottom: 5px;
 
 /*why don't I just *hide* removed objects? because remove() doesn't recalculate page height to preseve the current scroll position*/
 .removed {
-background-color: #ccc;
-color: white;
+    background-color: #ccc;
+    color: white;
 }
 .button-fixed.selected-view-open {
-margin-right: 300px;
+    margin-right: 300px;
 }
 .filter {
-float: right;
-opacity: 0.7;
-width: 50%;
-cursor: pointer;
-transition: width 0.3s;
+    float: right;
+    opacity: 0.7;
+    width: 50%;
+    cursor: pointer;
+    transition: width 0.3s;
 }
 .filter:focus {
-opacity: 1;
-width: 100%;
-cursor: inherit;
+    opacity: 1;
+    width: 100%;
+    cursor: inherit;
 }
 .filter-active {
-cursor: inherit;
-opacity: 1;
-background-color: #2693ff;
-color: white;
-width: 100%;
+    cursor: inherit;
+    opacity: 1;
+    background-color: #2693ff;
+    color: white;
+    width: 100%;
 }
-.participants {
-font-size: 90%;
-white-space: normal;
-overflow: hidden;
+.participantInfo {
+    font-size: 90%;
 }
 .subject-column {
-min-height: 35px;
+    min-height: 35px;
 }
 </style>
 

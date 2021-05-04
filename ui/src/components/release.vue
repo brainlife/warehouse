@@ -16,6 +16,8 @@
 
     <p v-if="release.desc" style="margin-bottom: 0px;"><small>{{release.desc}}</small></p>
     <p v-if="release.sets && release.sets.length">
+        <span class="subheader subheader-data">Data</span>
+        <small>The following data objects are published as part of this release.</small>
         <b-badge pill class="bigpill clickable" @click="downloadDataset(release.set)" style="float: right">
             <icon name="download" style="opacity: 0.4;"/>&nbsp;&nbsp;&nbsp;<small>Dowload this dataset</small>
         </b-badge>
@@ -23,6 +25,7 @@
     </p>
 
     <div v-if="release.apps && release.apps.length">
+        <span class="subheader subheader-apps">Preprocessing</span>
         <small>The following Apps were used to generate the data in this release.</small>
         <!--
         <table class="table table-sm">
@@ -108,13 +111,13 @@
     -->
 
     <div v-if="release.gaarchives && release.gaarchives.length > 0">
+        <span class="subheader subheader-analysis">Analysis</span>
+        <small>The following jupyter notebook implements the post-processing and analysis step.</small>
         <!-- <span class="form-header">Group Analysis</span>-->
 
         <!-- <small>Derived data was analysed by the following group analysis code.</small>-->
         <div v-for="ga in release.gaarchives" :key="ga._id">
-            <p style="border-bottom: 1px solid #eee; margin-bottom: 5px;">
-                <b style="opacity: 0.8; font-size: 100%;"><gaarchive :gaarchive="ga"/></b><!--for header-->
-            </p>
+            <gaarchive :gaarchive="ga" style="margin: 5px 0;"/>
             <p style="float: right; margin-bottom: 0px;">
                 <b-badge pill class="bigpill clickable" @click="downloadNotebook(ga)">
                     <icon name="download" style="opacity: 0.4;"/>&nbsp;&nbsp;&nbsp;<small>Dowload this notebook</small>
@@ -205,5 +208,33 @@ export default {
     background-color: #eee;
     padding: 5px 10px;
     margin-bottom: 5px;
+    /*
+    position: sticky;
+    top: 0;
+    */
+}
+.subheader {
+    font-weight: bold;
+    font-size: 16px;
+    display: block;
+    margin: 5px 0;
+    opacity: 0.7;
+    border-bottom: 2px solid #ccc;
+}
+.subheader.subheader-data {
+    color: #2693ff;
+    border-bottom: 2px solid #2693ff;
+}
+.subheader.subheader-apps {
+    color: #2693ff;
+    border-bottom: 2px solid #2693ff;
+}
+.subheader.subheader-analysis {
+    color: #2693ff;
+    border-bottom: 2px solid #2693ff;
+    /*
+    color: #28a745;
+    border-bottom: 2px solid #28a745;
+    */
 }
 </style>

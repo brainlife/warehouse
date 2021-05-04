@@ -2,6 +2,8 @@
 <transition name="fade">
     <div v-if="open" class="brainlife-modal-overlay">
         <b-container class="brainlife-modal">
+
+            <!--header-->
             <div class="brainlife-modal-header">
                 <div class="brainlife-modal-header-buttons">
                     <div class="button" @click="open = false" style="margin-left: 20px; opacity: 0.8;">
@@ -9,41 +11,47 @@
                     </div>
                 </div>
                 <h4 style="margin-top: 5px;">Launch New Analysis</h4>
-            </div><!--header-->
+            </div>
 
             <!--container selecter-->
             <div v-if="!selected" class="app-selecter">
-                <h5 style="opacity:0.8">Published Notebooks</h5>
+                <p>Please select a published notebook to use as a template for your new analysis.</p>
                 <span class="loading" v-if="!notebooks">Loading..</span>
-                <b-card-group columns>
-                    <b-card v-for="(app, idx) in notebooks" :key="idx" :title="app.name" :img-src="app.img" @click="selected = app" class="app">
-                        Publication: {{app.pub.name}}<br>
-                        Authors: {{app.pub.authors}}<br>
+                <div v-for="(app, idx) in notebooks" :key="app.dataset_id" :title="app.name" :img-src="app.img" @click="selected = app" class="app">
+                    <p style="min-height: 125px;">
+                        <small><span style="opacity: 0.8"><icon name="brands/docker"/> {{app.container}}</span></small><br>
+                        {{app.text}}<br>
+                    </p>
 
-                        Release: {{app.release.name}}<br>
-                        Release Desc: {{app.release.desc}}<br>
-                        create_date: {{app.release.create_date}}<br>
+                    <hr>
+                    <p style="position: relative;">
+                        <span class="form-header" style="position: absolute; top: -30px; left: 115px; background-color: white; padding: 5px; color: #999;">Published In</span>
+                        <span style="float: right; margin-left: 10px;">
+                            <icon name="calendar" style="opacity: 0.4;"/>&nbsp;&nbsp;{{new Date(app.release.create_date).toLocaleDateString()}}
+                        </span>
+                        {{app.pub.name}}
+                    </p>
 
-                        container: {{app.container}}<br>
-                        dataset_id: {{app.dataset_id}}<br>
+                    <p>
+                        <contact v-for="c in app.pub.authors" :key="c" :id="c" size="small" style="line-height: 150%;"/>
+                    </p>
 
-                        <b>{{app.text}}</b><br>
-                        <small>{{app.desc}}</small><br>
-                        <!-- {{notebook.archive}}-->
-                        
-                    </b-card> 
-                </b-card-group>
+                    <p>
+                        <span style="opacity: 0.8">Release /</span> <b>{{app.release.name}}</b><br>
+                        <small v-if="app.release.desc">{{app.release.desc}}</small><br>
+                        <releaseset v-if="app.release.sets" :set="set" v-for="(set, idx) in app.release.sets.filter(set=>set.datatype.groupAnalysis)" :key="idx"/>
+                    </p>
+                    <small style="font-size: 60%; float: right;" title="data object id">{{app.dataset_id}}</small>
+                </div>
 
-                <h5 style="opacity:0.8">Templates</h5>
-                <p>Or.. start from a template session</p>
-                <b-card-group columns>
-                    <b-card v-for="(app, idx) in templates" :key="idx" :title="app.name" :img-src="app.img" @click="selected = app" class="app">
-                        <b>{{app.text}}</b><br>
-                        <small>{{app.desc}}</small><br>
-                        <small class="text-muted">{{app.container}}</small>
-                    </b-card> 
-
-                </b-card-group>
+                <br clear="both">
+                <hr>
+                <p>Or.. start from a blank template.</p>
+                <div v-for="(app, idx) in templates" :key="idx" :title="app.name" :img-src="app.img" @click="selected = app" class="app">
+                    <small><span style="opacity: 0.8"><icon name="brands/docker"/> {{app.container}}</span></small><br>
+                    <b>{{app.text}}</b><br>
+                    <small>{{app.desc}}</small><br>
+                </div>
             </div>
 
             <!--configurator-->
@@ -86,9 +94,11 @@ import Vue from 'vue'
 //import agreementMixin from '@/mixins/agreement'
 import projectselecter from '@/components/projectselecter'
 import gainstance from '@/mixins/gainstance' //for createOrFindGAInstance
+import contact from '@/components/contact'
+import releaseset from '@/components/releaseset'
 
 export default {
-    components: { projectselecter },
+    components: { projectselecter, contact, releaseset },
     mixins: [
         //agreementMixin,
         projectselecter,
@@ -269,32 +279,38 @@ export default {
 
 <style scoped>
 .submit-form {
-position: absolute;
-left: 0px;
-right: 0px;
-top: 60px;
-padding: 20px;
-bottom: 60px;
-overflow: auto;
-background-color: #f9f9f9;
+    position: absolute;
+    left: 0px;
+    right: 0px;
+    top: 60px;
+    padding: 20px;
+    bottom: 60px;
+    overflow: auto;
+    background-color: #f9f9f9;
 }
 .form-action {
-position: absolute;
-bottom: 0px;
-left: 0px;
-right: 0px;
-height: 60px;
-box-shadow: inset 0px 1px 1px #ddd;
-background-color: #eee;
-padding: 10px 20px;
-text-align: right;
+    position: absolute;
+    bottom: 0px;
+    left: 0px;
+    right: 0px;
+    height: 60px;
+    box-shadow: inset 0px 1px 1px #ddd;
+    background-color: #eee;
+    padding: 10px 20px;
+    text-align: right;
 }
 .app {
-transition: box-shadow 0.5s;
+    transition: box-shadow 0.5s;
+    width: 350px;
+    float: left;
+    background-color: white;
+    padding: 10px;
+    margin-right: 10px;
+    margin-bottom: 10px;
 }
 .app:hover {
-cursor: pointer;
-box-shadow: 0 0 5px #0004;
+    cursor: pointer;
+    box-shadow: 0 0 5px #0004;
 }
 .app-selecter {
     position: absolute;

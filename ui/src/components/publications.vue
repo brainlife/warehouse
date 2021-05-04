@@ -44,7 +44,9 @@
 
                     <h6><span style="opacity: 0.5">Release</span> {{release.name}}</h6>
                     <releaseset v-for="(set, idx) in release.sets" :key="idx" style="margin-right: 10px; display: inline-block;" :set="set"/>
-                    <gaarchive v-for="(gaarchive, idx) in release.gaarchives" :key="idx" style="margin-right: 10px; display: inline-block;" :gaarchive="gaarchive"/>
+                    <p v-if="release.gaarchives.length" style="margin-top: 10px; margin-bottom: 0;">
+                        <gaarchive v-for="(gaarchive, idx) in release.gaarchives" :key="idx" style="margin-right: 10px;" :gaarchive="gaarchive"/>
+                    </p>
                 </div>
 
                 <!--<span style="float: right; opacity: 0.7;"><b>{{new Date(pub.publish_date||pub.create_date).toLocaleDateString()}}</b></span>-->

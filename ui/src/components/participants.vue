@@ -4,6 +4,7 @@
         <table class="table table-sm">
             <thead>
                 <tr>
+                    <!--
                     <th scope="col" @click="updateSort('subject')" class="header" :class="{headerSorted: sort == 'subject'}">
                         subject&nbsp;
                         <span style="width: 15px;">
@@ -11,7 +12,8 @@
                             <icon name="caret-down" v-if="sort == 'subject' && !sort_reverse"/>
                         </span>
                     </th>
-                    <th scope="col" @click="updateSort(key)" v-for="(column, key) in columns" :key="key" class="header" :class="{headerSorted: sort == key}">
+                    -->
+                    <th scope="col" @click="updateSort(key)" v-for="(column, key) in allcolumns" :key="key" class="header" :class="{headerSorted: sort == key}">
                         {{column.LongName||key}}&nbsp;<span style="width: 15px;">
                             <icon name="caret-up" v-if="sort == key && sort_reverse"/>
                             <icon name="caret-down" v-if="sort == key && !sort_reverse"/>
@@ -20,10 +22,10 @@
                 </tr>
             </thead>
             <tbody>
-                <tr v-for="subject in subject_names" :key="subject">
-                    <th scope="row">{{subject}}</th>
-                    <td v-for="(column,k) in columns" :key="k">
-                        {{subjects[subject][k]}}
+                <tr v-for="row in rows" :key="row.subject">
+                    <!-- <th scope="row">{{subject}}</th>-->
+                    <td v-for="(column,k) in allcolumns" :key="k">
+                        {{row[k]}}
                     </td>
                 </tr>
             </tbody>
@@ -37,7 +39,7 @@ import Vue from 'vue'
 
 export default {
     props: {
-        subjects: { type: Array },
+        rows: { type: Array },
         columns: { type: Object },
     },
 
@@ -46,44 +48,51 @@ export default {
             sort: 'subject', //column to sort by default
             sort_reverse: false, //sort in reverse
             config: Vue.config,
+            allcolumns: null,
         }
     },
 
     mounted() {
         //add missing columns
-        for(let subject in this.subjects) {
-            let row = this.subjects[subject]; 
+        this.allcolumns = Object.assign({}, this.columns);
+        this.rows.forEach(row=>{
             let keys = Object.keys(row);
             keys.forEach(key=>{
-                if(!this.columns[key]) {
-                    this.columns[key] = {LongName: key};
+                if(!this._columns[key]) {
+                    this._columns[key] = {LongName: key};
                 }
             });
-        }
+        });
     },
 
+    /*
     computed: {
         subject_names() {
             return Object.keys(this.subjects);
         },
     },
+    */
 
     methods: {
         updateSort(key) {
             if(this.sort == key) this.sort_reverse = !this.sort_reverse;
             else this.sort = key;
             
-            this.subjects_names.sort((a,b)=>{
+            this.rows.sort((a,b)=>{
+                const av = a[this.sort];
+                const bv = b[this.sort];
+                /*
                 if(this.sort != "subject") {
                     a = this.subjects[a][this.sort];
                     b = this.subjects[b][this.sort];
                 }
-                if(typeof a == 'string') {
-                    if(this.sort_reverse) return b.localeCompare(a);
-                    else return a.localeCompare(b);
+                */
+                if(typeof av == 'string') {
+                    if(this.sort_reverse) return bv.localeCompare(av);
+                    else return av.localeCompare(bv);
                 } else {
-                    if(this.sort_reverse) return b-a;
-                    else return a-b;
+                    if(this.sort_reverse) return bv-av;
+                    else return av-bv;
                 }
             });
         },

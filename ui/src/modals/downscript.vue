@@ -51,7 +51,11 @@
         <div v-if="single_dataset_url">
             <br>
             <br>
-            <center style="opacity: 0.7; font-weight: bold;">OR</center>
+            <center style="opacity: 0.7; font-weight: bold;">
+                <span style="opacity: 0.5">-</span> 
+                OR
+                <span style="opacity: 0.5">-</span> 
+            </center>
             <br>
         </div>
 
