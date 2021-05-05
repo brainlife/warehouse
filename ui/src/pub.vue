@@ -121,7 +121,7 @@
             </div>
 
             <!--main content-->
-            <div style="margin-right: 275px">
+            <div class="main">
                 <h4 style="color: #666; padding-top: 15px; padding-bottom: 5px; ">
                     {{pub.name}} 
                 </h4>
@@ -153,145 +153,147 @@
 
     <!--footer-->
     <b-container>
+        <div class="rightside">
+            <!--side footer-->
+            <div class='altmetric-embed' 
+                data-badge-type='donut' 
+                data-badge-details="right" 
+                data-hide-no-mentions="false" 
+                :data-doi="pub.doi||config.debug_doi"/>
+        </div>
         <br>
-        <b-row>
-            <b-col>
-                <!--main footer-->
-                <b-row>
-                    <b-col cols="2">
-                        <span class="form-header">Citation</span>
-                    </b-col>
-                    <b-col cols="10">
-                        <p>
-                            <small class="text-muted">Citation for this publiction. Please see citation section under each release for App specific citations. </small>
-                        </p>
-                        <citation :doi="pub.doi||config.debug_doi"/>
-
-                        <div v-if="resource_citations.length > 0">
-                            <p><small>Published data objects are computed on the following resources.</small></p>
-                            <p v-for="resource_citation in resource_citations">
-                                <icon name="caret-right"/> <b>{{resource_citation.resource.name}}</b>
-                                <small>{{resource_citation.resource.config.desc}}</small>
-                                <br>
-                                <i>{{resource_citation.citation}}</i>
+        <div class="main">
+            <b-row>
+                <b-col>
+                    <!--main footer-->
+                    <b-row>
+                        <b-col cols="2">
+                            <span class="form-header">Citation</span>
+                        </b-col>
+                        <b-col cols="10">
+                            <p>
+                                <small class="text-muted">Citation for this publiction. Please see citation section under each release for App specific citations. </small>
                             </p>
-                        </div>
-                        <br>
+                            <citation :doi="pub.doi||config.debug_doi"/>
 
-                    </b-col>
-                </b-row>  
+                            <div v-if="resource_citations.length > 0">
+                                <p><small>Published data objects are computed on the following resources.</small></p>
+                                <p v-for="resource_citation in resource_citations">
+                                    <icon name="caret-right"/> <b>{{resource_citation.resource.name}}</b>
+                                    <small>{{resource_citation.resource.config.desc}}</small>
+                                    <br>
+                                    <i>{{resource_citation.citation}}</i>
+                                </p>
+                            </div>
+                            <br>
 
-                <b-row v-if="pub.contributors.length > 0">
-                    <b-col cols="2">
-                        <a name="contributors"/>
-                        <span class="form-header">Contributors</span>
-                    </b-col>
-                    <b-col cols="10">
-                        <p>
-                            <span v-for="contact in pub.contributors" :key="contact._id">
-                                <contact :fullname="contact.fullname" :email="contact.email"></contact>
-                            </span>
-                        </p>
-                        <br>
-                    </b-col>
-                </b-row>
+                        </b-col>
+                    </b-row>  
 
-
-                <b-row>
-                    <b-col cols="2">
-                        <span class="form-header">Project</span>
-                    </b-col>
-                    <b-col>
-                        <p><small class="text-muted">This publication is hosted in the following brainlife.io project</small></p>
-                        <!--
-                        <div style="background-color: white; padding: 10px;" @click="openproject(pub.project._id)" class="clickable">
-                            <h5><icon name="shield-alt"/> {{pub.project.name}}</h5>
-                            <small>{{pub.project.desc}}</small>
-                        </div>
-                        -->
-                        <projectcard :project="pub.project" :showInstanceStats="false"/>
-                        <br>
-                    </b-col>
-                </b-row>
-
-                <b-row v-if="pub.project.importedDLDatasets && pub.project.importedDLDatasets.length">
-                    <b-col cols="2">
-                        <a name="datasource"/>
-                        <span class="form-header">Data Sources</span>
-                    </b-col>
-                    <b-col>
-                        <small class="text-muted" style="margin-bottom: 5px;">The following data sources are used for this project</small>
-                        <div v-for="rec in pub.project.importedDLDatasets" :key="rec._id" style="margin-bottom: 3px">
-                            <p style="margin-bottom:7px;">
-                                <small><b>{{rec.path}}</b></small><br>
-                                {{rec.dataset_description.Name}}<br>
-                                <span v-if="rec.dataset_description.Authors">
-                                    <small v-for="(author, idx) in rec.dataset_description.Authors.slice(0, 3)" :key="idx"><span v-if="idx">|</span> {{author}} </small>
+                    <b-row v-if="pub.contributors.length > 0">
+                        <b-col cols="2">
+                            <a name="contributors"/>
+                            <span class="form-header">Contributors</span>
+                        </b-col>
+                        <b-col cols="10">
+                            <p>
+                                <span v-for="contact in pub.contributors" :key="contact._id">
+                                    <contact :fullname="contact.fullname" :email="contact.email"></contact>
                                 </span>
                             </p>
-                        </div>
-                        <br>
-                        <br>
-                    </b-col>
-                </b-row>
+                            <br>
+                        </b-col>
+                    </b-row>
 
-                <b-row v-if="pub.fundings.length > 0">
-                    <b-col cols="2">
-                        <a name="fundings"/>
-                        <span class="form-header">Funded By</span>
-                    </b-col>
-                    <b-col>
-                        <div v-for="funding in pub.fundings" :key="funding._id" class="funder">
-                            <div v-if="funding.funder == 'NSF'" class="funder-label bg-success">NSF</div>
-                            <div v-else-if="funding.funder == 'NIH'" class="funder-label bg-info">NIH</div>
-                            <div v-else class="funder-label bg-warning">{{funding.funder}}</div>
-                            {{funding.id}}
-                        </div>
-                        <br>
-                        <br>
-                    </b-col>
-                </b-row>
 
-                <b-row>
-                    <b-col cols="2">
-                        <a name="license"/>
-                        <span class="form-header" name="license">License</span>
-                    </b-col>
-                    <b-col>
-                        <p><small class="text-muted">Published data is released under the following license.</small></p>
-                        <license :id="pub.license"/>
-                        <br>
-                    </b-col>
-                </b-row> 
-                
-                <b-row v-if="pub.relatedPapers && pub.relatedPapers.length > 0">
-                    <b-col cols="2">
-                        <a name="related"/>
-                        <span class="form-header">Related Articles</span>
-                    </b-col>    
-                    <b-col>
-                        <div v-for="paper in pub.relatedPapers.slice(0, relatedPaperLimit)" :key="paper.Id" style="margin-bottom: 25px;">
-                            <mag :paper="paper"/>
-                        </div>
-                        <center>
-                            <b-button size="sm" v-if="relatedPaperLimit != -1" variant="outline-secondary" @click="relatedPaperLimit = -1">&nbsp;&nbsp;&nbsp;Show More&nbsp;&nbsp;&nbsp;</b-button> 
-                        </center>
-                    </b-col>   
-                </b-row>    
+                    <b-row>
+                        <b-col cols="2">
+                            <span class="form-header">Project</span>
+                        </b-col>
+                        <b-col>
+                            <p><small class="text-muted">This publication is hosted in the following brainlife.io project</small></p>
+                            <!--
+                            <div style="background-color: white; padding: 10px;" @click="openproject(pub.project._id)" class="clickable">
+                                <h5><icon name="shield-alt"/> {{pub.project.name}}</h5>
+                                <small>{{pub.project.desc}}</small>
+                            </div>
+                            -->
+                            <projectcard :project="pub.project" :showInstanceStats="false"/>
+                            <br>
+                        </b-col>
+                    </b-row>
 
-                <hr>
-                <a name="disqus"/>
-                <vue-disqus shortname="brain-life" :identifier="pub._id"/>
-            </b-col>
-            <b-col cols="2">
-                <!--side footer-->
-                <div class='altmetric-embed' 
-                    data-badge-type='donut' 
-                    data-badge-details="right" 
-                    data-hide-no-mentions="false" 
-                    :data-doi="pub.doi||config.debug_doi"/>
-            </b-col>
-        </b-row>
+                    <b-row v-if="pub.project.importedDLDatasets && pub.project.importedDLDatasets.length">
+                        <b-col cols="2">
+                            <a name="datasource"/>
+                            <span class="form-header">Data Sources</span>
+                        </b-col>
+                        <b-col>
+                            <small class="text-muted" style="margin-bottom: 5px;">The following data sources are used for this project</small>
+                            <div v-for="rec in pub.project.importedDLDatasets" :key="rec._id" style="margin-bottom: 3px">
+                                <p style="margin-bottom:7px;">
+                                    <small><b>{{rec.path}}</b></small><br>
+                                    {{rec.dataset_description.Name}}<br>
+                                    <span v-if="rec.dataset_description.Authors">
+                                        <small v-for="(author, idx) in rec.dataset_description.Authors.slice(0, 3)" :key="idx"><span v-if="idx">|</span> {{author}} </small>
+                                    </span>
+                                </p>
+                            </div>
+                            <br>
+                            <br>
+                        </b-col>
+                    </b-row>
+
+                    <b-row v-if="pub.fundings.length > 0">
+                        <b-col cols="2">
+                            <a name="fundings"/>
+                            <span class="form-header">Funded By</span>
+                        </b-col>
+                        <b-col>
+                            <div v-for="funding in pub.fundings" :key="funding._id" class="funder">
+                                <div v-if="funding.funder == 'NSF'" class="funder-label bg-success">NSF</div>
+                                <div v-else-if="funding.funder == 'NIH'" class="funder-label bg-info">NIH</div>
+                                <div v-else class="funder-label bg-warning">{{funding.funder}}</div>
+                                {{funding.id}}
+                            </div>
+                            <br>
+                            <br>
+                        </b-col>
+                    </b-row>
+
+                    <b-row>
+                        <b-col cols="2">
+                            <a name="license"/>
+                            <span class="form-header" name="license">License</span>
+                        </b-col>
+                        <b-col>
+                            <p><small class="text-muted">Published data is released under the following license.</small></p>
+                            <license :id="pub.license"/>
+                            <br>
+                        </b-col>
+                    </b-row> 
+                    
+                    <b-row v-if="pub.relatedPapers && pub.relatedPapers.length > 0">
+                        <b-col cols="2">
+                            <a name="related"/>
+                            <span class="form-header">Related Articles</span>
+                        </b-col>    
+                        <b-col>
+                            <div v-for="paper in pub.relatedPapers.slice(0, relatedPaperLimit)" :key="paper.Id" style="margin-bottom: 25px;">
+                                <mag :paper="paper"/>
+                            </div>
+                            <center>
+                                <b-button size="sm" v-if="relatedPaperLimit != -1" variant="outline-secondary" @click="relatedPaperLimit = -1">&nbsp;&nbsp;&nbsp;Show More&nbsp;&nbsp;&nbsp;</b-button> 
+                            </center>
+                        </b-col>   
+                    </b-row>    
+
+                    <hr>
+                    <a name="disqus"/>
+                    <vue-disqus shortname="brain-life" :identifier="pub._id"/>
+                </b-col>
+            </b-row>
+        </div>
     </b-container>
 
     <br>
@@ -621,6 +623,9 @@ color: white;
 .rightside p {
     margin-bottom: 10px; 
     line-height: 125%;
+}
+.main {
+    margin-right: 275px;
 }
 .content-subheader {
     font-size: 110%;
