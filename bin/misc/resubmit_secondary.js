@@ -43,7 +43,7 @@ db.init(async (err)=>{
     console.dir(instance);
 
     console.log("submitting staging request");
-    db.Datasets.find({project: project_id, datatype: {$in: datatype_ids}}).exec((err, objects)=>{
+    db.Datasets.find({removed: false, project: project_id, datatype: {$in: datatype_ids}}).exec((err, objects)=>{
         if(err) throw err;
         let tid = 1;
         asyncForEach(objects, async obj=>{

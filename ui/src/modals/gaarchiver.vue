@@ -1,16 +1,16 @@
 <template>
-<b-modal :no-close-on-backdrop="true" title="Group Analysis Archiver" ref="modal" size="lg">
+<b-modal :no-close-on-backdrop="true" title="Analysis Archiver" ref="modal" size="lg">
     <div>
         <p>
             <small>
-                Please select the group analysis session and jupyter notebook that you'd like to archive and 
+                Please select the analysis session and jupyter notebook that you'd like to archive and 
                 make it part of this publication.
             </small>
         </p>
         <div v-if="!nbtask">
             <b-form-group horizontal label="Session">
                 <b-form-select v-model="selected" :options="sessions" required></b-form-select>
-                <small>Select the group analysis session that you'd like to archive and publish as part of this release. Then entire directory under /notebook will be made public (please be sure to remove or move sensitive data outside of /notebook directory if you don't want it to be part of the publication.</small>
+                <small>Select the analysis session that you'd like to archive and publish as part of this release. Then entire directory under /notebook will be made public (please be sure to remove or move sensitive data outside of /notebook directory if you don't want it to be part of the publication.</small>
             </b-form-group>
             <b-form-group horizontal label="notebook name" v-if="selected">
                 <b-input type="text" v-model="notebook" required/>
@@ -88,7 +88,7 @@ export default {
 
     mounted() {
         this.$root.$on("gaarchiver.open", opt=>{
-            if(!this.$refs.modal) return console.log("this.$refs.modal not yet initialized");
+            if(!this.$refs.modal) return console.error("this.$refs.modal not yet initialized");
 
             //initialize
             this.project = opt.project;
@@ -116,6 +116,8 @@ export default {
                         sort: "-create_date",
                     }
                 }).then(res=>{
+                    console.log("loaded sessions");
+                    console.dir(res.data.tasks);
                     this.sessions = res.data.tasks.map(task=>{
                         return {
                             value: task._id,
@@ -130,9 +132,6 @@ export default {
                 });
             });
  
-            //find group analysis sessions
-            //TODO..
-
             this.$refs.modal.show();
         });
     },
@@ -145,7 +144,7 @@ export default {
         },
 
         archive() {
-            this.$notify({text: "Creating Group Analysis Archive"});
+            this.$notify({text: "Creating Analysis Archive"});
             const params = {
                 instance_id: this.instance._id,
                 name: "Converting notebook to html",
@@ -168,7 +167,7 @@ export default {
                             datatype: "6079f960f1481a4d788fba3e", //jupyter/notebook
                             subdir: "notebook", 
                             meta: {
-                                subject: "groupanalysis", //TODO - does this work?
+                                subject: "analysis", //TODO - does this work? (I think we should get object without session working somehow?)
                             },
                             archive: {
                                 project: this.project._id,
@@ -204,7 +203,7 @@ export default {
                 var task = event.msg;
                 if(!task) return;
 
-                console.dir(task);
+                //console.dir(task);
 
                 //nbconvert update?
                 if(this.nbtask && task._id == this.nbtask._id) {
@@ -212,13 +211,13 @@ export default {
 
                     //when it finishes, then submit archive request
                     if(this.archiveStatus == null && this.nbtask.status == "finished") {
-                        console.log("making request to archive nbtask output");
+                        //console.log("making request to archive nbtask output");
                         this.archiveStatus = "requested";
                         this.$http.post('dataset', {
                             project: this.project._id,
                             task_id: this.nbtask._id,
                             output_id: "notebook",
-                            desc: "group analysis notebook (published)",
+                            desc: "analysis notebook (published)",
                         }).then(res=>{
                             this.dataset = res.data;
                             this.checkState();

@@ -20,7 +20,7 @@
                 <div v-for="(app, idx) in notebooks" :key="app.dataset_id" :title="app.name" :img-src="app.img" @click="selected = app" class="app">
                     <p style="min-height: 125px;">
                         <small><span style="opacity: 0.8"><icon name="brands/docker"/> {{app.container}}</span></small><br>
-                        {{app.text}}<br>
+                        {{app.name}}<br>
                     </p>
 
                     <hr>
@@ -49,7 +49,7 @@
                 <p>Or.. start from a blank template.</p>
                 <div v-for="(app, idx) in templates" :key="idx" :title="app.name" :img-src="app.img" @click="selected = app" class="app">
                     <small><span style="opacity: 0.8"><icon name="brands/docker"/> {{app.container}}</span></small><br>
-                    <b>{{app.text}}</b><br>
+                    <b>{{app.name}}</b><br>
                     <small>{{app.desc}}</small><br>
                 </div>
             </div>
@@ -57,13 +57,15 @@
             <!--configurator-->
             <div v-if="selected">
                 <b-form @submit="submit">
-                    <div style="padding: 10px; background-color: #ddd;">
-                        <!--selected session detail-->
-                        <b>{{selected.text}}</b><br>
-                        <small>{{selected.desc}}</small><br>
-                        <small class="text-muted">{{selected.container}}</small>
+                    <!--
+                    <div style="padding: 10px; background-color: #eee;">
+                        <small class="text-muted"><icon name="brands/docker"/> {{selected.container}}</small><br>
+                        {{selected.text}}<br>
                     </div>
-
+                    -->
+                    <p style="padding: 10px; background-color: #eee;">
+                        <gaarchive :gaarchive="selected" style="background-color: white;"/>
+                    </p>
                     <div style="padding: 10px">
                         <p>
                             <span class="form-header">Project</span>
@@ -96,9 +98,15 @@ import projectselecter from '@/components/projectselecter'
 import gainstance from '@/mixins/gainstance' //for createOrFindGAInstance
 import contact from '@/components/contact'
 import releaseset from '@/components/releaseset'
+import gaarchive from '@/components/gaarchive'
 
 export default {
-    components: { projectselecter, contact, releaseset },
+    components: { 
+        projectselecter, 
+        contact, 
+        releaseset,
+        gaarchive,
+    },
     mixins: [
         //agreementMixin,
         projectselecter,
@@ -121,21 +129,21 @@ export default {
 
             templates: [
                 {
-                    text: "python/dipy", 
+                    name: "python/dipy", 
                     //img: "https://kanoki.org/wp-content/uploads/2017/07/Screen-Shot-2017-07-15-at-04.59.36.png",
                     desc: "Jupyter Datascience Notebook (lab-2.1.1) with Dipy(1.3.0) and Fury",
 
                     container: "brainlife/ga-dipy:lab211-dipy130",
-                    //app: "soichih/ga-test",
-                    dataset_id: "11111111", //TODO - archive ga-test?
+                    app: "soichih/ga-test",
+                    //dataset_id: "11111111", //TODO - archive ga-test?
                 },
                 {
-                    text: "Octave(matlab)", 
+                    name: "Octave(matlab)", 
                     //img: "https://kanoki.org/wp-content/uploads/2017/07/Screen-Shot-2017-07-15-at-04.59.36.png",
                     desc: "Jupyter Datascience Notebook (lab-2.1.1) with Octave",
                     container: "brainlife/ga-octave:1.0",
-                    //app: "soichih/ga-test",
-                    dataset_id: "11111111", //TODO - archive ga-test?
+                    app: "soichih/ga-test",
+                    //dataset_id: "11111111", //TODO - archive ga-test?
                 },
             ],
             preSelectedGAID: null,
@@ -156,7 +164,7 @@ export default {
             this.project = opts.project; //default project
             this.cb = opts.cb;
 
-            if(!this.notebooks) this.loadNotebooks();
+            this.loadNotebooks();
             this.open = true;
         });
 
@@ -185,48 +193,52 @@ export default {
             }).then(res=>{
                 const project = res.data.projects[0];
                 //use that to find ga instance
-                this.createOrFindGAInstance(project.group_id, (err, instance)=>{
+                this.createOrFindGAInstance(project.group_id, async (err, instance)=>{
                     if(err) throw err;
 
-                    //stage notebook archive
-                    this.$http.post('dataset/stage', {
-                        instance_id: instance._id,
-                        dataset_ids: [ this.selected.dataset_id ],
-                    }).then(res=>{
-                        const stageTask = res.data.task;
-
-                        //then launchga in it
-                        this.$http.post('secondary/launchga', {
+                    try {
+                        let gaconfig = {
                             instance_id: instance._id,
-                            name: "todo..", //this.selected.container+":"+this.selected.tag,
+                            name: this.selected.name,
                             desc: this.form.desc, 
-                            deps_config: [{task: stageTask._id}],
                             config: { 
-                                //archive: this.selected.archive,
-                                //app: this.selected.app, //only for template
-                                notebook: "../"+stageTask._id+"/"+this.selected.dataset_id+"/notebook",
                                 container: this.selected.container,
-                            }, 
-                        }).then(res=>{
-                            let task = res.data;
-                            this.open = false;
-                            this.cb(null, {
-                                task, 
-                                project: this.project,
-                                app: this.selected,
+                            },
+                        }
+
+                        if(this.selected.dataset_id) {
+                            //stage notebook archive
+                            let res = await this.$http.post('dataset/stage', {
+                                instance_id: instance._id,
+                                dataset_ids: [ this.selected.dataset_id ],
                             });
-                        }).catch(err=>{
-                            console.error(err);
-                            this.$notify({type: 'error', text: err.response.data.message});
+                            const stageTask = res.data.task;
+                            gaconfig.deps_config = [{task: stageTask._id}];
+                            gaconfig.config.notebook = "../"+stageTask._id+"/"+this.selected.dataset_id+"/notebook";
+                        } else {
+                            //for app/template
+                            gaconfig.config.app = this.selected.app;
+                        }
+
+                        res = await this.$http.post('secondary/launchga', gaconfig);
+                        let task = res.data;
+                        this.open = false;
+                        this.cb(null, {
+                            task, 
+                            project: this.project,
+                            app: this.selected,
                         });
-                    });
+                    } catch (err) {
+                        console.error(err);
+                        this.$notify({type: 'error', text: err.response.data.message});
+                    }
                 });
             });
 
         },
 
         loadNotebooks() {
-            console.log("loading notebooks");
+            this.notebooks = [];
 
             //load published notebooks
             this.$http.get('/pub', {
@@ -239,7 +251,6 @@ export default {
                     select: "releases name authors",
                 }
             }).then(res=>{
-                this.notebooks = [];
                 res.data.pubs.forEach(pub=>{
 
                     if(pub.removed) return;
@@ -252,9 +263,7 @@ export default {
 
                         release.gaarchives.forEach(archive=>{
                             this.notebooks.push({
-                                text: archive.name+" from "+release.name+" "+release.desc,
-                                desc: archive.desc||"(no-desc)",
-
+                                name: archive.name,//+" from "+release.name+" "+release.desc,
                                 container: archive.container,
                                 dataset_id: archive.dataset_id,
 

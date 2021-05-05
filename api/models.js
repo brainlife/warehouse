@@ -173,6 +173,17 @@ var projectSchema = mongoose.Schema({
     },
     */
 
+    importedDLDatasets: [
+        { 
+            dataset_id: { type: mongoose.Schema.Types.ObjectId, ref: 'DLDatasets'},
+
+            //things from DLDatasets 
+            path: String, 
+            dataset_description: mongoose.Schema.Types.Mixed,
+            stats: mongoose.Schema.Types.Mixed,
+        }
+    ],
+
     //datalad datasets that data on this project was imported from
     //TODO - we can just query the list of datasets stored on this project 
     //to figure out where they came from
@@ -309,6 +320,105 @@ var datatypeSchema = mongoose.Schema({
 });
 exports.Datatypes = mongoose.model('Datatypes', datatypeSchema);
 
+var appSchema = mongoose.Schema({
+    user_id: String, //registrar of this application
+    projects: [{type: mongoose.Schema.Types.ObjectId, ref: 'Projects'}], //projects that this app is members of
+    admins: [ String ], //list of users who can administer this app
+    avatar: String, //url for app avatar
+
+    name: String,
+
+    //TODO - citation / references can easily be part of README.md on github..
+    //citation: String,
+    //references: [ new mongoose.Schema({text: String}) ], 
+
+    ///////////////////////////////////////////////////////////////////////////////////////////////
+    //
+    //
+    github: String, //if the app is stored in github
+    github_branch: String, //default to "master"
+
+    //(TODO) these fields should be cached from github (how often?)
+    // like .. 
+    // https://api.github.com/repos/brain-life/app-life
+    //      https://api.github.com/repos/brain-life/app-life/contributors
+    desc: String,  //pulled from github
+    desc_override: String, //if user wants to override the githut desc
+
+    tags: [String], //pulled from github/repo topics
+    contributors: [ {name: String, email: String} ], //populated by appinfo from github
+    //
+    //
+    ///////////////////////////////////////////////////////////////////////////////////////////////
+
+    retry: Number, //not set, or 0 means no retry
+    doi: String, //doi associated with this app
+    
+    //configuration template
+    config: mongoose.Schema.Types.Mixed, 
+
+    //input files for this application
+    inputs: [ new mongoose.Schema({
+        id: String,
+        desc: String, //any description to show for this input (experimental)
+        datatype : {type: mongoose.Schema.Types.ObjectId, ref: 'Datatypes'},
+        datatype_tags: [ String ], //add specifificity to datatype (like "acpc-aligned")
+
+        optional: { type: Boolean, default: false}, //input is optional (false for arra means requires at least one)
+        multi: { type: Boolean, default: false}, //array input
+        advanced: { type: Boolean, default: false}, //advanced option (show under advanced section)
+    })],
+
+    //output files for this application
+    //TODO right now, we can only deal with a single output data types per task
+    outputs: [ new mongoose.Schema({
+        id: String, //output files should be stored on a directory that matches this id (unless output_on_root is true)
+        desc: String, //any description to show for this input (experimental)
+        datatype : {type: mongoose.Schema.Types.ObjectId, ref: 'Datatypes'},
+        datatype_tags: [ String ], //add specifificity to datatype (like "acpc-aligned")
+        datatype_tags_pass: String, //add all datatype tags of input dataset with specified ID
+
+        output_on_root: { type: Boolean, default: false},  //output files are stored on the root of workdir
+        files: mongoose.Schema.Types.Mixed, //(when output_on_root is true) optional output file/dir mapping to datatype file_id
+        archive: { type: Boolean, default: true }, //archive output by default
+    })],
+        
+    //basic stats for this app (aggregated by bin/appinfo.js - most info comes from amaretti/service/info)
+    stats: {
+        success_rate: Number, //74.31192660550458,
+        users: Number, //2,
+        runtime_mean: Number, //4936275.125,
+        runtime_std: Number, //3342304.692416079,
+        requested: Number, //234
+
+        gitinfo: Object,
+        
+        //list of shared resources (currently available)
+        resources: [
+            new mongoose.Schema({
+                resource_id: {type: mongoose.Schema.Types.ObjectId },
+                name: String, //resource name
+            })
+        ],
+
+        /*
+        //DEPRECTED - stats.serviceinfo / stats.gitinfo
+        requested: Number, //number of times this app was requested
+        users: Number, //number of users who used this app
+        stars: Number, //github stars
+        success_rate: Number, 
+        */
+    },
+    
+    removed: { type: Boolean, default: false} ,
+    deprecated_by: {type: mongoose.Schema.Types.ObjectId, ref: 'Apps'}, //if set, this app is deprecated
+
+    create_date: { type: Date, default: Date.now },
+}, {minimize: false}); //to keep empty config{} from disappearing
+//appSchema.index({'$**': 'text'}) //make all text fields searchable (not used according to accesses.ops)
+exports.Apps = mongoose.model('Apps', appSchema);
+
+
 var releaseSchema = mongoose.Schema({
     name: String, //"1", "2", etc..
     desc: String, 
@@ -319,6 +429,7 @@ var releaseSchema = mongoose.Schema({
     subjects: Number, //number of unique subjects
     sessions: Number, //number of unique sessions
 
+    //"dataset"
     sets: [
         /*
         counts: Number, //number of objects
@@ -336,6 +447,13 @@ var releaseSchema = mongoose.Schema({
         }
     ],
 
+    //app used to generate the datasets
+    apps: [ {
+        count: Number, //number of time this app is used
+        app: appSchema,
+        service: mongoose.Schema.Types.Mixed, //sample task
+    } ],
+
     //group analysis releases
     gaarchives: [ {
         sectask_id: String, //amaretti task id for nbconvert secondary output containing html page for notebook specified in notebook
@@ -346,9 +464,6 @@ var releaseSchema = mongoose.Schema({
         dataset_id: String, //dataset ID for published(archived) notebook
         name: String, //name of the session archived
     } ],
-
-    apps: [ mongoose.Schema.Types.Mixed ], //TODO..
-
 });
 mongoose.model("Releases", releaseSchema);
 
@@ -546,105 +661,6 @@ var UISchema = mongoose.Schema({
 exports.UIs = mongoose.model('UIs', UISchema);
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-
-var appSchema = mongoose.Schema({
-    user_id: String, //registrar of this application
-    projects: [{type: mongoose.Schema.Types.ObjectId, ref: 'Projects'}], //projects that this app is members of
-    admins: [ String ], //list of users who can administer this app
-    avatar: String, //url for app avatar
-
-    name: String,
-
-    //TODO - citation / references can easily be part of README.md on github..
-    //citation: String,
-    //references: [ new mongoose.Schema({text: String}) ], 
-
-    ///////////////////////////////////////////////////////////////////////////////////////////////
-    //
-    //
-    github: String, //if the app is stored in github
-    github_branch: String, //default to "master"
-
-    //(TODO) these fields should be cached from github (how often?)
-    // like .. 
-    // https://api.github.com/repos/brain-life/app-life
-    //      https://api.github.com/repos/brain-life/app-life/contributors
-    desc: String,  //pulled from github
-    desc_override: String, //if user wants to override the githut desc
-
-    tags: [String], //pulled from github/repo topics
-    contributors: [ {name: String, email: String} ], //populated by appinfo from github
-    //
-    //
-    ///////////////////////////////////////////////////////////////////////////////////////////////
-
-    retry: Number, //not set, or 0 means no retry
-    doi: String, //doi associated with this app
-    
-    //configuration template
-    config: mongoose.Schema.Types.Mixed, 
-
-    //input files for this application
-    inputs: [ new mongoose.Schema({
-        id: String,
-        desc: String, //any description to show for this input (experimental)
-        datatype : {type: mongoose.Schema.Types.ObjectId, ref: 'Datatypes'},
-        datatype_tags: [ String ], //add specifificity to datatype (like "acpc-aligned")
-
-        optional: { type: Boolean, default: false}, //input is optional (false for arra means requires at least one)
-        multi: { type: Boolean, default: false}, //array input
-        advanced: { type: Boolean, default: false}, //advanced option (show under advanced section)
-    })],
-
-    //output files for this application
-    //TODO right now, we can only deal with a single output data types per task
-    outputs: [ new mongoose.Schema({
-        id: String, //output files should be stored on a directory that matches this id (unless output_on_root is true)
-        desc: String, //any description to show for this input (experimental)
-        datatype : {type: mongoose.Schema.Types.ObjectId, ref: 'Datatypes'},
-        datatype_tags: [ String ], //add specifificity to datatype (like "acpc-aligned")
-        datatype_tags_pass: String, //add all datatype tags of input dataset with specified ID
-
-        output_on_root: { type: Boolean, default: false},  //output files are stored on the root of workdir
-        files: mongoose.Schema.Types.Mixed, //(when output_on_root is true) optional output file/dir mapping to datatype file_id
-        archive: { type: Boolean, default: true }, //archive output by default
-    })],
-        
-    //basic stats for this app (aggregated by bin/appinfo.js - most info comes from amaretti/service/info)
-    stats: {
-        success_rate: Number, //74.31192660550458,
-        users: Number, //2,
-        runtime_mean: Number, //4936275.125,
-        runtime_std: Number, //3342304.692416079,
-        requested: Number, //234
-
-        gitinfo: Object,
-        
-        //list of shared resources (currently available)
-        resources: [
-            new mongoose.Schema({
-                resource_id: {type: mongoose.Schema.Types.ObjectId },
-                name: String, //resource name
-            })
-        ],
-
-        /*
-        //DEPRECTED - stats.serviceinfo / stats.gitinfo
-        requested: Number, //number of times this app was requested
-        users: Number, //number of users who used this app
-        stars: Number, //github stars
-        success_rate: Number, 
-        */
-    },
-    
-    removed: { type: Boolean, default: false} ,
-    deprecated_by: {type: mongoose.Schema.Types.ObjectId, ref: 'Apps'}, //if set, this app is deprecated
-
-    create_date: { type: Date, default: Date.now },
-}, {minimize: false}); //to keep empty config{} from disappearing
-//appSchema.index({'$**': 'text'}) //make all text fields searchable (not used according to accesses.ops)
-exports.Apps = mongoose.model('Apps', appSchema);
-
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 //
 // App rating submitte by user (DEPRECATED?)

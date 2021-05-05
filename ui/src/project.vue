@@ -95,12 +95,29 @@
                 <b-alert :show="selected.access == 'private' && selected.listed" style="border-radius: 0px; color: #888;" variant="secondary">
                     This project is listed for all users but only the members of the project can access its datasets, processes, and pipelines.
                 </b-alert>
+
             
                 <!--datatype box-->
                 <div class="side" v-if="selected.stats">
+                    <div v-if="selected.importedDLDatasets && selected.importedDLDatasets.length">
+                        <span class="form-header">Data Source</span>
+                        <p style="margin-bottom: 5px;"><small>This project contains data imported from the following sources.</small></p>
+                        <p v-for="rec in selected.importedDLDatasets" :key="rec._id" style="margin-bottom: 3px">
+                            <!--
+                            <small>{{rec.dataset_description}}</small>
+                            <small>{{rec.stats}}</small>
+                            -->
+                            <small><b>{{rec.dataset_description.DatasetDOI||rec.path}}</b></small><br>
+                            <small>{{rec.dataset_description.Name}}</small>
+                        </p>
+                        <br>
+                        <br>
+                    </div>
+
                     <span class="form-header">Datatypes</span>
-                    <p><small>This project contains the following datatypes</small></p>
+                    <p style="margin-bottom: 5px;"><small>This project contains the following datatypes</small></p>
                     <!--datatype was deprecated by datatype_details-->
+                    <!--
                     <p v-if="!selected.stats.datasets.datatype_details">
                         <span v-for="datatype_id in selected.stats.datasets.datatypes" :key="datatype_id">
                             <b-badge variant="light">
@@ -109,15 +126,14 @@
                             &nbsp;
                         </span>
                     </p>
+                    -->
 
                     <div v-if="selected.stats.datasets.datatypes_detail">
-                        <p v-for="detail in selected.stats.datasets.datatypes_detail" :key="detail.type">
-                            <datatypetag :datatype="detail.type"/> 
-                            <br>
+                        <p v-for="detail in selected.stats.datasets.datatypes_detail" :key="detail.type" style="margin-bottom: 3px;">
+                            <datatypetag :datatype="detail.type" style="font-size: 85%"/>&nbsp;
                             <small style="opacity: 0.6;">
-                                <icon name="user-friends"/> {{detail.subject_count}}
-                                <icon name="cubes"/> {{detail.count}}
-                                <span v-if="detail.size">({{detail.size|filesize}})</span>
+                                <!-- <icon name="user-friends"/> {{detail.subject_count}} -->
+                                ({{detail.count}} objs <span v-if="detail.size"> | {{detail.size|filesize}}</span>)
                             </small>
                         </p>
                     </div>
@@ -247,7 +263,7 @@
                     <div class="box" v-if="selected.relatedPapers && selected.relatedPapers.length > 0">
                         <span class="form-header">Related Articles</span>
                         <p>
-                            <small>We found the following journals/articles related to this project based on name/description through MAG</small>
+                            <small>We found the following journals/articles related to this project based on name/description</small>
                         </p>
                         <hr>
                         <div v-for="paper in selected.relatedPapers" :key="paper._id">
@@ -295,12 +311,6 @@
             <b-alert show variant="secondary" v-if="!(ismember()||isadmin())">Only the admins or members of this project can access group analysis page. Please contact the project admin to give you access.</b-alert>
             <div v-else>
                 <groupAnalysis :project="selected"/>
-                <!--
-                <div v-else class="margin20 text-muted">
-                    <br>
-                    Group Analysis is not enable for this project.
-                </div>
-                -->
             </div>
         </div>
 
@@ -843,8 +853,10 @@ padding: 5px 10px;
     float: right; 
     width: 280px; 
     padding: 20px; 
+    /* we need scrollbar..
     position: sticky; 
     top: 0px;
+    */
 }
 .main {
     margin: 20px; 

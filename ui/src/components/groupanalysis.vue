@@ -14,10 +14,21 @@
     </div>
 
     <div v-if="!selected && ready" class="page-content">
-        <div style="padding: 20px; opacity: 0.5;" v-if="!visibleSessions.length">No Sessions</div>
+        <div style="padding: 20px; opacity: 0.5;" v-if="!visibleSessions.length">Please create a new analysis session.</div>
         <div v-if="visibleSessions.length">
-            <br>
-            <h4 style="padding-left: 20px">Sessions</h4>
+
+            <!--header-->
+            <div style="padding: 10px 20px">
+                <b-row v-if="visibleSessions.length">
+                    <b-col>
+                        <!--<h4 style="padding-left: 20px">Sessions</h4>-->
+                    </b-col>
+                    <b-col>
+                    </b-col>
+                    <b-col cols="3"><small>Create Date</small></b-col>
+                </b-row>
+            </div>
+
             <div v-for="task in visibleSessions" :key="task._id">
                 <div class="session">
                     <b-row>
@@ -25,19 +36,22 @@
                             <b-button variant="primary" size="sm" @click="open(task)" v-if="!openWhenReady" style="float: right;">
                                 Open
                             </b-button>
-                            <span v-if="task._id == openWhenReady"><icon name="cog" spin/> Opening..</span>
-                            <small>{{task.name}}</small><br>
-                            {{task.desc}}
+                            <span v-if="task._id == openWhenReady"><icon name="cog" spin/> Opening..<br></span>
+                            <small><b>{{task.name}}</b></small><br>
+                            <small>{{task.desc}}</small>
                             <!--{{task.desc}}<br> -->
                         </b-col>
                         <b-col>
                             <statustag :status="task.status"/> {{task.status_msg}}<br>
                             <small>{{task._id}}</small><br>
                         </b-col>
-                        <b-col>
+                        <b-col cols="3">
+                            <!--
                             <b-badge pill class="bigpill">
                                 <icon name="calendar" style="opacity: 0.4;"/>&nbsp;&nbsp;&nbsp;<small>Created</small>&nbsp;&nbsp;<time>{{new Date(task.create_date).toLocaleDateString()}}</time>
                             </b-badge>
+                            -->
+                            <timeago :datetime="task.create_date" :auto-update="10" style="font-size:85%;"/>
                             <b-button variant="secondary" size="sm" @click="remove(task)" style="float: right">
                                 <icon name="trash"/>
                             </b-button>
@@ -87,8 +101,6 @@ export default {
     components: {
         contact: ()=> import('@/components/contact'),
         statustag: ()=> import('@/components/statustag'),
-        //statusicon: ()=> import('@/components/statusicon'),
-        statustag: ()=> import('@/components/statustag'),
     },
 
     props: {
@@ -110,6 +122,8 @@ export default {
             instance: null,
 
             ws: null, //websocket
+
+            sessions: [],
 
             //will come from db someday
             apps: [
@@ -213,7 +227,6 @@ export default {
                     switch(event.dinfo.exchange) {
                     case "wf.task":
                         let task = event.msg;
-                        console.log("received event", task._id, task.service, task.status);
                         if(task.service != "brainlife/ga-launcher") return; //don't care.
                         let existing_task = this.sessions.find(t=>t._id == task._id);
                         if(existing_task) {
@@ -223,9 +236,6 @@ export default {
                             this.sessions.push(task); //new task
                         }
                         this.$forceUpdate();
-
-                        console.log("checking for openWhenReady");
-                        console.log(this.openWhenReady, task._id, task.status);
                         if(this.openWhenReady == task._id && task.status == "running" && task.status_msg == "running") {
                             this.openWhenReady = null;
                             this.$root.$emit("loading", {show: false, message: "Staging notebook and launching new analysis session.."});
@@ -254,13 +264,8 @@ export default {
     },
 
     computed: {
-        /*
-        sessions() {
-            return this.tasks.filter(task=>task.status != 'removed');
-        }   
-        */
         visibleSessions() {
-            return this.sessions.filter(it=>['running', 'requested'].includes(it.status));
+            return this.sessions.filter(it=>['running', 'requested', 'stopped'].includes(it.status));
         }
     },
 
@@ -306,9 +311,8 @@ export default {
             if(confirm("Do you really want to remove this session?")) {
                 this.$http.delete(Vue.config.amaretti_api+"/task/"+task._id).then(res=>{
                     if(res.status == 200) {
-                        this.sessions.splice(this.sessions.find(s=>s._id == task._id), 1);
-                        this.$forceUpdate();
-
+                        //this.sessions.splice(this.sessions.find(s=>s._id == task._id), 1);
+                        //this.$forceUpdate();
                         this.$notify("Removal request submitted");
                     }
                 });
@@ -426,9 +430,9 @@ iframe {
 }
 
 .session {
-    box-shadow: 1px 1px 2px #0002;
-    padding: 20px;    
+    padding: 10px 20px;    
     background-color: white;
+    border-top: 1px solid #eee;
 }
 
 .sidewide .frame {

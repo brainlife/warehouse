@@ -956,8 +956,6 @@ exports.update_secondary_index = async function(project) {
 exports.update_project_stats = async function(project, cb) {
     console.log("updating project stats project:", project._id)
     try {
-
-        //console.debug("loading instance counts");
         let counts = await rp.get({
             url: config.amaretti.api+"/instance/count", json: true,
             qs: {
@@ -968,7 +966,6 @@ exports.update_project_stats = async function(project, cb) {
         let instance_counts = counts[0]; //there should be only 1
 
         //rule stats --------------------------------------------------------
-        //console.debug("aggregating Rules", project._id);
         let stats = await db.Rules.aggregate()
             .match({removed: false, project: project._id})
             .group({_id: { "active": "$active" }, count: {$sum: 1}});
@@ -983,13 +980,13 @@ exports.update_project_stats = async function(project, cb) {
         });
 
         //group analysis--------------------------------------------------------
-        //console.debug("loading groupanslysis sessions");
         let groupanalysis = {
             sessions: [],
         }
         let gaInstanceRes = await axios(config.amaretti.api+"/instance", {
             params: {
                 find: JSON.stringify({
+                    status: {$in: ["running", "stopped"]},
                     group_id: project.group_id,
                     name: "ga-launchers", //must match from ui' components[groupanslysis.vue]
                 }),
@@ -1017,8 +1014,8 @@ exports.update_project_stats = async function(project, cb) {
                 }
             });
         }
+        
         //app stats -------------------------------------------------------------
-
         let recs = await exports.aggregateDatasetsByApps({project:project._id})
         let app_stats = [];
         recs.forEach(rec=>{
@@ -1073,7 +1070,23 @@ exports.update_project_stats = async function(project, cb) {
             }
         });
 
+        //load distinct dldataset_id used by this project (TODO - need index?)
+        console.debug("querying for distinct dldataset_id for this project");
+        let dldataset_ids = await db.Datasets.distinct('storage_config.dldataset_id', {status: "stored", removed: false, project: project._id, /*'storage_config.dldataset_id': {$exists: true}*/});
+        let dldatasets = await db.DLDatasets.find({_id: {$in: dldataset_ids}});
+        const importedDLDatasets = dldatasets.map(rec=>({
+            dataset_id: rec._id, 
+            //pick things that we want
+            dataset_description: rec.dataset_description,
+            stats: rec.stats,
+            path: rec.path,
+        }))
+        console.debug(importedDLDatasets);
+
+        //lad number of publications
         let publications = await db.Publications.countDocuments({project});
+
+        //now update the record!
         let newproject = await db.Projects.findOneAndUpdate({_id: project._id}, {$set: {
             "stats.rules": rules, 
             "stats.resources": resource_stats, 
@@ -1081,6 +1094,7 @@ exports.update_project_stats = async function(project, cb) {
             "stats.publications": publications,
             "stats.instances": instance_counts,
             "stats.groupanalysis": groupanalysis,
+            importedDLDatasets,
         }}, {new: true});
 
         //only publish some stats

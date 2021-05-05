@@ -28,7 +28,7 @@
             </b-col>
         </b-row>
     </div>
-    <div class="instances">
+    <div class="instances" v-if="showInstanceStats">
         <stateprogress v-if="project.stats && project.stats.instances && !project.openneuro" 
             :states="project.stats.instances" height="3px" :show_label="false"/>
         <div v-else style="height: 3px"></div>
@@ -53,6 +53,7 @@ export default {
         
     props: {
         project: { type: Object },
+        showInstanceStats: {type: Boolean, default: true},
     },
 
     data() {

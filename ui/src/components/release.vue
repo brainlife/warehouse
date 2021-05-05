@@ -2,12 +2,11 @@
 <div>
     <a :name="'release.'+release._id">
         <div class="header">
-
             <span style="float: right; opacity: 0.8; font-size: 90%; padding-top: 4px;">
                 {{new Date(release.create_date).toLocaleDateString()}}
             </span>
-            <span style="font-size: 110%;"><small>Release /</small> <b>{{release.name}}</b></span>
-            <b-badge pill class="bigpill" v-if="release.subjects" style="margin-left: 10px;">
+            <span style="font-size: 120%;"><small>Release /</small> <b>{{release.name}}</b></span>
+            <b-badge pill class="bigpill" v-if="release.subjects" style="margin-left: 10px; position: relative; top: -2px;">
                 <icon name="user-friends" style="opacity: 0.4;"/>&nbsp;&nbsp;{{release.subjects}} <small>subjects</small> 
                 <span v-if="release.sessions"><span style="opacity: 0.4"> | </span>{{release.sessions}} <small>sessions</small></span>
             </b-badge>
@@ -15,14 +14,25 @@
     </a>
 
     <p v-if="release.desc" style="margin-bottom: 0px;"><small>{{release.desc}}</small></p>
-    <p v-if="release.sets && release.sets.length">
+    <div v-if="release.sets && release.sets.length">
         <span class="subheader subheader-data">Data</span>
-        <small>The following data objects are published as part of this release.</small>
-        <b-badge pill class="bigpill clickable" @click="downloadDataset(release.set)" style="float: right">
-            <icon name="download" style="opacity: 0.4;"/>&nbsp;&nbsp;&nbsp;<small>Dowload this dataset</small>
+        <b-badge pill class="bigpill clickable" @click="downloadDataset(release.set)" style="float: right; background-color: #2693ff;  color: white;">
+            <icon name="download" style="opacity: 0.4;"/>&nbsp;&nbsp;&nbsp;<small>Dowload</small>
         </b-badge>
-        <releaseset :set="set" v-for="(set, idx) in release.sets" :key="idx"/>
-    </p>
+        <p style="margin-bottom: 5px;"><small>The following data objects are published as part of this release.</small></p>
+        <div style="border-top: 1px solid #eee; padding: 3px 0;" v-for="(set, idx) in release.sets" :key="idx">
+            <b-row>
+                <b-col cols="5">
+                    <datatypetag :datatype="set.datatype" :tags="set.datatype_tags" :clickable="false"/>
+                    <small v-if="set.subjects && set.subjects.length == 0">({{set.count||0}} obj <span style="opacity:0.5">|</span> {{(set.size||0)|filesize}})</small>
+                </b-col>
+                <b-col>
+                    <p style="margin-bottom: 0px; line-height: 150%"><small>{{set.datatype.desc}}</small></p>
+                </b-col>
+            </b-row>
+        </div>
+        <br>
+    </div>
 
     <div v-if="release.apps && release.apps.length">
         <span class="subheader subheader-apps">Preprocessing</span>
@@ -139,7 +149,6 @@ import Vue from 'vue'
 
 import datatypetag from '@/components/datatypetag'
 import ganotebook from '@/components/ganotebook'
-import releaseset from '@/components/releaseset'
 import gaarchive from '@/components/gaarchive'
 import app from '@/components/app'
 import taskconfig from '@/components/taskconfig'
@@ -153,7 +162,6 @@ export default {
     components: {
         datatypetag,
         ganotebook,
-        releaseset,
         gaarchive,
         app,
         taskconfig,
@@ -206,12 +214,11 @@ export default {
 <style scoped>
 .header {
     background-color: #eee;
-    padding: 5px 10px;
+    padding: 10px;
     margin-bottom: 5px;
-    /*
     position: sticky;
     top: 0;
-    */
+    z-index: 2;
 }
 .subheader {
     font-weight: bold;
@@ -219,22 +226,15 @@ export default {
     display: block;
     margin: 5px 0;
     opacity: 0.7;
-    border-bottom: 2px solid #ccc;
+    padding-bottom: 5px;
+    line-height: 100%;
+    color: #2693ff;
+    border-bottom: 2px solid #2693ff66;
 }
 .subheader.subheader-data {
-    color: #2693ff;
-    border-bottom: 2px solid #2693ff;
 }
 .subheader.subheader-apps {
-    color: #2693ff;
-    border-bottom: 2px solid #2693ff;
 }
 .subheader.subheader-analysis {
-    color: #2693ff;
-    border-bottom: 2px solid #2693ff;
-    /*
-    color: #28a745;
-    border-bottom: 2px solid #28a745;
-    */
 }
 </style>

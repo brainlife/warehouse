@@ -68,6 +68,23 @@ router.post('/import/:dataset_id', common.jwt(), (req, res, next)=>{
             if(!project) return next("no such project");
 
             let canedit = false;
+            /*
+            console.log("req.user")
+            console.dir(req.user);
+            console.log("project.members")
+            console.dir(JSON.stringify(project.members, null, 4));
+            console.log("project.admins")
+            console.dir(JSON.stringify(project.admins, null, 4));
+            if(project.admins.includes(req.user.sub)) {
+                console.log("user is admin", typeof req.user.sub, project.admins);
+            }
+            if(project.members.includes(req.user.sub)) {
+                console.log("user is member");
+            }
+            */
+            
+            //TODO - project.admins/members contain id in string
+            //but req.user.sub is numeric... so why don't I have to toString()??
             if(project.admins.includes(req.user.sub)) canedit = true;
             if(project.members.includes(req.user.sub)) canedit = true;
             if(!canedit) return next("you can't import to this project"); 

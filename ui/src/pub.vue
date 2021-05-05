@@ -72,6 +72,17 @@
                         <small>{{pub.project.desc}}</small>
                     </div>
                     <br>
+                </div>
+
+                <div v-if="pub.project.importedDLDatasets && pub.project.importedDLDatasets.length" class="clickable" @click="jump('datasource')">
+                    <div class="content-subheader border-bottom">Data Sources</div>
+                    <small class="text-muted" style="margin-bottom: 5px;">The following data sources are used for this project</small>
+                    <div v-for="rec in pub.project.importedDLDatasets" :key="rec._id" style="margin-bottom: 3px">
+                        <p style="margin-bottom:7px;">
+                            <small><b>{{rec.path}}</b></small><br>
+                            <small>{{rec.dataset_description.Name}}</small>
+                        </p>
+                    </div>
                     <br>
                 </div>
 
@@ -110,7 +121,7 @@
             </div>
 
             <!--main content-->
-            <div style="margin-right: 250px">
+            <div style="margin-right: 275px">
                 <h4 style="color: #666; padding-top: 15px; padding-bottom: 5px; ">
                     {{pub.name}} 
                 </h4>
@@ -185,6 +196,45 @@
                     </b-col>
                 </b-row>
 
+
+                <b-row>
+                    <b-col cols="2">
+                        <span class="form-header">Project</span>
+                    </b-col>
+                    <b-col>
+                        <p><small class="text-muted">This publication is hosted in the following brainlife.io project</small></p>
+                        <!--
+                        <div style="background-color: white; padding: 10px;" @click="openproject(pub.project._id)" class="clickable">
+                            <h5><icon name="shield-alt"/> {{pub.project.name}}</h5>
+                            <small>{{pub.project.desc}}</small>
+                        </div>
+                        -->
+                        <projectcard :project="pub.project" :showInstanceStats="false"/>
+                        <br>
+                    </b-col>
+                </b-row>
+
+                <b-row v-if="pub.project.importedDLDatasets && pub.project.importedDLDatasets.length">
+                    <b-col cols="2">
+                        <a name="datasource"/>
+                        <span class="form-header">Data Sources</span>
+                    </b-col>
+                    <b-col>
+                        <small class="text-muted" style="margin-bottom: 5px;">The following data sources are used for this project</small>
+                        <div v-for="rec in pub.project.importedDLDatasets" :key="rec._id" style="margin-bottom: 3px">
+                            <p style="margin-bottom:7px;">
+                                <small><b>{{rec.path}}</b></small><br>
+                                {{rec.dataset_description.Name}}<br>
+                                <span v-if="rec.dataset_description.Authors">
+                                    <small v-for="(author, idx) in rec.dataset_description.Authors.slice(0, 3)" :key="idx"><span v-if="idx">|</span> {{author}} </small>
+                                </span>
+                            </p>
+                        </div>
+                        <br>
+                        <br>
+                    </b-col>
+                </b-row>
+
                 <b-row v-if="pub.fundings.length > 0">
                     <b-col cols="2">
                         <a name="fundings"/>
@@ -201,6 +251,7 @@
                         <br>
                     </b-col>
                 </b-row>
+
                 <b-row>
                     <b-col cols="2">
                         <a name="license"/>
@@ -212,22 +263,6 @@
                         <br>
                     </b-col>
                 </b-row> 
-
-                <!--
-                <b-row>
-                    <b-col cols="2">
-                        <span class="form-header">Project</span>
-                    </b-col>
-                    <b-col>
-                        <p><small class="text-muted">This publication is hosted in the following brainlife.io project</small></p>
-                        <div style="background-color: white; padding: 10px;" @click="openproject(pub.project._id)" class="clickable">
-                            <h5><icon name="shield-alt"/> {{pub.project.name}}</h5>
-                            <small>{{pub.project.desc}}</small>
-                        </div>
-                        <br>
-                    </b-col>
-                </b-row>
-                -->
                 
                 <b-row v-if="pub.relatedPapers && pub.relatedPapers.length > 0">
                     <b-col cols="2">
@@ -276,6 +311,7 @@ import app from '@/components/app'
 import doibadge from '@/components/doibadge'
 import mag from '@/components/mag'
 import release from '@/components/release'
+import projectcard from '@/components/projectcard'
 
 import agreementMixin from '@/mixins/agreement'
 
@@ -293,6 +329,7 @@ export default {
         doibadge,
         mag,
         release,
+        projectcard,
     },
 
     //https://help.altmetric.com/support/solutions/articles/6000141419-what-metadata-is-required-to-track-our-content-
@@ -579,7 +616,7 @@ color: white;
 
 .rightside{
     float: right; 
-    width: 225px;
+    width: 250px;
 }
 .rightside p {
     margin-bottom: 10px; 

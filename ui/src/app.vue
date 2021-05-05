@@ -197,19 +197,22 @@
                     <br>
                 </div><!--input/ouput-->
 
-                <div v-if="app.projects && app.projects.length > 0">
+                <div v-if="app.projects && app.projects.length > 0" style="padding: 20px">
                     <span class="form-header">Projects</span>
                     <p><small class="text-muted">Only the members of the following project(s) can view and execute this App.</small></p>
-                    <div v-for="project in app.projects" :key="project._id" class="project-card" @click="go('/project/'+project._id)">
+                    <div v-for="project in app.projects" :key="project._id" @click="go('/project/'+project._id)">
+                        <projectcard :project="project"/>
+                        <!--
                         <b-row>
-                            <b-col cols="2">
-                                <projectavatar :project="project" :height="50" :width="50"/>
-                            </b-col>
                             <b-col>
                                 <b>{{project.name}}</b>
                                 <p style="margin-bottom: 0px; color: gray;" class="text">{{project.desc}}</p>
                             </b-col>
+                            <b-col cols="2">
+                                <projectavatar :project="project" :height="50" :width="50"/>
+                            </b-col>
                         </b-row>
+                        -->
                     </div>
                     <br>
                 </div>
@@ -471,6 +474,7 @@ import doibadge from '@/components/doibadge'
 import resource from '@/components/resource'
 import statusicon from '@/components/statusicon'
 import taskRecord from '@/components/taskrecord'
+import projectcard from '@/components/projectcard'
 
 import resource_cache from '@/mixins/resource_cache'
 
@@ -478,13 +482,19 @@ export default {
     mixins: [ resource_cache ],
     components: { 
         contact, 
-        tags, datatype, appavatar,
-        VueMarkdown, statustag, 
-        datatypetag, datatypefile,
+        tags, 
+        datatype, 
+        appavatar,
+        VueMarkdown, 
+        statustag, 
+        datatypetag, 
+        datatypefile,
         projectavatar,
         doibadge, app,
-        resource, statusicon,
+        resource, 
+        statusicon,
         taskRecord, 
+        projectcard,
 
         editor: require('vue2-ace-editor'),
     },
@@ -744,15 +754,6 @@ color: green;
 position: absolute;
 left: 0px;
 font-weight: bold;
-}
-.project-card {
-cursor: pointer;
-background-color: white;
-padding: 5px;
-margin-bottom: 5px;
-}
-.project-card:hover {
-background-color: #ddd;
 }
 .resource-area {
 background-color: white;

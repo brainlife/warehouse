@@ -1,6 +1,8 @@
 <template>
 <div class="ga">
-    <div style="opacity: 0.3; position: absolute; top: 5px; right: 10px;"> <icon name="sticky-note" title="Group Analysis notebook"/> Notebook</div>
+    <div style="opacity: 0.5; position: absolute; top: 5px; right: 10px; font-size: 90%;"> 
+        <icon name="sticky-note" title="Group Analysis notebook" scale="0.8"/> Notebook
+    </div>
     <small><icon name="brands/docker"/> {{gaarchive.container}}</small><br>
     {{gaarchive.name}}
 </div>

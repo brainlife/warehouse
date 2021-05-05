@@ -44,8 +44,8 @@
 
                     <h6><span style="opacity: 0.5">Release</span> {{release.name}}</h6>
                     <releaseset v-for="(set, idx) in release.sets" :key="idx" style="margin-right: 10px; display: inline-block;" :set="set"/>
-                    <p v-if="release.gaarchives.length" style="margin-top: 10px; margin-bottom: 0;">
-                        <gaarchive v-for="(gaarchive, idx) in release.gaarchives" :key="idx" style="margin-right: 10px;" :gaarchive="gaarchive"/>
+                    <p v-if="release.gaarchives.length" style="margin-bottom: 0;">
+                        <gaarchive v-for="(gaarchive, idx) in release.gaarchives" :key="idx" style="margin-right: 10px; margin-top: 10px;" :gaarchive="gaarchive"/>
                     </p>
                 </div>
 
