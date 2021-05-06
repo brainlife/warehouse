@@ -68,20 +68,6 @@ router.post('/import/:dataset_id', common.jwt(), (req, res, next)=>{
             if(!project) return next("no such project");
 
             let canedit = false;
-            /*
-            console.log("req.user")
-            console.dir(req.user);
-            console.log("project.members")
-            console.dir(JSON.stringify(project.members, null, 4));
-            console.log("project.admins")
-            console.dir(JSON.stringify(project.admins, null, 4));
-            if(project.admins.includes(req.user.sub)) {
-                console.log("user is admin", typeof req.user.sub, project.admins);
-            }
-            if(project.members.includes(req.user.sub)) {
-                console.log("user is member");
-            }
-            */
             
             //TODO - project.admins/members contain id in string
             //but req.user.sub is numeric... so why don't I have to toString()??
@@ -103,6 +89,18 @@ router.post('/import/:dataset_id', common.jwt(), (req, res, next)=>{
                 else console.log("incremented import_count");
             });
 
+            //add to importedDLDatasets 
+            const existing = project.importedDLDatasets.find(rec=>rec.dataset_id == dataset._id);
+            if(!existing) {
+                project.importedDLDatasets.push({
+                    dataset_id: dataset._id,
+                    dataset_description: dataset.dataset_description,
+                    stats: dataset.stats,
+                    path: dataset.path,
+                });
+                project.save();
+            }
+
             //query datasets requested for import
             db.DLItems.find({
                 dldataset: dataset._id,
@@ -122,12 +120,6 @@ router.post('/import/:dataset_id', common.jwt(), (req, res, next)=>{
                     common.update_dataset_stats(project._id, err=>{
                         if(err) return next(err);
                         res.json("inserted");
-                        /*
-                        console.log("updating project stats")
-                        common.update_project_stats(project, err=>{
-                            if(err) return next(err);
-                        });
-                        */
                     });
                 });  
             });

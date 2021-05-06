@@ -1070,19 +1070,6 @@ exports.update_project_stats = async function(project, cb) {
             }
         });
 
-        //load distinct dldataset_id used by this project (TODO - need index?)
-        console.debug("querying for distinct dldataset_id for this project");
-        let dldataset_ids = await db.Datasets.distinct('storage_config.dldataset_id', {status: "stored", removed: false, project: project._id, /*'storage_config.dldataset_id': {$exists: true}*/});
-        let dldatasets = await db.DLDatasets.find({_id: {$in: dldataset_ids}});
-        const importedDLDatasets = dldatasets.map(rec=>({
-            dataset_id: rec._id, 
-            //pick things that we want
-            dataset_description: rec.dataset_description,
-            stats: rec.stats,
-            path: rec.path,
-        }))
-        console.debug(importedDLDatasets);
-
         //lad number of publications
         let publications = await db.Publications.countDocuments({project});
 
@@ -1094,7 +1081,6 @@ exports.update_project_stats = async function(project, cb) {
             "stats.publications": publications,
             "stats.instances": instance_counts,
             "stats.groupanalysis": groupanalysis,
-            importedDLDatasets,
         }}, {new: true});
 
         //only publish some stats

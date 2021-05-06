@@ -215,7 +215,7 @@ export default {
 .header {
     background-color: #eee;
     padding: 10px;
-    margin-bottom: 5px;
+    margin-bottom: 15px;
     position: sticky;
     top: 0;
     z-index: 2;
