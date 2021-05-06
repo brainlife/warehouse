@@ -1249,7 +1249,8 @@ exports.list_users = async ()=>{
 exports.aggregateDatasetsByApps = query=>{
     return new Promise((resolve, reject)=>{
 
-        query["prov.task"] = {$exists: true};
+        //query["prov.task"] = {$exists: true};
+        query["prov.task.config._app"] = {$exists: true};
         db.Datasets.aggregate()
         .match(query)
         /*
@@ -1260,8 +1261,8 @@ exports.aggregateDatasetsByApps = query=>{
         .group({
             _id: { 
                 app: "$prov.task.config._app", 
-                service: "$prov.task.service",
-                service_branch: "$prov.task.service_branch"
+                //service: "$prov.task.service",
+                //service_branch: "$prov.task.service_branch"
             },
             count: {$sum: 1},
             task: { "$first": "$prov.task"}, //pick the first task as a sample
@@ -1270,6 +1271,7 @@ exports.aggregateDatasetsByApps = query=>{
             _id: 0, 
             //app: "$_id.app", 
             count: "$count",
+            
             //service: "$_id.service",
             //service_branch: "$_id.service_branch",
 
@@ -1279,15 +1281,17 @@ exports.aggregateDatasetsByApps = query=>{
         })
         .exec((err, recs)=>{
             if(err) return reject(err);
+            
             //do some clean up of data
             recs.forEach(rec=>{
-                if(!rec.service_branch) rec.service_branch = "master";
+                //if(!rec.service_branch) rec.service_branch = "master";
                 for(const k in rec.task.config) {
                     if(k == "_app") continue; //we need this for <taskconfig>
                     if(k.startsWith("_")) delete rec.task.config[k]; //hidden parameters
                 }
             });
             
+            /*
             //dedupe records if branch is empty and other with "master"
             const keys = [];
             const dedupedRecs = recs.filter(rec=>{
@@ -1296,7 +1300,9 @@ exports.aggregateDatasetsByApps = query=>{
                 keys.push(key);
                 return true;
             });
+            */
 
+            /*
             //load apps used
             let app_ids = [];
             dedupedRecs.forEach(rec=>{ 
@@ -1319,8 +1325,7 @@ exports.aggregateDatasetsByApps = query=>{
                 let populated = [];
                 dedupedRecs.forEach(rec=>{
                     if(rec.app) {
-
-                        rec.app = app_obj[rec.app];
+                        rec.app = apps.find(app=>app._id == rec.app);
                         if(!rec.app) {
                             console.error("dataset(%s) is set to use invalid app id(%s)", rec._id, rec.app);
                         } else {
@@ -1335,6 +1340,8 @@ exports.aggregateDatasetsByApps = query=>{
                 });
                 resolve(populated);
             });
+            */
+            resolve(recs);
         });
     });
 }

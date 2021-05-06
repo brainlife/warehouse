@@ -1,5 +1,6 @@
 <template>
 <div v-if="app_" class="appcard" :class="{'compact': compact, 'clickable': clickable, 'deprecated': app_.deprecated_by}" @click="click">
+    <doibadge v-if="showDoi && app_.doi" :doi="app_.doi" :jump="true" style="position: relative; float: right; z-index: 1; transform: scale(0.8); transform-origin: right;"/>
     <div v-if="compact">
         <appavatar :app="app_" style="position: absolute; right: 0;" :width="80" :height="80"/>
         <span v-if="app_.deprecated_by" class="deprecated-label" style="top: inherit; bottom: 0;">Deprecated</span>
@@ -89,12 +90,13 @@ import contact from '@/components/contact'
 import appavatar from '@/components/appavatar'
 import tags from '@/components/tags'
 import datatypetag from '@/components/datatypetag'
+import doibadge from '@/components/doibadge'
 
 import appcache from '@/mixins/appcache'
 
 export default {
     mixins: [appcache],
-    components: { contact, appavatar, tags, datatypetag },
+    components: { contact, appavatar, tags, datatypetag, doibadge },
     props: {
         app: Object,
         dataset: Object,
@@ -103,6 +105,7 @@ export default {
         branch: String, //branch to show instead of current app github_branch
         clickable: {type: Boolean, default: true},
         height: String, //"200px"
+        showDoi: {type: Boolean, default: false},
     },
 
     watch: {

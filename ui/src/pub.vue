@@ -364,8 +364,6 @@ export default {
 
             relatedPaperLimit: 3,
 
-            //apps: null, //list of apps
-            //tab_index: 0,
             query: "",
             config: Vue.config,
         }
@@ -375,7 +373,7 @@ export default {
         //load publication detail
         this.$http.get('pub', {params: {
             find: JSON.stringify({_id: this.$route.params.id}),
-            populate: 'project',
+            populate: 'project release',
             deref_contacts: true,
         }})
         .then(res=>{

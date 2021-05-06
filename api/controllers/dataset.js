@@ -1506,17 +1506,16 @@ ${p.desc}`;
 
                 if(dataset.datatype.bids) {
                     //Create BIDS symlinks
+
+                    //for us, everything is bids/derivatives.. should we store some as raw?
                     let bidspath = root+"/bids/derivatives";
-                    let pipeline = "upload"; //assumed by default..
+
+                    let pipeline = "upload"; //default. 
                     if(dataset.prov && dataset.prov.task && !isimporttask(dataset.prov.task)) {
                         //use service name as the pipeline name
                         pipeline = dataset.prov.task.service.replace(/\//g, '.');
-
-                        //if different runs are processed under different version, we will end up having different directory name for the same app
-                        //since branch_name is part of .brainlife.json, let's drop this for now.
-                        //add branch at the end of pipeline name
-                        //if(dataset.prov.task.service_branch) pipeline += "."+dataset.prov.task.service_branch;
                     }
+                    //TODO - for output from validator, I need to lookup the service name of follow_task
 
                     bidspath += "/"+pipeline;
                     if(dataset.meta.subject) bidspath += "/sub-"+dataset.meta.subject;

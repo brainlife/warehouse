@@ -351,8 +351,8 @@ var releaseSchema = mongoose.Schema({
     //app used to generate the datasets
     apps: [ {
         count: Number, //number of time this app is used
-        app: mongoose.Schema.Types.ObjectId, //app schema (appSchema doesn't work..)
-        service: mongoose.Schema.Types.Mixed, //sample task
+        app: {type: mongoose.Schema.Types.ObjectId, ref: 'Apps'}, //unique app
+        task: mongoose.Schema.Types.Mixed, //sample task (first find)
     } ],
 
     //group analysis releases
@@ -639,7 +639,7 @@ var appSchema = mongoose.Schema({
         //list of shared resources (currently available)
         resources: [
             new mongoose.Schema({
-                resource_id: {type: mongoose.Schema.Types.ObjectId },
+                resource_id: {type: mongoose.Schema.Types.ObjectId }, //amaretti resource id
                 name: String, //resource name
             })
         ],

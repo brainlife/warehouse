@@ -86,7 +86,7 @@
                             <small>Group ID</small>
                         </b-badge>
                     </p>
-                    <p style="opacity: 0.8; margin-bottom: 0">
+                    <p style="opacity: 0.8; margin-bottom: 0; line-height: 180%;">
                         {{selected.desc||'no description.'}}
                     </p>
                 </div><!--project header-->
@@ -107,7 +107,7 @@
                             <small>{{rec.dataset_description}}</small>
                             <small>{{rec.stats}}</small>
                             -->
-                            <small><b>{{rec.dataset_description.DatasetDOI||rec.path}}</b></small><br>
+                            <b style="font-size: 85%">{{rec.dataset_description.DatasetDOI||rec.path}}</b><br>
                             <small>{{rec.dataset_description.Name}}</small>
                         </p>
                         <br>

@@ -74,49 +74,6 @@ router.get('/', (req, res, next)=>{
     });
 });
 
-//DEPRECATED 
-/**
- * @apiGroup Publications
- * @api {get} /pub/datasets-inventory/:releaseid Get counts of unique subject/datatype/datatype_tags. You can then use /pub/datasets/:releaseid to 
- *              get the actual list of datasets for each subject / datatypes / etc..
- * @apiSuccess {Object} Object containing counts
- */
-//WARNING: similar code in dataset.js
-/*
-router.get('/datasets-inventory/:releaseid', (req, res, next)=>{
-    db.Datasets.aggregate()
-    .match({ publications: mongoose.Types.ObjectId(req.params.releaseid) })
-    .group({_id: {"subject": "$meta.subject", "datatype": "$datatype", "datatype_tags": "$datatype_tags"}, 
-        count: {$sum: 1}, size: {$sum: "$size"} })
-    .sort({"_id.subject":1})
-    .exec((err, stats)=>{
-        if(err) return next(err);
-        res.json(stats);
-    });
-});
-*/
-
-//DEPRECATED .. it's cached into pub record when it's updated
-/**
- * @apiGroup Publications 
- * @api {get} /pub/apps/:releaseid
- *                              Enumerate applications used to generate datasets
- * @apiSuccess {Object[]}       Application objects
- * 
- */
-/*
-router.get('/apps/:releaseid', async (req, res, next)=>{
-    try {
-        let apps = await common.aggregateDatasetsByApps({
-            publications: mongoose.Types.ObjectId(req.params.releaseid),
-        });
-        res.json(apps);
-    } catch(err) {
-        next(err);
-    }
-});
-*/
-
 /**
  * @apiGroup Publications
  * @api {get} /pub/datasets/:releaseid  

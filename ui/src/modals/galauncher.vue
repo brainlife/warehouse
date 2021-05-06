@@ -158,6 +158,7 @@ export default {
             //reset form
             this.form.desc = "";
             this.form.config = {};
+            this.selected = null;
             this.preSelectedGAID = opts.preSelectedGAID;
 
             //set from opts

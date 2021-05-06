@@ -101,7 +101,7 @@
                                 <icon name="clock" style="opacity: 0.4;"/>&nbsp;&nbsp;&nbsp;{{avg_runtime(app.stats.runtime_mean, app.stats.runtime_std)}}
                             </b-badge>
                         </p>
-                        <p>{{app.desc_override||app.desc}}</p>
+                        <p style="line-height: 180%;">{{app.desc_override||app.desc}}</p>
 
                         <!--<span class="form-header">Topics</span>-->
                         <p style="line-height: 250%;">

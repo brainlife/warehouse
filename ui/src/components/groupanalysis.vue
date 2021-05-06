@@ -33,10 +33,8 @@
                 <div class="session">
                     <b-row>
                         <b-col>
-                            <b-button variant="primary" size="sm" @click="open(task)" v-if="!openWhenReady" style="float: right;">
-                                Open
-                            </b-button>
-                            <span v-if="task._id == openWhenReady"><icon name="cog" spin/> Opening..<br></span>
+                            <b-button variant="primary" size="sm" @click="open(task)" v-if="!openWhenReady" style="float: right;"> Open </b-button>
+                            <!-- <span v-if="task._id == openWhenReady"><icon name="cog" spin/> Opening..<br></span>-->
                             <small><b>{{task.name}}</b></small><br>
                             <small>{{task.desc}}</small>
                             <!--{{task.desc}}<br> -->
@@ -60,27 +58,9 @@
                 </div>
             </div>
             <br>
+            <b-button class="button-fixed" @click="newsession">New Session</b-button>
         </div>
-
-        <!--
-        <div class="new">
-            <h4>Launch New Session</h4>
-            <b-form-select v-model="selectedNewApp" @change="selectNewApp" :options="apps" placeholder="Please select a class to launch"/>
-            <div v-if="newApp">
-                <p>
-                    <small>{{newApp.container}}:{{newApp.tag}}</small>
-                </p>
-                <p>
-                    <b>Description</b>
-                    <b-form-textarea v-model="newApp.desc"/>
-                </p>
-                <b-button variant="success" size="sm" @click="launchNewApp" style="float: right;"><icon name="play"/> Launch</b-button>
-                <br clear="right">
-            </div>
-        </div>
-        -->
     </div>
-    <b-button class="button-fixed" @click="newsession">New Session</b-button>
 </div>
 </template>
 
@@ -232,13 +212,12 @@ export default {
                         if(existing_task) {
                             for(let k in task) existing_task[k] = task[k];
                         } else {
-                            console.log("got new task", task);
                             this.sessions.push(task); //new task
                         }
                         this.$forceUpdate();
                         if(this.openWhenReady == task._id && task.status == "running" && task.status_msg == "running") {
                             this.openWhenReady = null;
-                            this.$root.$emit("loading", {show: false, message: "Staging notebook and launching new analysis session.."});
+                            this.$root.$emit("loading", {show: false});
                             this.jump(task); 
 
                         }
@@ -280,33 +259,6 @@ export default {
             });
         },
 
-        //deprecated by newsession
-        launchNewApp() {
-            this.check_agreements(this.project, err=>{
-                if(err) return this.cb(err);
-                this.$http.post('secondary/launchga', {
-                    instance_id: this.instance._id,
-
-                    container: this.newApp.container,
-                    name: this.newApp.container+":"+this.newApp.tag,
-                    app: "soichih/ga-test", //TODO
-                    tag: this.newApp.tag,
-
-                    desc: this.newApp.desc, 
-
-                    //config: {},
-                }).then(res=>{
-                    let task = res.data;
-                    this.$notify("Creating Analysis..");
-                    this.openWhenReady = task._id;
-                    this.$root.$emit("loading", {show: true});
-                }).catch(err=>{
-                    console.error(err);
-                    this.$notify({type: 'error', text: err.response.data.message});
-                });
-            });
-        },
-
         remove(task) {
             if(confirm("Do you really want to remove this session?")) {
                 this.$http.delete(Vue.config.amaretti_api+"/task/"+task._id).then(res=>{
@@ -331,9 +283,8 @@ export default {
                 //rerun
                 this.$http.put(Vue.config.amaretti_api+"/task/rerun/"+task._id).then(res=>{
                     if(res.status == 200) {
-                        this.$notify("Rerun request submitted");
                         this.openWhenReady = task._id;
-                        this.$root.$emit("loading", {show: true});
+                        this.$root.$emit("loading", {message: "Opening Session.."});
                     }
                 });
                 break;
@@ -390,6 +341,7 @@ export default {
                 cb(err, info) {
                     if(err) throw err;
                     me.openWhenReady = info.task._id;
+                    this.$root.$emit("loading",{message: "Opening new session..."});
                 },
             });
         },
