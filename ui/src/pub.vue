@@ -24,6 +24,9 @@
     <div style="background-color: white; padding-top: 5px; border-bottom: 1px solid #ddd;">
         <b-container>
             <div class="rightside">
+                <div class="button" @click="edit()" v-if="canedit()" style="float: right;" title="Edit this publication"> 
+                    <icon name="edit" scale="1.25"/>
+                </div>
                 <projectavatar :project="pub.project" :height="125" :width="125"/>
                 <br>
                 <br>
@@ -453,6 +456,13 @@ export default {
             window.location.href = "#"+id;
         },
 
+        canedit() {
+            if(!this.pub.project) return false;
+            if(~this.pub.project.admins.indexOf(Vue.config.user.sub)) return true;
+            if(~this.pub.project.members.indexOf(Vue.config.user.sub)) return true;
+            return false;
+        },
+
         openproject(project_id) {
             this.$router.push('/project/'+project_id);
         },
@@ -480,6 +490,9 @@ export default {
         },
         */
 
+        edit() {
+            this.$router.push("/project/"+this.pub.project._id+"/pub/"+this.pub._id);
+        },
     }
 }
 </script>

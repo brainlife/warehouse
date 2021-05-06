@@ -15,22 +15,10 @@ export default {
             const shadow = this.$refs.host.attachShadow({mode: 'open'});
             shadow.innerHTML = res.data;
 
-            /*
-            const style = document.createElement('style');
-            style.innerHTML = `
-            @media (min-width: 1200px) 
-            .container {
-                width: 200px;
-            }
-            `;
-            console.log("adding style");
-            console.dir(style);
-            shadow.appendChild(style);
-            console.dir(shadow.style);
-            */
+            /* works but not on firefox..
+            //disable some unnecessary jupyter template (plain)
             var sheet = new CSSStyleSheet();
             sheet.replaceSync(`
-                /*disable some unnecessary jupyter template (plain)*/
                 .container {
                     width: inherit;
                 }
@@ -44,6 +32,26 @@ export default {
                 }
             `);
             shadow.adoptedStyleSheets = [ sheet ];
+            */
+
+            //this work on both firefox and chrome
+            const style = document.createElement('style');
+            style.type = 'text/css';
+            style.appendChild(document.createTextNode(`
+                .container {
+                    width: inherit;
+                }
+                #notebook-container {
+                    box-shadow: inherit;
+                    padding: 0;
+                }
+                div#notebook {
+                    padding-top: 0;
+                    font-size: 12px;
+                }
+            `));
+            shadow.appendChild(style);
+
         }).catch(err=>{
             console.error(err);
             this.error = "Failed to load notebook";
@@ -51,3 +59,9 @@ export default {
     },
 }
 </script>
+
+<style>
+#notebook-container.container {
+    width: 100px;
+}
+</style>
