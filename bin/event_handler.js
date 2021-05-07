@@ -163,31 +163,23 @@ function health_check() {
 function handle_task(task, cb) {
     console.debug("task", (task._status_changed?"+++":"---"), task._id, task.name, task.service, task.status, task.status_msg);
 
-    //handle counters
     inc_count("health.tasks");
 
-    //event counts to store on graphite. these numbers can be aggregated to show various bar graphs
-    //if(task._status_changed) {
-        
-        //number of task change for each user
-        //inc_count("task.user."+task.user_id+"."+task.status); //too much data
-        
-        //number of task event for each app
-        if(task.config && task.config._app) inc_count("task.app."+task.config._app+"."+task.status); 
-        
-        //number of task event for each resource
-        if(task.resource_id) inc_count("task.resource."+task.resource_id+"."+task.status); 
-        
-        //number of task events for each project
-        if(task.config && task.config._rule) {
-            console.debug("rule task status changed");
-            debounce("update_rule_stats."+task.config._rule.id, ()=>{
-                common.update_rule_stats(task.config._rule.id, err=>{
-                    if(err) console.error(err);
-                });
-            }, 1000*10); 
-        }
-    //}
+    //number of task event for each app
+    if(task.config && task.config._app) inc_count("task.app."+task.config._app+"."+task.status); 
+    
+    //number of task event for each resource
+    if(task.resource_id) inc_count("task.resource."+task.resource_id+"."+task.status); 
+    
+    //number of task events for each project
+    if(task.config && task.config._rule) {
+        console.debug("rule task status changed");
+        debounce("update_rule_stats."+task.config._rule.id, ()=>{
+            common.update_rule_stats(task.config._rule.id, err=>{
+                if(err) console.error(err);
+            });
+        }, 1000*10); 
+    }
 
     let task_product = task.product; //fallback for old task (task.product is deprecated)
 

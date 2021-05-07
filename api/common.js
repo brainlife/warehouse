@@ -1248,16 +1248,9 @@ exports.list_users = async ()=>{
 
 exports.aggregateDatasetsByApps = query=>{
     return new Promise((resolve, reject)=>{
-
-        //query["prov.task"] = {$exists: true};
         query["prov.task.config._app"] = {$exists: true};
         db.Datasets.aggregate()
         .match(query)
-        /*
-        .replaceWith({
-            "$prov.task.service_branch": { }.
-        })
-        */
         .group({
             _id: { 
                 app: "$prov.task.config._app", 
@@ -1291,56 +1284,6 @@ exports.aggregateDatasetsByApps = query=>{
                 }
             });
             
-            /*
-            //dedupe records if branch is empty and other with "master"
-            const keys = [];
-            const dedupedRecs = recs.filter(rec=>{
-                const key = [rec.service, rec.service_branch, rec.app].join(".");
-                if(keys.includes(key)) return false;
-                keys.push(key);
-                return true;
-            });
-            */
-
-            /*
-            //load apps used
-            let app_ids = [];
-            dedupedRecs.forEach(rec=>{ 
-                if(rec.app) app_ids.push(rec.app); 
-            });
-            db.Apps.find({
-                _id: {$in: app_ids},
-                projects: [], //only show *public* apps
-            })
-            .exec((err, apps)=>{
-                if(err) return reject(err);
-
-                //make it easier to lookup apps
-                let app_obj = {};
-                apps.forEach(app=>{
-                    app_obj[app._id] = app;
-                });
-
-                //now populate apps
-                let populated = [];
-                dedupedRecs.forEach(rec=>{
-                    if(rec.app) {
-                        rec.app = apps.find(app=>app._id == rec.app);
-                        if(!rec.app) {
-                            console.error("dataset(%s) is set to use invalid app id(%s)", rec._id, rec.app);
-                        } else {
-                            populated.push(rec);
-                        }
-                    }
-                });
-
-                //sort by app name
-                populated.sort((a,b)=>{
-                    return a.app.name.localeCompare(b.app.name);  
-                });
-                resolve(populated);
-            });
-            */
             resolve(recs);
         });
     });

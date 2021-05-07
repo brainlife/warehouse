@@ -20,7 +20,7 @@
             <div v-for="pub in pubs" :key="pub._id" :class="{'pub-removed': pub.removed, 'pub-editable': canedit()}" class="pub">
                 <div style="padding: 10px 15px">
                     <div class="pub-action">
-                        <div class="button" @click="edit(pub)" v-if="canedit()" title="Edit publication metadata"> <icon name="edit"/> </div>
+                        <div class="button" @click="edit(pub)" v-if="canedit()" title="Edit publication detail"> <icon name="edit"/> </div>
                         <div class="button" size="sm" @click="open(pub)" title="See in published page"> <icon name="eye"/> </div>
                     </div>
                     <b-badge v-if="pub.removed" variant="danger">Removed</b-badge>
@@ -141,6 +141,7 @@ export default {
 
         canedit() {
             if(!this.project) return false;
+            if(!Vue.config.user) return false;
             if(~this.project.admins.indexOf(Vue.config.user.sub)) return true;
             if(~this.project.members.indexOf(Vue.config.user.sub)) return true;
             return false;

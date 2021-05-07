@@ -178,6 +178,7 @@ export default {
 
             history.replaceState("", document.title, window.location.pathname+window.location.search); //clear hash
             this.openWhenReady = taskid;
+            this.$root.$emit("loading", {message: "Creating a new Session..."});
         }
     },
 

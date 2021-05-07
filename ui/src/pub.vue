@@ -458,6 +458,7 @@ export default {
 
         canedit() {
             if(!this.pub.project) return false;
+            if(!Vue.config.user) return false;
             if(~this.pub.project.admins.indexOf(Vue.config.user.sub)) return true;
             if(~this.pub.project.members.indexOf(Vue.config.user.sub)) return true;
             return false;

@@ -4,7 +4,7 @@
     <div v-if="selected">
         <div class="page-header">
             <div style="float: right;">
-                <div @click="edit()" v-if="isadmin()" class="button">
+                <div @click="edit()" v-if="isadmin()" class="button" title="Edit project details">
                     <icon name="edit" scale="1.25"/>
                 </div>
             </div>
