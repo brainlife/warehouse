@@ -337,7 +337,13 @@ var releaseSchema = mongoose.Schema({
         size: Number, //total size of the data
         */
         {
-            datatype: datatypeSchema,
+            datatype: {
+                //let's just store things we really need
+                _id: {type: mongoose.Schema.Types.ObjectId, ref: 'Datatypes', index: true},
+                name: String,
+                desc: String,
+                groupAnalysis: Boolean,
+            },
             datatype_tags: [String],
             tags: [String],
             subjects: [String],

@@ -541,8 +541,7 @@ color: white;
 }
 .funder {
     background-color: white;
-    margin-right: 5px;
-    display: inline-block;
+    margin-bottom: 5px;
     padding-right: 10px;
     font-weight: bold;
     color: #999;
