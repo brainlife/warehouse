@@ -145,12 +145,11 @@
                 <p><small class="text-muted">This App uses the following input/output datatypes</small></p>
                 <div style="position: relative;">
                     <b-row>
-                        <!--input-->
-                        <b-col style="padding-bottom: 10px;">
-                            <div style="height: 100%; border: 2px solid #007bff;">
-                                <div style="background-color: rgba(0,123,255,0.8); padding: 5px 15px; font-weight: bold; color: white;">Input</div>
+                        <b-col>
+                            <div class="iobox">
+                                <div class="iobox-header" style="background-color: rgba(0,123,255,0.8); color: white;">Input</div>
                                 <b-alert show variant="primary" v-if="!app.inputs || app.inputs.length == 0">No Input</b-alert>
-                                <div v-if="app.inputs && app.inputs.length > 0" style="padding: 5px">
+                                <div v-if="app.inputs && app.inputs.length > 0">
                                     <div v-for="input in app.inputs" :key="input.id" class="io-card">
                                         <small style="opacity: 0.5; float: right;">{{input.id}}</small><!--internal output id-->
                                         <datatype :datatype="adjustedDatatype(input.datatype)" :datatype_tags="input.datatype_tags">
@@ -166,12 +165,12 @@
                         </b-col>
 
                         <!--output-->
-                        <b-col style="margin-bottom: 10px;">
+                        <b-col>
                             <icon name="arrow-right" style="position: absolute; top: 50%; left: -10px; opacity: 0.5" scale="1.5"/>
-                            <div style="height: 100%; border: 2px solid #28a745;">
-                                <div style="background-color: rgba(40,167,69,0.8); padding: 5px 15px; font-weight: bold; color: white;">Output</div>
+                            <div class="iobox">
+                                <div class="iobox-header" style="background-color: rgba(40,167,69,0.8); color: white;">Output</div>
                                 <b-alert show variant="success" v-if="!app.outputs || app.outputs.length == 0">No Output</b-alert>
-                                <div v-if="app.outputs && app.outputs.length > 0" style="padding: 5px;">
+                                <div v-if="app.outputs && app.outputs.length > 0">
                                     <div v-for="output in app.outputs" :key="output.id" class="io-card">
                                         <small style="opacity: 0.5; float: right;">{{output.id}}</small><!--internal output id-->
                                         <datatype :datatype="output.datatype" 
@@ -734,12 +733,12 @@ top: 0px;
 }
 
 .header {
-background-color: white;
-padding: 15px 0 0 0;
-border-bottom: 1px solid #ddd;
-position: sticky;
-top: 0;
-z-index: 5;/*has to be above vue-ace line number*/
+    background-color: white;
+    padding: 15px 0 0 0;
+    border-bottom: 1px solid #ddd;
+    position: sticky;
+    top: 0;
+    z-index: 5;/*has to be above vue-ace line number*/
 }
 .topic {
 padding: 8px; 
@@ -780,14 +779,29 @@ margin-right: -20px;
 word-break: break-word;
 }
 .io-card {
-padding: 8px; 
-background-color: white; 
-margin-bottom: 5px; 
+    padding: 8px; 
+}
+.io-card:not(:last-child) {
+    border-bottom: 1px solid #ddd;
 }
 .button-page {
-position: absolute;
-left: -30px;
-z-index: 1;
-opacity: 0.6;
+    position: absolute;
+    left: -30px;
+    z-index: 1;
+    opacity: 0.6;
+}
+.iobox {
+    background-color: white;
+    box-shadow: 0 0 3px #999;
+    border-radius: 4px;
+    margin-bottom: 10px;
+    height: 100%; /*balance input/output*/
+}
+.iobox .iobox-header {
+    padding: 5px 15px;
+    border-top-left-radius: 4px;
+    border-top-right-radius: 4px;
+    font-weight: bold;
 }
 </style>
+

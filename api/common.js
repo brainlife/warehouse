@@ -457,11 +457,10 @@ exports.updateRelatedPaperMag = function(rec,cb) {
         rec.save(cb);
         return;
     }
-    console.log("mag query", query);
+    console.log("mag query", query, "logprob cutoff", config.mag.lowestProb);
     exports.getRelatedPaper(query).then(res=>{
         if(res.status != 200) return cb("failed to call mag api");
         rec.relatedPapers = res.data.entities
-        .filter(a => a.logprob > config.mag.lowestProb)
         .map(paper=>{
             console.log(paper.logprob, paper.DOI, paper.Ti);
             const ret = {
@@ -471,6 +470,8 @@ exports.updateRelatedPaperMag = function(rec,cb) {
                 doi: paper.DOI,
                 venue: paper.VFN, 
                 authors: paper.AA.map(author=>({institution: author.AfN, name: author.DAuN })),
+
+                logprob: paper.logprob,
             }
 
             if(paper.F) ret.fields = paper.F.map(name=>name.FN);
@@ -484,7 +485,7 @@ exports.updateRelatedPaperMag = function(rec,cb) {
                 ret.abstract = abstract.join(' ');
             }
             return ret;
-        });
+        }).filter(a => a.logprob > config.mag.lowestProb)
         rec.save(cb);
     }).catch(res=>{
         console.log(res.toString());
