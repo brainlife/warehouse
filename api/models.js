@@ -245,7 +245,8 @@ var participantsSchema = mongoose.Schema({
 
     //from participants.tsv (keyed by subject)
     subjects: mongoose.Schema.Types.Mixed, 
-    //like..
+    
+    //old format (object of object)
     //"11" : {
     //    "gender" : "M",
     //    "handedness" : "R",
@@ -253,6 +254,16 @@ var participantsSchema = mongoose.Schema({
     //    "scandate" : "19-02-15",
     //    "scan_time" : "16:30"
     //},
+
+    //new format (array of object)
+    //[
+    //{ 
+    //  subject: "11",
+    //  gender: "M",
+    //  age: 23,
+    //},
+    //]
+    
 }, {minimize: false}); //to keep empty object ({}) from disappearing
 exports.Participants = mongoose.model("Participants", participantsSchema);
 

@@ -130,6 +130,7 @@
                         </b-col>
                     </b-row>
                 </b-container>
+                <br clear="both">
             </div>
 
             <b-container>
@@ -200,18 +201,7 @@
                     <span class="form-header">Projects</span>
                     <p><small class="text-muted">Only the members of the following project(s) can view and execute this App.</small></p>
                     <div v-for="project in app.projects" :key="project._id" @click="go('/project/'+project._id)">
-                        <projectcard :project="project"/>
-                        <!--
-                        <b-row>
-                            <b-col>
-                                <b>{{project.name}}</b>
-                                <p style="margin-bottom: 0px; color: gray;" class="text">{{project.desc}}</p>
-                            </b-col>
-                            <b-col cols="2">
-                                <projectavatar :project="project" :height="50" :width="50"/>
-                            </b-col>
-                        </b-row>
-                        -->
+                        <projectcard :project="project" style="margin-bottom: 10px;"/>
                     </div>
                     <br>
                 </div>

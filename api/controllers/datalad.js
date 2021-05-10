@@ -78,10 +78,15 @@ router.post('/import/:dataset_id', common.jwt(), (req, res, next)=>{
             //update participants info
             let participants = new db.Participants({
                 project,
-                columns: req.body.meta_info,
-                subjects: req.body.meta,
+
+                //copy participants info..
+                subjects: dataset.participants,
+                columns: dataset.participants_info, //might be missing
+                
+                //columns: req.body.meta_info,
+                //subjects: req.body.meta,
             });
-            common.publish("participant.create."+req.user.sub+"."+project._id, participants);
+            common.publish("participant.create."+req.user.sub+"."+project._id, participants); //too much data?
             participants.save();
 
             db.DLDatasets.updateOne({_id: dataset._id}, {$inc: {import_count: 1} }).then(err=>{

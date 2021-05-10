@@ -82,6 +82,7 @@ export default {
     },
 
     methods: {
+        /*
         get_meta() {
             if(!this.dataset.participants) return null;
             let meta = {};
@@ -96,6 +97,7 @@ export default {
             
             return meta;
         },
+        */
 
         submit(evt) {
             if(!this.createnew) return this.submit_import();
@@ -125,8 +127,8 @@ export default {
             this.$http.post('datalad/import/'+this.dataset._id, {
                 project: this.project, 
                 datatypes: this.datatypes,
-                meta: this.get_meta(),
-                meta_info: this.dataset.participants_info,
+                //meta: this.get_meta(),
+                //meta_info: this.dataset.participants_info,
             }).then(res=>{
                 this.$root.$emit("loading", {show: false});
                 this.$router.push("/project/"+this.project+"/dataset");

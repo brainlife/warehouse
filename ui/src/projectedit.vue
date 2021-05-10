@@ -132,13 +132,7 @@
                     <span class="form-header">Participants Info</span>
                 </b-col> 
                 <b-col cols="9">
-                    <!--
-                    <p>
-                        <b-form-checkbox v-model="project.group_analysis">Enable Group Analysis Tab (experimental)</b-form-checkbox>
-                    </p>
-                    -->
-                    
-                    <p class="text-muted"><small>Key/value dictionary for each subject(participants.tsv). You can use this information in analysis tab</small></p>
+                    <p class="text-muted"><small>Key/value dictionary for each subject (participants.tsv). You can use this information in analysis tab. It should be array of objects containig at least 'subject' key and other fields</small></p>
                     <editor v-model="participants" @init="editorInit" lang="json" height="500"/>
 
                     <br>
@@ -295,8 +289,8 @@ export default {
             let participants;
             let participants_columns;
             try {
-                participants = JSON.parse(this.participants);
-                participants_columns = JSON.parse(this.participants_columns);
+                participants = JSON.parse(this.participants||"[]");
+                participants_columns = JSON.parse(this.participants_columns||"{}");
             } catch(err) {
                 this.$notify({type: 'error', text: "Participants Info has a syntax error: "+err});
                 return; 
