@@ -239,6 +239,7 @@ export default {
                 if(!this.project.agreements) Vue.set(this.project, "agreements", []); //backward compatibility
             });
 
+            //load participant info
             this.axios.get("/participant/"+this.$route.params.id).then(res=>{
                 if(res.data) {
                     this.participants = JSON.stringify(res.data.subjects||participants_def, null, 4);

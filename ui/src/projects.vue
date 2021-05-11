@@ -17,7 +17,7 @@
     </div>
     <div class="page-content" v-if="my_projects">
         <div v-if="query.length && !other_projects.length && !my_projects.length">
-            <h3 style="opacity: 0.8; margin: 40px;" variant="secondary">No matching Projects</h3>
+            <small>No matching Projects</small>
         </div>
         <div v-if="loading" style="margin: 40px; opacity: 0.5"><h3><icon name="cog" spin scale="2"/> Loading ..</h3></div>
         <div v-if="config.user" class="position: relative">

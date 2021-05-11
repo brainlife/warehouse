@@ -16,29 +16,42 @@
             <h4>Dashboard</h4>
         </li>
 
-        <li @click="go('/apps')" :class="{active: active == 'app'}">
-            <icon name="th-large" scale="1.2"/>
-            <h4>Apps</h4>
+        <li class="divider"></li>
+
+        <li @click="go('/datasets')" :class="{active: active == 'dataset'}" style="position: relative;">
+            <icon name="cloud-download-alt" scale="1.2"/>
+            <h4>Datasets</h4>
         </li>
+
+        <!--
+        <li @click="go('/ezbids')" :class="{active: active == 'ezbids'}" style="position: relative;">
+            <icon name="cloud-download-alt" scale="1.2"/>
+            <h4>ezBIDS</h4>
+        </li>
+        -->
+
         <li @click="go('/projects')" :class="{active: active == 'project'}">
             <icon name="shield-alt" scale="1.2"/>
             <h4>Projects</h4>
+        </li>
+
+        <li @click="go('/apps')" :class="{active: active == 'app'}">
+            <icon name="th-large" scale="1.2"/>
+            <h4>Apps</h4>
         </li>
 
         <li @click="go('/pubs')" :class="{active: active == 'pub'}">
             <icon name="newspaper" scale="1.2"/>
             <h4>Publications</h4>
         </li>
+
+        <li class="divider"></li>
         
         <li @click="go('/datatypes')" :class="{active: active == 'datatype'}">
             <icon name="cubes" scale="1.2"/>
             <h4>Datatypes</h4>
         </li>
 
-        <li @click="go('/datasets')" :class="{active: active == 'dataset'}" style="position: relative;">
-            <icon name="cloud-download-alt" scale="1.2"/>
-            <h4>Datasets</h4>
-        </li>
 
         <li v-if="config.user" 
             @click="go('/resources')" :class="{active: active == 'resource'}">

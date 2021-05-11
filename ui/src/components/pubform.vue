@@ -91,7 +91,7 @@
                         </span>
                         <gaarchive :gaarchive="gaarchive" style="margin-right: 20px; margin-bottom: 10px;"/>
                     </div>
-                    <b-button type="button" variant="outline-success" @click="add_ga(release)" size="sm"><icon name="plus"/> Add Analysis Result</b-button>
+                    <b-button type="button" variant="outline-success" @click="add_ga(release)" size="sm"><icon name="plus"/> Add Analysis Notebook</b-button>
                 </b-col>
                 <b-col sm="1">
                     <!--placeholder to match the releasename/date field-->

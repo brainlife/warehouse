@@ -101,7 +101,6 @@
                         {{funding.id}}
                     </div>
                     <br>
-                    <br>
                 </div>
 
                 <div class="content-subheader clickable" @click="jump('license')">

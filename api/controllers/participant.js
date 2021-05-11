@@ -57,6 +57,15 @@ router.get('/:projectid', common.jwt(), (req, res, next)=>{
         getParticipants(req, project, (err,participants)=>{
             if(err) return next(err);
 
+            //migrate old format (object of object) to (array of object)
+            if(participants.subjects && !Array.isArray(participants.subjects)) {
+                const subjects = [];
+                for(const sub in participants.subjects) {
+                    subjects.push(Object.assign({subject: sub}, participants.subjects[sub]));
+                }
+                participants.subjects = subjects;
+            }
+
             if(!participants.columns) {
                 console.log("generating participants.columns");
                 //generate columns list
