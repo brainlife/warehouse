@@ -15,6 +15,7 @@ import apptest from '@/apptest'
 import projects from '@/projects'
 import project from '@/project'
 import projectedit from '@/projectedit'
+import ezbids from '@/ezbids'
 
 import datatypes from '@/datatypes'
 import datatype from '@/datatype'
@@ -105,6 +106,10 @@ export default new Router({
             sidemenu: "project",
         }}, 
 
+        {path: '/project/ezbids', component: ezbids, meta: {
+            sidemenu: "project",
+        }},
+
         {path: '/project/:id', component: project, meta: {
             public: true,
             sidemenu: "project",
@@ -186,6 +191,7 @@ export default new Router({
         {path: '/test', component: test, meta: {
             sidemenu: null,
         }},
+
 
         {path: '/404', component: missing, meta: {
             public: true,

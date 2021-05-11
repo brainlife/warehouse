@@ -1,7 +1,7 @@
 <template>
 <b-modal :no-close-on-backdrop='true' title="Upload Data" ref="modal" id="uploader" size="lg">
     <div v-if="mode == 'upload'">
-        <b-form-group horizontal label="Data Type" v-if="datatypes">
+        <b-form-group horizontal label="Data Type" v-if="datatypes" style="margin-bottom: 8px;">
             <v-select v-model="datatype" placeholder="Search Datatype" label="name" :options="Object.values(datatypes)" :selectable="option => option.validator">
                 <template v-slot:option="option">
                     <datatypetag :datatype="option" :clickable="false"/><br>
@@ -9,6 +9,22 @@
                 </template>
             </v-select>
         </b-form-group>
+
+        <div v-if="!datatype">
+            <small style="position: relative; top: -5px;">
+                If you do not see the datatype you want to upload listed, or if you'd like to bulk upload multiple objects at once, please use <a href="https://brainlife.io/docs/cli/install/" target="doc">Brainlife CLI</a>.
+            </small>
+
+            <br>
+            <b style="opacity: 0.6; padding: 20px;"><center>- OR -</center></b>
+            <div style="background-color: #eee; border-radius: 10px; padding: 10px;">
+                <center>
+                    <small>If you'd like to bulk upload your <b>raw DICOM</b> files, please use</small>
+                    &nbsp;
+                    <b-btn variant="success" @click="ezbids"><icon name="play"/> ez<b>BIDS</b></b-btn>
+                </center>
+            </div> 
+        </div>
 
         <div v-if="datatype">
             <p>
@@ -78,10 +94,6 @@
             </div>
 
         </div><!--datatype_id set -->
-        <small>
-            To bulk upload your data, please use <a href="https://brainlife.io/docs/cli/install/" target="doc">Brainlife CLI</a>. You can also use 
-            CLI to upload datatype which are not listed under the datatype selecter.
-        </small>
     </div><!--meta-->
 
     <div v-if="mode == 'validate' && tasks.validation">
@@ -519,65 +531,6 @@ export default {
             });
         },
 
-        /*
-        validate() {
-            this.mode = "validate";
-            this.tasks.validation = null;
-
-            //apply sidecar to meta
-            if(this.sidecar) {
-                let _sidecar = JSON.parse(this.sidecar);
-                Object.assign(this.meta, _sidecar);
-            }
-
-            //remove null meta
-            let clean_meta = {};
-            for(let id in this.meta) {
-                if(this.meta[id] !== "") clean_meta[id] = this.meta[id];
-            }
-
-            //create validator config
-            var config = {
-                //_app: (no app id for validator)
-                _outputs: [{
-                    id: "output",
-                    datatype: this.datatype._id,
-                    datatype_tags: this.datatype_tags,
-                    meta: clean_meta,
-                    tags: this.tags,
-                    desc: this.desc, //what is this for?
-
-                    subdir: "output",
-                    archive: {
-                        project: this.project._id,
-                        desc: this.desc, //dataset desc to be used
-                    }
-                }]
-            };
-
-            this.files.forEach(file=>{
-                if(!file.local_filename) return; //not set.. optional?
-                config[file.id] = "../"+this.tasks.upload._id+"/"+file.filename;
-            });
-
-            this.$http.post(Vue.config.amaretti_api+'/task', {
-                instance_id: this.instance._id,
-                name: "Upload", 
-                service: this.datatype.validator,
-                service_branch: this.datatype.validator_branch,
-                config,
-                follow_task_id: this.tasks.upload._id,
-                deps_config: [ {task: this.tasks.upload._id} ], 
-            }).then(res=>{
-                console.log("submitted validation task");
-                console.log(this.datatype.validator, this.datatype.validator_branch);
-                this.tasks.validation = res.data.task;
-            }, res=>{
-                console.error(res);
-            });
-        },
-        */
-
         clearfile: function(file) {
             file.uploaded = null;
             file.progress = null;
@@ -602,11 +555,18 @@ export default {
                 this.available_tags = res.data;
             });
         },
+
         editorInit(editor) {
             require('brace/mode/json')
             editor.container.style.lineHeight = 1.25;
             editor.renderer.updateFontSize();
-        }
+        },
+
+        ezbids() {
+            this.$refs.modal.hide();
+            //this.$router.push("/project/ezbids");
+            document.location = "https://brainlife.io/ezbids";
+        },
     },
 }
 </script>
