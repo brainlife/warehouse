@@ -95,6 +95,7 @@ export default {
                     pub.doi,
                     pub.license,
                     ...pub.tags,
+                    ...pub.authors.map(a=>a.fullname)
                 ];
                 const text = stuff.filter(thing=>!!thing).join(" ").toLowerCase();
                 return tokens.every(token=>text.includes(token));
