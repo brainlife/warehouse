@@ -15,13 +15,14 @@
             <icon name="home" scale="1.2"/> 
             <h4>Dashboard</h4>
         </li>
-
-        <li class="divider"></li>
+        <li v-if="config.user && config.debug" class="divider"></li>
 
         <li @click="go('/datasets')" :class="{active: active == 'dataset'}" style="position: relative;">
             <icon name="cloud-download-alt" scale="1.2"/>
             <h4>Datasets</h4>
         </li>
+        
+        <li class="divider"></li>
 
         <!--
         <li @click="go('/ezbids')" :class="{active: active == 'ezbids'}" style="position: relative;">

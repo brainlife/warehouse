@@ -163,7 +163,7 @@
     <div class="page-content page-main" v-else style="padding: 20px 40px; opacity: 0.7; background-color: #eee;" :style="{left: (splitter_pos+10)+'px'}"> 
         <p v-if="loading_dataset" style="opacity: 0.6; font-size: 150%;">Loading...</p>
         <div v-else>
-            <p style="font-size: 150%; margin-top: 200px;"><icon name="arrow-left"/> Select a dataset</p>
+            <p style="font-size: 150%; margin-top: 20px;"><icon name="arrow-left"/> Select a dataset</p>
             <p>You can import datasets from various remote data sources such as OpenNeuro, FCP/INDI through datalad.</p>
             <div style="position: fixed; bottom: 30px;"
                 <img src="https://www.datalad.org/theme/img/logo/datalad_nav_wide.png" width="150px" align="right" style="margin: 0px 30px;">
@@ -278,8 +278,6 @@ export default {
         this.load_datatypes();
         this.readHash();
         this.load_datasets();
-        let dataset_list = this.$refs["dataset-list"];
-        this.dataset_ps = new PerfectScrollbar(dataset_list);        
         this.init_splitter();
 
         let dataset_id = this.$route.params.dataset_id;
@@ -350,6 +348,8 @@ export default {
 
                 //scroll list to the selected element
                 this.$nextTick(()=>{
+                    let dataset_list = this.$refs["dataset-list"];
+                    this.dataset_ps = new PerfectScrollbar(dataset_list);        
                     if(this.$route.params.dataset_id && this.$refs[this.$route.params.dataset_id]) {
                         let item = this.$refs[this.$route.params.dataset_id][0];
                         if(item) item.scrollIntoView();

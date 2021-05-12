@@ -47,11 +47,13 @@
                             <b-badge pill v-if="datatype.create_date" class="bigpill" title="Registration Date">
                                 <icon name="calendar" style="opacity: 0.4;"/>&nbsp;&nbsp;&nbsp;<small>Registerd</small>&nbsp;&nbsp;{{new Date(datatype.create_date).toLocaleDateString()}}
                             </b-badge>
+                            <b-badge pill v-if="datatype.groupAnalysis" class="bigpill" style="background-color: #666; color: white;" title="The data will be copied to secondary archive and can be accessed from analysis tab">
+                                <icon name="dot-circle"/>&nbsp;&nbsp;&nbsp;Secondary
+                            </b-badge>
                         </p>
                         <p>{{datatype.desc}}</p>
                     </b-container>
                 </div><!--sub header-->
-                <b-alert show variant="secondary" v-if="datatype.groupAnalysis"><b-container>The data will be copied to secondary archive and can be accessed for group analysis</b-container></b-alert>
                 <b-container>
                     <br>
                     <div class="box">

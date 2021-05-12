@@ -57,9 +57,9 @@
                     </b-row>
                 </div>
             </div>
-            <br>
-            <b-button class="button-fixed" @click="newsession">New Session</b-button>
         </div>
+        <br>
+        <b-button class="button-fixed" @click="newsession">New Session</b-button>
     </div>
 </div>
 </template>
@@ -191,40 +191,7 @@ export default {
             if(err) return console.error(err); //TODO notify?
             this.instance = instance;
 
-            //subscribe to task update
-            var url = Vue.config.event_ws+"/subscribe?jwt="+Vue.config.jwt;
-            this.ws = new ReconnectingWebSocket(url, null);
-            this.ws.onopen = (e)=>{
-                //wf.task will be deprecated by ex:amaretti
-                console.log("listening to", this.instance._id);
-                this.ws.send(JSON.stringify({
-                    bind: {
-                        ex: "wf.task",
-                        key: this.instance._id+".#",
-                    }
-                }));
-                this.ws.onmessage = (json)=>{
-                    let event = JSON.parse(json.data);
-                    switch(event.dinfo.exchange) {
-                    case "wf.task":
-                        let task = event.msg;
-                        if(task.service != "brainlife/ga-launcher") return; //don't care.
-                        let existing_task = this.sessions.find(t=>t._id == task._id);
-                        if(existing_task) {
-                            for(let k in task) existing_task[k] = task[k];
-                        } else {
-                            this.sessions.push(task); //new task
-                        }
-                        this.$forceUpdate();
-                        if(this.openWhenReady == task._id && task.status == "running" && task.status_msg == "running") {
-                            this.openWhenReady = null;
-                            this.$root.$emit("loading", {show: false});
-                            this.jump(task); 
-
-                        }
-                    }
-                }
-            }
+            this.connectWS();
 
             //load initial list of sessions
             this.$http.get(Vue.config.amaretti_api+'/task', {
@@ -250,6 +217,59 @@ export default {
     },
 
     methods: {
+
+        connectWS() {
+            if(this.ws) this.ws.close(); //for dev
+
+            console.log("subscribe to task update");
+            var url = Vue.config.event_ws+"/subscribe?jwt="+Vue.config.jwt;
+            //this.ws = new ReconnectingWebSocket(url);
+            //this.ws.debug = Vue.config.debug;
+            this.ws = new WebSocket(url);
+            this.ws.onopen = (e)=>{
+                //wf.task will be deprecated by ex:amaretti
+                console.log("ws onopen: listening to instance", this.instance._id);
+                this.ws.send(JSON.stringify({
+                    bind: {
+                        ex: "wf.task",
+                        key: this.instance._id+".#",
+                    }
+                }));
+            };
+
+            this.ws.onmessage = (json)=>{
+                let event = JSON.parse(json.data);
+                switch(event.dinfo.exchange) {
+                case "wf.task":
+                    let task = event.msg;
+                    if(task.service != "brainlife/ga-launcher") return; //don't care.
+                    let existing_task = this.sessions.find(t=>t._id == task._id);
+                    if(existing_task) {
+                        for(let k in task) existing_task[k] = task[k];
+                    } else {
+                        this.sessions.push(task); //new task
+                    }
+                    this.$forceUpdate();
+                    if(this.openWhenReady == task._id && task.status == "running" && task.status_msg == "running") {
+                        this.openWhenReady = null;
+                        this.$root.$emit("loading", {show: false});
+                        this.jump(task); 
+
+                    }
+                }
+            };
+
+            this.ws.onclose = e=>{
+                console.log("websocket onclose.. reconnecting", e);
+                setTimeout(()=>{
+                    this.connectWS();
+                }, 1000);
+            };
+            this.ws.onerror = err=>{
+                console.error("socket encountered error.. closing", err);
+                this.ws.close();
+            };
+        },
 
         //deprecated by newsession?
         selectNewApp(app) {
