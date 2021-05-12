@@ -450,7 +450,8 @@ exports.updateRelatedPaperMag = function(rec,cb) {
     if(!config.mag) cb("no mag config!!");
     if(!rec.relatedPapers) rec.relatedPapers = []; //not sure if we need this or not
     rec.markModified("relatedPapers");
-    if(!rec.readMe) query = exports.generateQuery(rec.name+" "+rec.desc+" "+rec.readme);
+    if(rec.readMe) query = exports.generateQuery(rec.name+" "+rec.desc+" "+rec.readme);
+    if(rec.tags.length) query = exports.generateQuery(rec.name+" "+rec.tags.join(" "));
     else query = exports.generateQuery(rec.name+" "+rec.desc);
     if(!query) {
         rec.relatedPapers = [];
