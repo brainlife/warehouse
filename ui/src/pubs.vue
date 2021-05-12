@@ -96,6 +96,11 @@ export default {
                     pub.license,
                     ...pub.tags,
                 ];
+                if(pub.authors.length) {
+                    pub.authors.forEach(author=>{
+                        stuff.push(author.fullname);
+                    });
+                }
                 const text = stuff.filter(thing=>!!thing).join(" ").toLowerCase();
                 return tokens.every(token=>text.includes(token));
             });
