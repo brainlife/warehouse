@@ -30,7 +30,7 @@
     "katex": "^0.6.0",
     "lodash": "^4.17.21",
     "md5": "^2.3.0",
-    "node-forge": "^0.9.2",
+    "node-forge": "^0.10.0",
     "perfect-scrollbar": "^1.5.1",
     "plotly.js": "^1.58.4",
     "popper.js": "^1.16.1",
