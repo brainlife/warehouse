@@ -105,6 +105,8 @@ export default {
             },
             subjects: [], //subjects to download
 
+            jwt: null, //stripped down jwt to use
+
             config: Vue.config,
         }
     },
@@ -114,35 +116,24 @@ export default {
     },
 
     computed: {
-        /*
-        json() {
-            if(!this.query) return null;
-            return JSON.stringify(this.query);
-        },
-        */
-
-        headers() {
-            let headers = "-H 'Content-Type: application/json'";
-            if(Vue.config.jwt) headers += " -H 'Authorization: Bearer "+Vue.config.jwt+"'";
-            return headers;
-        },
 
         single_dataset_url() {
             if(this.query && this.query._id && this.query._id.length == 1) {
                 const dataset_id = this.query._id[0];
                 let url = Vue.config.api+'/dataset/download/'+dataset_id;
-                if(Vue.config.user) url += '?at='+Vue.config.jwt; //guest can download without jwt for published datasets
+                if(Vue.config.user) url += '?at='+this.jwt; //guest can download without jwt for published datasets
                 return url;
             }
             return null; 
         },
+
         downscript() {
-            return `curl ${this.headers} -d '${JSON.stringify({find: this.query})}' -X POST "${Vue.config.api}/dataset/downscript?limit=0" | bash`
+            let headers = "-H 'Content-Type: application/json' -H 'Authorization: Bearer "+this.jwt+"'";
+            return `curl ${headers} -d '${JSON.stringify({find: this.query})}' -X POST "${Vue.config.api}/dataset/downscript?limit=0" | bash`
         },
     },
 
     mounted() {
-        //console.log("listening downscript.open");
         this.$root.$on("downscript.open", opts=>{
             this.query = opts.query;
 
@@ -157,7 +148,13 @@ export default {
             } else {
                 this.page = "download";
             }
-            this.$refs.modal.show()
+
+            //issue download token
+            console.log("issuing token for download");
+            this.$http.post(Vue.config.auth_api+"/refresh", {gids: [], scopes: {}, clearProfile: true}).then(res=>{
+                this.jwt = res.data.jwt;
+                this.$refs.modal.show()
+            }).catch(console.error);
         });
     },
 
@@ -241,34 +238,36 @@ export default {
 </script>
 <style scoped>
 .downscript {
-font-family: monospace; 
-background-color: #eee; 
-white-space: pre-wrap; 
-font-size: 68%;
-padding: 10px;
-overflow: auto;
-margin-bottom: 10px;
-width: 100%;
-height: 180px;
-border: none;
-color: #000; /*only needed for firefox?*/
+    font-family: monospace; 
+    background-color: #eee; 
+    white-space: pre-wrap; 
+    font-size: 68%;
+    padding: 10px;
+    overflow: auto;
+    margin-bottom: 10px;
+    width: 100%;
+    height: 180px;
+    border: none;
+    color: #000; /*only needed for firefox?*/
 }
 
 .downscript-area {
-position: relative;
+    position: relative;
 }
 .downscript-copy {
-position: absolute;
-right: 20px;
-top: 10px;
-opacity: 0;
-transition: opacity 0.3s;
+    position: absolute;
+    right: 20px;
+    top: 10px;
+    opacity: 0;
+    transition: opacity 0.3s;
 }
 .downscript-area:hover .downscript-copy {
-opacity: 1;
+    opacity: 1;
 }
 .code {
-padding: 10px;
-background-color: #eee;
+    padding: 10px;
+    background-color: #eee;
 }
 </style>
+
+

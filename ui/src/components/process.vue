@@ -65,7 +65,7 @@
                                 <span style="opacity: 0.5;">
                                     <small v-for="(tag,idx) in input.tags" :key="idx"> | {{tag}} </small>
                                 </span>
-                                <b-badge variant="danger">Removed</b-badge>
+                                <b-badge variant="danger">Unstaged</b-badge>
                             </div>
                             <small class="ioid" v-if="task.app">({{compose_desc(task.app.inputs, input.id)}})</small>
                         </div>
@@ -162,9 +162,12 @@
                                 </ul>
                             </div>
 
-                            <b-collapse :id="task._id+'.'+output.id" style="margin-top: 8px; margin-right: 20px;">
+                            <b-collapse :id="task._id+'.'+output.id" style="margin-top: 8px;">
                                 <div class="subtitle">Metadata</div>
-                                <pre style="max-height: 300px; background-color: #eee;">{{JSON.stringify(output.meta, null, 4)}}</pre>
+                                <pre style="max-height: 300px; background-color: #eee; padding: 5px 10px;">{{JSON.stringify(output.meta, null, 4)}}</pre>
+                                <!--
+                                <pre v-if="task.product && task.product[output.id] && task.product[output.id].meta" style="max-height: 300px; background-color: #eee; padding: 5px 10px;">{{JSON.stringify(task.product[output.id].meta, null, 4)}}</pre>
+                                -->
                             </b-collapse>
 
                             <dtv :task="output.dtv_task" :output="output" v-if="task.status == 'finished' && output.dtv_task"/>
@@ -371,6 +374,7 @@ export default {
             var datasets = [];
             this.tasks.forEach(task=>{
                 if(task.status == "removed") return;
+                if(task.status == "stop_requested") return;
                 if(task.status == "stopped") return;
                 if(task.status == "failed") return; 
                 if(task.follow_task_id) return; //don't let user select validator directly (we will fake it)
@@ -385,6 +389,13 @@ export default {
                         output = output.dtv_task.config._outputs[0];
                         t.name = task.name + " (validated)";
                     }
+
+                    /*
+                    //merge product.json content to output meta
+                    if(task.product && task.product[output.id] && task.product[output.id].meta) {
+                        Object.assign(output.meta, task.product[output.id].meta);
+                    }
+                    */
 
                     datasets.push({
                         task: t,
@@ -749,8 +760,20 @@ export default {
             let ids = tasks.map(task=>task._id);
             this.$http.get(Vue.config.amaretti_api+'/task/product/', {params: {ids}}).then(res=>{
                 res.data.forEach(rec=>{
+                    if(!rec.product) return;
                     let task = tasks.find(t=>t._id == rec.task_id);
                     Vue.set(task, 'product', rec.product);
+
+                    /* //let's do this in amaretti/task
+                    //apply product to _output.meta so subsequent jobs gets correct set of meta
+                    if(!task.config._outputs) return;
+                    task.config._outputs.forEach(output=>{
+                        if(!output.meta) output.meta = {};
+                        if(rec.product[output.id] && rec.product[output.id].meta) {
+                            Object.assign(output.meta, rec.product[output.id].meta);
+                        }
+                    });
+                    */
                 });
             });
         },

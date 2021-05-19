@@ -266,26 +266,6 @@ export default {
             });
         },
 
-        /*
-        // wait a bit (unless interrupted by more keystrokes), then calls fetch_datasets
-        debounce_fetch_datasets(input, ps) {
-            let debounce;
-            // return a new fetch_datasets event that can be called for each input datatype
-            // params + cb are input from select2
-            return (params, cb) => {
-                // debounce handling without lodash
-                if (debounce) {
-                    clearTimeout(debounce);
-                    debounce = null;
-                }
-                debounce = setTimeout(()=>{
-                    debounce = null;
-                    this.fetch_datasets(input, ps, params, cb);
-                }, 200);
-            }
-        },
-        */
-
         generate_config(download_task_id) {
             var config = Object.assign({}, this.app.config);
             var app = this.app;

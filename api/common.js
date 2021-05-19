@@ -736,7 +736,7 @@ exports.split_product = function(task_product, outputs) {
     //create global product (everything except output.id keys)
     let global_product = Object.assign({}, task_product); //copy
     if(!Array.isArray(outputs)) {
-        console.error("broken outputs info");
+        console.error("outputs should be an array.. given:", outputs);
         return {};
     }
     outputs.forEach(output=>{

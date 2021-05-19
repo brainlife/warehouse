@@ -286,7 +286,7 @@
                                 <mag :paper="paper"/>
                             </div>
                             <center>
-                                <b-button size="sm" v-if="relatedPaperLimit != -1" variant="outline-secondary" @click="relatedPaperLimit = -1">&nbsp;&nbsp;&nbsp;Show More&nbsp;&nbsp;&nbsp;</b-button> 
+                                <b-button size="sm" v-if="relatedPaperLimit != -1" variant="outline-secondary" @click="relatedPaperLimit = -1">&nbsp;&nbsp;&nbsp;Show More Related Articles&nbsp;&nbsp;&nbsp;</b-button> 
                             </center>
                         </b-col>   
                     </b-row>    

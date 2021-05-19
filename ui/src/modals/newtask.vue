@@ -338,6 +338,11 @@ export default {
                     });
                 });
                 app.outputs.forEach(output=>{
+                    if(!output.datatype) {
+                        //happens on dev..
+                        console.error(output);
+                        return; 
+                    }
                     if(output.datatype.name.toLowerCase().includes(l_filter)) match = true;
                     if(output.datatype_tags) output.datatype_tags.forEach(tag=>{
                         if(tag.toLowerCase().includes(l_filter)) match = true;

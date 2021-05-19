@@ -216,7 +216,7 @@
                     <span class="form-header">Configuration</span>
                     <div v-for="(config, key) in app.config" :for="key">
                         <div v-if="config.type != 'input'">
-                            <icon name="chevron-right" scale="0.6" style="opacity: 0.5;"/> <b>{{key}}</b>: {{config.type}} 
+                            <icon name="chevron-right" scale="0.6" style="opacity: 0.5;"/> <b>{{key}}</b><span v-if="config.optional">?</span>: {{config.type}} 
                             <span v-if="config.default" style="opacity: 0.5;"> = {{config.default}}</span><br>
 
                             <!-- for enum-->
