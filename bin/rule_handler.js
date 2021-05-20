@@ -70,14 +70,14 @@ function uniq(a) {
 }
 
 function run() {
-	db.Rules.find({
+    db.Rules.find({
         active: true,
         removed: false,
     })
     .populate('app project')
     //.sort('-create_date')  //I have to go through all rules for each loops anyway..
     .exec((err, rules)=>{
-		if(err) throw err;
+        if(err) throw err;
 
         if(!rules || rules.length == 0) {
             logger.debug("no rules to handle - sleeping for a while (10sec)");
@@ -90,7 +90,7 @@ function run() {
                 setTimeout(run, 1000*10);
             });
         }
-	});
+    });
 }
 
 function isalive(task) {
@@ -480,7 +480,7 @@ function handle_rule(rule, cb) {
         var task_stage = null;
         var task_app = null;
         var task_out = null;
-		var meta = {}; //metadata to store for archived dataset
+        var meta = {}; //metadata to store for archived dataset
         var next_tid = null;
         var stage_jwt = null;
 
@@ -716,13 +716,13 @@ function handle_rule(rule, cb) {
                 //copy some hierarchical metadata from input
                 //simialr code in ui/modal/appsubmit
                 //similar code in ui/newtask.vue
-				for(var input_id in inputs) {
-					var input = inputs[input_id];
+                for(var input_id in inputs) {
+                    var input = inputs[input_id];
                     //let's copy hierarchical metadata only
                     ["subject", "session", "run"].forEach(k=>{
                         if(!meta[k]) meta[k] = input.meta[k]; //use first one
                     });
-				}
+                }
 
                 //we need to use the subject/session for the current group as input might have come from other subject/session
                 meta.subject = group.subject;
@@ -754,7 +754,7 @@ function handle_rule(rule, cb) {
                     }
                 );
 
-				rule.app.outputs.forEach(output=>{
+                rule.app.outputs.forEach(output=>{
                     var output_req = {
                         id: output.id,
                         datatype: output.datatype,
@@ -787,8 +787,8 @@ function handle_rule(rule, cb) {
                     //handle tag passthrough
                     var tags = [];
                     if(output.datatype_tags_pass) {
-						//TODO - how is multi input handled here?
-            			var dataset = inputs[output.datatype_tags_pass];
+                        //TODO - how is multi input handled here?
+                        var dataset = inputs[output.datatype_tags_pass];
                         if(!dataset) logger.error("datatype_tags_pass set but can't find the input:"+output.datatype_tags_pass);
                         if(dataset && dataset.datatype_tags) {
                             tags = dataset.datatype_tags; //could be null?
@@ -841,7 +841,7 @@ function process_input_config(app, input_info, _app_inputs) {
             var input = app.inputs.find(it=>it.id == node.input_id);
             if(input.multi) out[k] = [];
 
-			//TODO - multi could have more than 1 dataset... (let's just process first one for now?)
+            //TODO - multi could have more than 1 dataset... (let's just process first one for now?)
             var dataset = _app_inputs.find(d=>d.id == node.input_id);
             if(!dataset) continue; //optional input that's ignored?
 
