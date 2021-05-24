@@ -17,7 +17,7 @@
                         </span>
                     </div>
                     <span style="opacity: 0.2;">|</span>
-                    <icon name="id-badge" scale="0.7" style="opacity: 0.6"/> {{project.group_id}}
+                    {{project.group_id}}
                 </div>
                 <span class="title">
                     {{project.name}} 
@@ -32,7 +32,7 @@
         </b-col>
         <b-col md="1">
             <b-badge pill class="bigpill" :title="'Project Create Date '+project.create_date">
-                <icon name="calendar" style="opacity: 0.4;"/>&nbsp;&nbsp;&nbsp;{{new Date(project.create_date).toLocaleDateString()}}
+                &nbsp;&nbsp;&nbsp;{{new Date(project.create_date).toLocaleDateString()}}
             </b-badge>
         </b-col>
         <b-col md="1" style="font-size: 85%; margin-top: 2px;">
