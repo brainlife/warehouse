@@ -121,8 +121,10 @@ var projectSchema = mongoose.Schema({
 
         //app usage stats updated by common.update_project_stats
         apps: [{
+            count: Number, //number of time this app was executed
             app: {type: mongoose.Schema.Types.ObjectId, ref: "Apps"},
-
+            task: mongoose.Schema.Types.Mixed, //sample task (first find)
+            /*
             //for quick reference
             name: String,
             doi: String,
@@ -130,10 +132,10 @@ var projectSchema = mongoose.Schema({
             //service/branch used
             service: String,
             service_branch: String,
-            count: Number, //number of time this app was executed
 
             //TODO - does dataset prov store this somewhere?
             //total_walltime: Number, //msec for total walltime spent for this app
+            */
         }],
 
         //count of pipeline rules (updated by common.update_project_stats)

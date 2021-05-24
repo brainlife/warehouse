@@ -1022,13 +1022,16 @@ exports.update_project_stats = async function(project, cb) {
         let app_stats = [];
         recs.forEach(rec=>{
             app_stats.push({
-                app: rec.app._id,
+                count: rec.count,
+                app: rec.app,
+                task: rec.task,
+                /*
                 name: rec.app.name,
                 doi: rec.app.doi,
 
                 service: rec.service,
                 service_branch: rec.service_branch,
-                count: rec.count,
+                */
             });
         })
 

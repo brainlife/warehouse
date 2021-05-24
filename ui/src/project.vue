@@ -95,7 +95,6 @@
                 <b-alert :show="selected.access == 'private' && selected.listed" style="border-radius: 0px; color: #888;" variant="secondary">
                     This project is listed for all users but only the members of the project can access its datasets, processes, and pipelines.
                 </b-alert>
-
             
                 <!--datatype box-->
                 <div class="side" v-if="selected.stats">
@@ -201,28 +200,24 @@
 
                     <div class="box" v-if="selected.stats.apps && selected.stats.apps.length > 0">
                         <span class="form-header">App Usage</span>     
-                        <p><small>Data archived in this project was generated using the following set of Apps</small></p>                        
-                        <table class="table table-sm">
-                            <thead>
-                                <tr>
-                                    <th>Name</th>
-                                    <th>DOI</th>
-                                    <th>Github</th>
-                                    <th>Branch</th>
-                                    <th>Count</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr v-for="rec in selected.stats.apps" :key="rec._id">
-                                    <td>{{rec.name}}</td>
-                                    <td><a :href="'https://doi.org/'+rec.doi" :target="'doi_'+rec.doi">{{rec.doi}}</a></td>
-                                    <td><a :href="'https://github.com/'+rec.service+'/tree/'+(rec.service_branch||'master')" :target="'github_'+rec.service">{{rec.service}}</a></td>
-                                    <td>{{rec.service_branch||'master'}}</td>
-                                    <td>{{rec.count}}</td>
-                                </tr>
-                            </tbody>
-                        </table>
-
+                        <p><small>The following Apps were used to generate the data in this project</small></p>                        
+                        <b-row style="border-bottom: 1px solid #eee; margin-bottom: 10px;">
+                            <b-col cols="10"><small>Apps</small></b-col>
+                            <b-col cols="2"><small>Execution Count</small></b-col>
+                        </b-row>
+                        <b-row v-for="rec in selected.stats.apps" :key="rec._id">
+                            <b-col cols="10">
+                                <div style="margin-bottom: 10px; border-left: 3px solid #f0f0f0; border-bottom: 1px solid #eee;">
+                                    <app :appid="rec.app" :branch="rec.task.service_branch" :compact="true" :showDoi="true">
+                                        <!--
+                                        <taskconfig :task="rec.task" style="margin: 10px;"/>
+                                        -->
+                                    </app>
+                                </div>
+                            </b-col>
+                            <b-col cols="2"> <small>{{rec.count}}</small> </b-col>
+                        </b-row>
+                        <br>
                     </div>
 
                     <div v-if="resource_usage && total_walltime > 3600*1000" class="box">      
@@ -244,7 +239,8 @@
                         <div class="box" v-if="showCitations">
                             <span class="form-header">Citations</span>
                             <p><small>Please use the following citations to cite the Apps used by this project.</small></p>
-                            <p v-for="app in uniqueApps" :key="app._id">
+                            <!-- <p v-for="app in uniqueApps" :key="app._id"> -->
+                            <p v-for="app in selected.stats.apps" :key="app._id">
                                 <icon name="robot" style="opacity: 0.5;"/> <b>{{app.name}}</b><br>
                                 <citation :doi="app.doi"/> 
                             </p>
@@ -348,9 +344,7 @@ import datatypetag from '@/components/datatypetag'
 import participants from '@/components/participants'
 import doibadge from '@/components/doibadge'
 import mag from '@/components/mag'
-
-
-
+import app from '@/components/app'
 
 import { Plotly } from 'vue-plotly'
 
@@ -380,6 +374,7 @@ export default {
         participants,
         mag,
         doibadge,
+        app,
 
         'groupAnalysis': ()=> import('@/components/groupanalysis'),
 
@@ -452,6 +447,7 @@ export default {
     },
 
     computed: {
+        /*
         uniqueApps() {
             if(!this.selected ||
                 !this.selected.stats ||
@@ -465,6 +461,7 @@ export default {
             });
             return apps;
         }
+        */
     },
 
     mounted() {

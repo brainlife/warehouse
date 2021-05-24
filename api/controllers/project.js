@@ -18,6 +18,7 @@ const common = require('../common');
  * @apiParam {Object} [find]    Optional Mongo find query - defaults to {}
  * @apiParam {Object} [sort]    Optional Mongo sort object - defaults to {}
  * @apiParam {String} [select]  Fields to load - multiple fields can be entered with %20 as delimiter
+ * @apiParam {String} [populate] Relational fields to populate
  * @apiParam {Number} [limit]   Optional Maximum number of records to return - defaults to 0(no limit)
  * @apiParam {Number} [skip]    Optional Record offset for pagination
  *
@@ -26,21 +27,19 @@ const common = require('../common');
  * @apiSuccess {Object}         List of projects (maybe limited / skipped) and total count
  */
 router.get('/', common.jwt({credentialsRequired: false}), (req, res, next)=>{
-    //console.log("project get recieved--------------------------------------------");
     var find = {};
     if(req.query.find) find = JSON.parse(req.query.find);
-    //common.cast_mongoid(find);
 
     var skip = req.query.skip||0;
     let limit = req.query.limit||100;
 
-    //always load user_id so that we can compute canedit properly
     var select = null;
-    if(req.query.select) {
-        select = req.query.select;
-    }
-
-    if(req.user && req.user.scopes.warehouse && ~req.user.scopes.warehouse.indexOf('admin') && req.query.admin) {
+    if(req.query.select) select = req.query.select;
+    
+    if(req.user && 
+        req.user.scopes.warehouse && 
+        ~req.user.scopes.warehouse.indexOf('admin') && 
+        req.query.admin) {
         //admin requested admin priviledge return all
     } else if(req.user) {
         //only allow querying for public, or private project that user owns
@@ -57,14 +56,12 @@ router.get('/', common.jwt({credentialsRequired: false}), (req, res, next)=>{
         find.access = "public"; //guest can only see public projects
     }
 
-    //console.log("hello");
-    //console.dir(find.$and[0].$and[0]);
-
     db.Projects.find(find)
     .select(select)
     .skip(+skip)
     .limit(+limit)
     .sort(req.query.sort || '_id')
+    .populate(req.query.populate || '')
     .lean()
     .exec((err, recs)=>{
         if(err) return next(err);
@@ -77,7 +74,6 @@ router.get('/', common.jwt({credentialsRequired: false}), (req, res, next)=>{
         });
     });
 });
-
 
 /**
  * @apiGroup Project
