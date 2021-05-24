@@ -174,6 +174,7 @@ export default {
 
         hasTensor() {
             //fa, md, rd, ad
+            if(!this.product.meta) return false;
             if(this.product.meta.tensor_measures) return true; //deprecated
             if(this.product.meta.columns.includes("fa_1")) return true;
             if(this.product.meta.columns.includes("fa_mean")) return true;
@@ -182,6 +183,7 @@ export default {
 
         hasNoddi() {
             //ndi, isovf, odi
+            if(!this.product.meta) return false;
             if(this.product.meta.noddi_measures) return true; //deprecated
             if(this.product.meta.columns.includes("ndi_1")) return true;
             if(this.product.meta.columns.includes("ndi_mean")) return true;
@@ -190,6 +192,7 @@ export default {
 
         hasDki() {
             //ga, mk, ak, rk
+            if(!this.product.meta) return false;
             if(this.product.meta.columns.includes("ga_1")) return true;
             if(this.product.meta.columns.includes("ga_mean")) return true;
             return false;

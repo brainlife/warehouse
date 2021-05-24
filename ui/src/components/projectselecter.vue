@@ -1,6 +1,6 @@
 <template> 
 <div v-if="options">
-    <b-alert show variant="secondary" v-if="options.length == 0 && required">You don't have access to any project that contains this datatype.</b-alert>
+    <b-alert show variant="secondary" v-if="options.length == 0 && required">You don't have access to any project that contains this datatype. Please try running Apps that generate this datatype and archive the output.</b-alert>
     <!--- i don't think required works with v-select-->
     <v-select v-else 
         :options="options" 

@@ -7,7 +7,11 @@
             <icon name="times" class="clear-search" scale="1.5" @click="clearQuery()" v-if="query != ''"/>
         </div>
     </div>
-    <div class="mode-toggler onRight" v-if="my_projects">
+    <div v-if="!projects" style="margin: 40px; opacity: 0.5; margin-top: 50px;">
+        <h3><icon name="cog" spin scale="2"/> Loading ...</h3>
+    </div>
+
+    <div class="mode-toggler onRight" v-if="projects">
         <b-form-group>
         <b-form-radio-group v-model="mode" buttons button-variant="outline-secondary">
             <b-form-radio value="tile"><icon name="th"/></b-form-radio>
@@ -15,38 +19,45 @@
         </b-form-radio-group>
         </b-form-group>
     </div>
-    <div class="page-content" v-if="my_projects">
-        <div v-if="query.length && !other_projects.length && !my_projects.length">
+    <div class="page-content" v-if="projects" @scroll="handleScroll" ref="scrolled">
+        <div v-if="query.length && !projects.length">
             <p style="padding: 20px">No matching Projects</p>
         </div>
-        <div v-if="loading" style="margin: 40px; opacity: 0.5"><h3><icon name="cog" spin scale="2"/> Loading ..</h3></div>
+
+        <!--my projects-->
         <div v-if="config.user" class="position: relative">
             <h4 class="group-title">My Projects</h4>
             <div style="padding: 10px;" v-if="mode == 'tile'">
-                <div v-for="project in my_projects" :key="project._id" ref="project">
-                    <projectcard :project="project"/>
+                <div v-for="project in projects.filter(p=>p._mine)" :key="project._id"
+                    ref="project" :id="project._id" class="projectcard-holder">
+                    <projectcard :project="project" v-if="project._visible"/>
                 </div>
             </div>
             <div style="padding: 10px;" v-if="mode == 'list'">
-                <div v-for="project in my_projects" :key="project._id" ref="project">
-                    <project :project="project"/>
+                <div v-for="project in projects.filter(p=>p._mine)" :key="project._id" 
+                    ref="project" :id="project._id" class="project-holder">
+                    <project :project="project" v-if="project._visible"/>
                 </div>
             </div>
-            <p v-if="my_projects.length == 0 && query == ''" style="margin: 20px;">
+            <p v-if="projects.filter(p=>p._mine).length == 0 && query == ''" style="margin: 20px;">
                 Please create your project by clicking on the button at the bottom left corner of this page.
             </p>
-            <br v-if="my_projects.length > 0" clear="both">
+            <br v-if="projects.filter(p=>p._mine).length" clear="both">
         </div>
-        <div v-if="other_projects && other_projects.length > 0" style="position: relative;">
+
+        <!--other projects-->
+        <div v-if="projects && projects.filter(p=>!p._mine).length" style="position: relative;">
             <h4 class="group-title">Public<small>/Protected</small> Projects</h4>
             <div style="padding: 10px;" v-if="mode == 'tile'">
-                <div v-for="project in other_projects" :key="project._id" ref="project">
-                    <projectcard :project="project"/>
+                <div v-for="project in projects.filter(p=>!p._mine)" :key="project._id"
+                    ref="project" :id="project._id" class="projectcard-holder">
+                    <projectcard :project="project" v-if="project._visible"/>
                 </div>
             </div>
             <div style="padding: 10px;" v-if="mode == 'list'">
-                <div v-for="project in other_projects" :key="project._id" ref="project">
-                    <project :project="project"/>
+                <div v-for="project in projects.filter(p=>!p._mine)" :key="project._id" 
+                    ref="project" :id="project._id" class="project-holder">
+                    <project :project="project" v-if="project._visible"/>
                 </div>
             </div>
             <br clear="both">
@@ -71,10 +82,8 @@ export default {
     components: { projectcard, project },
     data () {
         return {   
-            my_projects: null,
-            other_projects: null,
+            projects: null, //all projects
 
-            loading: false,
 
             query: "",
             mode: localStorage.getItem("projects.mode")||"tile",
@@ -85,16 +94,28 @@ export default {
     mounted() {
         this.query = sessionStorage.getItem("projects.query")||"";
         this.load();
-
     },
 
     watch: {
         mode() {
+            this.$nextTick(()=>{
+                this.handleScroll();
+            });
             localStorage.setItem("projects.mode", this.mode);
         }
     },
 
     methods: {
+        handleScroll() {
+            if(!this.$refs.scrolled) return;
+            var scrolltop = this.$refs.scrolled.scrollTop;
+            var height = this.$refs.scrolled.clientHeight;
+            this.$refs.project.forEach(e=>{
+                const project = this.projects.find(p=>p._id == e.id);
+                if(project) Vue.set(project, '_visible', (e.offsetTop-height <= scrolltop));
+            });
+        },
+        
         clearQuery() {
             this.query = ''
             this.change_query();
@@ -118,31 +139,31 @@ export default {
 
             //load all projects that user has summary access (including removed ones so we can open it)
             this.my_projects = null;
-            this.loading = true;
+            this.projects = null;
             this.$http.get('project', {params: {
                 find: JSON.stringify({$and: ands}),
                 limit: 500, //TODO implement paging eventually
                 select: '-readme -meta -stats.resources',
                 sort: 'name',
             }}).then(res=>{
-                this.my_projects = [];
-                this.other_projects = [];
+                this.projects = [];
                 res.data.projects.forEach(p=>{
                     if(Vue.config.user && (
                         p.admins.includes(Vue.config.user.sub) || 
                         p.members.includes(Vue.config.user.sub) || 
                         p.guests.includes(Vue.config.user.sub))
                     ) {
-                        this.my_projects.push(p);
-                    } else {
-                        this.other_projects.push(p);
+                        p._mine = true;
                     }
+                    this.projects.push(p);
                 });
-                this.loading = false;
+                this.$nextTick(()=>{
+                    this.handleScroll();
+                });
             }).catch(err=>{
                 console.error(err);
                 this.$notify({type: 'error', text: err.response.data.message()});
-                this.loading = false;
+                this.projects = [];
             });
         },
 
@@ -168,13 +189,21 @@ export default {
 </script>
 
 <style scoped>
+.project-holder {
+    height: 85px;
+}
+.projectcard-holder {
+    width: 330px;
+    height: 190px;
+    display: inline-block;
+}
 .mode-toggler {
-position: fixed;
-top: 60px;
-padding-right: 30px;
-z-index: 2;
-opacity: 0.5;
-transition: opacity 0.3s;
+    position: fixed;
+    top: 60px;
+    padding-right: 30px;
+    z-index: 2;
+    opacity: 0.5;
+    transition: opacity 0.3s;
 }
 .mode-toggler:hover {
 opacity: 1;

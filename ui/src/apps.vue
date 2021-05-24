@@ -41,7 +41,7 @@
         </div>
 
     </div>
-    <div class="page-content" @scroll="handle_scroll" ref="scrolled">
+    <div class="page-content" @scroll="handleScroll" ref="scrolled">
         <div v-if="loading" style="margin: 40px; opacity: 0.5"><h3><icon name="cog" spin scale="2"/> Loading ..</h3></div>
         <div v-else-if="apps">
             <h3 v-if="apps.length == 0" style="opacity: 0.8; margin: 40px;" variant="secondary">No matching Apps</h3>
@@ -261,7 +261,7 @@ export default {
                     if(document.location.hash) {
                         this.jump(document.location.hash.substring(1));
                     }
-                    this.handle_scroll();
+                    this.handleScroll();
                     let grouplist = this.$refs["group-list"];
                     ps = new PerfectScrollbar(grouplist);
                     grouplist.scrollTop = 0;
@@ -280,7 +280,7 @@ export default {
             document.location="#"+tag;
         },
 
-        handle_scroll() {
+        handleScroll() {
             if(!this.$refs.scrolled) return;
             var scrolltop = this.$refs.scrolled.scrollTop;
             var height = this.$refs.scrolled.clientHeight;
@@ -313,8 +313,6 @@ export default {
                     category.offsetTop-300 > scrolltop+height) return; //out of view
                 this.visible_category.push(tag);
             });
-
-            //console.dir(this.visible_category);
         },
 
         change_query_debounce() {

@@ -84,21 +84,17 @@ export default {
 <style scoped>
 
 .projectcard {
-border: none;
-cursor: pointer;
-box-shadow: 2px 2px 3px rgba(0,0,0,0.05);
-background-color: white;
-position: relative;
-/*
-transition: filter 0.5s;
-filter: saturate(20%);
-*/
+    border: none;
+    cursor: pointer;
+    box-shadow: 2px 2px 3px rgba(0,0,0,0.05);
+    background-color: white;
+    position: relative;
 }
 .datatypes {
-padding: 0px 5px;
-margin-bottom: 0px;
-overflow: hidden; 
-font-size: 85%;
+    padding: 0px 5px;
+    margin-bottom: 0px;
+    overflow: hidden; 
+    font-size: 85%;
 }
 .avatar {
 float: right;

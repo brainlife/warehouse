@@ -26,20 +26,24 @@
             </div>
         </b-col>
         <b-col md="3">
+            <!--1-3sec-->
             <div class="datatypes" v-if="project.stats && project.stats.datasets" style="display: inline-block;">
                 <datatypetag v-for="datatype in project.stats.datasets.datatypes_detail" :key="datatype._id" :datatype="datatype.type" style="font-size: 85%; margin-right: 2px"/>
             </div>
         </b-col>
         <b-col md="1">
+            <!--0.25sec-->
             <b-badge pill class="bigpill" :title="'Project Create Date '+project.create_date">
                 <icon name="calendar" style="opacity: 0.4;"/>&nbsp;&nbsp;&nbsp;{{new Date(project.create_date).toLocaleDateString()}}
             </b-badge>
         </b-col>
         <b-col md="1" style="font-size: 85%; margin-top: 2px;">
+            <!--takes about 1sec-->
             <stateprogress v-if="project.stats && project.stats.instances && !project.openneuro" 
                 :states="project.stats.instances" height="15px"/>
         </b-col>
         <b-col md="1" v-if="config.user">
+            <!--takes about 1.25sec-->
             <div class="contacts">
                 <contact v-for="c in contacts" :key="c._id" :id="c" size="tiny" style="margin-left: -6px; margin-bottom: -4px"/>
             </div>
@@ -110,9 +114,12 @@ export default {
 
 <style scoped>
 .project {
-background-color: white;
-padding: 3px 6px;
-margin-bottom: 1px;
+    background-color: white;
+    padding: 3px 6px;
+    margin-bottom: 1px;
+
+    height: 80px;
+    overflow: hidden;
 }
 .project:hover {
 background-color: #f9f9f9;
