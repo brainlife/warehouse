@@ -710,7 +710,7 @@ let cachedContacts = null;
 exports.startContactCache = function(cb) {
     console.log("starting contactCache");
     setInterval(exports.cacheContact, 1000*60*30); //cache every 30 minutes
-    cacheContact(cb);
+    exports.cacheContact(cb);
 }
 
 exports.deref_contact = function(id) {
