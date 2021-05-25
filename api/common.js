@@ -681,35 +681,35 @@ exports.doi_put_url = function(doi, url, cb) {
     });
 }
 
+exports.cacheContact = function(cb) {
+    console.debug("caching contacts");
+    axios.get(config.auth.api+"/profile/list", {
+        params: {
+            limit: 5000, //TODO -- really!?
+        },
+        headers: { authorization: "Bearer "+config.warehouse.jwt }, //config.auth.jwt is deprecated
+    }).then(res=>{
+        if(res.status != 200) console.error("couldn't cache auth profiles. code:"+res.status);
+        else {
+            cachedContacts = {};
+            res.data.profiles.forEach(profile=>{
+                cachedContacts[profile.sub] = profile;
+            });
+            //console.log("cached profile len:", res.data.profiles.length);
+            if(cb) cb();
+        }
+    }).catch(err=>{
+        if(cb) cb(err);
+        else console.error(err);
+    });
+}
+
 //call this if you want to use API that uses contact cache
 //TODO - update cache from amqp events instead?
 let cachedContacts = null;
 exports.startContactCache = function(cb) {
-    function cacheContact(_cb) {
-        console.debug("caching contacts");
-        axios.get(config.auth.api+"/profile/list", {
-            params: {
-                limit: 5000, //TODO -- really!?
-            },
-            headers: { authorization: "Bearer "+config.warehouse.jwt }, //config.auth.jwt is deprecated
-        }).then(res=>{
-            if(res.status != 200) console.error("couldn't cache auth profiles. code:"+res.status);
-            else {
-                cachedContacts = {};
-                res.data.profiles.forEach(profile=>{
-                    cachedContacts[profile.sub] = profile;
-                });
-                //console.log("cached profile len:", res.data.profiles.length);
-                if(_cb) _cb();
-            }
-        }).catch(err=>{
-            if(_cb) _cb(err);
-            else console.error(err);
-        });
-    }
-
     console.log("starting contactCache");
-    setInterval(cacheContact, 1000*60*30); //cache every 30 minutes
+    setInterval(exports.cacheContact, 1000*60*30); //cache every 30 minutes
     cacheContact(cb);
 }
 
