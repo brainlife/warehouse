@@ -77,6 +77,7 @@ export default {
             loading: false,
 
             query: "",
+            datatype_name : {},
             mode: localStorage.getItem("projects.mode")||"tile",
             config: Vue.config,
         }
@@ -101,6 +102,22 @@ export default {
         },
 
         load() {
+
+            if(!this.datatype_name.length){
+                console.log("Getting datatypes");
+                this.$http.get('/datatype').then(res=>{
+                    res.data.datatypes.forEach(entry=> {
+                        const key = ""+entry.name;
+                        this.datatype_name[key] = entry._id;
+                    });
+                }).catch(err=>{
+                    console.error(err);
+                });
+            }
+
+            console.log(this.datatype_name);
+            console.log(Object.getOwnPropertyNames(this.datatype_name));
+
             let ands = [
                 {removed: false, "openneuro": {$exists: false}},
             ];
