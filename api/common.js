@@ -423,9 +423,9 @@ exports.load_github_detail = function(service_name, cb) {
 exports.generateQuery = function(str) {
     const alphastr = str.replace(/[^a-z ]/gi, "");
     const cleanstr = stopwords.cleanText(alphastr);
-    const queries = cleanstr.split(' ').filter(e=>!!e).map(word=>`W='${word}'`);
+    const queries = cleanstr.split(' ').filter(e=>!!e).map(word=>`AW='${word}'`);
     if(queries.length == 0) return null;
-    return "And(OR("+queries.join(',')+"),Composite(F.FN=='neuroscience'))"
+    return "And(OR("+queries.join(',')+"),Composite(OR(F.FN=='neuroscience', F.FN=='neuroimaging')))"
 }
 
 exports.getRelatedPaper = function(query) {
