@@ -107,8 +107,9 @@ export default {
                 console.log("Getting datatypes");
                 this.$http.get('/datatype').then(res=>{
                     res.data.datatypes.forEach(entry=> {
-                        const key = ""+entry.name;
-                        this.datatype_name[key] = entry._id;
+                        const keyName = entry.name;
+                        const value = entry._id;
+                        this.datatype_name[keyName] = value;
                     });
                 }).catch(err=>{
                     console.error(err);
@@ -116,7 +117,6 @@ export default {
             }
 
             console.log(this.datatype_name);
-            console.log(Object.getOwnPropertyNames(this.datatype_name));
 
             let ands = [
                 {removed: false, "openneuro": {$exists: false}},
