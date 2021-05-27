@@ -2,7 +2,7 @@
 //TODO switch to axios!
 const request = require('request');
 const rp = require('request-promise-native');
-const stopwords=require('n-stopwords')(['en']);
+const stopwords = require("keyword-extractor");
 const tmp = require('tmp');
 const mkdirp = require('mkdirp');
 const path = require('path');
@@ -19,7 +19,7 @@ const config = require('./config');
 const db = require('./models');
 const mongoose = require('mongoose');
 
-stopwords.add('undefined');
+
 
 //TODO - user needs to call redis.quit() to quit?
 //exports.redis = redis.createClient(config.redis.port, config.redis.server);
@@ -421,9 +421,13 @@ exports.load_github_detail = function(service_name, cb) {
 }
 
 exports.generateQuery = function(str) {
-    const alphastr = str.replace(/[^a-z ]/gi, "");
-    const cleanstr = stopwords.cleanText(alphastr);
-    const queries = cleanstr.split(' ').filter(e=>!!e).map(word=>`AW='${word}'`);
+    let cleanstr = stopwords.extract(str,{
+        language:"english",
+        remove_digits: true,
+        return_changed_case:true,
+        remove_duplicates: true
+    });
+    const queries = cleanstr.map(word=>`AW='${word}'`);
     if(queries.length == 0) return null;
     return "And(OR("+queries.join(',')+"),Composite(OR(F.FN=='neuroscience', F.FN=='neuroimaging')))"
 }
