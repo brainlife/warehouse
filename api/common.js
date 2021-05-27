@@ -425,11 +425,20 @@ exports.generateQuery = function(str) {
         language:"english",
         remove_digits: true,
         return_changed_case:true,
-        remove_duplicates: true
+        remove_duplicates: true,
     });
-    const queries = cleanstr.map(word=>`AW='${word}'`);
+    /* remove_dupicates doesn't work*/
+    const queries = cleanstr.filter((x, i, a) => a.indexOf(x) == i).join();
     if(queries.length == 0) return null;
-    return "And(OR("+queries.join(',')+"),Composite(OR(F.FN=='neuroscience', F.FN=='neuroimaging')))"
+    let params = {
+        query : queries,
+        complete : 1
+    };
+    const headers = {
+        'Ocp-Apim-Subscription-Key': config.mag.subscriptionKey,
+        'User-Agent': 'brainlife',
+    };
+    return axios.get("https://api.labs.cognitive.microsoft.com/academic/v1.0/interpret",{headers,params});
 }
 
 exports.getRelatedPaper = function(query) {
@@ -448,15 +457,26 @@ exports.getRelatedPaper = function(query) {
     return axios.get("https://api.labs.cognitive.microsoft.com/academic/v1.0/evaluate",{headers,params});
 }
 
+
 exports.updateRelatedPaperMag = function(rec,cb) {
     let query;
     console.log("--- %s %s", rec.name, rec._id.toString());
     if(!config.mag) cb("no mag config!!");
     if(!rec.relatedPapers) rec.relatedPapers = []; //not sure if we need this or not
     rec.markModified("relatedPapers");
-    if(rec.readMe) query = exports.generateQuery(rec.name+" "+rec.desc+" "+rec.readme);
-    if(rec.tags.length) query = exports.generateQuery(rec.name+" "+rec.tags.join(" "));
-    else query = exports.generateQuery(rec.name+" "+rec.desc);
+    if(rec.readMe) query = rec.name+" "+rec.desc+" "+rec.readme
+    if(rec.tags.length) query = rec.name+" "+rec.tags.join(" ");
+    else query = rec.name+" "+rec.desc;
+
+    exports.generateQuery(query).then(res=>{
+        if(res.status != 200) return cb("failed to call mag interpret api");
+        res.data.interpretations.forEach(token=>{
+            console.log(token.rules);
+        });
+    }).catch(res=>{
+        console.log(res.toString());
+    });
+
     if(!query) {
         rec.relatedPapers = [];
         rec.save(cb);
