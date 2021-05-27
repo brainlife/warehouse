@@ -467,16 +467,21 @@ exports.updateRelatedPaperMag = function(rec,cb) {
     if(rec.readMe) query = rec.name+" "+rec.desc+" "+rec.readme
     if(rec.tags.length) query = rec.name+" "+rec.tags.join(" ");
     else query = rec.name+" "+rec.desc;
-
+    let queries = [];
     exports.generateQuery(query).then(res=>{
         if(res.status != 200) return cb("failed to call mag interpret api");
         res.data.interpretations.forEach(token=>{
-            console.log(token.rules);
+           token.rules.forEach(rule=>{
+               console.log(rule.output.value);
+               exports.getRelatedPaper(rule.output.value).then(res=>{
+                if(res.status != 200) return cb("failed to call mag api");
+                res.data.entities.forEach(paper=>console.log(paper.Ti));
+               })
+            });
         });
     }).catch(res=>{
         console.log(res.toString());
     });
-
     if(!query) {
         rec.relatedPapers = [];
         rec.save(cb);
