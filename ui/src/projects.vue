@@ -110,7 +110,6 @@ export default {
                 console.log("Getting datatypes");
                 this.$http.get('/datatype').then(res=>{
                     res.data.datatypes.forEach(datatype=>{
-                        console.log(datatype.name,datatype._id);
                         let key = datatype.name;
                         datatype_name[key] = datatype._id;
                         });
@@ -122,8 +121,15 @@ export default {
             if(this.query) {
                 //split query into each token and allow for regex search on each token
                 //so that we can query against multiple fields simultanously
+                let id;
                 this.query.split(" ").forEach(q=>{
                     if(q === "") return;
+                    let datatypeNameString = Object.keys(this.datatype_name);
+                    let key = datatypeNameString.find(name=>name.includes(q));
+                    if(key){
+                        id = this.datatype_name[key];
+                    }
+                    console.log(key,id);
                     ands.push({$or: [
                         {"name": {$regex: q, $options: 'i'}},
                         {"desc": {$regex: q, $options: 'i'}},
