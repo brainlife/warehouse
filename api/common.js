@@ -420,6 +420,7 @@ exports.load_github_detail = function(service_name, cb) {
     }).catch(cb)
 }
 
+//https://docs.microsoft.com/en-us/academic-services/knowledge-exploration-service/reference-makes-api-entity-schema?view=makes-3.0
 exports.generateQuery = function(str) {
     const alphastr = str.replace(/[^a-z ]/gi, "");
     const cleanstr = stopwords.cleanText(alphastr);

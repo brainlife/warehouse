@@ -5,41 +5,33 @@
         <small v-else>Pending secondary output..</small>
     </div>
     <div v-if="secondary">
-        <!--t1w-->
-        <secondaryAnat v-if="output.datatype == '58c33bcee13a50849b25879a'" 
+        <anat v-if="output.datatype == '58c33bcee13a50849b25879a'" 
             :task="task" :output="output" :product="product"/>
-        <!--t2w-->
-        <secondaryAnat v-else-if="output.datatype == '594c0325fa1d2e5a1f0beda5'" 
+        <anat v-else-if="output.datatype == '594c0325fa1d2e5a1f0beda5'" 
             :task="task" :output="output" :product="product"/>
-        <!--flair-->
-        <secondaryAnat v-else-if="output.datatype == '5d9cf81c0eed545f51bf75df'" 
+        <anat v-else-if="output.datatype == '5d9cf81c0eed545f51bf75df'" 
             :task="task" :output="output" :product="product"/>
-        <!--dwi-->
-        <secondaryDwi v-else-if="output.datatype == '58c33c5fe13a50849b25879b'" 
+        <dwi v-else-if="output.datatype == '58c33c5fe13a50849b25879b'" 
             :task="task" :output="output" :product="product"/>
-        <!--flair-->
-        <secondaryFunc v-else-if="output.datatype == '59b685a08e5d38b0b331ddc5'" 
+        <func v-else-if="output.datatype == '59b685a08e5d38b0b331ddc5'" 
             :task="task" :output="output" :product="product"/>
-        <!--tck-->
-        <secondaryTck v-else-if="output.datatype == '5907d922436ee50ffde9c549'" 
+        <tck v-else-if="output.datatype == '5907d922436ee50ffde9c549'" 
             :task="task" :output="output" :product="product"/>
-        <!--trk-->
-        <secondaryTck v-else-if="output.datatype == '5b956f6cd7b3f1e24e9121ce'" 
+        <tck v-else-if="output.datatype == '5b956f6cd7b3f1e24e9121ce'" 
             :task="task" :output="output" :product="product"/>
-        <!--rois-->
-        <secondaryRois v-else-if="output.datatype == '5be9ea0315a8683a39a1ebd9'" 
+        <rois v-else-if="output.datatype == '5be9ea0315a8683a39a1ebd9'" 
             :task="task" :output="output" :product="product"/>
-        <!--wmc-->
-        <secondaryWmc v-else-if="output.datatype == '5cc1d64c44947d8aea6b2d8b'" 
+        <wmc v-else-if="output.datatype == '5cc1d64c44947d8aea6b2d8b'" 
             :task="task" :output="output" :product="product"/>
-        <!--freesurfer-->
-        <secondaryFreesurfer v-else-if="output.datatype == '58cb22c8e13a50849b25882e'" 
+        <freesurfer v-else-if="output.datatype == '58cb22c8e13a50849b25882e'" 
             :task="task" :output="output" :product="product"/>
-        <!--tractprofile-->
-        <secondaryTractprofile v-else-if="output.datatype == '5965467cb09297d8d81bdbcd'" 
+        <tractprofile v-else-if="output.datatype == '5965467cb09297d8d81bdbcd'" 
             :task="task" :output="output" :product="product"/>
-        <!--ashs-->
-        <secondaryAshs v-else-if="output.datatype == '5e4c47041eafffca2efa3545'" 
+        <ashs v-else-if="output.datatype == '5e4c47041eafffca2efa3545'" 
+            :task="task" :output="output" :product="product"/>
+        <tractmeasures v-else-if="output.datatype == '599f305ad1f46fec1759f363'" 
+            :task="task" :output="output" :product="product"/>
+        <parcstats v-else-if="output.datatype == '5edd3b77c5972b8c47b3a2c3'" 
             :task="task" :output="output" :product="product"/>
 
         <!--
@@ -75,72 +67,26 @@ export default {
         }
     },
     components: {
-        'secondaryAnat': ()=> import('@/secondary/anat'),
-        'secondaryDwi': ()=> import('@/secondary/dwi'),
-        'secondaryFunc': ()=> import('@/secondary/func'),
-        'secondaryTck': ()=> import('@/secondary/tck'),
-        'secondaryRois': ()=> import('@/secondary/rois'),
-        'secondaryWmc': ()=> import('@/secondary/wmc'),
-        'secondaryFreesurfer': ()=> import('@/secondary/freesurfer'),
-        'secondaryTractprofile': ()=> import('@/secondary/tractprofile'),
-        'secondaryAshs': ()=> import('@/secondary/ashs'),
+        'anat': ()=> import('@/secondary/anat'),
+        'dwi': ()=> import('@/secondary/dwi'),
+        'func': ()=> import('@/secondary/func'),
+        'tck': ()=> import('@/secondary/tck'),
+        'rois': ()=> import('@/secondary/rois'),
+        'wmc': ()=> import('@/secondary/wmc'),
+        'freesurfer': ()=> import('@/secondary/freesurfer'),
+        'tractprofile': ()=> import('@/secondary/tractprofile'),
+        'ashs': ()=> import('@/secondary/ashs'),
+        'tractmeasures': ()=> import('@/secondary/tractmeasures'),
+        'parcstats': ()=> import('@/secondary/parcstats'),
     },
     watch: {
-        /*
-        task() {
-            this.loadSecondaryTask();
-        }
-        */
     },
     destroyed() {
         clearTimeout(this.secondary_t);
     },
     mounted() {
-        //this.loadSecondaryTask();
     },
     methods: {
-        /*
-        loadSecondaryTask() {
-            clearTimeout(this.secondary_t);
-
-            if(!this.task) return;
-            if(!this.task.finish_date) return;
-
-            //load secondary task submitted for this
-            axios({
-                method: 'GET',
-                url: Vue.config.amaretti_api+'/task', 
-                params: {
-                    populate: '_id',
-                    find: JSON.stringify({
-                        'service': 'brainlife/app-archive-secondary',
-                        'deps_config.task': this.task._id,
-                    })
-                }
-            }).then(res=>{
-                if(res.data.tasks && res.data.tasks.length == 1) {
-                    this.secondary = res.data.tasks[0];
-                } else {
-                    //detect a case where app-archive-secondary is not submitted for some reason.. 
-                    //so we don't keep re-loading..
-                    const old = new Date();
-                    old.setHours(old.getHours()-1);
-                    if(new Date(this.task.finish_date) < old) {
-                        console.log("looks like app-archive-secondary was not submitted for "+this.task._id);
-                        this.secondary_na = true;
-                        return; 
-                    }
-
-                    console.log("scheduling secondary task reload:"+this.task._id);
-                    this.secondary_t = setTimeout(()=>{
-                        this.loadSecondaryTask();
-                    }, 5000);
-                }
-            }).catch(err=>{
-                console.error(err);
-            });
-        }   
-        */
     },
 }
 </script>

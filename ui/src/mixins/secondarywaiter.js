@@ -45,7 +45,8 @@ export default {
                                 this.waitSecondaryArchive(task, cb);
                             }, 3000);
                         } else {
-                            cb("secondary task failed?");
+                            cb(`secondary archive task (${_task._id}) status:${_task.status}`);
+                            console.error(_task);
                         }
                     }
                 }

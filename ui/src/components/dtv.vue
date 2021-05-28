@@ -17,6 +17,7 @@
             <product :product="task.product" skipFollow="true"/>
         </div>
 
+        <b-alert :show="secondaryError != ''" variant="secondary">{{secondaryError}}</b-alert>
         <secondary v-if="secondary && product" :task="task" :output="output" :product="product" :secondary="secondary"/>
 
     </div>
@@ -36,7 +37,10 @@ import axios from 'axios'
 
 export default {
     mixins: [secondaryWaiter],
-    props: ['task', 'output'],
+    props: [
+        'task',  //validator(dtv) task
+        'output'
+    ],
 
     components: {
         secondary,
@@ -47,8 +51,9 @@ export default {
 
     data() {
         return {
-            product: null, 
+            product: null,  //product of dtv
             secondary: null, 
+            secondaryError: "",
         }
     },
 
@@ -56,6 +61,7 @@ export default {
         task() {
             if(this.task.finish_date && !this.secondary) {
                 //console.log("watch detected dtv finish");
+                console.log("wait", this.task);
                 this.waitSecondaryArchive(this.task, (err, secondary)=>{
                     if(err) console.error(err);
                     else this.secondary = secondary;
@@ -64,7 +70,23 @@ export default {
         }
     },
 
+    methods: {
+        loadProduct() {
+            console.log("loading product..");
+            this.$http.get(Vue.config.wf_api+'/task/product/', {params: {ids: [this.task._id]}}).then(res=>{
+                if(res.data.length == 1) {
+                    this.product = res.data[0].product;
+                } else {
+                    //this.product = {}
+                    setTimeout(this.loadProduct, 5*1000);
+                }
+            });
+        }
+    },
+
     mounted() {
+        this.loadProduct();
+        /*
         this.$http.get(Vue.config.wf_api+'/task/product/', {params: {ids: [this.task._id]}}).then(res=>{
             if(res.data.length == 1) {
                 this.product = res.data[0].product;
@@ -72,11 +94,15 @@ export default {
                 this.product = {}
             }
         });
+        */
 
         if(this.task.finish_date) {
             this.waitSecondaryArchive(this.task, (err, secondary)=>{
-                if(err) console.error(err);
-                else this.secondary = secondary;
+                if(err) {
+                    console.error(err); //let it continue
+                    this.secondaryError = err;
+                }
+                this.secondary = secondary;
             });
         }
     },

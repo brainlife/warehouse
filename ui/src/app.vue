@@ -76,13 +76,13 @@
 
         <!-- detail -->
         <div v-if="tab == 0">
-            <div style="background-color: white; padding-top: 15px; border-bottom: 1px solid #ddd;">
+            <div style="background-color: white; padding-top: 10px; border-bottom: 1px solid #ddd;">
                 <b-container>
                     <div style="border-bottom: 1px solid #eee; margin-bottom: 10px;">
                         <appavatar :app="app" style="float: right; position: relative; top: -15px; margin-left: 15px;" :width="150" :height="150"/>
 
                         <!--badges-->
-                        <p>
+                        <p style="line-height: 250%;">
                             <doibadge :doi="app.doi" v-if="app.doi"/>
 
                             <b-badge pill v-if="app.create_date" class="bigpill" title="Registration Date">
@@ -97,7 +97,7 @@
                                 <icon name="play" style="opacity: 0.4;"/>&nbsp;&nbsp;&nbsp;{{app.stats.requested}}&nbsp;&nbsp;<small>Requests</small>
                             </b-badge>
 
-                            <b-badge pill v-if="app.stats && app.stats.runtime_mean" class="bigpill" title="Average Runtime">
+                            <b-badge pill v-if="app.stats && app.stats.runtime_mean" class="bigpill" title="Average Runtime of 100 most recent jobs">
                                 <icon name="clock" style="opacity: 0.4;"/>&nbsp;&nbsp;&nbsp;{{avg_runtime(app.stats.runtime_mean, app.stats.runtime_std)}}
                             </b-badge>
                         </p>
