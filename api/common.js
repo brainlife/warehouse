@@ -2,7 +2,7 @@
 //TODO switch to axios!
 const request = require('request');
 const rp = require('request-promise-native');
-const stopwords=require('n-stopwords')(['en']);
+const stopwords = require("keyword-extractor");
 const tmp = require('tmp');
 const mkdirp = require('mkdirp');
 const path = require('path');
@@ -19,7 +19,7 @@ const config = require('./config');
 const db = require('./models');
 const mongoose = require('mongoose');
 
-stopwords.add('undefined');
+
 
 //TODO - user needs to call redis.quit() to quit?
 //exports.redis = redis.createClient(config.redis.port, config.redis.server);
@@ -420,15 +420,31 @@ exports.load_github_detail = function(service_name, cb) {
     }).catch(cb)
 }
 
-exports.generateQuery = function(str) {
-    const alphastr = str.replace(/[^a-z ]/gi, "");
-    const cleanstr = stopwords.cleanText(alphastr);
-    const queries = cleanstr.split(' ').filter(e=>!!e).map(word=>`W='${word}'`);
-    if(queries.length == 0) return null;
-    return "And(OR("+queries.join(',')+"),Composite(F.FN=='neuroscience'))"
+exports.generateQueries = async function(tokens, cb) {
+    /* remove_dupicates doesn't work*/
+    //const queries = cleanstr.filter((x, i, a) => a.indexOf(x) == i).join();
+    //if(queries.length == 0) return null;
+    let params = {
+        query: tokens.join(" "),
+        //complete: 1,
+        //count: 4,
+    };
+    const headers = {
+        'Ocp-Apim-Subscription-Key': config.mag.subscriptionKey,
+        'User-Agent': 'brainlife',
+    };
+    const res = await axios.get("https://api.labs.cognitive.microsoft.com/academic/v1.0/interpret",{headers,params});
+    if(res.status != 200) return cb("failed to call mag interpret api");
+    const queries = [];
+    //console.log(JSON.stringify(res.data.interpretations, null, 4)), 
+    res.data.interpretations.forEach(i=>{
+       const rule = i.rules[0]; //not sure why MAG returns an array of 1
+       queries.push({query: rule.output.value, logprob: i.logprob});
+    });
+    cb(null, queries);
 }
 
-exports.getRelatedPaper = function(query) {
+exports.getRelatedPaper = function(query, cb) {
     let params = {
         expr: query,
         count: 10, 
@@ -436,12 +452,16 @@ exports.getRelatedPaper = function(query) {
         model: 'latest', 
         attributes: 'Id,AA.AfId,AA.AfN,AA.AuId,AA.AuN,AA.DAuN,CC,CN,D,Ti,F.FId,F.FN,Y,VFN,DOI,IA',
     }
+    console.log("getRelatedPaper", params);
     const headers = {
         'Ocp-Apim-Subscription-Key': config.mag.subscriptionKey,
         'User-Agent': 'brainlife',
     }
 
-    return axios.get("https://api.labs.cognitive.microsoft.com/academic/v1.0/evaluate",{headers,params});
+    axios.get("https://api.labs.cognitive.microsoft.com/academic/v1.0/evaluate",{headers,params}).then(res=>{
+        if(res.status != 200) return cb("failed to call mag api");
+        cb(null, res.data.entities);
+    });
 }
 
 exports.updateRelatedPaperMag = function(rec,cb) {
@@ -450,14 +470,82 @@ exports.updateRelatedPaperMag = function(rec,cb) {
     if(!config.mag) cb("no mag config!!");
     if(!rec.relatedPapers) rec.relatedPapers = []; //not sure if we need this or not
     rec.markModified("relatedPapers");
-    if(rec.readMe) query = exports.generateQuery(rec.name+" "+rec.desc+" "+rec.readme);
-    if(rec.tags.length) query = exports.generateQuery(rec.name+" "+rec.tags.join(" "));
-    else query = exports.generateQuery(rec.name+" "+rec.desc);
+
+    //put everything togetehr
+    let str = "";
+    if(rec.tags) str += rec.tags.join(" ")+" ";
+    if(rec.name) str += rec.name+" ";
+    if(rec.desc) str += rec.desc+" ";
+    if(rec.readme) str += rec.readme+" ";
+
+    //pull keywords
+    let keywords = stopwords.extract(str,{
+        language:"english",
+        remove_digits: true,
+        //return_changed_case: true,
+        remove_duplicates: true,
+        //return_max_ngrams: 10,
+    });
+
+    //pick the first N words
+    const firstTokens = keywords.slice(0, 20);
+
+    let papers = [];
+    exports.generateQueries(firstTokens, (err, queries)=>{
+        if(err) return cb(err);
+        async.eachSeries(queries, (query, next_query)=>{
+            exports.getRelatedPaper(query.query, (err, entities)=>{
+                if(err) return next_query(err);
+                entities.forEach(entity=>{
+                    entity.logprob+=query.logprob;
+                    console.log(entity.Ti, entity.logprob);
+                    const existingPaper = papers.find(paper=>paper.Id == entity.Id);
+                    if(!existingPaper) papers.push(entity);
+                });
+                next_query();
+            });
+        }, err=>{
+            if(err) return cb(err);
+            console.log("done with all queries - now dedupe the papers");
+            //console.dir(papers);
+
+            rec.relatedPapers = papers.map(paper=>{
+                console.log(paper.logprob, paper.DOI, paper.Ti);
+                const ret = {
+                    publicationDate: new Date(paper.D),
+                    citationCount: paper.CC,
+                    title: paper.Ti, 
+                    doi: paper.DOI,
+                    venue: paper.VFN, 
+                    authors: paper.AA.map(author=>({institution: author.AfN, name: author.DAuN })),
+
+                    logprob: paper.logprob,
+                }
+
+                if(paper.F) ret.fields = paper.F.map(name=>name.FN);
+                if(paper.IA) {
+                    let abstract = [];
+                    for (const word in paper.IA.InvertedIndex) {
+                        paper.IA.InvertedIndex[word].forEach(idx=>{
+                            abstract[idx] = word;
+                        });
+                    }
+                    ret.abstract = abstract.join(' ');
+                }
+                return ret;
+            });//.filter(a => a.logprob > config.mag.lowestProb)
+            rec.save(cb);
+        });
+    });
+
+    /*
     if(!query) {
         rec.relatedPapers = [];
         rec.save(cb);
         return;
     }
+    */
+    /*
     console.log("mag query", query, "logprob cutoff", config.mag.lowestProb);
     exports.getRelatedPaper(query).then(res=>{
         if(res.status != 200) return cb("failed to call mag api");
@@ -495,6 +583,7 @@ exports.updateRelatedPaperMag = function(rec,cb) {
         console.log("skipping to the next paper");
         cb();
     });
+    */
 }
 
 exports.compose_app_datacite_metadata = function(app) {
