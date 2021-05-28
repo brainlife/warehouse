@@ -133,6 +133,7 @@ export default {
                     ands.push({$or: [
                         {"name": {$regex: q, $options: 'i'}},
                         {"desc": {$regex: q, $options: 'i'}},
+                        {"stats.datasets.datatypes_detail.type" : id}
                     ]});
                 });
             }
