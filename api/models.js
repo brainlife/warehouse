@@ -51,7 +51,7 @@ var projectSchema = mongoose.Schema({
 
     group_id: {type: Number, unique: true} , //group id from auth service to host admins/members
 
-    tags: [String], //used to classify projects (TODO - I don't think this is used yet..)
+    //tags: [String], //used to classify projects (TODO - I don't think this is used yet..)
 
     name: String,
     desc: String, 
