@@ -49,8 +49,11 @@
                     <project :project="project"/>
                 </div>
             </div>
+            
             <br clear="both">
         </div>
+
+        <pre>{{datatype_name}}</pre>
 
     </div>
     <b-button class="button-fixed" @click="newproject">
@@ -102,22 +105,17 @@ export default {
         },
 
         load() {
-
-            if(!this.datatype_name.length){
+            let datatype_name = this.datatype_name;
+            if(!datatype_name.length){
                 console.log("Getting datatypes");
                 this.$http.get('/datatype').then(res=>{
-                    res.data.datatypes.forEach(entry=> {
-                        const keyName = entry.name;
-                        const value = entry._id;
-                        this.datatype_name[keyName] = value;
+                    res.data.datatypes.forEach(datatype=>{
+                        console.log(datatype.name,datatype._id);
+                        let key = datatype.name;
+                        datatype_name[key] = datatype._id;
+                        });
                     });
-                }).catch(err=>{
-                    console.error(err);
-                });
             }
-
-            console.log(this.datatype_name);
-
             let ands = [
                 {removed: false, "openneuro": {$exists: false}},
             ];
