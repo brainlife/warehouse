@@ -485,6 +485,7 @@ exports.updateRelatedPaperMag = function(rec,cb) {
     keywords = keywords.slice(0, 20); //too big?
 
     console.log("using keywods", keywords);
+    if(!keywords.length) cb(); //no keywords, no paper..
 
     let papers = [];
     exports.generateQueries(keywords.join(" "), (err, queries)=>{
@@ -496,12 +497,20 @@ exports.updateRelatedPaperMag = function(rec,cb) {
                 entities.forEach(entity=>{
                     console.log(entity.logprob, entity.DOI, entity.Ti);
 
-                    //multiply by the query probability
+                    if(!entity.DOI) return; //ignore ones without DOI
+
+                    //"multiply" by the query probability
                     entity.logprob+=query.logprob;
 
                     //dedupe papers and check for doi
                     const existingPaper = papers.find(paper=>paper.Id == entity.Id);
-                    if(entity.DOI && !existingPaper) papers.push(entity);
+
+                    if(existingPaper) {
+                        existingPaper.logprob += 5; //boost prob if we found more than once
+                        if(existingPaper.logprob < entity.logprob) existingPaper.logprob = entity.logprob;
+                    } else {
+                        papers.push(entity);
+                    }
                 });
                 next_query();
             });
