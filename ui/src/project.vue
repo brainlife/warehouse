@@ -208,10 +208,8 @@
                         <b-row v-for="rec in selected.stats.apps" :key="rec._id">
                             <b-col cols="10">
                                 <div style="margin-bottom: 10px; border-left: 3px solid #f0f0f0; border-bottom: 1px solid #eee;">
-                                    <app :appid="rec.app" :branch="rec.task.service_branch" :compact="true" :showDoi="true">
-                                        <!--
-                                        <taskconfig :task="rec.task" style="margin: 10px;"/>
-                                        -->
+                                    <app :app="rec.app" :branch="rec.task.service_branch" :compact="true" :showDoi="true">
+                                        <!-- <taskconfig :task="rec.task" style="margin: 10px;"/> -->
                                     </app>
                                 </div>
                             </b-col>
@@ -241,8 +239,8 @@
                             <p><small>Please use the following citations to cite the Apps used by this project.</small></p>
                             <!-- <p v-for="app in uniqueApps" :key="app._id"> -->
                             <p v-for="app in selected.stats.apps" :key="app._id">
-                                <icon name="robot" style="opacity: 0.5;"/> <b>{{app.name}}</b><br>
-                                <citation :doi="app.doi"/> 
+                                <icon name="robot" style="opacity: 0.5;"/> <b>{{app.app.name}}</b><br>
+                                <citation :doi="app.app.doi"/> 
                             </p>
 
                             <div v-if="resource_citations.length > 0">
@@ -263,7 +261,7 @@
                         </p>
                         <hr>
                         <div v-for="paper in selected.relatedPapers" :key="paper._id">
-                            <mag  :paper="paper"/>
+                            <mag :paper="paper"/>
                             <br>
                         </div>
                     </div>
@@ -447,21 +445,6 @@ export default {
     },
 
     computed: {
-        /*
-        uniqueApps() {
-            if(!this.selected ||
-                !this.selected.stats ||
-                !this.selected.stats.apps) return [];
-            let dois = [];
-            let apps = [];
-            this.selected.stats.apps.forEach(app=>{
-                if(dois.includes(app.doi)) return;
-                dois.push(app.doi);
-                apps.push(app);
-            });
-            return apps;
-        }
-        */
     },
 
     mounted() {
@@ -587,11 +570,16 @@ export default {
                 find: JSON.stringify({
                     _id: project._id,
                 }),
+                populate: "stats.apps.app",
             }}).then(res=>{
                 let full_project = res.data.projects[0];
                 for(var key in full_project) {
                     this.selected[key] = full_project[key];
                 }
+
+                //remove app.stats that doesn't have task (not yet migrated with new stats info)
+                this.selected.stats.apps = this.selected.stats.apps.filter(a=>!!a.task);
+
                 localStorage.setItem("last_projectid_used", project._id);
 
                 //https://github.com/ktquez/vue-disqus/issues/11#issuecomment-354023326
@@ -600,6 +588,7 @@ export default {
                 }
 
                 this.handleRouteParams();
+                this.update_resource_usage_graph();
             });
 
             //optionally.. load participant info
@@ -613,9 +602,8 @@ export default {
                 });
             }
 
-            if(this.ws) {
-                this.ws.close();
-            }
+            //subscribe to project update
+            if(this.ws) this.ws.close();
             var url = Vue.config.event_ws+"/subscribe?jwt="+Vue.config.jwt;
             this.ws = new ReconnectingWebSocket(url, null, {reconnectInterval: 3000});
             this.ws.onopen = (e)=>{
@@ -634,7 +622,7 @@ export default {
                     }
                 };
             };
-            this.update_resource_usage_graph();
+
         },
 
         update_resource_usage_graph() {

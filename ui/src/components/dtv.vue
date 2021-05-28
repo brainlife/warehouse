@@ -19,7 +19,9 @@
 
         <b-alert :show="secondaryError != ''" variant="secondary">{{secondaryError}}</b-alert>
         <secondary v-if="secondary && product" :task="task" :output="output" :product="product" :secondary="secondary"/>
-
+        <span v-else>
+            <icon name="cog" spin></icon> Waiting to be archived ...
+        </span>
     </div>
     <task v-else :task="task"/>
 </div>
@@ -57,6 +59,21 @@ export default {
         }
     },
 
+    mounted() {
+        this.loadProduct();
+        if(this.task.finish_date) {
+            console.log("waiting for secondary acchive");
+            this.waitSecondaryArchive(this.task, (err, secondary)=>{
+                if(err) {
+                    console.error(err); //let it continue
+                    this.secondaryError = err;
+                }
+                console.log("done secondary archive!");
+                this.secondary = secondary;
+            });
+        }
+    },
+
     watch: {
         task() {
             if(this.task.finish_date && !this.secondary) {
@@ -72,40 +89,17 @@ export default {
 
     methods: {
         loadProduct() {
-            console.log("loading product..");
             this.$http.get(Vue.config.wf_api+'/task/product/', {params: {ids: [this.task._id]}}).then(res=>{
                 if(res.data.length == 1) {
                     this.product = res.data[0].product;
                 } else {
-                    //this.product = {}
+                    console.log("don't have product.. will reload later..");
                     setTimeout(this.loadProduct, 5*1000);
                 }
             });
         }
     },
 
-    mounted() {
-        this.loadProduct();
-        /*
-        this.$http.get(Vue.config.wf_api+'/task/product/', {params: {ids: [this.task._id]}}).then(res=>{
-            if(res.data.length == 1) {
-                this.product = res.data[0].product;
-            } else {
-                this.product = {}
-            }
-        });
-        */
-
-        if(this.task.finish_date) {
-            this.waitSecondaryArchive(this.task, (err, secondary)=>{
-                if(err) {
-                    console.error(err); //let it continue
-                    this.secondaryError = err;
-                }
-                this.secondary = secondary;
-            });
-        }
-    },
 }
 </script>
 

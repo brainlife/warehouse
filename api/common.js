@@ -2,7 +2,7 @@
 //TODO switch to axios!
 const request = require('request');
 const rp = require('request-promise-native');
-const stopwords = require("keyword-extractor");
+const keywordEx = require("keyword-extractor");
 const tmp = require('tmp');
 const mkdirp = require('mkdirp');
 const path = require('path');
@@ -420,12 +420,9 @@ exports.load_github_detail = function(service_name, cb) {
     }).catch(cb)
 }
 
-exports.generateQueries = async function(tokens, cb) {
-    /* remove_dupicates doesn't work*/
-    //const queries = cleanstr.filter((x, i, a) => a.indexOf(x) == i).join();
-    //if(queries.length == 0) return null;
+exports.generateQueries = async function(query, cb) {
     let params = {
-        query: tokens.join(" "),
+        query,
         //complete: 1,
         //count: 4,
     };
@@ -436,7 +433,6 @@ exports.generateQueries = async function(tokens, cb) {
     const res = await axios.get("https://api.labs.cognitive.microsoft.com/academic/v1.0/interpret",{headers,params});
     if(res.status != 200) return cb("failed to call mag interpret api");
     const queries = [];
-    //console.log(JSON.stringify(res.data.interpretations, null, 4)), 
     res.data.interpretations.forEach(i=>{
        const rule = i.rules[0]; //not sure why MAG returns an array of 1
        queries.push({query: rule.output.value, logprob: i.logprob});
@@ -452,7 +448,6 @@ exports.getRelatedPaper = function(query, cb) {
         model: 'latest', 
         attributes: 'Id,AA.AfId,AA.AfN,AA.AuId,AA.AuN,AA.DAuN,CC,CN,D,Ti,F.FId,F.FN,Y,VFN,DOI,IA',
     }
-    console.log("getRelatedPaper", params);
     const headers = {
         'Ocp-Apim-Subscription-Key': config.mag.subscriptionKey,
         'User-Agent': 'brainlife',
@@ -465,11 +460,7 @@ exports.getRelatedPaper = function(query, cb) {
 }
 
 exports.updateRelatedPaperMag = function(rec,cb) {
-    let query;
-    console.log("--- %s %s", rec.name, rec._id.toString());
-    if(!config.mag) cb("no mag config!!");
-    if(!rec.relatedPapers) rec.relatedPapers = []; //not sure if we need this or not
-    rec.markModified("relatedPapers");
+    console.log("----------------- updateRelatedPaperMag %s %s", rec.name, rec._id.toString());
 
     //put everything togetehr
     let str = "";
@@ -479,36 +470,49 @@ exports.updateRelatedPaperMag = function(rec,cb) {
     if(rec.readme) str += rec.readme+" ";
 
     //pull keywords
-    let keywords = stopwords.extract(str,{
+    let keywords = keywordEx.extract(str,{
         language:"english",
         remove_digits: true,
         //return_changed_case: true,
+        return_chaned_words: true,
         remove_duplicates: true,
-        //return_max_ngrams: 10,
     });
 
+    //remove keywords that starts with odd characters (like "/", "##", etc..)
+    keywords = keywords.filter(w=>w.match(/^[a-z0-9]/i));
+
     //pick the first N words
-    const firstTokens = keywords.slice(0, 20);
+    keywords = keywords.slice(0, 20); //too big?
+
+    console.log("using keywods", keywords);
 
     let papers = [];
-    exports.generateQueries(firstTokens, (err, queries)=>{
+    exports.generateQueries(keywords.join(" "), (err, queries)=>{
         if(err) return cb(err);
         async.eachSeries(queries, (query, next_query)=>{
+            console.log("--- query ", query);
             exports.getRelatedPaper(query.query, (err, entities)=>{
                 if(err) return next_query(err);
                 entities.forEach(entity=>{
+                    console.log(entity.logprob, entity.DOI, entity.Ti);
+
+                    //multiply by the query probability
                     entity.logprob+=query.logprob;
-                    console.log(entity.Ti, entity.logprob);
+
+                    //dedupe papers and check for doi
                     const existingPaper = papers.find(paper=>paper.Id == entity.Id);
-                    if(!existingPaper) papers.push(entity);
+                    if(entity.DOI && !existingPaper) papers.push(entity);
                 });
                 next_query();
             });
         }, err=>{
             if(err) return cb(err);
-            console.log("done with all queries - now dedupe the papers");
-            //console.dir(papers);
 
+            //sort papers by logprob
+            papers.sort((a,b)=>b.logprob - a.logprob);
+
+            //map to relatedPapers object
+            console.log("---------- final results ------------");
             rec.relatedPapers = papers.map(paper=>{
                 console.log(paper.logprob, paper.DOI, paper.Ti);
                 const ret = {
@@ -533,57 +537,12 @@ exports.updateRelatedPaperMag = function(rec,cb) {
                     ret.abstract = abstract.join(' ');
                 }
                 return ret;
-            });//.filter(a => a.logprob > config.mag.lowestProb)
+            }); //.slice(0, 20); //only store top 20
+
+            rec.markModified("relatedPapers");
             rec.save(cb);
         });
     });
-
-    /*
-    if(!query) {
-        rec.relatedPapers = [];
-        rec.save(cb);
-        return;
-    }
-    */
-    /*
-    console.log("mag query", query, "logprob cutoff", config.mag.lowestProb);
-    exports.getRelatedPaper(query).then(res=>{
-        if(res.status != 200) return cb("failed to call mag api");
-        rec.relatedPapers = res.data.entities
-        .map(paper=>{
-            console.log(paper.logprob, paper.DOI, paper.Ti);
-            const ret = {
-                publicationDate: new Date(paper.D),
-                citationCount: paper.CC,
-                title: paper.Ti, 
-                doi: paper.DOI,
-                venue: paper.VFN, 
-                authors: paper.AA.map(author=>({institution: author.AfN, name: author.DAuN })),
-
-                logprob: paper.logprob,
-            }
-
-            if(paper.F) ret.fields = paper.F.map(name=>name.FN);
-            if(paper.IA) {
-                let abstract = [];
-                for (const word in paper.IA.InvertedIndex) {
-                    paper.IA.InvertedIndex[word].forEach(idx=>{
-                        abstract[idx] = word;
-                    });
-                }
-                ret.abstract = abstract.join(' ');
-            }
-            return ret;
-        }).filter(a => a.logprob > config.mag.lowestProb)
-        rec.save(cb);
-    }).catch(res=>{
-        console.log(res.toString());
-        //mag api returns 500 if paper doesn't exist.. so we can not tell the difference between
-        //api issue v.s. empty papwers.. so we return null object to cb()
-        console.log("skipping to the next paper");
-        cb();
-    });
-    */
 }
 
 exports.compose_app_datacite_metadata = function(app) {
