@@ -26,7 +26,7 @@
     "async": "^3.2.0",
     "axios": "^0.19.2",
     "body-parser": "^1.18.3",
-    "brainlife": "^1.5.19",
+    "brainlife": "^1.5.22",
     "compression": "^1.7.3",
     "cors": "^2.8.5",
     "coveralls": "^3.1.0",

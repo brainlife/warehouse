@@ -44,11 +44,12 @@ export default {
         }
     },
     mounted() {
-        const tokens = this.paper.abstract.split(" ");
-        console.dir(tokens);
-        this.abstract100 = tokens.slice(0, 100);
-        this.abstractRest = tokens.slice(100);
-        if(this.abstractRest.length) this.showRest = false;
+        if(this.paper.abstract) {
+            const tokens = this.paper.abstract.split(" ");
+            this.abstract100 = tokens.slice(0, 100);
+            this.abstractRest = tokens.slice(100);
+            if(this.abstractRest.length) this.showRest = false;
+        }
     }
 };
 </script>
