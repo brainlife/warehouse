@@ -7,19 +7,23 @@
             <icon name="times" class="clear-search" scale="1.5" @click="clearQuery()" v-if="query != ''"/>
         </div>
     </div>
-    <div class="mode-toggler onRight" v-if="my_projects">
-        <b-form-group>
-        <b-form-radio-group v-model="mode" buttons button-variant="outline-secondary">
-            <b-form-radio value="tile"><icon name="th"/></b-form-radio>
-            <b-form-radio value="list"><icon name="list"/></b-form-radio>
-        </b-form-radio-group>
-        </b-form-group>
-    </div>
-    <div class="page-content" v-if="my_projects" @scroll="handleScroll" ref="scrollable">
-        <div v-if="query.length && !other_projects.length && !my_projects.length">
-            <p style="padding: 20px">No matching Projects</p>
+
+    <div v-if="loading" style="margin: 90px; opacity: 0.5"><h4><icon name="cog" spin scale="2"/> Loading ..</h4></div>
+
+    <div class="page-content" v-if="!loading" @scroll="handleScroll" ref="scrollable">
+
+        <div class="mode-toggler onRight">
+            <b-form-group>
+            <b-form-radio-group v-model="mode" buttons button-variant="outline-secondary">
+                <b-form-radio value="tile"><icon name="th"/></b-form-radio>
+                <b-form-radio value="list"><icon name="list"/></b-form-radio>
+            </b-form-radio-group>
+            </b-form-group>
         </div>
-        <div v-if="loading" style="margin: 40px; opacity: 0.5"><h3><icon name="cog" spin scale="2"/> Loading ..</h3></div>
+
+        <div v-if="query.length && !other_projects.length && !my_projects.length">
+            <p style="padding: 20px; opacity: 0.8;">No matching Projects</p>
+        </div>
 
         <div v-if="config.user" class="position: relative">
             <h4 class="group-title">My Projects</h4>
@@ -42,7 +46,7 @@
         </div>
 
         <!--TODO - should refactor this.. similar to my projects-->
-        <div v-if="other_projects && other_projects.length > 0" style="position: relative;">
+        <div v-if="other_projects.length > 0" style="position: relative;">
             <h4 class="group-title">Public<small>/Protected</small> Projects</h4>
             <div style="padding: 10px;" v-if="mode == 'tile'">
                 <div v-for="project in other_projects" :key="project._id">
@@ -79,8 +83,8 @@ export default {
     data () {
         return {   
             projects: [],
-            my_projects: null,
-            other_projects: null,
+            my_projects: [],
+            other_projects: [],
 
             loading: false,
 
@@ -140,7 +144,10 @@ export default {
             }
 
             //load all projects that user has summary access (including removed ones so we can open it)
-            this.my_projects = null;
+            this.projects = [];
+            this.my_projects = [];
+            this.other_projects = [];
+
             this.loading = true;
             this.$http.get('project', {params: {
                 find: JSON.stringify({$and: ands}),
@@ -149,8 +156,6 @@ export default {
                 sort: 'name',
             }}).then(res=>{
                 this.projects = res.data.projects;
-                this.my_projects = [];
-                this.other_projects = [];
 
                 /*
                 //create duplicates for load test
@@ -176,10 +181,10 @@ export default {
                         this.other_projects.push(p);
                     }
                 });
+                this.loading = false;
                 this.$nextTick(()=>{
                     this.handleScroll();
                 });
-                this.loading = false;
             }).catch(err=>{
                 console.error(err);
                 this.$notify({type: 'error', text: err.response.data.message()});
