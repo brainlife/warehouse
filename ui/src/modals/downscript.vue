@@ -182,7 +182,7 @@ export default {
 
         queryInventory() {
             this.$http.get('/dataset/inventory', {params: {find: JSON.stringify(this.query)}}).then(res=>{
-                console.dir(res.data);
+                //console.dir(res.data);
                 
                 //this.inventory = res.data;
                 this.inventory.subjects = [];

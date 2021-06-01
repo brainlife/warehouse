@@ -307,8 +307,8 @@ function connect_osiris(cb) {
     conn.on('ready', function() {
         console.log("connected to osiris - opening sftp stream also");
         conn.sftp((err, sftp)=>{
-            if(err) return cb(err);
-            if(cb) cb(null, conn, sftp);
+            if(err) console.error(err);
+            if(cb) cb(err, conn, sftp);
             cb = null;
         });
     });

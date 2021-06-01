@@ -62,7 +62,7 @@ function construct_dataset_query(body/*, project_ids*/) {
         if(all.length > 0) query.datatype_tags["$all"] = all;
         if(nin.length > 0) query.datatype_tags["$nin"] = nin;
     }
-    console.log(JSON.stringify(query, null, 4));
+    //console.log(JSON.stringify(query, null, 4));
     return query;
 }
 

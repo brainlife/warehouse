@@ -117,7 +117,7 @@ export default {
                     }
                 }).then(res=>{
                     console.log("loaded sessions");
-                    console.dir(res.data.tasks);
+                    //console.dir(res.data.tasks);
                     this.sessions = res.data.tasks.map(task=>{
                         return {
                             value: task._id,
@@ -125,7 +125,7 @@ export default {
                             container: task.config.container,
                         }
                     });
-                    console.dir(this.sessions);
+                    //console.dir(this.sessions);
 
                     //select the last one
                     this.selected = this.sessions[0].value;
