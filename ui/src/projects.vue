@@ -38,6 +38,7 @@
                     <div v-else style="height: 40px; color: white;" ref="project" :id="project._id"/> <!--placeholder-->
                 </div>
             </div>
+            <br v-if="recentProjects.length > 0" clear="both">
         </div>
         <div v-if="config.user" class="position: relative">
             <h4 class="group-title">My Projects</h4>
