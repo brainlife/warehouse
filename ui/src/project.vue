@@ -579,8 +579,8 @@ export default {
 
                 //remove app.stats that doesn't have task (not yet migrated with new stats info)
                 this.selected.stats.apps = this.selected.stats.apps.filter(a=>!!a.task);
-
-                localStorage.setItem("last_projectid_used", project._id);
+                let projectIdArray = [project._id];
+                localStorage.setItem("last_projectid_used", JSON.stringify(projectIdArray));
 
                 //https://github.com/ktquez/vue-disqus/issues/11#issuecomment-354023326
                 if(this.$refs.disqus && window.DISQUS) {
