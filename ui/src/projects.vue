@@ -24,7 +24,21 @@
         <div v-if="query.length && !other_projects.length && !my_projects.length">
             <p style="padding: 20px; opacity: 0.8;">No matching Projects</p>
         </div>
-
+        <div v-if="config.user && recentProjects.length" class="position: relative">
+            <h4 class="group-title">Recent Projects</h4>
+            <div style="padding: 10px;" v-if="mode == 'tile'">
+                <div v-for="project in recentProjects" :key="project._id">
+                    <projectcard :project="project" v-if="project._visible"/>
+                    <div v-else class="projectcard" ref="project" :id="project._id"/> <!--placeholder-->
+                </div>
+            </div>
+            <div style="padding: 10px;" v-if="mode == 'list'">
+                <div v-for="project in recentProjects" :key="project._id">
+                    <project :project="project" v-if="project._visible"/>
+                    <div v-else style="height: 40px; color: white;" ref="project" :id="project._id"/> <!--placeholder-->
+                </div>
+            </div>
+        </div>
         <div v-if="config.user" class="position: relative">
             <h4 class="group-title">My Projects</h4>
             <div style="padding: 10px;" v-if="mode == 'tile'">
@@ -85,6 +99,7 @@ export default {
             projects: [],
             my_projects: [],
             other_projects: [],
+            recentProjects: [],
 
             loading: false,
 
@@ -179,6 +194,12 @@ export default {
                         this.my_projects.push(p);
                     } else {
                         this.other_projects.push(p);
+                    }
+                    if(localStorage.getItem("recent_projectid")){
+                        const recentProjects = JSON.parse(localStorage.getItem("recent_projectid")).slice(0).slice(-5);
+                        if(recentProjects && recentProjects.includes(p._id.toString())) {
+                            this.recentProjects.push(p);
+                        }
                     }
                 });
                 this.loading = false;
