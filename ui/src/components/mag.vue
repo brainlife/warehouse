@@ -1,9 +1,17 @@
 <template>
 <div style="line-height: 200%;">
-    <h5 class="paper-title">{{ paper.title }}</h5>
-    <span class="mag-venue">
-        {{ paper.venue }} | {{ new Date(paper.publicationDate).getFullYear() }}
-    </span>
+    <div style="border-left: 3px solid #ddd; padding-left: 10px; margin-bottom: 10px;">
+        <h5 class="paper-title">{{paper.title}}</h5>
+        <doibadge :doi="paper.doi" jump="true"/>
+        <b-badge pill class="bigpill" title="Publication Date">
+            <icon name="calendar" style="opacity: 0.4" />&nbsp;{{ new Date(paper.publicationDate).toLocaleDateString() }}
+        </b-badge>
+        &nbsp;
+        &nbsp;
+        <span class="mag-venue">
+            {{ paper.venue }} | {{ new Date(paper.publicationDate).getFullYear() }}
+        </span>
+    </div>
     <p>
         <!--first 100 words-->
         <span>{{abstract100.join(" ")}}</span>
@@ -19,12 +27,6 @@
     <p>
         <b-badge v-for="tag in paper.fields" :key="tag" class="topic">{{tag}}</b-badge>
     </p>
-    <div style="background-color: #eee; padding: 10px; text-align: right;">
-        <doibadge :doi="paper.doi" jump="true"/>
-        <b-badge pill class="bigpill" title="Publication Date">
-            <icon name="calendar" style="opacity: 0.4" />&nbsp;{{ new Date(paper.publicationDate).toLocaleDateString() }}
-        </b-badge>
-    </div>
 </div>
 </template>
 
@@ -78,7 +80,7 @@ h4 {
     color: #333;
     padding: 0px;
     transition: color 0.3s;
-    font-size: 130%;
+    font-size: 120%;
     line-height: 200%;
 }
 

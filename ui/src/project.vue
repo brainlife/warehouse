@@ -262,8 +262,8 @@
                             </div>
 
                             <!--loading citations takes time and LOCK UP THE BROWSER WHILE LOADING IT!!!-->
-                            <span class="form-header">Citations</span>
                             <div v-if="selected.stats.apps && selected.stats.apps.length > 0">
+                                <span class="form-header">Citations</span>
                                 <!--
                                 <p v-if="!showCitations">
                                     <b-button variant="outline-secondary" size="sm" @click="showCitations = true">Load Citation</b-button>
@@ -299,7 +299,6 @@
                                 </p>
                                 <div v-for="paper in selected.relatedPapers" :key="paper._id">
                                     <mag :paper="paper"/>
-                                    <br>
                                 </div>
                             </div>
                         </div>
@@ -489,6 +488,9 @@ export default {
     },
 
     computed: {
+        sortedPapers : function() {
+            return this.selected.relatedPapers.sort((a,b)=> b.citationCount - a.citationCount );
+        }
     },
 
     mounted() {
