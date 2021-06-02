@@ -260,7 +260,7 @@
                             <small>We found the following journals/articles related to this project based on name/description</small>
                         </p>
                         <hr>
-                        <div v-for="paper in selected.relatedPapers" :key="paper._id">
+                        <div v-for="paper in sortedPapers" :key="paper._id">
                             <mag :paper="paper"/>
                             <br>
                         </div>
@@ -445,6 +445,9 @@ export default {
     },
 
     computed: {
+        sortedPapers : function() {
+            return this.selected.relatedPapers.sort((a,b)=> b.citationCount - a.citationCount );
+        }
     },
 
     mounted() {

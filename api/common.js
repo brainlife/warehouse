@@ -546,7 +546,8 @@ exports.updateRelatedPaperMag = function(rec,cb) {
                     ret.abstract = abstract.join(' ');
                 }
                 return ret;
-            }); //.slice(0, 20); //only store top 20
+            }).sort((a,b)=> new Date(b.publicationDate) - new Date(a.publicationDate)).
+            filter((v,i,a)=>a.findIndex(t=>(t.title === v.title))===i); //.slice(0, 20); //only store top 20
 
             rec.markModified("relatedPapers");
             rec.save(cb);
