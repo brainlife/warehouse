@@ -102,7 +102,6 @@ export default {
     
     methods: {
         update: function() {
-            console.log("changed", this.github_branch);
             this.$emit('input', {
                 resource: this.preferred_resource,
                 branch: this.github_branch

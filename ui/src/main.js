@@ -216,6 +216,11 @@ Vue.filter('capitalize', v=>{
     return v.toUpperCase();
 });
 
+const numeral = require('numeral');
+Vue.filter('formatNumber', v=>{
+    return numeral(v).format("0,0");
+});
+
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 //
 // config

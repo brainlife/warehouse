@@ -136,7 +136,12 @@ export default {
 
                 this.measures = [];
                 for(let key in data[0]) {
-                    if(["subjectID", "nodeID", "structureID"].includes(key)) continue;
+                    //if(["subjectID", "nodeID", "structureID"].includes(key)) continue;
+                
+                    //?_mean should be treated as ?
+                    if(key.includes("_mean")) key = key.split("_")[0];
+
+                    if(!labels[key]) continue;
                     this.measures.push({id: key, label: labels[key].title});
                 }
 
