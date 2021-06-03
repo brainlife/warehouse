@@ -49,10 +49,10 @@
                     <project :project="project"/>
                 </div>
             </div>
-            
             <br clear="both">
         </div>
     </div>
+    
     <b-button class="button-fixed" @click="newproject">
         New Project
     </b-button>
