@@ -123,12 +123,8 @@ export default {
                     if(q === "") return;
                     let datatypeNameString = Object.keys(this.datatype_name);
                     let key = datatypeNameString.find(name=>name.includes(q));
-                    if(key){
+                    if(key) {
                         id = this.datatype_name[key];
-                    }
-                    console.log(key,id);
-                    console.log(typeof id);
-                    if(id) {
                         ands.push({$or: [
                             {"name": {$regex: q, $options: 'i'}},
                             {"desc": {$regex: q, $options: 'i'}},
