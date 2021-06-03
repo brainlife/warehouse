@@ -52,9 +52,6 @@
             
             <br clear="both">
         </div>
-
-        <pre>{{datatype_name}}</pre>
-
     </div>
     <b-button class="button-fixed" @click="newproject">
         New Project
@@ -130,11 +127,19 @@ export default {
                         id = this.datatype_name[key];
                     }
                     console.log(key,id);
-                    ands.push({$or: [
-                        {"name": {$regex: q, $options: 'i'}},
-                        {"desc": {$regex: q, $options: 'i'}},
-                        {"stats.datasets.datatypes_detail.type" : id}
+                    console.log(typeof id);
+                    if(id) {
+                        ands.push({$or: [
+                            {"name": {$regex: q, $options: 'i'}},
+                            {"desc": {$regex: q, $options: 'i'}},
+                            {"stats.datasets.datatypes_detail.type" : id }
                     ]});
+                    } else {
+                        ands.push({$or: [
+                            {"name": {$regex: q, $options: 'i'}},
+                            {"desc": {$regex: q, $options: 'i'}},
+                        ]});
+                    }
                 });
             }
 
