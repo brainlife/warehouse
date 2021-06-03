@@ -18,7 +18,7 @@
         </div>
 
         <b-alert :show="secondaryError != ''" variant="secondary">{{secondaryError}}</b-alert>
-        <secondary v-if="secondary && product" :task="task" :output="output" :product="product" :secondary="secondary"/>
+        <secondary v-if="secondary && task.product" :task="task" :output="output" :product="task.product" :secondary="secondary"/>
         <span v-else>
             <icon name="cog" spin></icon> Waiting to be archived ...
         </span>
@@ -53,14 +53,14 @@ export default {
 
     data() {
         return {
-            product: null,  //product of dtv
+            //product: null,  //product of dtv
             secondary: null, 
             secondaryError: "",
         }
     },
 
     mounted() {
-        this.loadProduct();
+        //this.loadProduct();
         if(this.task.finish_date) {
             console.log("waiting for secondary acchive");
             this.waitSecondaryArchive(this.task, (err, secondary)=>{
@@ -77,8 +77,6 @@ export default {
     watch: {
         task() {
             if(this.task.finish_date && !this.secondary) {
-                //console.log("watch detected dtv finish");
-                console.log("wait", this.task);
                 this.waitSecondaryArchive(this.task, (err, secondary)=>{
                     if(err) console.error(err);
                     else this.secondary = secondary;
@@ -88,6 +86,7 @@ export default {
     },
 
     methods: {
+        /*
         loadProduct() {
             this.$http.get(Vue.config.wf_api+'/task/product/', {params: {ids: [this.task._id]}}).then(res=>{
                 if(res.data.length == 1) {
@@ -98,6 +97,7 @@ export default {
                 }
             });
         }
+        */
     },
 
 }

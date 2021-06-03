@@ -9,13 +9,31 @@
             <br>
             <b-form inline style="margin: 0 15px;">
                 <b-input-group prepent="Task ID">
-                    <b-form-input v-model="task_id" placeholder="Task ID"/>
+                    <b-form-input v-model="task_id" placeholder="Task ID" style="width: 300px;"/>
                 </b-input-group>
+                &nbsp;
                 <b-btn @click="loadTask()">Open</b-btn>
             </b-form>
             <br>
 
+            <div style="padding: 20px;" v-if="depTasks.length">
+                <span class="form-header">Dep Tasks</span>
+                <p v-for="task in depTasks" :key="task._id">
+                    <!--<b>{{task._id}}</b>-->
+                    <task :task="task"/>
+                </p>
+            </div>
+
             <task v-if="task" :task="task"/>
+
+            <div style="padding: 20px;" v-if="nextTasks.length">
+                <span class="form-header">Next Tasks</span>
+                <p v-for="task in nextTasks" :key="task._id">
+                    <!--<b>{{task._id}}</b>-->
+                    <task :task="task"/>
+                </p>
+            </div>
+
         </b-tab>
         <b-tab title="Switch User"> 
             <br>
@@ -54,6 +72,8 @@ export default {
 
             task_id: "",
             task: null,
+            depTasks: [],
+            nextTasks: [],
 
             ws: null,
         }
@@ -102,9 +122,8 @@ export default {
             this.ws.onopen = (e)=>{
                 console.log("connection opened");
 
-                //load task detail
-                this.$http.get(Vue.config.wf_api+'/task/'+this.task_id)
-                .then(res=>{
+                // load task detail
+                this.$http.get(Vue.config.amaretti_api+'/task/'+this.task_id).then(res=>{
                     this.task = res.data;
 
                     //also subscribe to updates
@@ -113,18 +132,37 @@ export default {
                         key: this.task.instance_id+"."+this.task._id,
                     }}));
 
+                    //load deps
+                    const depIds = this.task.deps_config.map(config=>config.task);
+                    this.$http.get(Vue.config.amaretti_api+'/task', { params: {
+                        find: JSON.stringify({
+                            //follow_task_id: this.task_id
+                            "_id": {$in: [depIds]},
+                        }),
+                    }}).then(res=>{
+                        this.depTasks = res.data.tasks;
+                    }).catch(console.error);
+
                 }).catch(err=>{
                     alert(err);
                 });
+
+                //load tasks that follows it
+                this.$http.get(Vue.config.amaretti_api+'/task', { params: {
+                    find: JSON.stringify({
+                        //follow_task_id: this.task_id
+                        "deps_config.task": this.task_id
+                    }),
+                }}).then(res=>{
+                    this.nextTasks = res.data.tasks;
+                }).catch(console.error);
 
                 this.ws.onmessage = (json)=>{
                     let event = JSON.parse(json.data);
                     console.log("task updated!", event);
                     Object.assign(this.task, event.msg);
                 }
-
             }
-
         },
     },
 }

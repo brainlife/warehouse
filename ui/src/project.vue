@@ -47,7 +47,7 @@
                         </span>
 
                         <span v-if="tabinfo.id == 'groupanalysis' && selected.stats && selected.stats.groupanalysis && selected.stats.groupanalysis.sessions.length > 0" 
-                            title="Number of Group Analysis Sessions" style="opacity: 0.6; font-size: 80%;">
+                            title="Number of analysis sessions" style="opacity: 0.6; font-size: 80%;">
                             &nbsp;{{selected.stats.groupanalysis.sessions.length}}
                         </span>
 

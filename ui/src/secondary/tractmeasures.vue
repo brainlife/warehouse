@@ -35,7 +35,6 @@ export default {
     },
     data() {
         return {
-
             structureIDs: [],
             structure: null, //forcepsMajor, etc..
 
@@ -71,7 +70,7 @@ export default {
                 }
 
                 //load reference
-                const refdata = await fetch('https://raw.githubusercontent.com/brainlife/validator-neuro-tractmeasures/master/reference/tractmeasures_references_v1.json').then(res=>res.json());
+                const refdata = await fetch('https://raw.githubusercontent.com/brainlife/reference/master/neuro/tractmeasures/reference.json').then(res=>res.json());
                 const refNodeCount = 50;
 
                 const labels = {
@@ -229,8 +228,8 @@ export default {
                                     text: "Node Position",
                                     font: {
                                         color: '#999',
+                                        size: 11,
                                     },
-                                    size: 11,
                                 },
                             },
                             yaxis: {

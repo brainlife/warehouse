@@ -52,6 +52,7 @@ function run(sftp, cb) {
     console.debug("finding project that needs to be backed up");
     db.Projects.find({removed: false})
     .sort('create_date')
+    .select('_id name')
     .exec((err, projects)=>{
         if(err) return cb(err);
 
