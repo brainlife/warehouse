@@ -385,6 +385,7 @@ import doibadge from '@/components/doibadge'
 import mag from '@/components/mag'
 import app from '@/components/app'
 
+//import Plotly from '@statnett/vue-plotly'
 import { Plotly } from 'vue-plotly'
 
 //modals

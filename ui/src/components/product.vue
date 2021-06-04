@@ -34,7 +34,8 @@
 <script>
 
 import Vue from 'vue'
-//import VuePlotly from '@statnett/vue-plotly'
+
+//import Plotly from '@statnett/vue-plotly' //doesn't work with 3d
 import { Plotly } from 'vue-plotly'
 
 const alert_types = ["error", "info", "danger", "warning", "success"];
