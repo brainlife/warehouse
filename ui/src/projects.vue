@@ -157,7 +157,6 @@ export default {
                         searchQuery['$or'].push({"stats.datasets.datatypes_detail.type" : this.datatypeName[key]});
                     }
                     ands.push(searchQuery);
-                    console.log(searchQuery);
                 });
             }
 
