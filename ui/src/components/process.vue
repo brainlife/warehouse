@@ -450,9 +450,6 @@ export default {
         },
 
         set_dtv_task(dtv_task) {
-            console.log("setting dtv");
-            console.dir(dtv_task);
-
             if(!this.tasks) return;
             if(!dtv_task.config._outputs) return; //for dev
             if(!dtv_task.follow_task_id) return; //for dev

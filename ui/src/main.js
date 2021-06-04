@@ -128,7 +128,7 @@ import 'vue-awesome/icons/regular/file.js'
 import 'vue-awesome/icons/regular/calendar-times.js'
 import 'vue-awesome/icons/skull-crossbones.js'
 
-import Icon from 'vue-awesome/components/Icon.vue'
+import Icon from 'vue-awesome/components/Icon'
 
 import VueLazyload from 'vue-lazyload'
 import BootstrapVue from 'bootstrap-vue' //bootstrap will eventually replace ElementUI / locale

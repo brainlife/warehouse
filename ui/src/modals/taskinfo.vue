@@ -181,8 +181,10 @@ import tageditor from '@/components/tageditor'
 
 import contact from '@/components/contact'
 import VueMarkdown from 'vue-markdown'
-import { Plotly } from 'vue-plotly'
 
+//import Plotly from '@statnett/vue-plotly'
+import { Plotly } from 'vue-plotly'
+  
 const lib = require('../lib');
 
 export default {
