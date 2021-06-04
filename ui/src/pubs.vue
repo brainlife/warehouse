@@ -10,7 +10,7 @@
     <div class="page-content">
         <b-container>
             <div v-if="!pubs" style="margin: 40px;"><h3>Loading ..</h3></div>
-            <div v-if="!filtered.length && query.length">
+            <div v-if="!filtered.length && query">
                 <p style="opacity: 0.5; margin: 20px; font-size: 120%;">No matching publications</p>
             </div>
             <div v-else style="margin: 10px 0px;">

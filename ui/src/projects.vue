@@ -89,7 +89,7 @@ export default {
             loading: false,
 
             query: "",
-            datatype_name : {},
+            datatypeName : {},
             mode: localStorage.getItem("projects.mode")||"tile",
             config: Vue.config,
         }
@@ -129,13 +129,13 @@ export default {
         },
 
         load() {
-            let datatype_name = this.datatype_name;
-            if(!datatype_name.length){
+            let datatypeName = this.datatypeName;
+            if(!datatypeName.length){
                 console.log("Getting datatypes");
                 this.$http.get('/datatype').then(res=>{
                     res.data.datatypes.forEach(datatype=>{
                         let key = datatype.name;
-                        datatype_name[key] = datatype._id;
+                        datatypeName[key] = datatype._id;
                         });
                     });
             }
@@ -145,24 +145,19 @@ export default {
             if(this.query) {
                 //split query into each token and allow for regex search on each token
                 //so that we can query against multiple fields simultanously
-                let id;
                 this.query.split(" ").forEach(q=>{
                     if(q === "") return;
-                    let datatypeNameString = Object.keys(this.datatype_name);
+                    let datatypeNameString = Object.keys(this.datatypeName);
                     let key = datatypeNameString.find(name=>name.includes(q));
+                    let searchQuery = {$or : [
+                         {"name": {$regex: q, $options: 'i'}},
+                         {"desc": {$regex: q, $options: 'i'}},
+                    ]};
                     if(key) {
-                        id = this.datatype_name[key];
-                        ands.push({$or: [
-                            {"name": {$regex: q, $options: 'i'}},
-                            {"desc": {$regex: q, $options: 'i'}},
-                            {"stats.datasets.datatypes_detail.type" : id }
-                    ]});
-                    } else {
-                        ands.push({$or: [
-                            {"name": {$regex: q, $options: 'i'}},
-                            {"desc": {$regex: q, $options: 'i'}},
-                        ]});
+                        searchQuery['$or'].push({"stats.datasets.datatypes_detail.type" : this.datatypeName[key]});
                     }
+                    ands.push(searchQuery);
+                    console.log(searchQuery);
                 });
             }
 
