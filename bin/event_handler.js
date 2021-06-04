@@ -185,12 +185,11 @@ function handle_task(task, cb) {
 
     //handle event
     async.series([
-        
         //load task product for finished task
         //TODO - can we gurantee that the amaretti/task/product is loaded by the time we received this event?
         next=>{
             if(task.status != "finished") return next();
-            console.log("loading product for ", task._id, task.name);
+            //console.log("loading product for ", task._id, task.name);
             axios.get(config.amaretti.api+"/task/product", {
                 params: {
                     ids: [task._id],
@@ -199,7 +198,8 @@ function handle_task(task, cb) {
             }).then(res=>{
                 if(res.data.length == 1) {
                     task_product = res.data[0].product;
-
+                    //console.log("product is");
+                    //console.dir(task_product);
                 }
                 next();
             }).catch(err=>{
@@ -209,19 +209,44 @@ function handle_task(task, cb) {
             });
         },
         
-        //TODO - I need to apply the task_product (meta, tag, datatype_tags) to task.config._outputs
+        /*
+        //I need to apply the task_product (meta, tag, datatype_tags) to task.config._outputs for further processing below
         next=>{
+            if(task.status != "finished") return next();
+            
+            //some app (like brainlife/app-archive-secondary) doesn't have any output
+            if(!task.config || !task.config._outputs) return next();
+
+            console.log("merging product.json meta/tag/datatype_tags into task.config._outputs");
+            const meta = common.split_product(task_product, task.config._outputs);
+            task.config._outputs.forEach(output=>{
+                output.meta = meta[output.id].meta;
+                output.tags = meta[output.id].tags;
+                output.datatype_tags = meta[output.id].datatype_tags;
+            });
+
+            //when a user create a pipeline like App1 > validator > App2.
+            //App2 needs product.json from validator as part of its config.json / meta.
+            //so when the validator finishes, we need to update dep tasks's config 
+            //with the content from taskproduct BEFORE app2 is started
+        
             next();
         },
+        */
         
         //submit output validators
         next=>{
-            if(/*task.status != "finished" ||*/ !task.config || !task.config._outputs ||  
+            //we don't wait for the job to finish before we submit validator
+            //because UI needs the validator already submitted before next job can be submitted 
+            //to create pipe between App1 > validator > App2.
+            //if(task.status != "finished") return;
+
+            //no output, no validator
+            if(!task.config || !task.config._outputs ||  
                 //don't run on staging tasks
                 !task.deps_config || task.deps_config.length == 0 || 
                 //don't run on validator task output!
-                isValidationTask(task)
-            ) {
+                isValidationTask(task)) {
                 return next();
             } 
 
@@ -265,7 +290,7 @@ function handle_task(task, cb) {
                     _app: task.config._app, //app id
 
                     //prov graph uses _input to travel upstream.. so let's set some info
-                    _input: [Object.assign({}, output, {
+                    _inputs: [Object.assign({}, output, {
                         task_id: task._id,
                         keys: datatype.files.map(f=>f.id), //populate all file ids..
                     })],
@@ -302,6 +327,12 @@ function handle_task(task, cb) {
                 remove_date.setDate(remove_date.getDate()+1); //remove in 1 day
                 
                 //submit datatype validator - if not yet submitted
+                /*
+                console.log("submitting validator ##########################################");
+                console.dir(JSON.stringify(validator_config, null, 4));
+                console.log("-----------task product----------------", task._id);
+                console.dir(JSON.stringify(task_product, null, 4));
+                */
                 let dtv_task = await rp.post({
                     url: config.amaretti.api+"/task",
                     json: true,

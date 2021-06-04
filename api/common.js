@@ -2,7 +2,7 @@
 //TODO switch to axios!
 const request = require('request');
 const rp = require('request-promise-native');
-const stopwords=require('n-stopwords')(['en']);
+const keywordEx = require("keyword-extractor");
 const tmp = require('tmp');
 const mkdirp = require('mkdirp');
 const path = require('path');
@@ -19,7 +19,7 @@ const config = require('./config');
 const db = require('./models');
 const mongoose = require('mongoose');
 
-stopwords.add('undefined');
+
 
 //TODO - user needs to call redis.quit() to quit?
 //exports.redis = redis.createClient(config.redis.port, config.redis.server);
@@ -420,15 +420,27 @@ exports.load_github_detail = function(service_name, cb) {
     }).catch(cb)
 }
 
-exports.generateQuery = function(str) {
-    const alphastr = str.replace(/[^a-z ]/gi, "");
-    const cleanstr = stopwords.cleanText(alphastr);
-    const queries = cleanstr.split(' ').filter(e=>!!e).map(word=>`W='${word}'`);
-    if(queries.length == 0) return null;
-    return "And(OR("+queries.join(',')+"),Composite(F.FN=='neuroscience'))"
+exports.generateQueries = async function(query, cb) {
+    let params = {
+        query,
+        //complete: 1,
+        //count: 4,
+    };
+    const headers = {
+        'Ocp-Apim-Subscription-Key': config.mag.subscriptionKey,
+        'User-Agent': 'brainlife',
+    };
+    const res = await axios.get("https://api.labs.cognitive.microsoft.com/academic/v1.0/interpret",{headers,params});
+    if(res.status != 200) return cb("failed to call mag interpret api");
+    const queries = [];
+    res.data.interpretations.forEach(i=>{
+       const rule = i.rules[0]; //not sure why MAG returns an array of 1
+       queries.push({query: rule.output.value, logprob: i.logprob});
+    });
+    cb(null, queries);
 }
 
-exports.getRelatedPaper = function(query) {
+exports.getRelatedPaper = function(query, cb) {
     let params = {
         expr: query,
         count: 10, 
@@ -441,59 +453,105 @@ exports.getRelatedPaper = function(query) {
         'User-Agent': 'brainlife',
     }
 
-    return axios.get("https://api.labs.cognitive.microsoft.com/academic/v1.0/evaluate",{headers,params});
+    axios.get("https://api.labs.cognitive.microsoft.com/academic/v1.0/evaluate",{headers,params}).then(res=>{
+        if(res.status != 200) return cb("failed to call mag api");
+        cb(null, res.data.entities);
+    });
 }
 
 exports.updateRelatedPaperMag = function(rec,cb) {
-    let query;
-    console.log("--- %s %s", rec.name, rec._id.toString());
-    if(!config.mag) cb("no mag config!!");
-    if(!rec.relatedPapers) rec.relatedPapers = []; //not sure if we need this or not
-    rec.markModified("relatedPapers");
-    if(rec.readMe) query = exports.generateQuery(rec.name+" "+rec.desc+" "+rec.readme);
-    if(rec.tags.length) query = exports.generateQuery(rec.name+" "+rec.tags.join(" "));
-    else query = exports.generateQuery(rec.name+" "+rec.desc);
-    if(!query) {
-        rec.relatedPapers = [];
-        rec.save(cb);
-        return;
-    }
-    console.log("mag query", query, "logprob cutoff", config.mag.lowestProb);
-    exports.getRelatedPaper(query).then(res=>{
-        if(res.status != 200) return cb("failed to call mag api");
-        rec.relatedPapers = res.data.entities
-        .map(paper=>{
-            console.log(paper.logprob, paper.DOI, paper.Ti);
-            const ret = {
-                publicationDate: new Date(paper.D),
-                citationCount: paper.CC,
-                title: paper.Ti, 
-                doi: paper.DOI,
-                venue: paper.VFN, 
-                authors: paper.AA.map(author=>({institution: author.AfN, name: author.DAuN })),
+    console.log("----------------- updateRelatedPaperMag %s %s", rec.name, rec._id.toString());
 
-                logprob: paper.logprob,
-            }
+    //put everything togetehr
+    let str = "";
+    if(rec.tags) str += rec.tags.join(" ")+" ";
+    if(rec.name) str += rec.name+" ";
+    if(rec.desc) str += rec.desc+" ";
+    if(rec.readme) str += rec.readme+" ";
 
-            if(paper.F) ret.fields = paper.F.map(name=>name.FN);
-            if(paper.IA) {
-                let abstract = [];
-                for (const word in paper.IA.InvertedIndex) {
-                    paper.IA.InvertedIndex[word].forEach(idx=>{
-                        abstract[idx] = word;
-                    });
+    //pull keywords
+    let keywords = keywordEx.extract(str,{
+        language:"english",
+        remove_digits: true,
+        //return_changed_case: true,
+        return_chaned_words: true,
+        remove_duplicates: true,
+    });
+
+    //remove keywords that starts with odd characters (like "/", "##", etc..)
+    keywords = keywords.filter(w=>w.match(/^[a-z0-9]/i));
+
+    //pick the first N words
+    keywords = keywords.slice(0, 20); //too big?
+
+    console.log("using keywods", keywords);
+    if(!keywords.length) cb(); //no keywords, no paper..
+
+    let papers = [];
+    exports.generateQueries(keywords.join(" "), (err, queries)=>{
+        if(err) return cb(err);
+        async.eachSeries(queries, (query, next_query)=>{
+            console.log("--- query ", query);
+            exports.getRelatedPaper(query.query, (err, entities)=>{
+                if(err) return next_query(err);
+                entities.forEach(entity=>{
+                    console.log(entity.logprob, entity.DOI, entity.Ti);
+
+                    if(!entity.DOI) return; //ignore ones without DOI
+
+                    //"multiply" by the query probability
+                    entity.logprob+=query.logprob;
+
+                    //dedupe papers and check for doi
+                    const existingPaper = papers.find(paper=>paper.Id == entity.Id);
+
+                    if(existingPaper) {
+                        existingPaper.logprob += 5; //boost prob if we found more than once
+                        if(existingPaper.logprob < entity.logprob) existingPaper.logprob = entity.logprob;
+                    } else {
+                        papers.push(entity);
+                    }
+                });
+                next_query();
+            });
+        }, err=>{
+            if(err) return cb(err);
+
+            //sort papers by logprob
+            papers.sort((a,b)=>b.logprob - a.logprob);
+
+            //map to relatedPapers object
+            console.log("---------- final results ------------");
+            rec.relatedPapers = papers.map(paper=>{
+                console.log(paper.logprob, paper.DOI, paper.Ti);
+                const ret = {
+                    publicationDate: new Date(paper.D),
+                    citationCount: paper.CC,
+                    title: paper.Ti, 
+                    doi: paper.DOI,
+                    venue: paper.VFN, 
+                    authors: paper.AA.map(author=>({institution: author.AfN, name: author.DAuN })),
+
+                    logprob: paper.logprob,
                 }
-                ret.abstract = abstract.join(' ');
-            }
-            return ret;
-        }).filter(a => a.logprob > config.mag.lowestProb)
-        rec.save(cb);
-    }).catch(res=>{
-        console.log(res.toString());
-        //mag api returns 500 if paper doesn't exist.. so we can not tell the difference between
-        //api issue v.s. empty papwers.. so we return null object to cb()
-        console.log("skipping to the next paper");
-        cb();
+
+                if(paper.F) ret.fields = paper.F.map(name=>name.FN);
+                if(paper.IA) {
+                    let abstract = [];
+                    for (const word in paper.IA.InvertedIndex) {
+                        paper.IA.InvertedIndex[word].forEach(idx=>{
+                            abstract[idx] = word;
+                        });
+                    }
+                    ret.abstract = abstract.join(' ');
+                }
+                return ret;
+            }).sort((a,b)=> new Date(b.publicationDate) - new Date(a.publicationDate)).
+            filter((v,i,a)=>a.findIndex(t=>(t.title === v.title))===i); //.slice(0, 20); //only store top 20
+
+            rec.markModified("relatedPapers");
+            rec.save(cb);
+        });
     });
 }
 
@@ -681,36 +739,36 @@ exports.doi_put_url = function(doi, url, cb) {
     });
 }
 
+exports.cacheContact = function(cb) {
+    console.debug("caching contacts");
+    axios.get(config.auth.api+"/profile/list", {
+        params: {
+            limit: 5000, //TODO -- really!?
+        },
+        headers: { authorization: "Bearer "+config.warehouse.jwt }, //config.auth.jwt is deprecated
+    }).then(res=>{
+        if(res.status != 200) console.error("couldn't cache auth profiles. code:"+res.status);
+        else {
+            cachedContacts = {};
+            res.data.profiles.forEach(profile=>{
+                cachedContacts[profile.sub] = profile;
+            });
+            //console.log("cached profile len:", res.data.profiles.length);
+            if(cb) cb();
+        }
+    }).catch(err=>{
+        if(cb) cb(err);
+        else console.error(err);
+    });
+}
+
 //call this if you want to use API that uses contact cache
 //TODO - update cache from amqp events instead?
 let cachedContacts = null;
 exports.startContactCache = function(cb) {
-    function cacheContact(_cb) {
-        console.debug("caching contacts");
-        axios.get(config.auth.api+"/profile/list", {
-            params: {
-                limit: 5000, //TODO -- really!?
-            },
-            headers: { authorization: "Bearer "+config.warehouse.jwt }, //config.auth.jwt is deprecated
-        }).then(res=>{
-            if(res.status != 200) console.error("couldn't cache auth profiles. code:"+res.status);
-            else {
-                cachedContacts = {};
-                res.data.profiles.forEach(profile=>{
-                    cachedContacts[profile.sub] = profile;
-                });
-                //console.log("cached profile len:", res.data.profiles.length);
-                if(_cb) _cb();
-            }
-        }).catch(err=>{
-            if(_cb) _cb(err);
-            else console.error(err);
-        });
-    }
-
     console.log("starting contactCache");
-    setInterval(cacheContact, 1000*60*30); //cache every 30 minutes
-    cacheContact(cb);
+    setInterval(exports.cacheContact, 1000*60*30); //cache every 30 minutes
+    exports.cacheContact(cb);
 }
 
 exports.deref_contact = function(id) {
@@ -736,7 +794,7 @@ exports.split_product = function(task_product, outputs) {
     //create global product (everything except output.id keys)
     let global_product = Object.assign({}, task_product); //copy
     if(!Array.isArray(outputs)) {
-        console.error("broken outputs info");
+        console.error("outputs should be an array.. given:", outputs);
         return {};
     }
     outputs.forEach(output=>{
@@ -1022,13 +1080,16 @@ exports.update_project_stats = async function(project, cb) {
         let app_stats = [];
         recs.forEach(rec=>{
             app_stats.push({
-                app: rec.app._id,
+                count: rec.count,
+                app: rec.app,
+                task: rec.task,
+                /*
                 name: rec.app.name,
                 doi: rec.app.doi,
 
                 service: rec.service,
                 service_branch: rec.service_branch,
-                count: rec.count,
+                */
             });
         })
 

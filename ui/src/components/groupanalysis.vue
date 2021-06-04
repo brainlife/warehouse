@@ -10,11 +10,14 @@
     </div>
 
     <div v-if="!selected && !ready" class="page-content">
-        <p style="padding: 20px">Loading...</p>
+        <p style="margin: 20px; opacity: 0.5; font-size: 170%;"><icon name="cog" spin scale="1.5"/> Loading...</p>
     </div>
 
     <div v-if="!selected && ready" class="page-content">
-        <div style="padding: 20px; opacity: 0.5;" v-if="!visibleSessions.length">Please create a new analysis session.</div>
+        <div style="margin: 20px;" v-if="!visibleSessions.length">
+            <br>
+            <p class="text-muted">Please create a new analysis session.</p>
+        </div>
         <div v-if="visibleSessions.length">
 
             <!--header-->

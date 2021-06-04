@@ -157,8 +157,6 @@ import contact from '@/components/contact'
 
 import resourceCache from '@/mixins/resource_cache'
 
-//let resource_cache = {};
-
 export default {
     mixins: [ resourceCache ],
     props: ['task'],

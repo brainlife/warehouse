@@ -40,3 +40,16 @@ describe.skip('workflows', ()=>{
     });
 });
 
+describe('mag', ()=>{
+    const common = require('../api/common');
+    const db = require('../api/models');
+    console.log("connecting to db");
+    db.init(()=>{
+        it('query', async done=>{
+            const project = await db.Project.findById("5acbf95ffd018278d693215b"); //stockholm sleepybrain project
+            console.dir(project);
+            common.updateRelatedPaperMag(project, done);
+        });
+    });
+});
+

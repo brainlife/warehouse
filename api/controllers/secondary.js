@@ -138,7 +138,7 @@ router.get('/:task_id/*', common.jwt({
     const clean_p = path.resolve(prefix+"/"+p);
 
     //console.debug("p", p);
-    //console.debug("clean_p", clean_p);
+    console.debug("clean_p", clean_p);
     //console.debug("prefix", prefix);
 
     if(!clean_p.startsWith(prefix)) return next("invalid path");

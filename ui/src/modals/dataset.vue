@@ -730,7 +730,7 @@ export default {
                 if(this.dataset.archive_task) Object.assign(this.dataset.archive_task, res.data);
                 else Vue.set(this.dataset, 'archive_task', res.data)
 
-                if(res.data.status != "finished" && res.data.status != "failed") {
+                if(!["finished", "failed", "removed"].includes(res.data.status)) {
                     console.log("polling archive task update", res.data.status)
                     this.tm_load_archive_task = setTimeout(this.load_archive_task, 5000); 
                 }

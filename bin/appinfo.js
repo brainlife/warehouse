@@ -13,18 +13,15 @@ const common = require('../api/common');
 
 console.log("running appinfo");
 
-common.startContactCache(err=>{
+db.init(err=>{
     if(err) throw err;
-    db.init(err=>{
-        if(err) throw err;
-        rcon = redis.createClient(config.redis.port, config.redis.server);
-        rcon.on('error', err=>{throw err});
-        rcon.on('ready', ()=>{
-            logger.info("connected to redis");
-            setInterval(health_check, 1000*60*2); //start checking health 
-            setTimeout(health_check, 1000*10); //run shortly after start
-            run();
-        });
+    rcon = redis.createClient(config.redis.port, config.redis.server);
+    rcon.on('error', err=>{throw err});
+    rcon.on('ready', ()=>{
+        logger.info("connected to redis");
+        setInterval(health_check, 1000*60*2); //start checking health 
+        setTimeout(health_check, 1000*10); //run shortly after start
+        run();
     });
 });
 
@@ -40,19 +37,25 @@ function health_check() {
 }
 
 function run() {
-	db.Apps.find({
-        removed: false,
-    })
-    //.populate('app project')
-    .exec((err, apps)=>{
-		if(err) throw err;
-        report.app_counts = apps.length;
-        async.eachSeries(apps, handle_app, err=>{
-            if(err) logger.error(err);
-            console.log("done going through all apps sleeping.....");
-            setTimeout(run, 1000*3600*3);
+
+    //cache contact info first
+    common.cacheContact(err=>{
+        if(err) console.error(err);
+
+        //then load apps 
+        db.Apps.find({
+            removed: false,
+        })
+        .exec((err, apps)=>{
+            if(err) throw err;
+            report.app_counts = apps.length;
+            async.eachSeries(apps, handle_app, err=>{
+                if(err) logger.error(err);
+                console.log("done going through all apps sleeping.....");
+                setTimeout(run, 1000*3600*3);
+            });
         });
-	});
+    });
 }
 
 function handle_app(app, cb) {

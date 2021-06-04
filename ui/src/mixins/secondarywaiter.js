@@ -27,6 +27,7 @@ export default {
                     'deps_config.task': task._id, //should be dtv._id (task.follow_task_id will be the actual app task id) - unless directly archived
                 }),
                 populate: 'finish_date status',
+                sort: '-finish_date',
                 limit: 1,
             }})
             .then(res=>{
@@ -35,17 +36,19 @@ export default {
                         this.waitSecondaryArchive(task, cb);
                     }, 3000);
                 } else if(res.data.tasks.length == 1) {
-                    let _task = res.data.tasks[0];
+                    let _task = res.data.tasks[0]; //pick the latest one?
                     if(_task.finish_date) {
                         cb(null, _task);
                     } else {
                         if(_task.status == "requested" || _task.status == "running") {
                             //secondary data not yet archived? pull again later
+                            console.log("will wait a bit for secondary archive");
                             this.tm = setTimeout(()=>{
                                 this.waitSecondaryArchive(task, cb);
                             }, 3000);
                         } else {
-                            cb("secondary task failed?");
+                            cb(`secondary archive task (${_task._id}) status:${_task.status}`);
+                            console.error(_task);
                         }
                     }
                 }

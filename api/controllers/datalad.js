@@ -92,6 +92,13 @@ router.post('/import/:dataset_id', common.jwt(), (req, res, next)=>{
             db.DLDatasets.updateOne({_id: dataset._id}, {$inc: {import_count: 1} }).then(err=>{
                 if(err) console.error(err);
                 else console.log("incremented import_count");
+                common.publish("datalad.import."+req.user.sub+"."+project._id+"."+dataset._id, {
+                    datatypes: req.body.datatypes,
+
+                    //include some key information 
+                    path: dataset.path,
+                    commit_id: dataset.commit_id,
+                }); 
             });
 
             //add to importedDLDatasets 

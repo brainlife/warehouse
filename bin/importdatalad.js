@@ -47,6 +47,13 @@ db.init(async err=>{
         if(dataset_path.includes("/derivatives")) return next_dir(); //openneuro/ds001734/derivatives contains dataset_description.json
         if(dataset_path.includes("/.bidsignore")) return next_dir(); //openneuro/ds001583
 
+        //somehow it gets stuck... (not bids walker issue?)
+        //TODO - fix it!
+        if(dataset_path == "OpenNeuroDatasets/ds001499") return next_dir();
+        if(dataset_path == "OpenNeuroDatasets/ds003634") return next_dir();
+        if(dataset_path == "OpenNeuroDatasets/ds003505") return next_dir();
+        if(dataset_path == "OpenNeuroDatasets/ds002785") return next_dir();
+
         //debug
         //if(dataset_path != "datasets.datalad.org/openneuro/ds001590") return next_dir();
 

@@ -205,10 +205,10 @@
 
             <b-row>
                 <b-col cols="3">
-                    <span class="form-header">Group Analysis</span>
+                    <span class="form-header">Analysis Datatype</span>
                 </b-col> 
                 <b-col cols="9">
-                    <input type="checkbox" v-model="datatype.groupAnalysis"> (experimental) This datatype will be available for group analysis </input>
+                    <input type="checkbox" v-model="datatype.groupAnalysis"> The output of this datatype will be made available for data analysis via Jupyter notebook under the Analysis tab </input>
                     <small>The maximum amount of data will be limited to 64MB per data object</small>
                     <br>
                 </b-col>
@@ -221,6 +221,9 @@
                 </b-container>
             </div>
                 
+            <br>
+            <br>
+            <br>
             <br>
             <br>
             <br>

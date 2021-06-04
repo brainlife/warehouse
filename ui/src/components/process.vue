@@ -65,7 +65,7 @@
                                 <span style="opacity: 0.5;">
                                     <small v-for="(tag,idx) in input.tags" :key="idx"> | {{tag}} </small>
                                 </span>
-                                <b-badge variant="danger">Removed</b-badge>
+                                <b-badge variant="danger">Unstaged</b-badge>
                             </div>
                             <small class="ioid" v-if="task.app">({{compose_desc(task.app.inputs, input.id)}})</small>
                         </div>
@@ -162,15 +162,20 @@
                                 </ul>
                             </div>
 
-                            <b-collapse :id="task._id+'.'+output.id" style="margin-top: 8px; margin-right: 20px;">
+                            <b-collapse :id="task._id+'.'+output.id" style="margin-top: 8px;">
                                 <div class="subtitle">Metadata</div>
-                                <pre style="max-height: 300px; background-color: #eee;">{{JSON.stringify(output.meta, null, 4)}}</pre>
+                                <small>from config._output</small>
+                                <pre style="max-height: 300px; background-color: #eee; padding: 5px 10px;">{{JSON.stringify(output.meta, null, 4)}}</pre>
+                                <p v-if="Object.keys(findProductMeta(task, output.id)).length">
+                                    <small>from product.json</small>
+                                    <pre style="max-height: 300px; background-color: #eee; padding: 5px 10px;">{{JSON.stringify(findProductMeta(task, output.id), null, 4)}}</pre>
+                                </p>
                             </b-collapse>
 
-                            <dtv :task="output.dtv_task" :output="output" v-if="task.status == 'finished' && output.dtv_task"/>
+                            <dtv v-if="task.status == 'finished' && output.dtv_task" :task="output.dtv_task" :output="output"/>
                             <div v-if="output.secondary_task" style="font-size: 90%; padding: 5px 10px; border: 2px solid #eee; border-radius: 5px; margin-top: 5px; color: #888;">
                                 <span v-if="output.secondary_task.finish_date">
-                                    Ready for Group Analysis
+                                    Ready for Analysis
                                 </span>
                                 <span v-else>
                                     <statusicon :status="output.secondary_task.status"/>
@@ -371,6 +376,7 @@ export default {
             var datasets = [];
             this.tasks.forEach(task=>{
                 if(task.status == "removed") return;
+                if(task.status == "stop_requested") return;
                 if(task.status == "stopped") return;
                 if(task.status == "failed") return; 
                 if(task.follow_task_id) return; //don't let user select validator directly (we will fake it)
@@ -385,6 +391,13 @@ export default {
                         output = output.dtv_task.config._outputs[0];
                         t.name = task.name + " (validated)";
                     }
+
+                    /*
+                    //merge product.json content to output meta
+                    if(task.product && task.product[output.id] && task.product[output.id].meta) {
+                        Object.assign(output.meta, task.product[output.id].meta);
+                    }
+                    */
 
                     datasets.push({
                         task: t,
@@ -409,6 +422,8 @@ export default {
 
             return datasets;
         },
+
+
     },
 
     watch: {
@@ -423,7 +438,21 @@ export default {
     },
 
     methods: {
+        findProductMeta(task, output_id) {
+            const meta = {};
+            if(task.product) {
+                //root level meta
+                if(task.product.meta) Object.assign(meta, task.product.meta);
+                //object specific meta
+                if(task.product[output_id] && task.product[output_id].meta) Object.assign(meta, task.product[output_id].meta);
+            }
+            return meta;
+        },
+
         set_dtv_task(dtv_task) {
+            console.log("setting dtv");
+            console.dir(dtv_task);
+
             if(!this.tasks) return;
             if(!dtv_task.config._outputs) return; //for dev
             if(!dtv_task.follow_task_id) return; //for dev
@@ -431,6 +460,8 @@ export default {
             //first find the task and output that dtv follows
             let task = this.tasks.find(task=>task._id == dtv_task.follow_task_id);
             if(!task) return; //for dev?
+
+            console.log("proceed");
 
             //then find the output that dtv ran for
             let output_id = dtv_task.config._outputs[0].id;
@@ -544,6 +575,7 @@ export default {
             this.$refs.process.scrollTop = elem.offsetTop;//top;
             history.replaceState(null, null, '#'+id);
         },
+
         open_dataset(id) {
             this.$root.$emit('dataset.view', {id});
         },
@@ -614,7 +646,7 @@ export default {
                             if(!t) this.tasks.push(task); 
 
                             this.set_dtv_task(task);
-                            if(task.status == "finished") this.loadProduct([task]);
+                            if(task.status == "finished") this.loadProducts([task]);
                         } else if(task.service == "brainlife/app-archive-secondary") {
                             this.set_secondary_task(task);
                         } else if(task.config._tid) {
@@ -630,7 +662,7 @@ export default {
                                     this.$forceUpdate();
                                 });
                                 this.tasks.push(task); 
-                                this.loadProduct([task]);
+                                this.loadProducts([task]);
                                 Vue.nextTick(()=>{
                                     this.scrollto(task._id);
                                 });
@@ -647,7 +679,7 @@ export default {
                                         type = "error"; 
                                         break;
                                     case "finished": 
-                                        this.loadProduct([t]);
+                                        this.loadProducts([t]);
                                         type = "success"; 
                                         break;
                                     case "stopped": 
@@ -683,25 +715,29 @@ export default {
                 };
             };
 
+            //load all tasks for this instance (including removed ones - we need to load validator)
             this.$http.get(Vue.config.amaretti_api+'/task', {params: {
                 find: JSON.stringify({
                     instance_id: this.instance._id,
-
-                    //TODO - need to load validator that's removed - as validator gets removed quickly but we still need them for provenance?
-                    status: {$ne: "removed"}, 
                 }),
                 limit: 1000, //should be enough.. for now?
                 sort: 'create_date',
-                select: '-product', //task.product is deprecated (use taskproduct collection instead)
+                //select: '-product', //task.product is deprecated (use taskproduct collection instead)
             }})
             .then(res=>{
-                //load product separately.. TODO - maybe I should implement a batch product loader?
-                this.loadProduct(res.data.tasks);
+                //load products
+                this.tasks = res.data.tasks.filter(task=>{
+                    console.log(task._id, task.service, task.status, task.follow_task_id);
 
-                //find "ui" tasks
-                //this.tasks = res.data.tasks.filter(task=>Boolean(task.config._tid) && task.status != 'removed');
-
-                this.tasks = res.data.tasks.filter(task=>task.status != 'removed');
+                    //we want to load validator product as long as follow_task_id isn't removed yet
+                    if(task.service.includes("brainlife/validator-")) {
+                        const followed = res.data.tasks.find(t=>t._id == task.follow_task_id);
+                        if(followed.status != "removed") return true;
+                    }
+                    if(task.status == 'removed') return false; //for other tasks, load product if it's not removed
+                    return true;
+                });
+                this.loadProducts(this.tasks);
 
                 //sort dtv tasks into corresponding task
                 this.dtv_tasks = {};
@@ -723,7 +759,6 @@ export default {
                 this.tasks.forEach(task=>{
                     if(task.config._app) this.appcache(task.config._app, (err, app)=>{
                         if(err) return console.error(err);
-                        //task.app = app;
                         Vue.set(task, 'app', app); //see if this cures the missing app info bug
                     });
                 });
@@ -745,12 +780,25 @@ export default {
             });
         },
 
-        loadProduct(tasks) {
-            let ids = tasks.map(task=>task._id);
+        loadProducts(tasks) {
+            let ids = this.tasks.map(task=>task._id);
             this.$http.get(Vue.config.amaretti_api+'/task/product/', {params: {ids}}).then(res=>{
                 res.data.forEach(rec=>{
-                    let task = tasks.find(t=>t._id == rec.task_id);
+                    if(!rec.product) return;
+                    let task = this.tasks.find(t=>t._id == rec.task_id);
+                    //if(!task) console.error("can't find task with id", rec.task_id, "to set product");
                     Vue.set(task, 'product', rec.product);
+
+                    /* //let's do this in amaretti/task
+                    //apply product to _output.meta so subsequent jobs gets correct set of meta
+                    if(!task.config._outputs) return;
+                    task.config._outputs.forEach(output=>{
+                        if(!output.meta) output.meta = {};
+                        if(rec.product[output.id] && rec.product[output.id].meta) {
+                            Object.assign(output.meta, rec.product[output.id].meta);
+                        }
+                    });
+                    */
                 });
             });
         },

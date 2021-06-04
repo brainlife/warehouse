@@ -336,7 +336,7 @@ Normally, the App description is automatically pulled from github repo descripti
                             </b-col>
                             <b-col cols="7">
                                 <div class="text-muted">Datatype Tags</div>
-                                <tageditor placeholder="Tags" v-if="input.datatype" v-model="input.datatype_tags" :options="datatypes[input.datatype]._tags" />
+                                <tageditor placeholder="Tags" v-if="input.datatype && datatypes[input.datatype]" v-model="input.datatype_tags" :options="datatypes[input.datatype]._tags" />
                                 <small class="text-muted">Only allow user to select datasets with these tags. You can prefix tags with ! for negative tags</small>
                             </b-col>
                         </b-row>
@@ -431,7 +431,7 @@ Normally, the App description is automatically pulled from github repo descripti
                                 <datatype :datatype="datatypes[output.datatype]" style="margin-top: 5px;" v-if="output.datatype" :clickable="false"/>
                             </b-col>
                             <b-col cols="7">
-                                <div v-if="output.datatype">
+                                <div v-if="output.datatype && datatypes[output.datatype]">
                                     <div class="text-muted">Datatype Tags</div>
                                     <tageditor v-model="output.datatype_tags" :options="datatypes[output.datatype]._tags" />
                                     <small class="text-muted">Set these datatype tags on this output dataset</small>

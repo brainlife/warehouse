@@ -104,7 +104,7 @@ export default {
         appid: String,
         branch: String, //branch to show instead of current app github_branch
         clickable: {type: Boolean, default: true},
-        height: String, //"200px"
+        height: String,
         showDoi: {type: Boolean, default: false},
     },
 
@@ -183,9 +183,7 @@ transition: color 0.5s;
 opacity: 0.85;
 margin-top: 0px;
 padding: 7px;
-/*
 margin-bottom: 32px;
-*/
 
 font-size: 11px;
 color: #444;

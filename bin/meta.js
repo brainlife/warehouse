@@ -99,6 +99,10 @@ db.init(err=>{
 });
 
 function format_date(d) {
+    if(!d) {
+        console.error("null date passed to format_date");
+        return null;
+    }
     let month = '' + (d.getMonth() + 1);
     let day = '' + d.getDate();
     let year = d.getFullYear();

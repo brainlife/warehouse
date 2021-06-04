@@ -61,7 +61,7 @@
     <b-form v-if="app" class="submit-form" @submit="submit">
         <div class="form-body">
             <div class="selected-app">
-                <app :app="app" :clickable="false"/>
+                <app :app="app" :clickable="false" height="inherit"/>
             </div>
             <div style="margin: 20px">
                 <b-row v-for="(input, input_id) in inputs" :key="input_id" style="margin-bottom: 5px;">
@@ -338,6 +338,11 @@ export default {
                     });
                 });
                 app.outputs.forEach(output=>{
+                    if(!output.datatype) {
+                        //happens on dev..
+                        console.error(output);
+                        return; 
+                    }
                     if(output.datatype.name.toLowerCase().includes(l_filter)) match = true;
                     if(output.datatype_tags) output.datatype_tags.forEach(tag=>{
                         if(tag.toLowerCase().includes(l_filter)) match = true;

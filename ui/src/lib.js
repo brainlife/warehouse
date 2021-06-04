@@ -113,4 +113,19 @@ export function mergeDeep(target, ...sources) {
   return mergeDeep(target, ...sources);
 }
 
-
+export function parseCSV(csv) {
+    const csv_rows = csv.split("\n"); 
+    const headers = csv_rows.shift().split(",");
+    const rows = [];
+    csv_rows.forEach(csv_row=>{
+        const values = csv_row.split(",");
+        const row = {};
+        values.forEach((v,idx)=>{
+            const f = parseFloat(v);
+            if(!isNaN(f)) v = f;
+            row[headers[idx]] = v;
+        });
+        rows.push(row);
+    });
+    return rows;
+}
