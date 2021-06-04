@@ -24,6 +24,8 @@
 <script>
 import Vue from 'vue'
 import axios from 'axios'
+
+//import Plotly from '@statnett/vue-plotly'
 import { Plotly } from 'vue-plotly'
 
 import { parseCSV } from '@/lib'
