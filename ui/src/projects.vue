@@ -89,6 +89,7 @@ export default {
             loading: false,
 
             query: "",
+            datatypeName : {},
             mode: localStorage.getItem("projects.mode")||"tile",
             config: Vue.config,
         }
@@ -128,6 +129,16 @@ export default {
         },
 
         load() {
+            let datatypeName = this.datatypeName;
+            if(!datatypeName.length){
+                console.log("Getting datatypes");
+                this.$http.get('/datatype').then(res=>{
+                    res.data.datatypes.forEach(datatype=>{
+                        let key = datatype.name;
+                        datatypeName[key] = datatype._id;
+                        });
+                    });
+            }
             let ands = [
                 {removed: false, "openneuro": {$exists: false}},
             ];
@@ -136,10 +147,16 @@ export default {
                 //so that we can query against multiple fields simultanously
                 this.query.split(" ").forEach(q=>{
                     if(q === "") return;
-                    ands.push({$or: [
-                        {"name": {$regex: q, $options: 'i'}},
-                        {"desc": {$regex: q, $options: 'i'}},
-                    ]});
+                    let datatypeNameString = Object.keys(this.datatypeName);
+                    let key = datatypeNameString.find(name=>name.includes(q));
+                    let searchQuery = {$or : [
+                         {"name": {$regex: q, $options: 'i'}},
+                         {"desc": {$regex: q, $options: 'i'}},
+                    ]};
+                    if(key) {
+                        searchQuery['$or'].push({"stats.datasets.datatypes_detail.type" : this.datatypeName[key]});
+                    }
+                    ands.push(searchQuery);
                 });
             }
 
