@@ -197,7 +197,7 @@ export default {
                         this.other_projects.push(p);
                     }
                     if(localStorage.getItem("recent_projectid")){
-                        const recentProjects = JSON.parse(localStorage.getItem("recent_projectid")).slice(0).slice(-5);
+                        const recentProjects = JSON.parse(localStorage.getItem("recent_projectid"));
                         if(recentProjects && recentProjects.includes(p._id.toString())) {
                             this.recentProjects.push(p);
                         }
