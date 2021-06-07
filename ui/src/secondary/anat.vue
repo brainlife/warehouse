@@ -2,7 +2,7 @@
 <div>
     <b-row>
         <b-col v-for="(image, idx) in images" :key="idx">
-            <b>{{image.name}}</b><br>
+            <small>{{image.name}}</small><br>
             <a target="download" :href="image.url">
                 <img :src="image.url"/>
             </a>

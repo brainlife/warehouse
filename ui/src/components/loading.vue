@@ -48,11 +48,12 @@ export default {
 }
 .loading-message {
     text-align: center;
-    color: black;
+    color: #0009;
     font-size: 125%;
     text-shadow: 0px 0px 4px #fff9;
+    background-color: #fff9;
     padding: 30px;
-    margin: 25%;
+    width: 100%;
 }
 .fade-enter-active, .fade-leave-active {
     transition: opacity .5s;

@@ -213,12 +213,17 @@ export default {
                     } else {
                         sources[rec.source].y.push(rec.structurename);
 
+                        //we don't have quartile.. so let's approximate
+                        const q1 = stat.mean - stat.sd*0.675;
+                        const q3 = stat.mean + stat.sd*0.675;
+                        //const iqr = q3 - q1;
+                        
                         sources[rec.source].lowerfence.push(stat.min);
                         sources[rec.source].upperfence.push(stat.max);
 
                         //we don't have q1/median/q3.. let's approximate from mean/sd
-                        sources[rec.source].q1.push(stat.mean - stat.sd*0.675);
-                        sources[rec.source].q3.push(stat.mean + stat.sd*0.675);
+                        sources[rec.source].q1.push(q1);
+                        sources[rec.source].q3.push(q3);
                         sources[rec.source].median.push(stat.mean);
 
                         /*

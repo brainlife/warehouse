@@ -9,7 +9,6 @@
                         <b-btn @click="edit" v-if="canedit" variant="secondary" size="sm"><icon name="edit"/> Edit</b-btn>
                     </div>
                     <h2>
-                        <!--<datatypetag :datatype="datatype" :trimname="!!(~datatype.name.indexOf('neuro/'))"/>-->
                         <datatypetag :datatype="datatype" :trimname="false"/>
                     </h2>
 
@@ -106,7 +105,7 @@
                                 <span style="background-color: #ddd; padding: 2px 5px; display: inline-block;">{{entry.datatype_tag}}</span>
                             </b-col>
                             <b-col cols="9">
-                                <p>{{entry.desc}}</p>
+                                <vue-markdown :source="entry.desc" class="readme"/>
                             </b-col>
                         </b-row>
 

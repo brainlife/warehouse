@@ -139,7 +139,8 @@ import VueTimeago from 'vue-timeago'
 
 import SocialSharing from 'vue-social-sharing';
 
-import VueAnalytics from 'vue-analytics'
+//import VueAnalytics from 'vue-analytics'
+import VueGtag from 'vue-tag'
 
 import axios from 'axios'
 import VueAxios from 'vue-axios'
@@ -330,7 +331,10 @@ router.beforeEach(function (to, from, next) {
 });
 
 if (!Vue.config.debug) {
-    Vue.use(VueAnalytics, { id: 'UA-118407195-1', router })
+    Vue.use(VueGtag, { 
+        //pageTrackerExcludedRotues: ['route_path_value', 'route_name_value'],
+        config: { id: 'UA-118407195-1' }
+    }, router)
 }
 
 const soundHost = "https://raw.githubusercontent.com/brainlife/warehouse/master/ui/sounds/";

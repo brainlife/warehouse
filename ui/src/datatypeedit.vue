@@ -166,7 +166,8 @@
                                 </b-input-group>
                             </b-col>
                             <b-col cols="7">
-                                <b-form-textarea :rows="2" v-model="tag.desc" placeholder="Enter description for this tag"/>
+                                <b-form-textarea :rows="5" v-model="tag.desc" placeholder="Enter description for this tag"/>
+                                <small>markdown</small>
                             </b-col>
                             <b-col cols="1">
                                 <div class="button" @click="remove_tag(tag)" style="float: right;"><icon name="trash"/></div>
