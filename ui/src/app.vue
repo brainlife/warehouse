@@ -12,14 +12,8 @@
     <div v-if="app" class="page-content">
         <div class="header">
             <b-container style="position: relative;">
-                <!--
-                <div @click="back()" class="button button-page">
-                    <icon name="angle-left" scale="1.5"/>
-                </div>
-                -->
                 <div style="float: right; position: relative; z-index: 3">
                     <a :href="'https://github.com/'+app.github" :target="app.github"><span class="button" title="github"><icon name="brands/github" scale="1.25"/></span></a>
-                   
                     <span class="button" @click="go('/app/'+app._id+'/edit')" v-if="app._canedit" title="Edit"><icon name="edit" scale="1.25"/></span>                
                     <b-dropdown size="sm" variant="link" toggle-class="text-decoration-none" no-caret>
                         <template v-slot:button-content style="padding: 0px;">
@@ -75,65 +69,58 @@
         </div><!--header-->
 
         <!-- detail -->
-        <div v-if="tab == 0">
-            <div style="background-color: white; padding-top: 10px; border-bottom: 1px solid #ddd;">
-                <b-container>
-                    <div style="border-bottom: 1px solid #eee; margin-bottom: 10px;">
-                        <appavatar :app="app" style="float: right; position: relative; top: -15px; margin-left: 15px;" :width="150" :height="150"/>
-
-                        <!--badges-->
-                        <p style="line-height: 250%; margin-bottom: 10px;">
-                            <doibadge :doi="app.doi" v-if="app.doi"/>
-
-                            <b-badge pill v-if="app.create_date" class="bigpill" title="Registration Date">
-                                <icon name="calendar" style="opacity: 0.4;"/>&nbsp;&nbsp;&nbsp;<small>Registerd</small>&nbsp;&nbsp;{{new Date(app.create_date).toLocaleDateString()}}
-                            </b-badge>
-
-                            <b-badge pill class="bigpill" v-if="app.stats && app.stats.users" title="Users who executed this App">
-                                <icon name="user-cog" style="opacity: 0.4;"/>&nbsp;&nbsp;&nbsp;{{app.stats.users}}&nbsp;&nbsp;<small>Users</small>
-                            </b-badge>
-
-                            <b-badge pill class="bigpill" v-if="app.stats && app.stats.requested" title="Number of time this App was requested">
-                                <icon name="play" style="opacity: 0.4;"/>&nbsp;&nbsp;&nbsp;{{app.stats.requested}}&nbsp;&nbsp;<small>Requests</small>
-                            </b-badge>
-
-                            <b-badge pill v-if="app.stats && app.stats.runtime_mean" class="bigpill" title="Average Runtime of 100 most recent jobs">
-                                <icon name="clock" style="opacity: 0.4;"/>&nbsp;&nbsp;&nbsp;{{avg_runtime(app.stats.runtime_mean, app.stats.runtime_std)}}
-                            </b-badge>
-                        </p>
-                        <p style="line-height: 180%;">{{app.desc_override||app.desc}}</p>
-
-                        <!--<span class="form-header">Topics</span>-->
-                        <p style="line-height: 250%;">
-                            <b-badge v-for="tag in app.tags" :key="tag" class="topic">{{tag}}</b-badge>
-                        </p>
-                    </div>
-
-                    <!--detail header-->
-                    <b-row>
-                        <b-col>
-                            <p v-if="app.stats && app.stats.success_rate" v-b-tooltip.hover.d1000.right title="finished/(failed+finished). Same request could be re-submitted / rerun.">
-                                <svg width="70" height="70">
-                                    <circle :r="140/(2*Math.PI)" cx="35" cy="35" fill="transparent" stroke="#666" stroke-width="15"/>
-                                    <circle :r="140/(2*Math.PI)" cx="35" cy="35" fill="transparent" stroke="#28a745" stroke-width="15" 
-                                        :stroke-dasharray="app.stats.success_rate*(140/100)+' '+(100-app.stats.success_rate)*(140/100)" stroke-dashoffset="-105"/>
-                                </svg>
-                                <b>{{app.stats.success_rate.toFixed(1)}}%</b> <span style="opacity: 0.5">Success Rate</span>
-                            </p>
-                        </b-col>
-                        <b-col>
-                            <div class='altmetric-embed' 
-                                data-badge-type='donut' 
-                                data-badge-details="right" 
-                                data-hide-no-mentions="true"
-                                :data-doi="app.doi||config.debug_doi"/>
-                        </b-col>
-                    </b-row>
-                </b-container>
-                <br clear="both">
-            </div>
-
+        <div v-if="tab == 0" class="tab-content">
             <b-container>
+                <appavatar :app="app" style="float: right; position: relative; top: -15px; margin-left: 15px;" :width="150" :height="150"/>
+
+                <!--badges-->
+                <p style="line-height: 250%; margin: 10px 0;">
+                    <doibadge :doi="app.doi" v-if="app.doi"/>
+
+                    <b-badge pill v-if="app.create_date" class="bigpill" title="Registration Date">
+                        <icon name="calendar" style="opacity: 0.4;"/>&nbsp;&nbsp;&nbsp;<small>Registerd</small>&nbsp;&nbsp;{{new Date(app.create_date).toLocaleDateString()}}
+                    </b-badge>
+
+                    <b-badge pill class="bigpill" v-if="app.stats && app.stats.users" title="Users who executed this App">
+                        <icon name="user-cog" style="opacity: 0.4;"/>&nbsp;&nbsp;&nbsp;{{app.stats.users}}&nbsp;&nbsp;<small>Users</small>
+                    </b-badge>
+
+                    <b-badge pill class="bigpill" v-if="app.stats && app.stats.requested" title="Number of time this App was requested">
+                        <icon name="play" style="opacity: 0.4;"/>&nbsp;&nbsp;&nbsp;{{app.stats.requested}}&nbsp;&nbsp;<small>Requests</small>
+                    </b-badge>
+
+                    <b-badge pill v-if="app.stats && app.stats.runtime_mean" class="bigpill" title="Average Runtime of 100 most recent jobs">
+                        <icon name="clock" style="opacity: 0.4;"/>&nbsp;&nbsp;&nbsp;{{avg_runtime(app.stats.runtime_mean, app.stats.runtime_std)}}
+                    </b-badge>
+                </p>
+                <p style="line-height: 180%;">{{app.desc_override||app.desc}}</p>
+
+                <!--<span class="form-header">Topics</span>-->
+                <p style="line-height: 250%;">
+                    <b-badge v-for="tag in app.tags" :key="tag" class="topic">{{tag}}</b-badge>
+                </p>
+
+                <!--detail header-->
+                <b-row>
+                    <b-col>
+                        <p v-if="app.stats && app.stats.success_rate" v-b-tooltip.hover.d1000.right title="finished/(failed+finished). Same request could be re-submitted / rerun.">
+                            <svg width="70" height="70">
+                                <circle :r="140/(2*Math.PI)" cx="35" cy="35" fill="transparent" stroke="#666" stroke-width="15"/>
+                                <circle :r="140/(2*Math.PI)" cx="35" cy="35" fill="transparent" stroke="#28a745" stroke-width="15" 
+                                    :stroke-dasharray="app.stats.success_rate*(140/100)+' '+(100-app.stats.success_rate)*(140/100)" stroke-dashoffset="-105"/>
+                            </svg>
+                            <b>{{app.stats.success_rate.toFixed(1)}}%</b> <span style="opacity: 0.5">Success Rate</span>
+                        </p>
+                    </b-col>
+                    <b-col>
+                        <div class='altmetric-embed' 
+                            data-badge-type='donut' 
+                            data-badge-details="right" 
+                            data-hide-no-mentions="true"
+                            :data-doi="app.doi||config.debug_doi"/>
+                    </b-col>
+                </b-row>
+
                 <br>
                 <b-card v-if="app.deprecated_by" no-body style="margin-bottom: 10px">
                     <span slot="header">
@@ -313,7 +300,7 @@
             </b-container>
         </div><!--tab0-->
 
-        <div v-if="tab == 1" style="background-color: white; border-bottom: 1px solid #ddd;">
+        <div v-if="tab == 1" class="tab-content">
             <b-container>
                 <br>
                 <div v-if="readme">
@@ -325,7 +312,7 @@
             </b-container>
         </div>
 
-        <div v-if="tab == 2" style="background-color: white; border-bottom: 1px solid #ddd;">
+        <div v-if="tab == 2" class="tab-content">
             <b-container>
                 <br>
                 <div v-if="tasks.length > 0">
@@ -384,7 +371,7 @@
             </b-container>
         </div>
 
-        <div v-if="tab == 3" style="background-color: white; padding-top: 10px; border-bottom: 1px solid #ddd;">
+        <div v-if="tab == 3" class="tab-content">
             <b-container>
                 <br>
                 <vue-disqus shortname="brain-life" :identifier="app._id"/>
@@ -675,7 +662,7 @@ export default {
 
 <style scoped>
 .page-content {
-top: 0px;
+    top: 0px;
 }
 
 .header {
@@ -687,42 +674,42 @@ top: 0px;
     z-index: 5;/*has to be above vue-ace line number*/
 }
 .topic {
-padding: 8px; 
-background-color: #eee;
-text-transform: uppercase;
-color: #999;
-border-radius: 0px;
-margin-right: 4px;
+    padding: 8px; 
+    background-color: #eee;
+    text-transform: uppercase;
+    color: #999;
+    border-radius: 0px;
+    margin-right: 4px;
 }
 .preferred-icon {
-color: green;
-position: absolute;
-left: 0px;
-font-weight: bold;
+    color: green;
+    position: absolute;
+    left: 0px;
+    font-weight: bold;
 }
 .resource-area {
-background-color: white;
-box-shadow: 1px 1px 3px #0003;
-margin-bottom: 10px;
+    background-color: white;
+    box-shadow: 1px 1px 3px #0003;
+    margin-bottom: 10px;
 }
 .resource-status {
-font-size: 10pt;
-color: white;
-text-transform: uppercase;
-background-color: #ddd;
-height: 30px;
-padding: 5px 10px;
-width: 100%;
+    font-size: 10pt;
+    color: white;
+    text-transform: uppercase;
+    background-color: #ddd;
+    height: 30px;
+    padding: 5px 10px;
+    width: 100%;
 }
 .resource-status .score {
-float: right;
+    float: right;
 }
 .box {
-background-color: white;
-margin-bottom: 20px;
-margin-left: -20px;
-margin-right: -20px;
-word-break: break-word;
+    background-color: white;
+    margin-bottom: 20px;
+    margin-left: -20px;
+    margin-right: -20px;
+    word-break: break-word;
 }
 .io-card {
     padding: 8px; 
@@ -753,6 +740,11 @@ word-break: break-word;
     float: right;
     margin-left: 10px;
     opacity: 0.5;
+}
+.tab-content {
+    background-color: white; 
+    border-bottom: 1px solid #ddd;
+    min-height: 300px;
 }
 </style>
 
