@@ -99,8 +99,9 @@ db.init(err=>{
 });
 
 function format_date(d) {
-    if(!d) {
-        console.error("null date passed to format_date");
+    if(!d.getMonth) {
+        console.error("odd data object passed to format_date");
+        console.error(d);
         return null;
     }
     let month = '' + (d.getMonth() + 1);
