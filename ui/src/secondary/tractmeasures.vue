@@ -24,6 +24,8 @@
 <script>
 import Vue from 'vue'
 import axios from 'axios'
+
+//import Plotly from '@statnett/vue-plotly'
 import { Plotly } from 'vue-plotly'
 
 import { parseCSV } from '@/lib'
@@ -35,7 +37,6 @@ export default {
     },
     data() {
         return {
-
             structureIDs: [],
             structure: null, //forcepsMajor, etc..
 
@@ -71,7 +72,7 @@ export default {
                 }
 
                 //load reference
-                const refdata = await fetch('https://raw.githubusercontent.com/brainlife/validator-neuro-tractmeasures/master/reference/tractmeasures_references_v1.json').then(res=>res.json());
+                const refdata = await fetch('https://raw.githubusercontent.com/brainlife/reference/master/neuro/tractmeasures/reference.json').then(res=>res.json());
                 const refNodeCount = 50;
 
                 const labels = {
@@ -136,7 +137,12 @@ export default {
 
                 this.measures = [];
                 for(let key in data[0]) {
-                    if(["subjectID", "nodeID", "structureID"].includes(key)) continue;
+                    //if(["subjectID", "nodeID", "structureID"].includes(key)) continue;
+                
+                    //?_mean should be treated as ?
+                    if(key.includes("_mean")) key = key.split("_")[0];
+
+                    if(!labels[key]) continue;
                     this.measures.push({id: key, label: labels[key].title});
                 }
 
@@ -224,8 +230,8 @@ export default {
                                     text: "Node Position",
                                     font: {
                                         color: '#999',
+                                        size: 11,
                                     },
-                                    size: 11,
                                 },
                             },
                             yaxis: {

@@ -78,6 +78,92 @@ router.get('/', common.jwt({credentialsRequired: false}), (req, res, next)=>{
 
 /**
  * @apiGroup App
+ * @api {get} /app/query        
+ * @apiDescription              Query apps based on search query (public)
+ *
+ * @apiParam {String} q         Query used to search for apps
+ *
+ * @apiHeader {String} [authorization]
+ *                              A valid JWT token "Bearer: xxxxx"
+ * @apiSuccess {Object[]}       List of apps (populated with datatype.name / contributors)
+ */
+router.get('/query', common.jwt({credentialsRequired: false}), (req, res, next)=>{
+    //
+    //construct db level query (not removed, and apps that user has access to)
+    var ands = [{removed: false}];
+    common.getprojects(req.user, async (err, project_ids)=>{
+        if(err) return next(err);
+        ands.push({$or: [ 
+            //if projects is set, user need to have access to it
+            {projects: {$in: project_ids}},
+
+            {projects: []}, //if projects is empty array, it's available to everyone
+
+            //for backward compatibility
+            {projects: null}, //if projects is set to null, it's avalable to everyoone
+            {projects: {$exists: false}}, //if projects not set, it's availableo to everyone
+        ]});
+
+        //then we just get *all* apps (minus some heavy/unnecessary stuff)
+        const apps = await db.Apps.find({$and: ands})
+        .select('-config -avatar -stats.gitinfo -contributors') //cut things we don't need
+        //we want to search into datatype name/desc (desc might be too much?)
+        .populate('inputs.datatype', 'name desc') 
+        .populate('outputs.datatype', 'name desc')
+        .lean();
+
+        if(!req.query.q) return res.json(apps); //if not query is set, return everything
+        const queryTokens = req.query.q.toLowerCase().split(" ");
+
+        //then construct list of tokens for each app to search by
+        apps.forEach(app=>{
+            let tokens = [
+                app.name, 
+                app.github_branch, 
+                app.github, 
+                app.desc, 
+                app.desc_override, 
+                app.doi, 
+                ...app.tags
+            ];
+            /*
+            app.contributors.forEach(contact=>{
+                tokens.push(contact.name);
+                tokens.push(contact.email);
+            });
+            */
+            app.inputs.forEach(input=>{
+                tokens = [...tokens, ...input.datatype_tags, input.datatype.name, input.datatype.desc];
+            });
+            app.outputs.forEach(output=>{
+                tokens = [...tokens, ...output.datatype_tags, output.datatype.name, output.datatype.desc];
+            });
+            tokens = tokens.filter(token=>!!token).map(token=>token.toLowerCase());
+
+            //let's just store it as part of the app
+            app._tokens = tokens.join(" ");
+        });
+
+        //then filter apps using _tokens
+        const filtered = apps.filter(app=>{
+            //for each query token, make sure all token matches somewhere in _tokens
+            let match = true;
+            queryTokens.forEach(token=>{
+                if(!match) return; //we already know it won't match
+                if(!app._tokens.includes(token)) match = false;
+            });
+            return match;
+        });
+
+        //remove _tokens from the apps to reduce returning weight a bit
+        filtered.forEach(app=>{ delete app._tokens; });
+
+        res.json(filtered);
+    });
+});
+
+/**
+ * @apiGroup App
  * @api {get} /app/:id          Get App
  * @apiDescription              Get App detail (no AC as long as a valid App ID is given)
  *

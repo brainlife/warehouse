@@ -128,7 +128,7 @@ import 'vue-awesome/icons/regular/file.js'
 import 'vue-awesome/icons/regular/calendar-times.js'
 import 'vue-awesome/icons/skull-crossbones.js'
 
-import Icon from 'vue-awesome/components/Icon.vue'
+import Icon from 'vue-awesome/components/Icon'
 
 import VueLazyload from 'vue-lazyload'
 import BootstrapVue from 'bootstrap-vue' //bootstrap will eventually replace ElementUI / locale
@@ -139,7 +139,8 @@ import VueTimeago from 'vue-timeago'
 
 import SocialSharing from 'vue-social-sharing';
 
-import VueAnalytics from 'vue-analytics'
+//import VueAnalytics from 'vue-analytics'
+import VueGtag from 'vue-tag'
 
 import axios from 'axios'
 import VueAxios from 'vue-axios'
@@ -214,6 +215,11 @@ Vue.filter('filesize', function (num) {
 
 Vue.filter('capitalize', v=>{
     return v.toUpperCase();
+});
+
+const numeral = require('numeral');
+Vue.filter('formatNumber', v=>{
+    return numeral(v).format("0,0");
 });
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -325,7 +331,10 @@ router.beforeEach(function (to, from, next) {
 });
 
 if (!Vue.config.debug) {
-    Vue.use(VueAnalytics, { id: 'UA-118407195-1', router })
+    Vue.use(VueGtag, { 
+        //pageTrackerExcludedRotues: ['route_path_value', 'route_name_value'],
+        config: { id: 'UA-118407195-1' }
+    }, router)
 }
 
 const soundHost = "https://raw.githubusercontent.com/brainlife/warehouse/master/ui/sounds/";

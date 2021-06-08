@@ -41,16 +41,14 @@ export default {
     methods: {
         setDocUrl(src) {
             if(Vue.config.debug) src = "https://test.brainlife.io"+src; //localhost doesn't have /docs.. so we have to use this
-            console.log("setting doc url", src);
+            //console.log("setting doc url", src);
             this.docSrc = src;
         },
 
         findDoc() {
             //pick a page to show based on sidemenu 
             if(this.$route.meta) {
-
-                console.log("sidemenu", this.$route.meta.sidemenu)
-
+                //console.log("sidemenu", this.$route.meta.sidemenu)
                 let doc = null;
                 switch(this.$route.meta.sidemenu) {
 
@@ -100,13 +98,12 @@ export default {
 
         toggle(page) {
             if(this.$root.rightviewOpen == page) page = null;
-            console.log(page);
+            //console.log(page);
             this.$root.toggleRightView(page);
         },
         loaded() {
             this.loading = false;
-
-            console.log("doc frame loaded");
+            //console.log("doc frame loaded");
             /*
             //this only works for the same domain 
             //(Blocked a frame with origin "http://localhost:8080" from accessing a cross-origin frame.)

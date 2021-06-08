@@ -516,10 +516,10 @@ export default {
 
 <style scoped>
 .loading {
-margin-top: 95px;
-opacity: 0.5;
-font-size: 170%;
-padding-left: 20px;
+    margin-top: 95px;
+    opacity: 0.5;
+    font-size: 170%;
+    padding-left: 20px;
 }
 
 .instances-header {

@@ -282,11 +282,9 @@
                             <span class="form-header">Related Articles</span>
                         </b-col>    
                         <b-col>
-                            <div v-for="paper in pub.relatedPapers.slice(0, relatedPaperLimit)" :key="paper.Id" style="margin-bottom: 25px;">
-                                <mag :paper="paper"/>
-                            </div>
-                            <center>
-                                <b-button size="sm" v-if="relatedPaperLimit != -1" variant="outline-secondary" @click="relatedPaperLimit = -1">&nbsp;&nbsp;&nbsp;Show More Related Articles&nbsp;&nbsp;&nbsp;</b-button> 
+                            <mag v-for="paper in sortedPapers.slice(0, relatedPaperLimit)" :key="paper.Id" :paper="paper"/>
+                            <center v-if="relatedPaperLimit < pub.relatedPapers.length">
+                                <b-button size="sm" variant="outline-secondary" @click="relatedPaperLimit = pub.relatedPapers.length">&nbsp;&nbsp;&nbsp;Show More Related Articles&nbsp;&nbsp;&nbsp;</b-button> 
                             </center>
                         </b-col>   
                     </b-row>    
@@ -335,6 +333,12 @@ export default {
         mag,
         release,
         projectcard,
+    },
+
+    computed: {
+        sortedPapers : function() {
+            return this.pub.relatedPapers.sort((a,b)=> b.citationCount - a.citationCount );
+        }
     },
 
     //https://help.altmetric.com/support/solutions/articles/6000141419-what-metadata-is-required-to-track-our-content-

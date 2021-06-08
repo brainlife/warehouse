@@ -8,18 +8,18 @@
         </div>
     </div>
 
-    <div v-if="loading" style="margin: 90px; opacity: 0.5"><h4><icon name="cog" spin scale="2"/> Loading ..</h4></div>
 
-    <div class="page-content" v-if="!loading" @scroll="handleScroll" ref="scrollable">
-
-        <div class="mode-toggler onRight">
-            <b-form-group>
-            <b-form-radio-group v-model="mode" buttons button-variant="outline-secondary">
-                <b-form-radio value="tile"><icon name="th"/></b-form-radio>
-                <b-form-radio value="list"><icon name="list"/></b-form-radio>
-            </b-form-radio-group>
-            </b-form-group>
-        </div>
+    <div class="page-content" @scroll="handleScroll" ref="scrollable">
+        <div v-if="loading" style="margin: 40px; opacity: 0.5"><h3><icon name="cog" spin scale="2"/> Loading ..</h3></div>
+        <div v-else>
+            <div class="mode-toggler onRight">
+                <b-form-group>
+                <b-form-radio-group v-model="mode" buttons button-variant="outline-secondary">
+                    <b-form-radio value="tile"><icon name="th"/></b-form-radio>
+                    <b-form-radio value="list"><icon name="list"/></b-form-radio>
+                </b-form-radio-group>
+                </b-form-group>
+            </div>
 
         <div v-if="query.length && !other_projects.length && !my_projects.length">
             <p style="padding: 20px; opacity: 0.8;">No matching Projects</p>
@@ -40,44 +40,44 @@
             </div>
             <br v-if="recentProjects.length > 0" clear="both">
         </div>
-        <div v-if="config.user" class="position: relative">
-            <h4 class="group-title">My Projects</h4>
-            <div style="padding: 10px;" v-if="mode == 'tile'">
-                <div v-for="project in my_projects" :key="project._id">
-                    <projectcard :project="project" v-if="project._visible"/>
-                    <div v-else class="projectcard" ref="project" :id="project._id"/> <!--placeholder-->
+            <div v-if="config.user" class="position: relative">
+                <h4 class="group-title">My Projects</h4>
+                <div style="padding: 10px;" v-if="mode == 'tile'">
+                    <div v-for="project in my_projects" :key="project._id">
+                        <projectcard :project="project" v-if="project._visible"/>
+                        <div v-else class="projectcard" ref="project" :id="project._id"/> <!--placeholder-->
+                    </div>
                 </div>
-            </div>
-            <div style="padding: 10px;" v-if="mode == 'list'">
-                <div v-for="project in my_projects" :key="project._id">
-                    <project :project="project" v-if="project._visible"/>
-                    <div v-else style="height: 40px; color: white;" ref="project" :id="project._id"/> <!--placeholder-->
+                <div style="padding: 10px;" v-if="mode == 'list'">
+                    <div v-for="project in my_projects" :key="project._id">
+                        <project :project="project" v-if="project._visible"/>
+                        <div v-else style="height: 40px; color: white;" ref="project" :id="project._id"/> <!--placeholder-->
+                    </div>
                 </div>
+                <p v-if="my_projects.length == 0 && query == ''" style="margin: 20px;">
+                    Please create your project by clicking on the button at the bottom left corner of this page.
+                </p>
+                <br v-if="my_projects.length > 0" clear="both">
             </div>
-            <p v-if="my_projects.length == 0 && query == ''" style="margin: 20px;">
-                Please create your project by clicking on the button at the bottom left corner of this page.
-            </p>
-            <br v-if="my_projects.length > 0" clear="both">
-        </div>
 
-        <!--TODO - should refactor this.. similar to my projects-->
-        <div v-if="other_projects.length > 0" style="position: relative;">
-            <h4 class="group-title">Public<small>/Protected</small> Projects</h4>
-            <div style="padding: 10px;" v-if="mode == 'tile'">
-                <div v-for="project in other_projects" :key="project._id">
-                    <projectcard :project="project" v-if="project._visible"/>
-                    <div v-else class="projectcard" ref="project" :id="project._id"/> <!--placeholder-->
+            <!--TODO - should refactor this.. similar to my projects-->
+            <div v-if="other_projects.length > 0" style="position: relative;">
+                <h4 class="group-title">Public<small>/Protected</small> Projects</h4>
+                <div style="padding: 10px;" v-if="mode == 'tile'">
+                    <div v-for="project in other_projects" :key="project._id">
+                        <projectcard :project="project" v-if="project._visible"/>
+                        <div v-else class="projectcard" ref="project" :id="project._id"/> <!--placeholder-->
+                    </div>
                 </div>
-            </div>
-            <div style="padding: 10px;" v-if="mode == 'list'">
-                <div v-for="project in other_projects" :key="project._id">
-                    <project :project="project" v-if="project._visible"/>
-                    <div v-else style="height: 40px; color: white;" ref="project" :id="project._id"/> <!--placeholder-->
+                <div style="padding: 10px;" v-if="mode == 'list'">
+                    <div v-for="project in other_projects" :key="project._id">
+                        <project :project="project" v-if="project._visible"/>
+                        <div v-else style="height: 40px; color: white;" ref="project" :id="project._id"/> <!--placeholder-->
+                    </div>
                 </div>
+                <br clear="both">
             </div>
-            <br clear="both">
-        </div>
-
+        </div><!--v-if="!loading"-->
     </div>
     <b-button class="button-fixed" @click="newproject">
         New Project
@@ -105,6 +105,7 @@ export default {
             loading: false,
 
             query: "",
+            datatypeName : {},
             mode: localStorage.getItem("projects.mode")||"tile",
             config: Vue.config,
         }
@@ -131,7 +132,7 @@ export default {
             const e = this.$refs.scrollable;
             this.$refs.project.forEach(elem=>{
                 const project = this.projects.find(p=>p._id == elem.id);
-                if(elem.offsetTop > e.scrollTop - e.clientHeight/2 && elem.offsetTop < e.scrollTop + e.clientHeight*2) {
+                if(elem.offsetTop > e.scrollTop - e.clientHeight/2 && elem.offsetTop < e.scrollTop + e.clientHeight) {
                     Vue.set(project, '_visible', true);
                 }
             });
@@ -144,6 +145,16 @@ export default {
         },
 
         load() {
+            let datatypeName = this.datatypeName;
+            if(!datatypeName.length){
+                console.log("Getting datatypes");
+                this.$http.get('/datatype').then(res=>{
+                    res.data.datatypes.forEach(datatype=>{
+                        let key = datatype.name;
+                        datatypeName[key] = datatype._id;
+                        });
+                    });
+            }
             let ands = [
                 {removed: false, "openneuro": {$exists: false}},
             ];
@@ -152,10 +163,16 @@ export default {
                 //so that we can query against multiple fields simultanously
                 this.query.split(" ").forEach(q=>{
                     if(q === "") return;
-                    ands.push({$or: [
-                        {"name": {$regex: q, $options: 'i'}},
-                        {"desc": {$regex: q, $options: 'i'}},
-                    ]});
+                    let datatypeNameString = Object.keys(this.datatypeName);
+                    let key = datatypeNameString.find(name=>name.includes(q));
+                    let searchQuery = {$or : [
+                         {"name": {$regex: q, $options: 'i'}},
+                         {"desc": {$regex: q, $options: 'i'}},
+                    ]};
+                    if(key) {
+                        searchQuery['$or'].push({"stats.datasets.datatypes_detail.type" : this.datatypeName[key]});
+                    }
+                    ands.push(searchQuery);
                 });
             }
 

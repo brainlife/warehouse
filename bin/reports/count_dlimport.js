@@ -11,8 +11,8 @@ db.init(async err=>{
     if(err) throw err;
     //query all openneuro project ids
     let dldatasets = await db.DLDatasets.find({removed: false, import_count: {$gt: 0}}).select('path import_count stats.subjects');
-    console.log(`import_count,path`);
+    console.log(`path,import_count`);
     dldatasets.forEach(d=>{
-        console.log(`${d.import_count},${d.path}`);
+        console.log(`${d.path},${d.import_count}`);
     });
 });

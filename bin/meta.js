@@ -99,8 +99,9 @@ db.init(err=>{
 });
 
 function format_date(d) {
-    if(!d) {
-        console.error("null date passed to format_date");
+    if(!d.getMonth) {
+        console.error("odd data object passed to format_date");
+        console.error(d);
         return null;
     }
     let month = '' + (d.getMonth() + 1);
@@ -124,7 +125,7 @@ function handle_app(app, cb) {
             //https://medium.com/slack-developer-blog/everything-you-ever-wanted-to-know-about-unfurling-but-were-afraid-to-ask-or-how-to-make-your-e64b4bb9254
             "og:title": app.name,
             "og:image": app.avatar,
-            "og:description": app.desc,
+            "og:description": app.desc||"no description",
 
             doi: app.doi,
             date: format_date(app.create_date),

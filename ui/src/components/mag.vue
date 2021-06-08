@@ -1,17 +1,23 @@
 <template>
-<div style="line-height: 200%;">
-    <h5 class="paper-title">{{ paper.title }}</h5>
-    <span class="mag-venue">
-        {{ paper.venue }} | {{ new Date(paper.publicationDate).getFullYear() }}
-    </span>
-    <p>
+<div class="mag">
+    <div style="margin-bottom: 8px;">
+        <h5 class="paper-title">{{paper.title}}</h5>
+        <p class="mag-venue">
+            {{ paper.venue }} | {{ new Date(paper.publicationDate).getFullYear() }}
+        </p>
+        <doibadge :doi="paper.doi" jump="true"/>
+        <b-badge pill class="bigpill" title="Publication Date">
+            <icon name="calendar" style="opacity: 0.4" />&nbsp;{{ new Date(paper.publicationDate).toLocaleDateString() }}
+        </b-badge>
+    </div>
+    <p style="margin-bottom: 5px;">
         <!--first 100 words-->
         <span>{{abstract100.join(" ")}}</span>
         <!--after 100 words-->
-        <a href="javascript:void(0)" v-if="!showRest" @click="showRest = true;">.. show more</a>
+        <a href="javascript:void(0)" v-if="!showRest" @click="showRest = true;">&nbsp;Show More&nbsp;</a>
         <span v-if="showRest">{{abstractRest.join(" ")}}</span>
     </p>
-    <p style="opacity: 0.7;"> 
+    <p style="opacity: 0.7; margin-bottom: 5px; font-size: 95%;"> 
         <span v-for="(contact, idx) in paper.authors" :key="idx" >
              <small v-if="idx">|</small> {{ contact.name }} 
         </span>
@@ -19,12 +25,6 @@
     <p>
         <b-badge v-for="tag in paper.fields" :key="tag" class="topic">{{tag}}</b-badge>
     </p>
-    <div style="background-color: #eee; padding: 10px; text-align: right;">
-        <doibadge :doi="paper.doi" jump="true"/>
-        <b-badge pill class="bigpill" title="Publication Date">
-            <icon name="calendar" style="opacity: 0.4" />&nbsp;{{ new Date(paper.publicationDate).toLocaleDateString() }}
-        </b-badge>
-    </div>
 </div>
 </template>
 
@@ -56,64 +56,57 @@ export default {
 
 <style scoped>
 .mag {
-    border-left: 3px solid #f0f0f0;
+    line-height: 200%; 
+    margin-bottom: 10px;
 }
-h4 {
-    font-size: 15px;
-    font-weight: bold;
-    color: #333;
+.mag:not(:last-child) {
+    border-bottom: 1px solid #ddd;
 }
-.topic {
-    padding: 4px;
-    background-color: #eee;
-    text-transform: uppercase;
-    color: #999;
-    border-radius: 0px;
-    margin-right: 4px;
-    margin-bottom: 2px;
+h5 {
+    margin-bottom: 0;
 }
-
 .paper-title {
     text-transform: capitalize;
     color: #333;
     padding: 0px;
     transition: color 0.3s;
-    font-size: 130%;
+    font-size: 120%;
     line-height: 200%;
 }
 
 .mag-venue {
-font-style: italic;
-opacity: 0.6;
+    font-style: italic;
+    opacity: 0.6;
+    margin-bottom: 5px;
 }
 .topic {
-padding: 4px; 
-background-color: #eee;
-text-transform: uppercase;
-color: #999;
-border-radius: 0px;
-margin-right: 4px;
-margin-bottom: 2px;
+    padding: 4px; 
+    background-color: #eee;
+    text-transform: uppercase;
+    color: #666;
+    border-radius: 0px;
+    margin-right: 4px;
+    margin-bottom: 2px;
 }
 .contact {
-display: inline-block;
-height: 20px;
-margin-right: 10px;
-font-size: 11px;
-font-weight: 700;
-white-space: nowrap;
-line-height: 20px;
-margin-right: 5px;
-cursor: pointer;
+    display: inline-block;
+    height: 20px;
+    margin-right: 10px;
+    font-size: 11px;
+    font-weight: 700;
+    white-space: nowrap;
+    line-height: 20px;
+    margin-right: 5px;
+    cursor: pointer;
 }
 .contact img {
-float: left;
-height: 20px;
-background:#999;
+    float: left;
+    height: 20px;
+    background:#999;
 }
 .name {
-background-color: #fff;
-display: inline-block;
-padding: 0px 10px;
+    background-color: #fff;
+    display: inline-block;
+    padding: 0px 10px;
 }
 </style>

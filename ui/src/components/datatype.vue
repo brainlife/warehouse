@@ -1,8 +1,8 @@
 <template>
 <div v-if="datatype">
-    <span v-if="datatype.validator" class="validator-sign" :title="'Validator: '+datatype.validator">
-        <icon name="check"/>
-    </span>
+    <b-badge v-if="datatype.validator" variant="light" class="validator-sign" :title="'Validator: '+datatype.validator">
+        <icon name="check" scale="0.6"/> Validator
+    </b-badge>
     <datatypetag :datatype="datatype" :tags="datatype_tags" :title="id" :clickable="clickable"/> 
     <slot name="tag_extra"/>
     <p style="margin-bottom: 0px;"><small style="opacity:.7;">{{datatype.desc}}</small></p>
@@ -53,6 +53,5 @@ export default {
 <style scoped>
 .validator-sign {
     float: right;
-    color: green;
 }
 </style>

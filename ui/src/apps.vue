@@ -117,14 +117,15 @@ export default {
             loading: false,
 
             visible_category: [],
-
-            datatypes: null, //only loaded if search box is focused
         };
     },
 
     created() {
+        /*
         //load datatypes first.. then load apps
-        this.$http.get('datatype').then(res=>{
+        this.$http.get('datatype', {params: {select: "_id name -uis"}}).then(res=>{
+            console.log("loaded datatypes");
+            console.dir(res.data);
             this.datatypes = {};
             res.data.datatypes.forEach((d)=>{
                 this.datatypes[d._id] = d;
@@ -136,7 +137,10 @@ export default {
         }).catch(err=>{
             console.error(err);
         });
-
+        */
+        this.query = sessionStorage.getItem("apps.query")||"";
+        this.show_dep = (localStorage.getItem("apps.show_dep") == "true");
+        this.load();
     },
 
     watch: {
@@ -165,69 +169,28 @@ export default {
             this.change_query();
         },
 
-        get_mongo_query() {
-			var finds = [
-                {removed: false},
-                {project: this.project._id},
-            ] 
-
-            return finds;
-        },
-
-        load() {    
+        async load() {    
             if(this.loading) return;
-            this.loading = true;
+            
             this.app_groups = {};
             this.sorted_tags = [];
             this.apps = null;
 
-            let ands = [
-                {$or: [
-                    { removed: false },
-                    { removed: {$exists: false }},
-                ]}
-            ];
-            if(!this.show_dep) {
-                ands.push({deprecated_by: {$exists: false}});
-            }
-            if(this.query) {
-                //split query into each token and allow for regex search on each token
-                //so that we can query against multiple fields simultanously
-                this.query.split(" ").forEach(q=>{
-                    if(q === "") return;
-
-                    //lookup datatype ids that matches the query
-                    let datatype_ids = [];
-                    for(var id in this.datatypes) {
-                        if(this.datatypes[id].name.toLowerCase().includes(q.toLowerCase())) datatype_ids.push(id);
-                    }
-                    ands.push({$or: [
-                        {"name": {$regex: q, $options: 'i'}},
-                        {"github": {$regex: q, $options: 'i'}},
-                        {"github_branch": {$regex: q, $options: 'i'}},
-                        {"desc": {$regex: q, $options: 'i'}},
-                        {"desc_override": {$regex: q, $options: 'i'}},
-                        {"tags": {$regex: q, $options: 'i'}},
-
-                        {"inputs.datatype": {$in: datatype_ids}},
-                        {"inputs.datatype_tags": {$regex: q, $options: 'i'}},
-                        {"outputs.datatype": {$in: datatype_ids}},
-                        {"outputs.datatype_tags": {$regex: q, $options: 'i'}},
-                    ]});
-                });
-            }
-
-            this.$http.get('app', {params: {
-                find: JSON.stringify({$and: ands}),
-                limit: 500, //TODO - this is not sustailable
-                populate: 'contributors', //'inputs.datatype outputs.datatype contributors',
-            }})
-            .then(res=>{
+            this.loading = true;
+            this.$http.get('app/query', {params: {
+                q: this.query,
+            }}).then(res=>{
                 this.loading = false;
-                this.apps = res.data.apps;
+                this.apps = res.data;
+
+                //filter out deprecated ones
+                if(!this.show_dep) {
+                    console.log("filtering out deprecated apps");
+                    this.apps = this.apps.filter(app=>!app.deprecated_by);
+                }
 
                 //organize apps into various tags
-                res.data.apps.forEach(app=>{
+                this.apps.forEach(app=>{
                     var tags = [ 'miscellaneous' ];
                     if(app.tags && app.tags.length > 0) tags = app.tags;
                     tags.forEach(tag=>{
@@ -240,7 +203,7 @@ export default {
 
                 if(!this.query) {
                     //find most recently created apps as *new apps*
-                    let apps = res.data.apps.filter(a=>{
+                    let apps = this.apps.filter(a=>{
                         //only find apps that has non-0 success rate
                         if(!a.stats || a.stats.success_rate == 0) return false;
 
@@ -323,7 +286,7 @@ export default {
         },
 
         change_query() {
-            if(!this.datatypes) return setTimeout(this.change_query, 300);
+            //if(!this.datatypes) return setTimeout(this.change_query, 300);
             //document.location="#"; //clear hash //TODO what is this?
             sessionStorage.setItem("apps.query", this.query);
             this.load();

@@ -284,6 +284,8 @@
 
 import Vue from 'vue'
 import Router from 'vue-router'
+
+//import Plotly from '@statnett/vue-plotly'
 import {Plotly} from 'vue-plotly'
 
 import pageheader from '@/components/pageheader'
