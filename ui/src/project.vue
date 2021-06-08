@@ -291,15 +291,10 @@
                         <!--related papers-->
                         <div v-if="detailTab == 3">
                             <div v-if="selected.relatedPapers && selected.relatedPapers.length > 0">
-                                <!--
-                                <span class="form-header">Related Articles</span>
-                                -->
                                 <p>
                                     <small>We found the following journals/articles related to this project based on name/description</small>
                                 </p>
-                                <div v-for="paper in selected.relatedPapers" :key="paper._id">
-                                    <mag :paper="paper"/>
-                                </div>
+                                <mag v-for="paper in selected.relatedPapers" :key="paper._id" :paper="paper"/>
                             </div>
                         </div>
 
