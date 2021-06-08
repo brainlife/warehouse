@@ -199,8 +199,8 @@ export default {
                     if(localStorage.getItem("recent_projectid")){
                         const recentProjects = JSON.parse(localStorage.getItem("recent_projectid")).sort((a,b)=>{
                             return b.timeStamp - a.timeStamp;
-                        });
-                        if(recentProjects && recentProjects.some(project=> project.id == p._id)) {
+                        }).slice(0,5);
+                        if(recentProjects && recentProjects.some(project=>project.id == p._id)) {
                             this.recentProjects.push(p);
                         }
                     }
