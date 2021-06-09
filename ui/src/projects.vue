@@ -24,7 +24,7 @@
         <div v-if="query.length && !other_projects.length && !my_projects.length">
             <p style="padding: 20px; opacity: 0.8;">No matching Projects</p>
         </div>
-        <div v-if="recentProjects.length" class="position: relative">
+        <div v-if="config.user && recentProjects.length" class="position: relative">
             <h4 class="group-title">Recent Projects</h4>
             <div style="padding: 10px;" v-if="mode == 'tile'">
                 <div v-for="project in recentProjects.slice(0,5)" :key="project._id">
