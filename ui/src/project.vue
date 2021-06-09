@@ -625,7 +625,7 @@ export default {
                 if(!recentProjectId) {
                     recentProjectId = [];
                 }
-                recentProjectId.push({ "id" : project._id, "timeStamp" : Date.now()});
+                recentProjectId.push({ "id" : project._id, "timeStamp" : Date.now(), "new" : false});
                 localStorage.setItem("recent_projectid", JSON.stringify(recentProjectId));
                 localStorage.setItem("last_projectid_used", project._id);
 
