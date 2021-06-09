@@ -27,13 +27,13 @@
         <div v-if="config.user && recentProjects.length" class="position: relative">
             <h4 class="group-title">Recent Projects</h4>
             <div style="padding: 10px;" v-if="mode == 'tile'">
-                <div v-for="project in recentProjects" :key="project._id">
+                <div v-for="project in recentProjects.slice(0,5)" :key="project._id">
                     <projectcard :project="project" v-if="project._visible"/>
                     <div v-else class="projectcard" ref="project" :id="project._id"/> <!--placeholder-->
                 </div>
             </div>
             <div style="padding: 10px;" v-if="mode == 'list'">
-                <div v-for="project in recentProjects" :key="project._id">
+                <div v-for="project in recentProjects.slice(0,5)" :key="project._id">
                     <project :project="project" v-if="project._visible"/>
                     <div v-else style="height: 40px; color: white;" ref="project" :id="project._id"/> <!--placeholder-->
                 </div>
@@ -214,13 +214,16 @@ export default {
                         this.other_projects.push(p);
                     }
                     if(localStorage.getItem("recent_projectid")){
-                        const recentProjects = JSON.parse(localStorage.getItem("recent_projectid")).sort((a,b)=>{
-                            return b.timeStamp - a.timeStamp;
-                        }).slice(0,5);
-                        if(recentProjects && recentProjects.some(project=>project.id == p._id)) {
-                            this.recentProjects.push(p);
+                        let recentProjects = JSON.parse(localStorage.getItem("recent_projectid"));
+                        if(recentProjects && !recentProjects.some(project=>project.id == p._id)) {
+                            recentProjects.push({"id" : p._id, "timeStamp" : Date.now()})
                         }
+                        recentProjects = recentProjects.sort((a,b)=>{
+                            return b.timeStamp - a.timeStamp;
+                        });
+                        if(recentProjects.some(project=>project.id==p._id)) this.recentProjects.push(p);
                     }
+                    console.log(this.recentProjects);
                 });
                 this.loading = false;
                 this.$nextTick(()=>{
