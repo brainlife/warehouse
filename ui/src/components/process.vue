@@ -173,6 +173,7 @@
                             </b-collapse>
 
                             <dtv v-if="task.status == 'finished' && output.dtv_task" :task="output.dtv_task" :output="output"/>
+
                             <div v-if="output.secondary_task" style="font-size: 90%; padding: 5px 10px; border: 2px solid #eee; border-radius: 5px; margin-top: 5px; color: #888;">
                                 <span v-if="output.secondary_task.finish_date">
                                     Ready for Analysis
@@ -449,6 +450,8 @@ export default {
             return meta;
         },
 
+        //find the task that the dtv_task belongs to (follow_task_id) and set dtv_tak on 
+        //the parent tasks's config._outputs[output_id]
         set_dtv_task(dtv_task) {
             if(!this.tasks) return;
             if(!dtv_task.config._outputs) return; //for dev
@@ -458,15 +461,12 @@ export default {
             let task = this.tasks.find(task=>task._id == dtv_task.follow_task_id);
             if(!task) return; //for dev?
 
-            console.log("proceed");
-
             //then find the output that dtv ran for
             let output_id = dtv_task.config._outputs[0].id;
             let output = task.config._outputs.find(out=>out.id == output_id);
             if(output.dtv_task) {
                 //updating
                 if(output.dtv_task.status != dtv_task.status) {
-                    console.log("playing due to dtv_task", output.dtv_task, dtv_task);
                     this.playNotification(dtv_task.status);
                 }
             }
@@ -640,10 +640,14 @@ export default {
                         var task = event.msg;
                         if(task.service.startsWith("brainlife/validator-")) {
                             var t = this.tasks.find(t=>t._id == task._id);
-                            if(!t) this.tasks.push(task); 
+                            if(!t) {
+                                this.tasks.push(task); 
+                                this.set_dtv_task(task);
+                            }
 
-                            this.set_dtv_task(task);
-                            if(task.status == "finished") this.loadProducts([task]);
+                            if(task.status == "finished") {
+                                this.loadProducts([task]);
+                            }
                         } else if(task.service == "brainlife/app-archive-secondary") {
                             this.set_secondary_task(task);
                         } else if(task.config._tid) {
@@ -719,7 +723,6 @@ export default {
                 }),
                 limit: 1000, //should be enough.. for now?
                 sort: 'create_date',
-                //select: '-product', //task.product is deprecated (use taskproduct collection instead)
             }})
             .then(res=>{
                 //load products
@@ -778,12 +781,11 @@ export default {
         },
 
         loadProducts(tasks) {
-            let ids = this.tasks.map(task=>task._id);
+            let ids = tasks.map(task=>task._id);
             this.$http.get(Vue.config.amaretti_api+'/task/product/', {params: {ids}}).then(res=>{
                 res.data.forEach(rec=>{
                     if(!rec.product) return;
                     let task = this.tasks.find(t=>t._id == rec.task_id);
-                    //if(!task) console.error("can't find task with id", rec.task_id, "to set product");
                     Vue.set(task, 'product', rec.product);
 
                     /* //let's do this in amaretti/task

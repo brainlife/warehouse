@@ -18,6 +18,7 @@
         </div>
 
         <b-alert :show="secondaryError != ''" variant="secondary">{{secondaryError}}</b-alert>
+
         <secondary v-if="secondary && task.product" :task="task" :output="output" :product="task.product" :secondary="secondary"/>
         <span v-else>
             <icon name="cog" spin></icon> Waiting to be archived ...
