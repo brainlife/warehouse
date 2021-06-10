@@ -27,14 +27,14 @@
         <div v-if="recentProjects.length" class="position: relative">
             <h4 class="group-title">Recent Projects</h4>
             <div style="padding: 10px;" v-if="mode == 'tile'">
-                <div v-for="project in recentProjects.slice(1).slice(-5)" :key="project._id">
+                <div v-for="project in recentProjects.slice(0).slice(-5)" :key="project._id">
                     <projectcard :project="project" v-if="project._visible"/>
                     <div v-else class="projectcard" ref="project" :id="project._id"/> <!--placeholder-->
                 </div>
             </div>
             <div style="padding: 10px;" v-if="mode == 'list'">
-                <div v-for="project in recentProjects.slice(1).slice(-5)" :key="project._id">
-                    <p v-if="project.new">New</p>
+                <div v-for="project in recentProjects.slice(0).slice(-5)" :key="project._id">
+                    <p v-if="!project._lastOpened">New</p>
                     <project :project="project" v-if="project._visible"/>
                     <div v-else style="height: 40px; color: white;" ref="project" :id="project._id"/> <!--placeholder-->
                 </div>
@@ -224,7 +224,7 @@ export default {
                     /* setting new project */
                     let timeStamp = localStorage.getItem('project.'+p._id+".lastOpened");
                     if(timeStamp) p._lastOpened = timeStamp;
-                    if(p._lastOpened > lastMonth) this.recentProjects.push(p);
+                    if(p._lastOpened > lastMonth || !timeStamp) this.recentProjects.push(p);
                 });
                 this.loading = false;
                 this.$nextTick(()=>{
