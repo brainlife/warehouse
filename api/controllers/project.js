@@ -78,16 +78,20 @@ router.get('/', common.jwt({credentialsRequired: false}), (req, res, next)=>{
 /**
  * @apiGroup Project
  * @api {get} /project/query
- * @apiDescription Query projects based on search projects (public)
+ * @apiDescription                 Query projects based on search query (public)
  * 
- * @apiParam {String} q Query used to search for projects
+ * @apiParam {String} q            Query used to search for projects
  *
  * @apiHeader {String} [authorization]  
  *                                 A valid JWT token "Bearer : xxxxx"
  * 
- * @apiSuccess {Object}   Project record registered 
+ * @apiSuccess {Object}            Project record registered 
  */
-
+router.get('/query',common.jwt({credentialsRequired: false}), (req, res, next)=> {
+    /*lets find first all the projects*/
+    let projects = await db.Projects.find({removed: false});
+    if(!req.query.q) return res.json(projects);
+});
 
 
 /**
