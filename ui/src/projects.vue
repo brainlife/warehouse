@@ -279,13 +279,6 @@ export default {
     z-index: 1;
     opacity: 0.8;
 }
-.list-badge {
-    float: right;
-}
-.tile-badge {
-    float: left;
-    margin-bottom:10px;
-}
 .projectcard {
     width: 325px;
     height: 178px;
