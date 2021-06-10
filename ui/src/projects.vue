@@ -224,8 +224,6 @@ export default {
                     /* setting new project */
                     let timeStamp = localStorage.getItem('project.'+p._id+".lastOpened");
                     if(timeStamp) p._lastOpened = timeStamp;
-                    console.log(timeStamp)
-                    console.log(p._lastOpened);
                     if(p._lastOpened > lastMonth) this.recentProjects.push(p);
                 });
                 this.loading = false;
