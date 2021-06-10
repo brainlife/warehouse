@@ -166,11 +166,11 @@ export default {
             this.other_projects = [];
 
             this.loading = true;
-            this.$http.get('project', {params: {
-                find: JSON.stringify({$and: ands}),
-                limit: 500, //TODO implement paging eventually
-                select: '-readme -meta -stats.resources',
-                sort: 'name',
+            this.$http.get('project/query', {params: {
+                // find: JSON.stringify({$and: ands}),
+                // limit: 500, //TODO implement paging eventually
+                // select: '-readme -meta -stats.resources',
+                q: this.query,
             }}).then(res=>{
                 this.projects = res.data.projects;
 

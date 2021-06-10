@@ -89,19 +89,8 @@ router.get('/', common.jwt({credentialsRequired: false}), (req, res, next)=>{
  */
 router.get('/query',common.jwt({credentialsRequired: false}), (req, res, next)=> {
     /*lets find first all the projects*/
-    let projects = await db.Projects.find({removed: false,"openneuro": {$exists: false}});
-    console.log(projects);
-    if(!req.query.q) return res.json(projects);
-    const queryTokens = req.query.q.toLowerCase().split(" ");
-
-    projects.forEach(project=>{
-        let tokens = [
-            project.name,
-            project.desc,
-            ...project.readme
-        ];
-
-    });
+    let projects = await db.Projects.find({});
+    res.json(projects);
 });
 
 
