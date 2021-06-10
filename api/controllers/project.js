@@ -77,6 +77,21 @@ router.get('/', common.jwt({credentialsRequired: false}), (req, res, next)=>{
 
 /**
  * @apiGroup Project
+ * @api {get} /project/query
+ * @apiDescription Query projects based on search projects (public)
+ * 
+ * @apiParam {String} q Query used to search for projects
+ *
+ * @apiHeader {String} [authorization]  
+ *                                 A valid JWT token "Bearer : xxxxx"
+ * 
+ * @apiSuccess {Object}   Project record registered 
+ */
+
+
+
+/**
+ * @apiGroup Project
  * @api {post} /project         Post Project
  * @apiDescription              Register new project
  *
