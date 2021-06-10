@@ -76,7 +76,6 @@ function subscribe() {
                 dataset_q.bind('warehouse', 'dataset.create.#');
                 dataset_q.bind('warehouse', 'dataset.update.#'); //for removal
                 dataset_q.subscribe({ack: true}, (dataset, head, dinfo, ack)=>{
-                    //console.log("########################### RECEIVED dataset create event ###################");
                     let tokens = dinfo.routingKey.split(".");
                     dataset.project = tokens[3]; //project id
                     dataset._id = tokens[4]; //dataset id
@@ -281,10 +280,8 @@ function handle_task(task, cb) {
                     }
                 });
 
-                if(tasks.tasks.length) {
-                    console.log("validator already submitted");
-                    return;
-                }
+                //validator already submitted
+                if(tasks.tasks.length) return;
 
                 let validator_config = {
                     _app: task.config._app, //app id
@@ -326,13 +323,6 @@ function handle_task(task, cb) {
                 let remove_date = new Date();
                 remove_date.setDate(remove_date.getDate()+1); //remove in 1 day
                 
-                //submit datatype validator - if not yet submitted
-                /*
-                console.log("submitting validator ##########################################");
-                console.dir(JSON.stringify(validator_config, null, 4));
-                console.log("-----------task product----------------", task._id);
-                console.dir(JSON.stringify(task_product, null, 4));
-                */
                 let dtv_task = await rp.post({
                     url: config.amaretti.api+"/task",
                     json: true,
@@ -367,8 +357,8 @@ function handle_task(task, cb) {
                         authorization: "Bearer "+config.warehouse.jwt,
                     }
                 });
-                console.log("submitted new validator------------------------------");
-                console.dir(dtv_task);
+                //console.log("submitted new validator------------------------------");
+                //console.dir(dtv_task);
             }, next);
         },
         
@@ -514,7 +504,6 @@ function handle_task(task, cb) {
                     return;
                 }
 
-                console.log("number of requests", requests);
                 if(requests.length == 0) return;
 
                 //see if we already submitted secondary archiver for this task
@@ -532,12 +521,9 @@ function handle_task(task, cb) {
                     }
                 });
 
-                if(tasks.tasks.length) {
-                    console.log("app-secondary-secondary already submitted");
-                    return;
-                }
+                //app-secondary-secondary already submitted?
+                if(tasks.tasks.length) return;
 
-                console.log("issueing user_jwt for", task.user_id);
                 let user_jwt;
                 if(task.user_id == "warehouse") {
                     console.error("task.user_id set to warehouse! using warehouse jwt to issue archive_jwt");
@@ -547,7 +533,6 @@ function handle_task(task, cb) {
                 }
 
                 //submit secondary archiver with just secondary deps
-                console.log("submitting secondary output archiver");
                 let remove_date = new Date();
                 remove_date.setDate(remove_date.getDate()+1); //remove in 1 day
                 let newtask = await rp.post({
@@ -568,15 +553,12 @@ function handle_task(task, cb) {
                         authorization: "Bearer "+user_jwt,
                     }
                 });
-                console.log("submitted! "+newtask._id);
-                //console.log(JSON.stringify(newtask, null, 4));
             });
         },
 
         //report archive status back to user through dataset_config
         next=>{
             if(task.service == "brainlife/app-archive") {
-                console.log("handling app-archive events");
                 async.eachSeries(task.config.datasets, (dataset_config, next_dataset)=>{
                     let _set = {
                         status_msg: task.status_msg,
@@ -634,10 +616,7 @@ function debounce(key, action, delay) {
         action();
     } else {
         //debounce
-        if(d.timeout) {
-            console.debug("already scheduled.. skipping");
-            //clearTimeout(d.timeout);
-        } else {
+        if(!d.timeout) {
             let need_delay = d.lastrun + delay - now;
             d.timeout = setTimeout(action, need_delay);
             d.lastrun = now + need_delay;
@@ -650,7 +629,6 @@ function debounce(key, action, delay) {
 
 function handle_instance(instance, cb) {
     console.debug("instance ---", instance._id, instance.status);
-    console.dir(instance);
     inc_count("health.instances");
     
     //if(instance._status_changed) {

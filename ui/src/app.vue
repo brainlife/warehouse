@@ -74,7 +74,7 @@
                 <appavatar :app="app" style="float: right; position: relative; top: -15px; margin-left: 15px;" :width="150" :height="150"/>
 
                 <!--badges-->
-                <p style="line-height: 250%; margin: 10px 0;">
+                <p style="line-height: 250%; padding-top: 10px;">
                     <doibadge :doi="app.doi" v-if="app.doi"/>
 
                     <b-badge pill v-if="app.create_date" class="bigpill" title="Registration Date">
@@ -365,7 +365,7 @@
                     </table>
                 </div>
                 <div v-else style="opacity: 0.7;">
-                    No recent jobs.
+                    No recent jobs
                 </div>
                 <br>
             </b-container>
