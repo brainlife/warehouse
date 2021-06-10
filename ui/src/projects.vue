@@ -24,17 +24,16 @@
         <div v-if="query.length && !other_projects.length && !my_projects.length">
             <p style="padding: 20px; opacity: 0.8;">No matching Projects</p>
         </div>
-        <div v-if="config.user && recentProjects.length" class="position: relative">
+        <div v-if="recentProjects.length" class="position: relative">
             <h4 class="group-title">Recent Projects</h4>
             <div style="padding: 10px;" v-if="mode == 'tile'">
-                <div v-for="project in recentProjects.slice(0).slice(-5)" :key="project._id">
+                <div v-for="project in recentProjects" :key="project._id">
                     <projectcard :project="project" v-if="project._visible"/>
                     <div v-else class="projectcard" ref="project" :id="project._id"/> <!--placeholder-->
                 </div>
             </div>
             <div style="padding: 10px;" v-if="mode == 'list'">
-                <div v-for="project in recentProjects.slice(0).slice(-5)" :key="project._id">
-                    <p v-if="!project._lastOpened">New</p>
+                <div v-for="project in recentProjects" :key="project._id">
                     <project :project="project" v-if="project._visible"/>
                     <div v-else style="height: 40px; color: white;" ref="project" :id="project._id"/> <!--placeholder-->
                 </div>
@@ -279,6 +278,13 @@ export default {
     top: 0px;
     z-index: 1;
     opacity: 0.8;
+}
+.list-badge {
+    float: right;
+}
+.tile-badge {
+    float: left;
+    margin-bottom:10px;
 }
 .projectcard {
     width: 325px;
