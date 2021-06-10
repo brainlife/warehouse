@@ -621,14 +621,8 @@ export default {
 
                 //remove app.stats that doesn't have task (not yet migrated with new stats info)
                 this.selected.stats.apps = this.selected.stats.apps.filter(a=>!!a.task);
-                let recentProjectId = JSON.parse(localStorage.getItem("recent_projectid"));
-                if(!recentProjectId) {
-                    recentProjectId = [];
-                }
-                recentProjectId.push({ "id" : project._id, "timeStamp" : Date.now(), "new" : false});
-                localStorage.setItem("recent_projectid", JSON.stringify(recentProjectId));
+                localStorage.setItem("project."+project._id+".lastOpened",Date.now());
                 localStorage.setItem("last_projectid_used", project._id);
-
                 //https://github.com/ktquez/vue-disqus/issues/11#issuecomment-354023326
                 if(this.$refs.disqus && window.DISQUS) {
                     this.$refs.disqus.reset(window.DISQUS);
