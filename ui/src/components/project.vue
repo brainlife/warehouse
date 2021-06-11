@@ -20,7 +20,7 @@
                     <icon name="id-badge" scale="0.7" style="opacity: 0.6"/> {{project.group_id}}
                 </div>
                 <span class="title">
-                    {{project.name}} 
+                    {{project.name}} <b-badge class="list-badge" variant="primary" v-if="!project._lastOpened">New</b-badge> 
                 </span>
                 <div class="desc">{{project.desc||'no description'}}</div>
             </div>
