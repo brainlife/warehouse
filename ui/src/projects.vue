@@ -21,10 +21,25 @@
                 </b-form-group>
             </div>
 
-            <div v-if="query.length && !other_projects.length && !my_projects.length">
-                <p style="padding: 20px; opacity: 0.8;">No matching Projects</p>
+        <div v-if="query.length && !other_projects.length && !my_projects.length">
+            <p style="padding: 20px; opacity: 0.8;">No matching Projects</p>
+        </div>
+        <div v-if="recentProjects.length" class="position: relative">
+            <h4 class="group-title">Recent Projects</h4>
+            <div style="padding: 10px;" v-if="mode == 'tile'">
+                <div v-for="project in recentProjects" :key="project._id">
+                    <projectcard :project="project" v-if="project._visible"/>
+                    <div v-else class="projectcard" ref="project" :id="project._id"/> <!--placeholder-->
+                </div>
             </div>
-
+            <div style="padding: 10px;" v-if="mode == 'list'">
+                <div v-for="project in recentProjects" :key="project._id">
+                    <project :project="project" v-if="project._visible"/>
+                    <div v-else style="height: 40px; color: white;" ref="project" :id="project._id"/> <!--placeholder-->
+                </div>
+            </div>
+            <br v-if="recentProjects.length > 0" clear="both">
+        </div>
             <div v-if="config.user" class="position: relative">
                 <h4 class="group-title">My Projects</h4>
                 <div style="padding: 10px;" v-if="mode == 'tile'">
@@ -85,6 +100,7 @@ export default {
             projects: [],
             my_projects: [],
             other_projects: [],
+            recentProjects: [],
 
             loading: false,
 
@@ -186,7 +202,14 @@ export default {
                 }
                 this.projects = test;
                 */
-
+                if(!localStorage.getItem('firstTime')) {
+                    this.projects.forEach(project=>{
+                        localStorage.setItem('project.'+project._id+".lastOpened",0);
+                    });
+                    localStorage.setItem('firstTime',"true");
+                }
+                let lastMonth = new Date();
+                lastMonth.setDate(lastMonth.getDate() - 30);
                 this.projects.forEach(p=>{
                     if(Vue.config.user && (
                         p.admins.includes(Vue.config.user.sub) || 
@@ -197,6 +220,10 @@ export default {
                     } else {
                         this.other_projects.push(p);
                     }
+                    /* setting new project */
+                    let timeStamp = localStorage.getItem('project.'+p._id+".lastOpened");
+                    if(timeStamp) p._lastOpened = timeStamp;
+                    if(p._lastOpened > lastMonth || !timeStamp) this.recentProjects.push(p);
                 });
                 this.loading = false;
                 this.$nextTick(()=>{
@@ -208,7 +235,6 @@ export default {
                 this.loading = false;
             });
         },
-
         change_query_debounce() {
             clearTimeout(query_debounce);
             query_debounce = setTimeout(this.change_query, 300);        
