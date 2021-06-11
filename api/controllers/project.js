@@ -87,11 +87,12 @@ router.get('/', common.jwt({credentialsRequired: false}), (req, res, next)=>{
  * 
  * @apiSuccess {Object}            Project record registered 
  */
-router.get('/query',common.jwt({credentialsRequired: false}), (req, res, next)=> {
-    /*lets find first all the projects*/
-    let projects = await db.Projects.find({});
-    res.json(projects);
-});
+// router.get('/query',common.jwt({credentialsRequired: false}), (req, res, next)=> {
+//     /*lets find first all the projects*/
+//     let ands = [{removed : false, "openneuro": {$exists: false}}];
+//     let projects = await db.Projects.find({$and : ands});
+//     res.json(projects);
+// });
 
 
 /**
