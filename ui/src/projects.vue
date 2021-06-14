@@ -129,42 +129,10 @@ export default {
         },
 
         load() {
-            let datatypeName = this.datatypeName;
-            if(!datatypeName.length){
-                console.log("Getting datatypes");
-                this.$http.get('/datatype').then(res=>{
-                    res.data.datatypes.forEach(datatype=>{
-                        let key = datatype.name;
-                        datatypeName[key] = datatype._id;
-                        });
-                    });
-            }
-            let ands = [
-                {removed: false, "openneuro": {$exists: false}},
-            ];
-            if(this.query) {
-                //split query into each token and allow for regex search on each token
-                //so that we can query against multiple fields simultanously
-                this.query.split(" ").forEach(q=>{
-                    if(q === "") return;
-                    let datatypeNameString = Object.keys(this.datatypeName);
-                    let key = datatypeNameString.find(name=>name.includes(q));
-                    let searchQuery = {$or : [
-                         {"name": {$regex: q, $options: 'i'}},
-                         {"desc": {$regex: q, $options: 'i'}},
-                    ]};
-                    if(key) {
-                        searchQuery['$or'].push({"stats.datasets.datatypes_detail.type" : this.datatypeName[key]});
-                    }
-                    ands.push(searchQuery);
-                });
-            }
-
             //load all projects that user has summary access (including removed ones so we can open it)
             this.projects = [];
             this.my_projects = [];
             this.other_projects = [];
-
             this.loading = true;
             this.$http.get('project/query', {params: {
                 q : this.query,
