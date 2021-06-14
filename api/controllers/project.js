@@ -87,12 +87,18 @@ router.get('/', common.jwt({credentialsRequired: false}), (req, res, next)=>{
  * 
  * @apiSuccess {Object}            Project record registered 
  */
-// router.get('/query',common.jwt({credentialsRequired: false}), (req, res, next)=> {
-//     /*lets find first all the projects*/
-//     let ands = [{removed : false, "openneuro": {$exists: false}}];
-//     let projects = await db.Projects.find({$and : ands});
-//     res.json(projects);
-// });
+router.get('/query',common.jwt({credentialsRequired: false}), (req, res, next)=> {
+    /*lets find first all the projects*/
+    let ands = [{removed : false, "openneuro": {$exists: false}}];
+    common.getprojects(req.user, async (err, project_ids)=>{
+        if(err) return next(err);
+        ands.push({_id : {$in : project_ids}});
+        let projects = await db.Projects.find({$and : ands});
+        console.log(projects.length);
+        if(!req.query.q) return res.json(projects);
+        
+    });    
+});
 
 
 /**
