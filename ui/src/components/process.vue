@@ -644,9 +644,12 @@ export default {
                                 this.tasks.push(task); 
                                 this.set_dtv_task(task);
                             }
-
-                            if(task.status == "finished") {
+                            if(t.status != task.status && task.status == "finished") {
                                 this.loadProducts([task]);
+                            }
+                            for(var k in task) {
+                                if(k == "config") continue;
+                                t[k] = task[k]; //apply updates
                             }
                         } else if(task.service == "brainlife/app-archive-secondary") {
                             this.set_secondary_task(task);

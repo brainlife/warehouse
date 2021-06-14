@@ -19,7 +19,14 @@
 
         <b-alert :show="secondaryError != ''" variant="secondary">{{secondaryError}}</b-alert>
 
-        <secondary v-if="secondary && task.product" :task="task" :output="output" :product="task.product" :secondary="secondary"/>
+        <secondary v-if="secondary && task.product" 
+            :task="task" 
+            :datatype_id="output.datatype" 
+            :output_id="output.id" 
+            :datatype_tags="output.datatype_tags" 
+            :product="task.product" 
+            :secondary="secondary"/>
+
         <span v-else>
             <icon name="cog" spin></icon> Waiting to be archived ...
         </span>

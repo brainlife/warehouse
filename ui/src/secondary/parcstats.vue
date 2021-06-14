@@ -1,12 +1,5 @@
 <template>
 <div>
-    <!-- no secondary output for wmc yet.. -->
-
-    <!-- metadata can be accessed via product.meta-->
-    <!--
-    {{product.meta}}
-    -->
-
     <b>Source</b>
     <v-select v-model="source" :options="sourceOptions"/>
     <b>Measure</b>
@@ -26,14 +19,10 @@ import axios from 'axios'
 //import Plotly from '@statnett/vue-plotly'
 import { Plotly } from 'vue-plotly'
 
-import { parseCSV } from '@/lib'
+import { parseCSV, string2hue } from '@/lib'
 
 export default {
-    props: [
-        'task', 
-        'output', 
-        'product'
-    ],
+    props: [ 'task', 'output_id', 'product' ],
     components: {
         Plotly
     },
@@ -49,6 +38,7 @@ export default {
             structures: [],  //selected structurues
 
             data: [],
+            refdata: null,
 
             graphData: null,
             graphLayout: null,
@@ -62,7 +52,7 @@ export default {
         async source() {
             //reload data source and update catalogs
             console.log("loading source", this.source, this.measure);
-            const res = await this.$http.get('secondary/'+this.task._id+'/'+this.output.id+'/parc-stats/'+this.source+'.csv');
+            const res = await this.$http.get('secondary/'+this.task._id+'/'+this.output_id+'/parc-stats/'+this.source+'.csv');
             this.data = parseCSV(res.data);           
 
             const sample = this.data[0];
@@ -102,7 +92,7 @@ export default {
             /*
             //subjectID,Total_Brain_volume,Total_Intracranial_volume,Total_Gray_Matter_volume,Total_White_Matter_volume,Left_Hemisphere_Gray_Matter_volume,Right_Hemisphere_Gray_Matter_volume,Left_Hemisphere_White_Matter_volume,Right_Hemisphere_White_Matter_volume,Left_Hemisphere_Mean_Gray_Matter_thickness,Right_Hemisphere_Mean_Gray_Matter_thickness
             //soichi,1245338.0,1554102.356326,510700.772537,490168.0,258217.335363,252483.437174,247827.0,242341.0,2.5156400000000003,2.46113
-            res = await this.$http.get('secondary/'+this.task._id+'/'+this.output.id+'/parc-stats/whole_brain.csv');
+            res = await this.$http.get('secondary/'+this.task._id+'/'+this.output_id+'/parc-stats/whole_brain.csv');
             const wholeBrain = parseCSV(res.data);           
             */
 
@@ -194,7 +184,8 @@ export default {
                     q3: [],
 
                     line: {
-                        width: 1
+                        width: 1,
+                        color: 'hsla('+string2hue(rec.source)+',80%,30%,0.5)',
                     },
 
                     name: rec.source,
@@ -242,6 +233,19 @@ export default {
                 margin: {
                     l: 175, 
                     //r: 10, b: 40, t: 30, pad: 0 
+                },
+                font: {
+                    size: 11,
+                    family: "Arial",
+                },
+                xaxis: {
+                    title: {
+                        text: this.measure,
+                        font: {
+                            color: '#999',
+                            size: 11,
+                        },
+                    },
                 },
                 boxmode: 'group',
             }

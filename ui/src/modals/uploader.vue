@@ -1,7 +1,7 @@
 <template>
 <b-modal :no-close-on-backdrop='true' title="Upload Data" ref="modal" id="uploader" size="lg">
     <div v-if="mode == 'upload'">
-        <b-form-group horizontal label="Data Type" v-if="datatypes" style="margin-bottom: 8px;">
+        <b-form-group horizontal label="Data Type" style="margin-bottom: 8px;">
             <v-select v-model="datatype" placeholder="Search Datatype" label="name" :options="Object.values(datatypes)" :selectable="option => option.validator">
                 <template v-slot:option="option">
                     <datatypetag :datatype="option" :clickable="false"/><br>
@@ -148,11 +148,12 @@ import tageditor from '@/components/tageditor'
 import product from '@/components/product'
 import datatypetag from '@/components/datatypetag'
 
+import datatypesMixin from '@/mixins/datatypes'
 
-//TODO - maybe I should store this in datatype collection?
-
-//singleton instance to handle upload request
 export default {
+    mixins: [
+        datatypesMixin,
+    ],
 
     components: { 
         pageheader, 
@@ -189,7 +190,6 @@ export default {
             mode: 'upload',
             validator_resource: null,
             
-            datatypes: null, //registered datatypes (keyed by datatype_id)
             subtype: 0, 
 
             available_tags: null,
@@ -240,15 +240,27 @@ export default {
     },
 
     mounted() {
+        /*
         this.$http.get('datatype', {params: {
             sort: 'name', 
 
             //load all datatype that has validator assigned
             //find: JSON.stringify({validator: {$exists: true}}),
 
-            //let's specify which datatype to allow upload (until we can handle directory upload
-            //we also need to make sure to register those datatypes in brainlife.io resource
             find: JSON.stringify({_id: {$in: [
+            ]}}),
+        }}).then(res=>{
+            this.datatypes = {};
+            res.data.datatypes.forEach((type)=>{
+                this.datatypes[type._id] = type;
+            });
+        });
+        */
+
+        //let's specify which datatype to allow upload (until we can handle directory upload
+        //we also need to make sure to register those datatypes in brainlife.io resource
+        this.loadDatatypes({
+            _id: {$in: [
                 "58c33bcee13a50849b25879a", //t1
                 "594c0325fa1d2e5a1f0beda5", //t2
                 "5d9cf81c0eed545f51bf75df", //flair
@@ -259,12 +271,10 @@ export default {
                 "5b956f6cd7b3f1e24e9121ce", //track/trk
                 "5c390505f9109beac42b00df", //fmap
                 "604976b3ebfe45c4633ae3d2", //microperimetry
-            ]}}),
-        }}).then(res=>{
-            this.datatypes = {};
-            res.data.datatypes.forEach((type)=>{
-                this.datatypes[type._id] = type;
-            });
+                "599f305ad1f46fec1759f363", //tractmeasures
+            ]},
+        }, err=>{
+            if(err) console.error(err);
         });
 
         this.$root.$on("uploader.option", (opt)=>{

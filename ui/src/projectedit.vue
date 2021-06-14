@@ -139,7 +139,59 @@
                     <span class="form-header">Column Definitions</span>
                     <p class="text-muted"><small>Participants Info column Definitions (participants.json). Please read the <a href="https://bids-specification.readthedocs.io/en/stable/03-modality-agnostic-files.html#phenotypic-and-assessment-data">BIDS speficication</a></small></p>
                     <editor v-model="participants_columns" @init="editorInit" lang="json" height="300"/>
+                    <br>
+                    <br>
                 </b-col>
+            </b-row>
+
+            <b-row v-if="config.debug">
+                <b-col cols="3">
+                    <span class="form-header">XNAT Integration (experimental)</span>
+                </b-col> 
+                <b-col cols="9">
+                    <b-form-checkbox v-model="project.xnat.enabled">Integrate with XNAT</b-form-checkbox>
+                    <div v-if="project.xnat.enabled">
+                        <b-form-group label="XNAT Hostname">
+                            <b-input type="text" v-model="project.xnat.hostname" required/>
+                        </b-form-group>
+
+                        <b-form-group label="Access Token">
+                            <b-input type="text" v-model="project.xnat.token" required/>
+                        </b-form-group>
+
+                        <b-form-group label="Secret">
+                            <b-input type="password" v-model="project.xnat.secret" required/>
+                        </b-form-group>
+                        <b-form-group label="Scan Mapping">
+                            <small>Please enter mapping between XNAT scans names and brainlife datatype/tags</small>
+
+                            <div v-for="(scan, idx) in project.xnat.scans" :key="idx" style="background-color: white; padding: 10px;">
+                                <b-row>
+                                    <b-col cols="3">
+                                        <span class="text-muted">Scan Name</span>
+                                        <b-input type="text" v-model="scan.scan" required/>
+                                        <small>XNAT scan name to look for</small>
+                                    </b-col>
+                                    <b-col cols="4">
+                                        <span class="text-muted">Datatype</span>
+                                        <datatypeselecter v-model="scan.datatype"></datatypeselecter>
+                                        <small>brainlife.io datatype to import as</small>
+
+                                        <datatype :datatype="datatypes[scan.datatype]" style="margin-top: 5px;" v-if="scan.datatype" :clickable="false"/>
+                                    </b-col>
+                                    <b-col cols="5" v-if="scan.datatype">
+                                        <div class="text-muted">Datatype Tags</div>
+                                        <tageditor placeholder="Tags" v-model="scan.datatype_tags" :options="datatypes[scan.datatype]._tags" />
+                                        <small>brainlife.io datatype tags to add for this scan</small>
+                                    </b-col>
+                                </b-row>
+                            </div>
+                            <br>
+                            <b-button type="button" variant="secondary" @click="project.xnat.scans.push({})"><icon name="plus"/> Add Scan</b-button>
+
+                        </b-form-group>
+                    </div>
+                </b-col> 
             </b-row>
  
             <div class="page-footer">
@@ -170,12 +222,23 @@ import contactlist from '@/components/contactlist'
 import license from '@/components/license'
 import VueMarkdown from 'vue-markdown'
 
+import datatypeselecter from '@/components/datatypeselecter'
+import datatype from '@/components/datatype'
+import tageditor from '@/components/tageditor'
+
+import datatypes from '@/mixins/datatypes'
+
 export default {
+    mixins: [ datatypes ],
     components: { 
         contactlist, 
         pageheader, 
         license, 
         VueMarkdown,
+
+        datatypeselecter,
+        datatype,
+        tageditor,
 
         editor: require('vue2-ace-editor'),
     },
@@ -191,6 +254,11 @@ export default {
                 members: [],
                 agreements: [],
 
+                xnat: {
+                    enabled: false,
+                    scans: [],
+                },
+
                 //group_analysis: false,
             },
 
@@ -202,6 +270,7 @@ export default {
             config: Vue.config,
         }
     },
+
     mounted: function() {
         let participants_def = [
             {subject: "001", age: 12, sex: "F", "handedness": "R"},
@@ -230,28 +299,42 @@ export default {
             },
         }
 
-        if(this.$route.params.id !== '_') {
-            //load project to edit
-            this.axios.get('project', {params: {
-                find: JSON.stringify({_id: this.$route.params.id})
-            }}).then(res=>{
-                this.project = res.data.projects[0];
-                if(!this.project.agreements) Vue.set(this.project, "agreements", []); //backward compatibility
-            });
+        //load datatypes using mixin
+        this.loadDatatypes({}, async err=>{
+            if(err) {
+                console.error(err);
+                return;
+            }
 
-            //load participant info
-            this.axios.get("/participant/"+this.$route.params.id).then(res=>{
-                if(res.data) {
-                    this.participants = JSON.stringify(res.data.subjects||participants_def, null, 4);
-                    this.participants_columns = JSON.stringify(res.data.columns||participants_columns_def, null, 4);
-                }
-            });
-        
-        } else {
-            //new project
-            this.participants = JSON.stringify(participants_def, null, 4);
-            this.participants_columns = JSON.stringify(participants_columns_def, null, 4);
-        } 
+            if(this.$route.params.id !== '_') {
+                //load project to edit
+                this.axios.get('project', {params: {
+                    find: JSON.stringify({_id: this.$route.params.id})
+                }}).then(res=>{
+                    this.project = res.data.projects[0];
+
+                    //initialize missing fields (mainly for backward compatibility)
+                    if(!this.project.agreements) Vue.set(this.project, "agreements", []); 
+                    if(!this.project.xnat) Vue.set(this.project, "xnat", {
+                        enabled: false,
+                        scans: [],
+                    });
+                });
+
+                //load participant info
+                this.axios.get("/participant/"+this.$route.params.id).then(res=>{
+                    if(res.data) {
+                        this.participants = JSON.stringify(res.data.subjects||participants_def, null, 4);
+                        this.participants_columns = JSON.stringify(res.data.columns||participants_columns_def, null, 4);
+                    }
+                });
+            
+            } else {
+                //new project
+                this.participants = JSON.stringify(participants_def, null, 4);
+                this.participants_columns = JSON.stringify(participants_columns_def, null, 4);
+            } 
+        });
     },
 
     methods: {

@@ -197,6 +197,24 @@ var projectSchema = mongoose.Schema({
     
     create_date: { type: Date, default: Date.now },
 
+    //experimental
+    xnat: {
+        enabled: { type: Boolean, default: false },
+
+        hostname: String,
+        token: String,
+        secret: String, //TODO - we need to encrypt this
+
+        //scan / datatype mapping
+        scans: [
+            {
+                scan: String, 
+                datatype: {type: mongoose.Schema.Types.ObjectId, ref: 'Datatypes'},
+                datatype_tags: [String],
+            }
+        ],
+    },
+
     //enable group_analysis UI (experimental)
     //group_analysis: { type: Boolean, default: false },
 

@@ -144,6 +144,7 @@ import tags from '@/components/tags'
 import datatypetag from '@/components/datatypetag'
 
 import agreementMixin from '@/mixins/agreement'
+import datatypesMixin from '@/mixins/datatypes'
 
 const async = require('async');
 
@@ -158,7 +159,10 @@ const CancelToken = axios.CancelToken;
 const source = CancelToken.source();
 
 export default {
-    mixins: [agreementMixin],
+    mixins: [
+        agreementMixin,
+        datatypesMixin,
+    ],
     components: { 
         tags, pageheader, datatypetag, 
     },
@@ -255,7 +259,12 @@ export default {
     },
 
     mounted() {
+        this.loadDatatypes({}, err=>{
+            if(err) console.error(err);
+            this.reload();
+        });
 
+        /*
         //loading the entire datatype...
         this.$http.get('datatype')
         .then(res=>{
@@ -267,6 +276,7 @@ export default {
         }).catch(err=>{
             console.error(err);
         });
+        */
 
         //console.log("handling dataset route params");
         //console.dir(this.$route);

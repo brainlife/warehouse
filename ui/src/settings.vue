@@ -6,7 +6,6 @@
                 <h2>Settings</h2>
                 <b-tabs class="brainlife-tab" v-model="tab">
                     <b-tab title="Profile"/>
-                    <b-tab title="Avatar"/>
                     <b-tab title="Account"/>
                     <b-tab title="Notification"/>
                 </b-tabs>
@@ -23,7 +22,33 @@
                 </b-alert>
 
                 <b-form @submit="submit_profile">
-                    <h5 style="opacity: 0.7">Public Profile</h5>
+   
+                    <h5>Avatar</h5>
+                    <b-img thumbnail :src="avatar_url(config.user.profile, 100)" style="float: left;"/>
+                    <div style="margin-left: 150px;">
+                        <p>
+                            Your avatar is handled by <a href="https://gravatar.com">gravatar.com</a> using your account email address 
+                            <span style="opacity: 0.8;">({{config.user.profile.email}})</span>.
+                        </p>
+                        <div style="background-color: white; padding: 10px; opacity: 0.8;">
+                            <h6>What is Gravatar?</h6>
+                            <a href="https://en.gravatar.com/support/what-is-gravatar/">https://en.gravatar.com/support/what-is-gravatar/</a>
+                            <br>
+                            <br>
+                            <blockquote>
+                                An "avatar" is an image that represents you online—a little picture that appears next to your name when you interact with websites.
+                            </blockquote>
+                            <blockquote>
+                                A Gravatar is a Globally Recognized Avatar. You upload it and create your profile just once, and then when you participate in any Gravatar-enabled site, your Gravatar image will automatically follow you there.
+                            </blockquote>
+                            <blockquote>
+                                Gravatar is a free service for site owners, developers, and users. It is automatically included in every WordPress.com account and is run and supported by Automattic.
+                            </blockquote>
+                        </div>
+                    </div>
+
+                    <hr>
+                    <h5>Public Profile</h5>
                     <p><small>The following information will be shared publically among all brainlife users.</small></p>
                     <b-row>
                         <b-col cols="2">
@@ -57,7 +82,7 @@
                     </b-row>
 
                     <hr>
-                    <h5 style="opacity: 0.7">Private Profile</h5>
+                    <h5>Private Profile</h5>
                     <p><small>The following information will be shared with your project members and brainlife administrators.
                             Brainlife.io is a NSF funded project and supported by Indiana University. 
                             We'd like to collect private user profile information for annual reporting purposes (anonymously) 
@@ -157,43 +182,18 @@
                     </div>
                 </b-form>
                 <b-card v-if="config.debug"><pre>{{fullname}} {{profile}}</pre></b-card>
-            </div>
 
-            <!--avatar-->
-            <div v-if="tab == 1">
-                <b-img thumbnail :src="avatar_url(config.user.profile, 100)" style="float: right; margin-right: 20px;"/>
-                <p>
-                    <br>
-                    <br>
-                    Your avatar is handled by <a href="https://gravatar.com">gravatar.com</a> using your account email address 
-                    <span style="opacity: 0.8;">({{config.user.profile.email}})</span>.
-                </p>
-                <div style="background-color: white; border-radius: 10px; padding: 20px; opacity: 0.8; clear: both; margin-top: 100px; padding-top: 20px;">
-                    <h5>What is Gravatar?</h5>
-                    <p>
-                        <a href="https://en.gravatar.com/support/what-is-gravatar/">https://en.gravatar.com/support/what-is-gravatar/</a>
-                    </p>
-                    <blockquote>
-                        An "avatar" is an image that represents you online—a little picture that appears next to your name when you interact with websites.
-                    </blockquote>
-                    <blockquote>
-                        A Gravatar is a Globally Recognized Avatar. You upload it and create your profile just once, and then when you participate in any Gravatar-enabled site, your Gravatar image will automatically follow you there.
-                    </blockquote>
-                    <blockquote>
-                        Gravatar is a free service for site owners, developers, and users. It is automatically included in every WordPress.com account and is run and supported by Automattic.
-                    </blockquote>
-                </div>
             </div>
 
             <!--account-->
-            <div v-if="tab == 2">
-                Please visit the legacy <a href="/auth/#!/settings/account" target="_blank">Account Settings</a> page.
+            <div v-if="tab == 1">
+                Please visit the legacy <a href="/auth/#!/settings/account" target="_blank">Account Settings</a> page for more account settings.
             </div>
 
             <!--notification-->
-            <div v-if="tab == 3">
+            <div v-if="tab == 2">
                 <b-form @submit="submit_profile">
-                    <h5 style="opacity: 0.7">Sounds</h5>
+                    <h5>Sounds</h5>
                     <b-row>
                         <b-col cols="2">
                             <span class="form-header">Job Status Change</span>
@@ -327,7 +327,7 @@ export default {
     background-color: #f9f9f9;
 }
 .page-content h2 {
-        margin-bottom: 0px;
+    margin-bottom: 0px;
     padding: 10px 0px;
     font-size: 20pt;
 }
@@ -339,7 +339,8 @@ export default {
     border-bottom: 1px solid #eee;
 }
 h5 {
-    margin-bottom: 20px
+    margin-bottom: 20px;
+    opacity: 0.7;
 }
 </style>
 

@@ -427,7 +427,7 @@ Normally, the App description is automatically pulled from github repo descripti
                         <b-row>
                             <b-col>
                                 <div class="text-muted">Datatype</div>
-                                <datatypeselecter v-model="output.datatype"></datatypeselecter>
+                                <datatypeselecter v-model="output.datatype"/>
                                 <datatype :datatype="datatypes[output.datatype]" style="margin-top: 5px;" v-if="output.datatype" :clickable="false"/>
                             </b-col>
                             <b-col cols="7">
@@ -520,15 +520,15 @@ import app from '@/components/app'
 import branchselecter from '@/components/branchselecter'
 
 import search_app_mixin from '@/mixins/searchapp'
+import datatypes from '@/mixins/datatypes'
 
 let debounce;
 
 export default {
-    mixins: [ search_app_mixin ],
+    mixins: [ search_app_mixin, datatypes ],
     components: { 
         contactlist, multiprojectselecter,
         datatypeselecter, trueorfalse, tageditor, datatype, app, branchselecter,
-        //editor: require('vue2-ace-editor'),
     },
     data() {
         return {
@@ -541,8 +541,6 @@ export default {
             },
 
             invalid_repo: false,
-            //github_branches: null,
-            //github_tags: null,
             
             input_datasets: [],
             output_datasets: [],
@@ -553,7 +551,6 @@ export default {
             ready: false,  //ready to render form
             submitting: false,
 
-            datatypes: null, //registered datatypes (keyed by datatype_id)
 
             config: Vue.config
         }
@@ -568,77 +565,63 @@ export default {
 
     mounted: function() {
 
-        //load datatype catalog
-        this.$http.get('datatype').then(res=>{
-            this.datatypes = {};
-            res.data.datatypes.forEach(type=>{
-                this.datatypes[type._id] = type;
-                type._tags = type.datatype_tags.map(t=>t.datatype_tag);
-                console.log(type.name, type._tags);
-            });
+        //load datatypes using mixin
+        this.loadDatatypes({}, async err=>{
+            if(err) {
+                console.error(err);
+                return;
+            }
 
-            //also load datatype_tags from all apps -- TODO - this is super inefficient!
-            this.$http.get('app', {params: {
-                select: 'inputs outputs',
-                limit: 500, //TODO - this is not sustailable
-            }}).then(res=>{
-                var v = this;
+            this.alltags = await this.loadAppTags();
+            if (this.$route.params.id == '_') {
+                //new .. (can't do it in data() for some reason (maybe because contact list is not setup?))
+                this.app.admins = [Vue.config.user.sub];
+                this.convert_config_to_ui();
+                this.ready = true;
+            } else {
+                //instruct searchapp mixin not to include myself
+                this.search_apps_ignore = [this.$route.params.id];
 
-                function aggregate_tags(dataset) {
-                    if(!dataset.datatype_tags) return;
-                    dataset.datatype_tags.forEach(tag=>{
-                        var dt = v.datatypes[dataset.datatype];
-                        if(!dt) {
-                            console.error("no datatype defined for ", dataset.datatype);
-                            return;
-                        }
-                        if(!~dt._tags.indexOf(tag)) dt._tags.push(tag);
-                    });
-                }
-                res.data.apps.forEach(app=>{
-                    app.inputs.forEach(aggregate_tags);
-                    app.outputs.forEach(aggregate_tags);
-                });
+                //finally time to load app to edit
+                this.$http.get('app/'+this.$route.params.id, {params: {
+                    //find: JSON.stringify({_id: this.$route.params.id}),
+                    //limit: 1,
+                    populate: 'deprecated_by',
+                }}).then(res=>{
+                    this.app = res.data;
+                    this.convert_config_to_ui();
 
-                //load apptags catalog
-                this.load_app_tags().then(tags=>{
-                    this.alltags = tags;
-                    if (this.$route.params.id == '_') {
-                        //new .. (can't do it in data() for some reason (maybe because contact list is not setup?))
-                        this.app.admins = [Vue.config.user.sub];
-                        this.convert_config_to_ui();
-                        this.ready = true;
-                    } else {
-
-                        //instruct searchapp mixin not to include myself
-                        this.search_apps_ignore = [this.$route.params.id];
-
-                        //finally time to load app to edit
-                        this.$http.get('app/'+this.$route.params.id, {params: {
-                            //find: JSON.stringify({_id: this.$route.params.id}),
-                            //limit: 1,
-                            populate: 'deprecated_by',
-                        }}).then(res=>{
-                            this.app = res.data;
-                            this.convert_config_to_ui();
-
-                            if(this.$route.params.mode == 'copy') {
-                                this.app.name += " - copy";
-                                delete this.app._id;
-                                delete this.app.doi;
-                                delete this.app.create_date;
-                            }
-                            this.ready = true;
-                        });
+                    if(this.$route.params.mode == 'copy') {
+                        this.app.name += " - copy";
+                        delete this.app._id;
+                        delete this.app.doi;
+                        delete this.app.create_date;
                     }
+                    this.ready = true;
                 });
-            });
-        }, res => {
-            console.error(res);
+            }
         });
     },
 
     methods: {
+        //load tags from all apps and create a catalog
+        loadAppTags() {
+            return new Promise((resolve, reject)=>{
+                this.$http.get('app', {params: {
+                    select: 'tags',
+                    limit: 500, //TODO - this is not sustailable
+                }}).then(res=>{
+                    var alltags = []; 
+                    res.data.apps.forEach(app=>{
+                        if(app.tags) app.tags.forEach(tag=>{
+                            if(!~alltags.indexOf(tag)) alltags.push(tag);
+                        });
+                    });
+                    resolve(alltags);
+                }, reject);
+            });
+        },
+
         swap_inputs(first_idx, snd_idx) {
             let tmp = this.input_datasets[first_idx];
             Vue.set(this.input_datasets, first_idx, this.input_datasets[snd_idx]);
@@ -933,30 +916,11 @@ export default {
             });
         },
 
-        //load tags from all apps and create a catalog
-        load_app_tags() {
-            return new Promise((resolve, reject)=>{
-                this.$http.get('app', {params: {
-                    select: 'tags',
-                    limit: 500, //TODO - this is not sustailable
-                }}).then(res=>{
-                    var alltags = []; 
-                    res.data.apps.forEach(app=>{
-                        if(app.tags) app.tags.forEach(tag=>{
-                            if(!~alltags.indexOf(tag)) alltags.push(tag);
-                        });
-                    });
-                    resolve(alltags);
-                }, reject);
-            });
-        },
         
         is_raw(input) {
-            if (this.datatypes) {
-                let dtype = this.datatypes[input.datatype];
-                if (dtype) {
-                    return dtype.name == "raw";
-                }
+            let dtype = this.datatypes[input.datatype];
+            if (dtype) {
+                return dtype.name == "raw";
             }
         },
 

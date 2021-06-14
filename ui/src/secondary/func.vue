@@ -4,15 +4,15 @@
     <b-row>
         <b-col>
             <b>Sagittal</b><br>
-            <img :src="config.api+'/secondary/'+task._id+'/'+output.id+'/secondary/x.png?at='+config.jwt"/>
+            <img :src="config.api+'/secondary/'+task._id+'/'+output_id+'/secondary/x.png?at='+config.jwt"/>
         </b-col>
         <b-col>
             <b>Coronal</b><br>
-            <img :src="config.api+'/secondary/'+task._id+'/'+output.id+'/secondary/y.png?at='+config.jwt"/>
+            <img :src="config.api+'/secondary/'+task._id+'/'+output_id+'/secondary/y.png?at='+config.jwt"/>
         </b-col>
         <b-col>
             <b>Axial</b><br>
-            <img :src="config.api+'/secondary/'+task._id+'/'+output.id+'/secondary/z.png?at='+config.jwt"/>
+            <img :src="config.api+'/secondary/'+task._id+'/'+output_id+'/secondary/z.png?at='+config.jwt"/>
         </b-col>
     </b-row>
 </div>
@@ -23,7 +23,7 @@ import Vue from 'vue'
 import axios from 'axios'
 
 export default {
-    props: ['task', 'output', 'product'],
+    props: ['task', 'output_id', 'product'],
     components: {
     },
     data() {

@@ -129,3 +129,12 @@ export function parseCSV(csv) {
     });
     return rows;
 }
+
+export function string2hue(s) {
+    let sum = 0;
+    for (let i = 0; i < s.length; i++) {
+        sum += s.charCodeAt(i)*1050;
+    }
+    return sum%360;
+}
+

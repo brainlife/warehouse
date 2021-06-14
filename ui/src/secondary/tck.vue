@@ -17,7 +17,7 @@ import Vue from 'vue'
 import axios from 'axios'
 
 export default {
-    props: ['task', 'output', 'product'],
+    props: ['task', 'output_id', 'product'],
     components: {
     },
     data() {
@@ -27,7 +27,7 @@ export default {
         }
     },
     mounted() {
-        const base = Vue.config.api+'/secondary/'+this.task._id+'/'+this.output.id+'/secondary/';
+        const base = Vue.config.api+'/secondary/'+this.task._id+'/'+this.output_id+'/secondary/';
         this.images.push({
             name: "Sagittal (Left)",
             url: base+'sagittal_left.jpg?at='+Vue.config.jwt,

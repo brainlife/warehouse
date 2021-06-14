@@ -50,14 +50,6 @@
         <div class="page-content instances-list scroll-shadow" ref="instances-list" :style="{width: listWidth+'px'}">
             <!--no instances show help doc-->
             <p v-if="instances.length == 0" class="text-muted" style="padding: 10px;">
-                <!--
-                <p>Here, you can submit a series of Apps to analyze dataset one subject at a time.</p>
-                <p>Output datasets will be removed within 25 days unless archived.</p>
-                <p>To learn about how to submit processes, please refer to our <a href="https://brainlife.io/docs/user/process/" target="doc">Documentation</a>.</p>
-                <iframe width="360" height="225"
-                    src="https://www.youtube.com/embed/u9Qlh0-iaAk" frameborder="0" 
-                    allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
-                -->
                 Please create a new process.
             </p>
 
@@ -160,16 +152,6 @@ export default {
                 if(this.query && !i.desc.toLowerCase().includes(this.query.toLowerCase())) return false; //filtered by query..
                 
                 //apply state filter
-                /*
-                if(!this.show) return true; //show all
-                if(i.config && i.config.counts) {
-                    if(i.config.counts[this.show] > 0) return true;
-                } else {
-                   //for old instances (not using counts)
-                   if(i.status == this.show) return true; 
-                   //f(this.show == "all finished" && i.status == "all finished") return true;
-                }
-                */
                 if(!this.show) return true; //show all
                 let summary = this.get_nonstaging_summary(i);
                 let match = false;
@@ -539,12 +521,14 @@ padding: .15rem .3rem;
 .instances-list {
 top: 175px;
 width: 400px;
+background-color: #eee5;
 }
 
 .instance-header {
 border-bottom: 1px solid rgba(0,0,0,0.1);
 padding: 4px 8px;
 color: #333;
+background-color: white;
 }
 
 .instance-info {
@@ -626,41 +610,41 @@ display: inline-block;
 }
 
 .summary {
-color: white;
-background-color: gray;
-padding: 2px 3px;
-text-align: center;
-position: relative;
-margin-right: 2px;
-font-size: 65%;
-top: -2px;
-display: inline-block;
-transition: background-color 0.3s;
+    color: white;
+    background-color: gray;
+    padding: 2px 3px;
+    text-align: center;
+    position: relative;
+    margin-right: 2px;
+    font-size: 65%;
+    top: -2px;
+    display: inline-block;
+    transition: background-color 0.2s;
 }
 
 .summary:hover {
-background-color: white;
-color: black;
+    background-color: white;
+    color: black;
 }
 
 .summary-running {
-background-color: #007bff;
+    background-color: #007bffcc;
 }
 
 .summary-failed {
-background-color: #dc3545;
+    background-color: #dc3545cc;
 }
 
 .summary-stopped {
-background-color: #999;
+    background-color: #999c;
 }
 .summary-waiting,
 .summary-requested {
-background-color: #50bfff;
+    background-color: #50bfffcc;
 }
 
 .summary-finished {
-background-color: #28a745;
+    background-color: #28a745cc;
 }
 
 .date {

@@ -15,7 +15,7 @@ import Vue from 'vue'
 import axios from 'axios'
 
 export default {
-    props: ['task', 'output', 'product'],
+    props: ['task', 'output_id', 'product'],
     components: {},
     data() {
         return {
@@ -49,7 +49,7 @@ export default {
     },
     methods: {
         fullpath(filename) {
-            const base = Vue.config.api+'/secondary/'+this.task._id+'/'+this.output.id+'/secondary/';
+            const base = Vue.config.api+'/secondary/'+this.task._id+'/'+this.output_id+'/secondary/';
             return base+'qa/'+filename+'?at='+Vue.config.jwt;
         }
     },

@@ -88,24 +88,24 @@ router.get('/', common.jwt({credentialsRequired: false}), (req, res, next)=>{
  * @apiSuccess {Object[]}       List of apps (populated with datatype.name / contributors)
  */
 router.get('/query', common.jwt({credentialsRequired: false}), (req, res, next)=>{
-    //
+    
     //construct db level query (not removed, and apps that user has access to)
-    var ands = [{removed: false}];
+    //and get *all* apps (minus some heavy/unnecessary stuff)
     common.getprojects(req.user, async (err, project_ids)=>{
         if(err) return next(err);
-        ands.push({$or: [ 
-            //if projects is set, user need to have access to it
-            {projects: {$in: project_ids}},
+        const apps = await db.Apps.find({
+            removed: false,
+            $or: [ 
+                //if projects is set, user need to have access to it
+                {projects: {$in: project_ids}},
 
-            {projects: []}, //if projects is empty array, it's available to everyone
+                {projects: []}, //if projects is empty array, it's available to everyone
 
-            //for backward compatibility
-            {projects: null}, //if projects is set to null, it's avalable to everyoone
-            {projects: {$exists: false}}, //if projects not set, it's availableo to everyone
-        ]});
-
-        //then we just get *all* apps (minus some heavy/unnecessary stuff)
-        const apps = await db.Apps.find({$and: ands})
+                //for backward compatibility
+                {projects: null}, //if projects is set to null, it's avalable to everyoone
+                {projects: {$exists: false}}, //if projects not set, it's availableo to everyone
+            ]
+        })
         .select('-config -avatar -stats.gitinfo -contributors') //cut things we don't need
         //we want to search into datatype name/desc (desc might be too much?)
         .populate('inputs.datatype', 'name desc') 

@@ -328,8 +328,8 @@ function connect_osiris(cb) {
 
     conn.connect({
         username: "shayashi",
-        //host: "msu-xfer01.osris.org", //Timed out while waiting for handshake?
-        host: "um-xfer01.osris.org", 
+        host: "msu-xfer01.osris.org", //Timed out while waiting for handshake?
+        //host: "um-xfer01.osris.org", //blocked?
         privateKey: fs.readFileSync(__dirname+'/brlife.id_rsa'),
         keepaliveInterval: 10*1000, //default 0 (disabled)
         //keepaliveCountMax: 30, //default 3 (https://github.com/mscdex/ssh2/issues/367)

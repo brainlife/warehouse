@@ -261,12 +261,10 @@ function handle_task(task, cb) {
                 let find = {
                     "deps_config.task": task._id,
                     "config._outputs.id": output.id,
-
                     instance_id: task.instance_id,
-                
                     service: datatype.validator, 
-                    service_branch: datatype.validator_branch, 
                 };
+                if(datatype.validator_branch) find.service_branch = datatype.validator_branch;
 
                 let subdirs;
                 if(output.subdir) {

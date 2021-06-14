@@ -110,8 +110,14 @@
                                     <span class="form-header">Secondary</span>
                                     <p><small class="text-muted">Secondary output from the validator service ({{dataset.prov.task.service}})</small></p>
                                 </b-col>
-                                <b-col>
-                                    <secondary :task="dtv" :output="findOutputConfig()" :product="product" :secondary="secondary"/>
+                                <b-col cols="10">
+                                    <secondary 
+                                        :task="dtv" 
+                                        :datatype_id="dataset.datatype._id"
+                                        :output_id="dataset.prov.output_id" 
+                                        :datatype_tags="dataset.datatype_tags" 
+                                        :product="product" 
+                                        :secondary="secondary"/>
                                     <br>
                                 </b-col>
                             </b-row>
@@ -119,8 +125,27 @@
                             <b-row>
                                 <b-col cols="2"><span class="form-header">Datatype</span></b-col>
                                 <b-col>
-                                    <datatype :datatype="dataset.datatype" :datatype_tags="dataset.datatype_tags"></datatype>
+                                    <datatype :datatype="dataset.datatype" :datatype_tags="dataset.datatype_tags">
+                                        <icon slot="tag_extra" name="edit" v-if="dataset._canedit && !dataset._editDtag" @click="editDtag" style="opacity: 0.7; cursor: pointer;" title="Edit datatype tags"/>
+                                    </datatype>
                                     <br>
+                                </b-col>
+                            </b-row>
+
+                            <b-row v-if="dataset._editDtag">
+                                <b-col cols="2"><span class="form-header">Datatype Tags</span></b-col>
+                                <b-col>
+                                    <b-row>
+                                        <b-col cols="10">
+                                            <tageditor v-model="dataset.datatype_tags" :options="dataset.datatype._datatype_tags"/>
+                                        </b-col>
+                                        <b-col cols="2">
+                                            <b-button variant="primary" @click="saveDtag">Save</b-button>
+                                        </b-col>
+                                    </b-row>
+                                    <p>
+                                        <small>Please be careful when editing datatype tags!</small> 
+                                    </p>
                                 </b-col>
                             </b-row>
 
@@ -305,7 +330,7 @@ export default {
     mixins: [
         agreementMixin, 
         secondaryWaiter, 
-        resourceCache 
+        resourceCache,
     ],
 
     components: { 
@@ -342,8 +367,6 @@ export default {
 
             selfurl: document.location.href,
 
-            //back: null, //route to push to when user close it
-            
             alltags: null,
 
             tm_load_archive_task: null,
@@ -354,7 +377,6 @@ export default {
     },
 
     created() {
-        //console.log("modal/dataset listening to dataset.view event");
         this.$root.$on("dataset.view", opt=>{
             this.load(opt.id);
         });
@@ -390,7 +412,7 @@ export default {
     },
 
     methods: {
-    
+   
         //same code in api/controllers/dataset.js
         isimporttask(task) {
             if(~task.service.indexOf("brainlife/validator-")) return true;
@@ -965,7 +987,14 @@ export default {
             this.update_dataset('tags');
             this.dataset._tags_dirty = false;
         },
-        update_meta() {
+        editDtag() {
+            Vue.set(this.dataset, '_editDtag', true);
+        },
+        saveDtag() {
+            this.update_dataset('datatype_tags');
+            Vue.set(this.dataset, '_editDtag', false);
+        },
+         update_meta() {
             this.dataset._meta_dirty = true;
             if(this.dataset.meta.session == "") delete this.dataset.meta.session;
             this.dataset._meta = JSON.stringify(this.dataset.meta, null, 4);
@@ -994,9 +1023,11 @@ export default {
             if(!this.dataset._canedit) editor.setReadOnly(true);
         },
 
+        /*
         findOutputConfig() {
             return this.dataset.prov.task.config._outputs.find(o=>o.id == this.dataset.prov.output_id);
         },
+        */
     }
 }
 

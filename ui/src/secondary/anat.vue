@@ -7,24 +7,7 @@
                 <img :src="image.url"/>
             </a>
         </b-col>
-        <!--
-        <b-col>
-            <b>x</b><br>
-            <img :src="config.api+'/secondary/'+task._id+'/'+output.id+'/secondary/x.png?at='+config.jwt"/>
-        </b-col>
-        <b-col>
-            <b>y</b><br>
-            <img :src="config.api+'/secondary/'+task._id+'/'+output.id+'/secondary/y.png?at='+config.jwt"/>
-        </b-col>
-        <b-col>
-            <b>z</b><br>
-            <img :src="config.api+'/secondary/'+task._id+'/'+output.id+'/secondary/z.png?at='+config.jwt"/>
-        </b-col>
-        -->
     </b-row>
-    <!-- metadata can be accessed via product.meta
-    {{product}}
-    -->
 </div>
 </template>
 
@@ -33,7 +16,7 @@ import Vue from 'vue'
 import axios from 'axios'
 
 export default {
-    props: ['task', 'output', 'product'],
+    props: ['task', 'output_id', 'product'],
     components: {
     },
     data() {
@@ -43,7 +26,7 @@ export default {
         }
     },
     mounted() {
-        const base = Vue.config.api+'/secondary/'+this.task._id+'/'+this.output.id+'/secondary/';
+        const base = Vue.config.api+'/secondary/'+this.task._id+'/'+this.output_id+'/secondary/';
         this.images.push({
             name: "Sagittal",
             url: base+'x.png?at='+Vue.config.jwt,
