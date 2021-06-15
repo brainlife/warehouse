@@ -24,7 +24,7 @@
         <div v-if="query.length && !other_projects.length && !my_projects.length">
             <p style="padding: 20px; opacity: 0.8;">No matching Projects</p>
         </div>
-        <div v-if="recentProjects.length" class="position: relative">
+        <div v-if="!query && recentProjects.length" class="position: relative">
             <h4 class="group-title">Recent Projects</h4>
             <div style="padding: 10px;" v-if="mode == 'tile'">
                 <div v-for="project in recentProjects" :key="project._id">
@@ -152,6 +152,7 @@ export default {
             this.loading = true;
             this.$http.get('project/query', {params: {
                 q : this.query,
+                select : '-readme -mag -relatedPapers -stats.resources -stats.apps',
             }}).then(res=>{
                 this.projects = res.data;
 
