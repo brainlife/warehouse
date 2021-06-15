@@ -27,13 +27,13 @@
         <div v-if="!query && recentProjects.length" class="position: relative">
             <h4 class="group-title">Recent Projects</h4>
             <div style="padding: 10px;" v-if="mode == 'tile'">
-                <div v-for="project in recentProjects" :key="project._id">
+                <div v-for="project in removeDuplicates()" :key="project._id">
                     <projectcard :project="project" v-if="project._visible"/>
                     <div v-else class="projectcard" ref="project" :id="project._id"/> <!--placeholder-->
                 </div>
             </div>
             <div style="padding: 10px;" v-if="mode == 'list'">
-                <div v-for="project in recentProjects" :key="project._id">
+                <div v-for="project in removeDuplicates()" :key="project._id">
                     <project :project="project" v-if="project._visible"/>
                     <div v-else style="height: 40px; color: white;" ref="project" :id="project._id"/> <!--placeholder-->
                 </div>
@@ -142,6 +142,10 @@ export default {
         clearQuery() {
             this.query = ''
             this.change_query();
+        },
+
+        removeDuplicates() {
+            return this.recentProjects.filter((v,i,a)=>a.findIndex(t=>(t._id === v._id))===i)
         },
 
         load() {
