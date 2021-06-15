@@ -77,6 +77,60 @@ router.get('/', common.jwt({credentialsRequired: false}), (req, res, next)=>{
 
 /**
  * @apiGroup Project
+ * @api {get} /project/query
+ * @apiDescription                 Query projects based on search query (public)
+ * 
+ * @apiParam {String} q            Query used to search for projects
+ *
+ * @apiHeader {String} [authorization]  
+ *                                 A valid JWT token "Bearer : xxxxx"
+ * 
+ * @apiSuccess {Object}            Project record registered 
+ */
+router.get('/query',common.jwt({credentialsRequired: false}), (req, res, next)=> {
+    /*lets find first all the projects*/
+    let ands = [{removed : false, "openneuro": {$exists: false}}];
+    
+    common.getprojects(req.user, async (err, project_ids)=>{
+        if(err) return next(err);
+        ands.push({_id : {$in : project_ids}});
+        let projects = await db.Projects.find({$and : ands})
+        .select('name desc')
+        .populate('stats.datasets.datatypes_detail.type' , 'name')
+        .lean();
+        if(!req.query.q) return res.json(projects);
+        const queryTokens = req.query.q.toLowerCase().split(" ");
+
+        projects.forEach(project=>{
+            let tokens = [
+                project.name,
+                project.desc,
+            ];
+            if(project.stats && project.stats.datasets && project.stats.datasets.datatypes_detail) {
+                project.stats.datasets.datatypes_detail.forEach(datatype=>{
+                    tokens = [...tokens, datatype.type.name];
+                });
+            }
+            tokens = tokens.filter(token=>!!token).map(token=>token.toLowerCase());
+            project._tokens = tokens.join(" ");
+        });
+        const filtered = projects.filter(project=>{
+            let match = true;
+            queryTokens.forEach(token=>{
+                if(!match) return;
+                if(!project._tokens.includes(token)) match = false;
+            });
+            return match;
+        });
+        //remove _tokens from the apps to reduce returning weight a bit
+        filtered.forEach(project=>{ delete project._tokens; });
+        res.json(filtered);
+    });    
+});
+
+
+/**
+ * @apiGroup Project
  * @api {post} /project         Post Project
  * @apiDescription              Register new project
  *
