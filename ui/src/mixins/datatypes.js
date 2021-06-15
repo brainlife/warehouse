@@ -11,7 +11,6 @@ export default {
         async loadDatatypes(find, cb) {
             //load datatype catalog
             try {
-                console.log("loading datatypes", find);
                 let res = await this.$http.get('datatype', {params: {
                     find: JSON.stringify(find),
                     select: '-readme -admins -bids -samples -uis',

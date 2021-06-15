@@ -155,18 +155,6 @@ export default {
             }}).then(res=>{
                 this.projects = res.data;
 
-                /*
-                //create duplicates for load test
-                const test = [];
-                for(let i = 0;i < 50; ++i) {
-                    this.projects.forEach(p=>{
-                        const copy = Object.assign({}, p);
-                        copy._id = p._id+(test.length).toString();
-                        test.push(copy);
-                    }); 
-                }
-                this.projects = test;
-                */
                 if(!localStorage.getItem('firstTime')) {
                     this.projects.forEach(project=>{
                         localStorage.setItem('project.'+project._id+".lastOpened",0);
@@ -196,7 +184,7 @@ export default {
                 });
             }).catch(err=>{
                 console.error(err);
-                this.$notify({type: 'error', text: err.response.data.message()});
+                this.$notify({type: 'error', text: err.toString()});
                 this.loading = false;
             });
         },

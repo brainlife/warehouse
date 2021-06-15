@@ -235,8 +235,9 @@ export default {
             //add "this data" first (to claim the default blue color!)
             let x = [];
             let y = [];
+            console.dir(this.data);
             this.data.forEach(rec=>{
-                const id = rec.TractName;
+                const id = rec.TractName || rec.structureID;
                 if(id && !this.structures.includes(id)) return;
                 /*
                 {
@@ -370,7 +371,6 @@ export default {
 
             //I can't just reset height.. I guess it's not set to deep: true?
             //https://github.com/David-Desmaisons/vue-plotly/issues/20#issuecomment-854926404
-            console.dir(this.measure);
             this.macroLayout = {
                 height: 80*this.structures.length+200,
                 margin: {
@@ -415,7 +415,7 @@ export default {
             const res = await this.$http.get('secondary/'+this.task._id+'/'+this.output_id+'/tractmeasures.csv');
             this.data = parseCSV(res.data);          
         } catch (err) {
-            console.log("trying old filename");
+            console.log("trying old filename (output_FiberStats.csv)");
             const res = await this.$http.get('secondary/'+this.task._id+'/'+this.output_id+'/output_FiberStats.csv');
             this.data = parseCSV(res.data);          
         }
@@ -464,7 +464,7 @@ export default {
             //create catalog of structures
             this.structureOptions = [];
             this.data.forEach(rec=>{
-                const id = rec.TractName;
+                const id = rec.TractName || rec.structureID;
                 if(id && !this.structureOptions.includes(id)) this.structureOptions.push(id);
             });
 
