@@ -375,7 +375,8 @@ export default {
                 height: 80*this.structures.length+200,
                 margin: {
                     l: 175, 
-                    //r: 10, b: 40, t: 30, pad: 0 
+                    r: 10, b: 40, t: 10, 
+                    //pad: 0 
                 },
                 font: {
                     size: 11,

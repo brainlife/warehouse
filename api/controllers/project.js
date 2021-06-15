@@ -95,7 +95,7 @@ router.get('/query',common.jwt({credentialsRequired: false}), (req, res, next)=>
         if(err) return next(err);
         ands.push({_id : {$in : project_ids}});
         let projects = await db.Projects.find({$and : ands})
-        .select('-readme -mag -relatedPapers -stats.resources -stats.apps -stats.datasets')
+        .select('-readme -mag -relatedPapers -stats.resources -stats.apps')
         .populate('stats.datasets.datatypes_detail.type' , 'name desc')
         .lean();
         if(!req.query.q) return res.json(projects);
