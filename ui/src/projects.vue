@@ -157,14 +157,19 @@ export default {
                 select: 'name desc stats.datasets create_date admins members guests',
             }}).then(res=>{
                 this.projects = res.data;
-                if(!localStorage.getItem('firstTime')) {
-                    this.projects.forEach(project=>{
-                        localStorage.setItem('project.'+project._id+".lastOpened",0);
-                    });
-                    localStorage.setItem('firstTime',"true");
-                }
+
                 let lastMonth = new Date();
                 lastMonth.setDate(lastMonth.getDate() - 30);
+
+                //if user access this page for the first time, we don't want to show all project as "new"
+                //so let's assume that all projects are at least month old
+                if(!localStorage.getItem('project.initialized')) {
+                    localStorage.setItem('project.initialized',"true");
+                    this.projects.forEach(project=>{
+                        localStorage.setItem('project.'+project._id+".lastOpened",lastMonth.getTime());
+                    });
+                }
+
                 this.projects.forEach(p=>{
                     if(Vue.config.user && (
                         p.admins.includes(Vue.config.user.sub) || 
@@ -175,10 +180,13 @@ export default {
                     } else {
                         this.other_projects.push(p);
                     }
-                    /* setting new project */
-                    let timeStamp = localStorage.getItem('project.'+p._id+".lastOpened");
-                    if(timeStamp) p._lastOpened = timeStamp;
-                    if(p._lastOpened > lastMonth || !timeStamp) this.recentProjects.push(p);
+
+                    p._lastOpened = localStorage.getItem('project.'+p._id+".lastOpened");
+
+                    //if _lastOpened is not set (newly added) or _lastOpened is set but it's recent
+                    //then add it to recentProject list
+                    if(!p._lastOpened || p._lastOpened > lastMonth) this.recentProjects.push(p);
+
                 });
                 this.loading = false;
                 this.$nextTick(()=>{

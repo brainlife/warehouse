@@ -451,7 +451,8 @@ export default {
                     service: "brainlife/app-noop", //TODO - I should rename to app-upload?
                     config: {}, //must exist for event handler to submit secondary archiver?
                     preferred_resource_id: this.validator_resource, 
-                });
+                    max_runtime: 600*1000, //10 minutes should be enough? (I've also set 10 mintues for cli, but is that too short?)
+                }); 
             }).then(res=>{
                 console.log("upload task submitted - waiting for it to finish before proceeding with upload");
                 this.tasks.upload = res.data.task;
