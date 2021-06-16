@@ -33,6 +33,12 @@
                     <task :task="task"/>
                 </p>
             </div>
+            
+            <hr>
+            <div style="padding: 20px" v-if="task">
+                <b>Task Dump</b>
+                <pre>{{task}}</pre>
+            </div>
 
         </b-tab>
         <b-tab title="Switch User"> 

@@ -24,7 +24,7 @@
                     placeholder="Leave this blank to download ALL subject"/>
                 <b-button-group style="float: right; margin-top: 5px">
                     <b-button variant="light" size="sm" @click="selectAllSubjects()">Add all subjects</b-button>
-                    <b-button variant="light" size="sm" @click="subjects = []">Remove all subjects</b-button>
+                    <b-button variant="light" size="sm" v-if="subjects.length" @click="subjects = []">Remove all subjects</b-button>
                 </b-button-group>
                 <br>
                 <br>
@@ -231,6 +231,8 @@ export default {
             Vue.set(this.query, 'datatype', {$in: datatype_ids});
             if(this.subjects.length) {
                 Vue.set(this.query, 'meta.subject', {$in: this.subjects.map(it=>it.subject)});
+            } else {
+                Vue.set(this.query, 'meta.subject', undefined);
             }
         },
     },
