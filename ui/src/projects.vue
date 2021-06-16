@@ -158,6 +158,7 @@ export default {
             }}).then(res=>{
                 this.projects = res.data;
                 if(!localStorage.getItem('firstTime')) {
+                    localStorage.clear();
                     this.projects.forEach(project=>{
                         localStorage.setItem('project.'+project._id+".lastOpened",0);
                     });
