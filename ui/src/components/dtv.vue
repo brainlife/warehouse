@@ -28,7 +28,7 @@
             :secondary="secondary"/>
 
         <span v-else>
-            <icon name="cog" spin></icon> Waiting to be archived ...
+            <icon name="cog" spin></icon> Waiting for secondary output ...
         </span>
     </div>
     <task v-else :task="task"/>

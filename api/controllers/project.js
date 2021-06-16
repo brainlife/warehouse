@@ -81,6 +81,7 @@ router.get('/', common.jwt({credentialsRequired: false}), (req, res, next)=>{
  * @apiDescription                 Query projects based on search query (public)
  * 
  * @apiParam {String} q            Query used to search for projects
+ * @apiParam {String} [select]     Fields to load - multiple fields can be entered with %20 as delimiter
  *
  * @apiHeader {String} [authorization]  
  *                                 A valid JWT token "Bearer : xxxxx"
@@ -89,14 +90,24 @@ router.get('/', common.jwt({credentialsRequired: false}), (req, res, next)=>{
  */
 router.get('/query',common.jwt({credentialsRequired: false}), (req, res, next)=> {
     /*lets find first all the projects*/
-    let ands = [{removed : false, "openneuro": {$exists: false}}];
+
+    //optional fields from the ui
+    let select = "" ;
+    if(req.query.select) select+=req.query.select;
+
+    //I always need these things for querying
+    select+=" name desc project.stats.datasets";
     
-    common.getprojects(req.user, async (err, project_ids)=>{
+    common.getprojects(req.user, async (err, projectIds)=>{
         if(err) return next(err);
-        ands.push({_id : {$in : project_ids}});
-        let projects = await db.Projects.find({$and : ands})
-        .select('-readme -mag -relatedPapers -stats.resources -stats.apps')
-        .populate('stats.datasets.datatypes_detail.type' , 'name desc')
+        let projects = await db.Projects.find({
+            removed: false, 
+            //openneuro: {$exists: false}
+            _id: {$in: projectIds},
+        })
+        //.select('-readme -mag -relatedPapers -stats.resources -stats.apps')
+        .select(select)
+        .populate('stats.datasets.datatypes_detail.type', 'name desc')
         .lean();
         if(!req.query.q) return res.json(projects);
         const queryTokens = req.query.q.toLowerCase().split(" ");

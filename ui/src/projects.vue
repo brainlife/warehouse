@@ -149,12 +149,14 @@ export default {
             this.projects = [];
             this.my_projects = [];
             this.other_projects = [];
+            this.recentProjects = [];
+
             this.loading = true;
             this.$http.get('project/query', {params: {
-                q : this.query,
+                q: this.query,
+                select: 'name desc stats.datasets create_date admins members guests',
             }}).then(res=>{
                 this.projects = res.data;
-
                 if(!localStorage.getItem('firstTime')) {
                     this.projects.forEach(project=>{
                         localStorage.setItem('project.'+project._id+".lastOpened",0);
