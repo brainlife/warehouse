@@ -187,6 +187,37 @@
 
             <!--account-->
             <div v-if="tab == 1">
+                <b-container>
+                    <b-row v-if="config.debug">
+                        <b-col cols="2">
+                            <span class="form-header">Username</span>
+                        </b-col>
+                        <b-col>
+                            <b-form-input/>
+                            <br>
+                        </b-col>
+                    </b-row>
+                    <hr>
+                    <h5>Change Password</h5>                
+                    <b-row v-if="config.debug">
+                        <b-col cols="2">
+                            <span class="form-header">Current Password *</span>
+                            <br>
+                            <span class="form-header">New Password</span>
+                            <br>
+                            <span class="form-header">Confirm New Password *</span>
+                            <br>
+                        </b-col>
+                        <b-col>
+                            <b-form-input/>
+                            <br>
+                            <b-form-input/>
+                            <br>
+                            <b-form-input/>
+                        </b-col>
+                    </b-row>
+
+                </b-container>
                 Please visit the legacy <a href="/auth/#!/settings/account" target="_blank">Account Settings</a> page for more account settings.
             </div>
 
