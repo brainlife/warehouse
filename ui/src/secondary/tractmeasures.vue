@@ -374,9 +374,7 @@ export default {
             this.macroLayout = {
                 height: 80*this.structures.length+200,
                 margin: {
-                    l: 175, 
-                    r: 10, b: 40, t: 10, 
-                    //pad: 0 
+                    l: 175, r: 10, b: 40, t: 10, 
                 },
                 font: {
                     size: 11,

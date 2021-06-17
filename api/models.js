@@ -205,6 +205,8 @@ var projectSchema = mongoose.Schema({
         token: String,
         secret: String, //TODO - we need to encrypt this
 
+        project: String, //XNAT project to map to
+
         //scan / datatype mapping
         scans: [
             {

@@ -114,7 +114,7 @@
         <div v-if="subjects">
             <div class="table-header">
                 <b-row>
-                    <b-col cols="2">subject<small>/ses</small></b-col>
+                    <b-col cols="2">subject<small>/session</small></b-col>
                     <b-col cols="3" v-if="selected.participants"><!--participants.json--></b-col>
                     <b-col>
                         <b-row>
@@ -133,14 +133,22 @@
                         </span>
                     </b-col>
                     <b-col>
-                        <div v-for="dataset in group.datasets" :key="dataset._id" class="dataobject" @click="click_dataset(dataset)">
-                            <b-row>
+                        <div v-for="dataset in group.datasets" :key="dataset._id">
+                            <b-row @click="click_dataset(dataset)" class="dataobject-clickable">
                                 <b-col>
                                     <datatypetag :datatype="dataset.datatype" :clickable="false" :tags="dataset.datatype_tags" />
                                 </b-col>
                                 <b-col><tags :tags="dataset.tags"/></b-col>
                             </b-row>
-                            <pre v-if="dataset.showmeta" style="font-size: 80%; background-color: #f6f6f6;">{{dataset._meta}}</pre>
+                            <div v-if="dataset.showmeta">
+                                <pre style="font-size: 80%; background-color: #f6f6f6; max-height: 300px;">{{dataset._meta}}</pre>
+                                <ul>
+                                    <li v-for="file in dataset._files" :key="file.dest">
+                                        <span style="display: inline-block;">{{file.src}}</span>
+                                        <b-badge variant="secondary">{{file.dest}}</b-badge> 
+                                    </li>
+                                </ul>
+                            </div>
                         </div>
                     </b-col>
                 </b-row>
@@ -452,7 +460,6 @@ export default {
         },
 
         openImporter() {
-            //console.dir(this.selected);
             if(Vue.config.user) {
                 //this.$bvModal.show('importer'); 
                 this.$root.$emit("importer.open", {
@@ -474,9 +481,10 @@ export default {
                 }
                 this.$http('datalad/items', {params: {
                     find: JSON.stringify({_id: item._id}), 
-                    select: 'dataset.meta',
+                    select: 'dataset.meta dataset.storage_config.files',
                 }}).then(res=>{
                     item._meta = res.data[0].dataset.meta;     
+                    item._files = res.data[0].dataset.storage_config.files;     
                     this.$forceUpdate();
                 });     
             } 
@@ -619,7 +627,7 @@ padding: 5px 0px;
 font-size: 90%;
 }
 
-.subject-group .dataobject:hover {
+.subject-group .dataobject-clickable:hover {
 background-color: #eee;
 cursor: pointer;
 }

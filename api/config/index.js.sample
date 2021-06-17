@@ -7,7 +7,7 @@ const { combine, timestamp, label, prettyPrint } = format;
 const child_process = require('child_process');
 
 const mkdirp = require('mkdirp'); //for dc2
-const pkgcloud = require('pkgcloud');
+//const pkgcloud = require('pkgcloud');
 const path = require('path');
 const archiver = require('archiver');
 const ssh2 = require('ssh2');
@@ -627,6 +627,7 @@ exports.storage_systems["dcwan/hcp"] = {
     },
 }
 
+/*
 const nki_config = require(__dirname+'/nki');
 const nki_storage = pkgcloud.storage.createClient(nki_config);
 //some BREATHHOLD files are inaccessible
@@ -657,6 +658,7 @@ exports.storage_systems["nki"] = {
         cb(null, archive, dataset._id+".tar");
     },
 }
+*/
 
 exports.storage_systems["url"] = {
     need_backup: false,

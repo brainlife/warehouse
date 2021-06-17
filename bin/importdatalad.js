@@ -34,9 +34,7 @@ db.init(async err=>{
     */
 
     //debug..
-    //bids_dirs = ["datasets.datalad.org/openneuro/ds002311/dataset_description.json"];
-    //bids_dirs = ["datasets.datalad.org/openneuro/ds001021/dataset_description.json"];
-    //let datasets = ["OpenNeuroDatasets/ds002317/dataset_description.json"];
+    //datasets = ["OpenNeuroDatasets/ds001771/dataset_description.json"];
 
     let skipped = [];
     async.eachSeries(datasets, (bids_dir, next_dir)=>{
@@ -77,11 +75,13 @@ db.init(async err=>{
         });
     }, err=>{
         if(err) throw err;
-        console.log("all done");
         if(skipped.length > 0) {
             console.log("\nskipped dataset");
             console.dir(skipped);
         }
+
+        db.disconnect();
+        console.log("all done");
     });
 });
 

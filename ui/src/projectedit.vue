@@ -150,18 +150,27 @@
                 </b-col> 
                 <b-col cols="9">
                     <b-form-checkbox v-model="project.xnat.enabled">Integrate with XNAT</b-form-checkbox>
+                    <p>
+                        <small>Data on this project can be populated from the existing XNAT project. Any new data derivatives will be stored on this XNAT project.</small>
+                    </p>
                     <div v-if="project.xnat.enabled">
                         <b-form-group label="XNAT Hostname">
                             <b-input type="text" v-model="project.xnat.hostname" required/>
                         </b-form-group>
 
-                        <b-form-group label="Access Token">
-                            <b-input type="text" v-model="project.xnat.token" required/>
+                        <p style="background-color: #eee; padding: 10px;">
+                            <small>Please issue access token/secret on your XNAT project to allow accesss from brianlife</small>
+                            <b-form-group label="Access Token">
+                                <b-input type="text" v-model="project.xnat.token" required/>
+                            </b-form-group>
+                            <b-form-group label="Secret">
+                                <b-input type="password" v-model="project.xnat.secret" required/>
+                            </b-form-group>
+                        </p>
+                        <b-form-group label="XNAT Project Name">
+                            <b-input type="text" v-model="project.xnat.project" required/>
                         </b-form-group>
 
-                        <b-form-group label="Secret">
-                            <b-input type="password" v-model="project.xnat.secret" required/>
-                        </b-form-group>
                         <b-form-group label="Scan Mapping">
                             <small>Please enter mapping between XNAT scans names and brainlife datatype/tags</small>
 
@@ -172,14 +181,14 @@
                                         <b-input type="text" v-model="scan.scan" required/>
                                         <small>XNAT scan name to look for</small>
                                     </b-col>
-                                    <b-col cols="4">
+                                    <b-col cols="5">
                                         <span class="text-muted">Datatype</span>
                                         <datatypeselecter v-model="scan.datatype"></datatypeselecter>
                                         <small>brainlife.io datatype to import as</small>
 
                                         <datatype :datatype="datatypes[scan.datatype]" style="margin-top: 5px;" v-if="scan.datatype" :clickable="false"/>
                                     </b-col>
-                                    <b-col cols="5" v-if="scan.datatype">
+                                    <b-col cols="4" v-if="scan.datatype">
                                         <div class="text-muted">Datatype Tags</div>
                                         <tageditor placeholder="Tags" v-model="scan.datatype_tags" :options="datatypes[scan.datatype]._tags" />
                                         <small>brainlife.io datatype tags to add for this scan</small>
