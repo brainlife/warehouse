@@ -65,12 +65,12 @@ export default {
         
     props: {
         project: { type: Object },
-        projectPage : null,
     },
 
     data() {
         return {
             config: Vue.config,
+            projectPage : false,
         }
     },
 
@@ -83,7 +83,8 @@ export default {
                 inactive: 0,
             }
         }
-        if(location == '/projects') this.projectPage = true;
+        
+        if(window.location.pathname == '/projects') this.projectPage = true;
     },
 
     methods: {
