@@ -4,7 +4,7 @@
     <div class="private" v-if="project.access == 'private'"><icon name="lock"/></div>
     <div class="main-content">
         <p class="title">
-            <b-badge class="list-badge" variant="primary" v-if="!project._lastOpened">New</b-badge>
+            <b-badge class="list-badge" variant="primary" v-if="!project._lastOpened && projectPage">New</b-badge>
             {{project.name}}
         </p>
         <p class="datatypes" v-if="project.stats && project.stats.datasets">
@@ -55,6 +55,7 @@ export default {
     props: {
         project: { type: Object },
         showInstanceStats: {type: Boolean, default: true},
+        projectPage : null,
     },
 
     data() {
@@ -72,6 +73,8 @@ export default {
                 inactive: 0,
             }
         }
+        const location = window.location.pathname;
+        if(location == '/projects') this.projectPage = true;
     },
 
     methods: {
