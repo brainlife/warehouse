@@ -4,7 +4,7 @@
     <div class="private" v-if="project.access == 'private'"><icon name="lock"/></div>
     <div class="main-content">
         <p class="title">
-            <b-badge class="list-badge" variant="primary" v-if="!project._lastOpened && projectPage">New</b-badge>
+            <b-badge class="list-badge" variant="primary" v-if="project.new">New</b-badge>
             {{project.name}}
         </p>
         <p class="datatypes" v-if="project.stats && project.stats.datasets">
@@ -60,7 +60,6 @@ export default {
     data() {
         return {
             config: Vue.config,
-            projectPage : false,
         }
     },
 
@@ -73,7 +72,6 @@ export default {
                 inactive: 0,
             }
         }
-        if(window.location.pathname == '/projects') this.projectPage = true;
     },
 
     methods: {

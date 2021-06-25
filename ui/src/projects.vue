@@ -181,11 +181,12 @@ export default {
                         this.other_projects.push(p);
                     }
 
-                    p._lastOpened = localStorage.getItem('project.'+p._id+".lastOpened");
+                    const lastOpened = localStorage.getItem('project.'+p._id+".lastOpened");
 
                     //if _lastOpened is not set (newly added) or _lastOpened is set but it's recent
                     //then add it to recentProject list
-                    if(!p._lastOpened || p._lastOpened > lastMonth) this.recentProjects.push(p);
+                    if(!lastOpened) p.new = true;
+                    if(p.new || lastOpened > lastMonth) this.recentProjects.push(p);
 
                 });
                 this.loading = false;

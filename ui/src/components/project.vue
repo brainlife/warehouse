@@ -20,7 +20,7 @@
                     <icon name="id-badge" scale="0.7" style="opacity: 0.6"/> {{project.group_id}}
                 </div>
                 <span class="title">
-                    {{project.name}} <b-badge class="list-badge" variant="primary" v-if="!project._lastOpened && projectPage">New</b-badge> 
+                    {{project.name}} <b-badge class="list-badge" variant="primary" v-if="project.new">New</b-badge> 
                 </span>
                 <div class="desc">{{project.desc||'no description'}}</div>
             </div>
@@ -70,7 +70,6 @@ export default {
     data() {
         return {
             config: Vue.config,
-            projectPage : false,
         }
     },
 
@@ -84,7 +83,6 @@ export default {
             }
         }
         
-        if(window.location.pathname == '/projects') this.projectPage = true;
     },
 
     methods: {
