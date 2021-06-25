@@ -70,6 +70,8 @@ db.init(async err=>{
                 return next_dir();
             }
 
+            console.log(" .. found", bids.datasets.length, "objects");
+
             let key = {path: dataset_path};
             handle_bids(key, bids, next_dir);
         });

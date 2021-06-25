@@ -91,13 +91,13 @@
     <div class="splitter" ref="splitter" :style="{left: splitter_pos+'px'}"/>
     <transition name="fade">
         <process transition="slide" 
-                :project="project" 
-                :instance="selected" 
-                v-if="selected"
-                @updatedesc="updatedesc" 
-                @remove="toggle_instance(selected)"
-                :splitter_pos="splitter_pos+10"
-                :style="{left: splitter_pos+10+'px'}"/>
+            :project="project" 
+            :instance="selected" 
+            v-if="selected"
+            @updatedesc="updatedesc" 
+            @remove="toggle_instance(selected)"
+            :splitter_pos="splitter_pos+10"
+            :style="{left: splitter_pos+10+'px'}"/>
     </transition>
 </div>
 </template>
@@ -648,13 +648,14 @@ display: inline-block;
 }
 
 .date {
-float: right;
-width: 80px;
-text-align: right;
-font-size: 75%;
-margin-top: 1px;
-margin-right: 7px;
-opacity: 0.7;
+    float: right;
+    width: 80px;
+    text-align: right;
+    font-size: 75%;
+    margin-top: 1px;
+    margin-right: 7px;
+    opacity: 0.7;
+    white-space: nowrap;
 }
 #scrolled-area {
 overflow-x: hidden;

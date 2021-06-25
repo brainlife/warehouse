@@ -861,7 +861,7 @@ h4 {
 
 .rightopen .page-content,
 .rightopen .table-header {
-    right: 300px;
+    right: 280px;
 }
 .rightviewOpen .rightopen .page-content,
 .rightviewOpen .rightopen .table-header {

@@ -155,12 +155,12 @@
                     </p>
                     <div v-if="project.xnat.enabled">
                         <b-form-group label="XNAT Hostname">
-                            <b-input type="text" v-model="project.xnat.hostname" required/>
+                            <b-input type="text" v-model="project.xnat.hostname" placeholder="https://example.xnat.com" required/>
                         </b-form-group>
 
                         <p style="background-color: #eee; padding: 10px;">
-                            <small>Please issue access token/secret on your XNAT project to allow accesss from brianlife</small>
-                            <b-form-group label="Access Token">
+                            <small>Please issue access token/secret on your XNAT project to allow accesss from brianlife. Brainlife will automatically refresh your token periodically.</small>
+                            <b-form-group label="Access Token / Alias">
                                 <b-input type="text" v-model="project.xnat.token" required/>
                             </b-form-group>
                             <b-form-group label="Secret">
@@ -188,10 +188,16 @@
 
                                         <datatype :datatype="datatypes[scan.datatype]" style="margin-top: 5px;" v-if="scan.datatype" :clickable="false"/>
                                     </b-col>
-                                    <b-col cols="4" v-if="scan.datatype">
-                                        <div class="text-muted">Datatype Tags</div>
-                                        <tageditor placeholder="Tags" v-model="scan.datatype_tags" :options="datatypes[scan.datatype]._tags" />
-                                        <small>brainlife.io datatype tags to add for this scan</small>
+                                    <b-col cols="3">
+                                        <div v-if="scan.datatype">
+                                            <div class="text-muted">Datatype Tags</div>
+                                            <tageditor placeholder="Tags" v-model="scan.datatype_tags" :options="datatypes[scan.datatype]._tags" />
+                                            <small>brainlife.io datatype tags to add for this scan</small>
+                                        </div>
+                                    </b-col>
+                                    <b-col cols="1">
+                                        <div class="text-muted">&nbsp;</div>
+                                        <b-button variant="danger" @click="project.xnat.scans.splice(idx, 1)" size="sm"><icon name="trash"/></b-button>
                                     </b-col>
                                 </b-row>
                             </div>
@@ -388,6 +394,13 @@ export default {
                 this.$notify({type: 'error', text: "Participants Info has a syntax error: "+err});
                 return; 
             }        
+
+            //remove trailing / from the hostname if user puts it
+            if(this.project.xnat.hostname) {
+                if(this.project.xnat.hostname[this.project.xnat.hostname.length-1] == "/") {
+                    this.project.xnat.hostname = this.project.xnat.hostname.substring(0, this.project.xnat.hostname.length-1);  //remove the last char.
+                }
+            }
 
             //make sure participatns info is structured in the correct way
             if(!Array.isArray(participants)) {

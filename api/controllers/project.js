@@ -259,6 +259,7 @@ router.put('/:id', common.jwt(), (req, res, next)=>{
  */
 router.delete('/:id', common.jwt(), function(req, res, next) {
     var id = req.params.id;
+    
     //TODO - prevent user from removing project that's in use..
     db.Projects.findById(req.params.id, function(err, project) {
         if(err) return next(err);
@@ -267,8 +268,21 @@ router.delete('/:id', common.jwt(), function(req, res, next) {
             project.removed = true;
             project.save(function(err) {
                 if(err) return next(err);
-                res.json({status: "ok"});
+                
+                //deactivate 
+                request.put({ 
+                    url: config.auth.api+"/group/"+project.group_id, 
+                    headers: { authorization: req.headers.authorization }, json: true,
+                    body: {
+                        active: false,
+                    }
+                }, (err, _res)=>{
+                    if(err) console.error(err);
+                    common.publish("project.delete."+req.user.sub+"."+project._id, project)
+                    res.json({status: "ok"});
+                });
             }); 
+
         } else return res.status(401).end();
     });
 });

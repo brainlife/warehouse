@@ -808,6 +808,7 @@ export default {
     background-color: white; 
     box-shadow: 0px 0px 2px #ccc;
     z-index: 1;
+    overflow: hidden;
 }
 .sub-tab {
     min-height: 42px;

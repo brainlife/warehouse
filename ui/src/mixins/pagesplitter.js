@@ -23,7 +23,6 @@ export default {
 
             splitter.onpointerdown = e=>{
                 splitter.onpointermove = e=>{
-                    //console.log(offset_x);
                     new_x = e.clientX + start_x - offset_x*2;
                     if(new_x < 400) new_x = 400;
                     this.splitter_pos = new_x;  

@@ -215,7 +215,7 @@ export default {
 
     computed: {
         visibleSessions() {
-            return this.sessions.filter(it=>['running', 'requested', 'stopped'].includes(it.status));
+            return this.sessions.filter(it=>['running', 'requested', 'stopped', 'stop_requested'].includes(it.status));
         }
     },
 
