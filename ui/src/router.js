@@ -93,9 +93,9 @@ export default new Router({
 
         {path: '/novnc', component: novnc, props: true, meta: {
             noRightView: true,
-        }}, //deprecated by /novnc?config=
+        }},
 
-         //deprecated by /projects (redirect?)
+        //deprecated by /projects (redirect?)
         {path: '/project', component: projects, meta: {
             public: true,
             sidemenu: "project",

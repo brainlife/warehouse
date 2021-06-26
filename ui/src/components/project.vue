@@ -91,17 +91,6 @@ export default {
         },
     },
     computed: {
-        /*
-        instance_count: function() {
-            if(!this.project.stats) return 0;
-            let sum = 0;
-            for(let state in this.project.stats.instances) {
-                //if(state == "others") continue; //ignore this for now.
-                sum += this.project.stats.instances[state];
-            }
-            return sum;
-        }
-        */
         contacts() {
             return [...new Set([...this.project.admins, ...this.project.members])];
         }

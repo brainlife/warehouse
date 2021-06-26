@@ -178,28 +178,6 @@
                                 </template>
                             </b-tab>
 
-                            <!--
-                            <b-tab>
-                                <template v-slot:title>
-                                    App Usage <small v-if="selected.stats.apps">{{selected.stats.apps.length}}</small>
-                                </template>
-                            </b-tab>
-
-                            <b-tab>
-                                <template v-slot:title>
-                                    Resource Usage 
-                                    <small v-if="resource_usage">{{(total_walltime/(3600*1000))|formatNumber}} hours</small>
-                                </template>
-                            </b-tab>
-
-                            <b-tab>
-                                <template v-slot:title>
-                                    Citation 
-                                    <small v-if="selected.stats.apps">{{selected.stats.apps.length}}</small>
-                                </template>
-                            </b-tab>
-                            -->
-
                             <b-tab>
                                 <template v-slot:title>
                                     App/Resource Usage
@@ -264,14 +242,8 @@
                             <!--loading citations takes time and LOCK UP THE BROWSER WHILE LOADING IT!!!-->
                             <div v-if="selected.stats.apps && selected.stats.apps.length > 0">
                                 <span class="form-header">Citations</span>
-                                <!--
-                                <p v-if="!showCitations">
-                                    <b-button variant="outline-secondary" size="sm" @click="showCitations = true">Load Citation</b-button>
-                                </p>
-                                -->
-                                <!-- <span class="form-header">Citations</span>-->
+
                                 <p><small>Please use the following citations to cite the Apps/resources used by this project.</small></p>
-                                <!-- <p v-for="app in uniqueApps" :key="app._id"> -->
                                 <p v-for="app in selected.stats.apps" :key="app._id">
                                     <icon name="robot" style="opacity: 0.5;"/> <b>{{app.app.name}}</b><br>
                                     <citation :doi="app.app.doi"/> 
@@ -320,7 +292,7 @@
             <b-alert show variant="secondary" v-else-if="selected.access != 'public' && !(ismember()||isadmin()||isguest())">
                 For non public project, only the admin/members/guests of this project can access processes.
             </b-alert>
-            <datasets :project="selected" :projects="projects" v-else :participants="participants"/>
+            <datasets :project="selected"  v-else :participants="participants"/>
         </div>
 
         <div v-if="tabs[tab].id == 'process'" class="page-content">
@@ -444,9 +416,6 @@ export default {
 
             detailTab: 0, //initial tab to open for detail section
 
-            projects: null, //all projects that user can see summary of
-
-            //showCitations: false,
             datatypes: {}, //datatypes loadded (used by datatype_groups)
 
             error: null, //used to display error message while loading a project
@@ -466,7 +435,7 @@ export default {
             var project_id = this.$route.params.id;
             if(project_id && this.selected && this.selected._id != project_id) {
                 console.log("project chagned from", this.selected._id, "to", project_id)
-                this.open_project(this.projects[project_id]);
+                this.openProject(project_id);
             } else {
                 this.handleRouteParams();
             }
@@ -490,44 +459,10 @@ export default {
     },
 
     mounted() {
-        //load all projects that user has summary access (including removed ones so we can open it)
-        this.$http.get('project', {params: {
-            limit: 500,
-            select: '-readme'
-        }}).then(res=>{
-            this.projects = {};
-            res.data.projects.forEach((p)=>{
-                this.projects[p._id] = p;
-            });
-
-            //decide which project to open
-            let project_id = this.$route.params.id
-            if(!this.projects[project_id]) {
-                this.error = "You don't have access to the project, or the project ID is invalid. Please contact the project owner and ask to add you to the member/guest of the project.";
-                return;
-            }
-  
-            if(!project_id) {
-                //if no project id is specified, use last_projectid_used
-                let ids = Object.keys(this.projects); 
-                project_id = localStorage.getItem("last_projectid_used");
-                if(!this.projects[project_id]) project_id = ids[0];
-            }
-            this.open_project(this.projects[project_id]);
-
-            /*
-            this.$bvToast.toast('toast to you', {
-                //autoHideDelay: 5000,
-            });
-            */
-    
-        }).catch(err=>{
-            console.error(err);
-            if(err.response) {
-                this.$notify({type: 'error', text: err.response.data.message});
-                this.error = err.response.data.message;
-            }
-        });
+        let projectId = this.$route.params.id
+        //if no project id is specified, use last_projectid_used
+        if(!projectId) projectId = localStorage.getItem("last_projectid_used");
+        this.openProject(projectId);
     },
 
     destroyed() {
@@ -571,10 +506,6 @@ export default {
             else this.$router.push('/projects');
         },
 
-        openneuro() {
-            document.location = "https://openneuro.org/datasets/"+this.selected.openneuro.dataset_id;
-        },
-
         isguest() {
             if(!Vue.config.user) return false;
             if(!this.selected) return false;
@@ -606,23 +537,27 @@ export default {
             }
         },
 
-        open_project(project) {
-            this.selected = project;
+        openProject(projectId) {
+            this.selected = null;
+
+            //load full detail about the project
             this.$http.get('project', {params: {
                 find: JSON.stringify({
-                    _id: project._id,
+                    _id: projectId,
                 }),
                 populate: "stats.apps.app",
             }}).then(res=>{
-                let full_project = res.data.projects[0];
-                for(var key in full_project) {
-                    this.selected[key] = full_project[key];
+                if(res.data.projects.length == 0) {
+                    this.error = "You don't have access to the project, or the project ID is invalid. Please contact the project owner and ask to add you to the member/guest of the project.";
+                    return;
                 }
+
+                this.selected = res.data.projects[0];
 
                 //remove app.stats that doesn't have task (not yet migrated with new stats info)
                 this.selected.stats.apps = this.selected.stats.apps.filter(a=>!!a.task);
-                localStorage.setItem("project."+project._id+".lastOpened",Date.now());
-                localStorage.setItem("last_projectid_used", project._id);
+                localStorage.setItem("project."+projectId+".lastOpened",Date.now());
+                localStorage.setItem("last_projectid_used", projectId);
                 //https://github.com/ktquez/vue-disqus/issues/11#issuecomment-354023326
                 if(this.$refs.disqus && window.DISQUS) {
                     this.$refs.disqus.reset(window.DISQUS);
@@ -630,40 +565,41 @@ export default {
 
                 this.handleRouteParams();
                 this.update_resource_usage_graph();
-            });
 
-            //optionally.. load participant info
-            if(this.isadmin() || this.ismember()) {
-                this.participants = null;
-                this.axios.get("/participant/"+project._id).then(res=>{
-                    if(res.data) {
-                        this.participants = res.data.subjects||{}; 
-                        this.participants_columns = res.data.columns||{}; 
-                    }
-                });
-            }
-
-            //subscribe to project update
-            if(this.ws) this.ws.close();
-            var url = Vue.config.event_ws+"/subscribe?jwt="+Vue.config.jwt;
-            this.ws = new ReconnectingWebSocket(url, null, {reconnectInterval: 3000});
-            this.ws.onopen = (e)=>{
-                //console.debug("connecting to warehouse ex (project.update)");
-                this.ws.send(JSON.stringify({
-                    bind: {
-                        ex: "warehouse",
-                        key: "project.update.*."+project._id,
-                    }
-                }));
-                this.ws.onmessage = (json)=>{
-                    var event = JSON.parse(json.data);
-                    for(let k in event.msg) {
-                        if(this.selected[k] === undefined) this.selected[k] = event.msg[k];
-                        else Object.assign(this.selected[k], event.msg[k]);
-                    }
+                //subscribe to project update
+                if(this.ws) this.ws.close();
+                var url = Vue.config.event_ws+"/subscribe?jwt="+Vue.config.jwt;
+                this.ws = new ReconnectingWebSocket(url, null, {reconnectInterval: 3000});
+                this.ws.onopen = (e)=>{
+                    this.ws.send(JSON.stringify({
+                        bind: {
+                            ex: "warehouse",
+                            key: "project.update.*."+projectId,
+                        }
+                    }));
+                    this.ws.onmessage = (json)=>{
+                        var event = JSON.parse(json.data);
+                        for(let k in event.msg) {
+                            if(this.selected[k] === undefined) this.selected[k] = event.msg[k];
+                            else Object.assign(this.selected[k], event.msg[k]);
+                        }
+                    };
                 };
-            };
-
+                    
+                //optionally.. load participant info
+                if(this.isadmin() || this.ismember()) {
+                    this.participants = null;
+                    this.axios.get("/participant/"+projectId).then(res=>{
+                        if(res.data) {
+                            this.participants = res.data.subjects||{}; 
+                            this.participants_columns = res.data.columns||{}; 
+                        }
+                    });
+                }
+            }).catch(res=>{
+                console.error(res);
+                this.error = "Sorry, we were not able to load this project. Please check the URL/ID and try again";
+            });
         },
 
         update_resource_usage_graph() {

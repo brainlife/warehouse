@@ -117,6 +117,7 @@
         <div v-for="(_datasets, did) in group_selected" :key="did" v-if="datatypes[did]" class="select-group">
             <datatypetag :datatype="datatypes[did]" style="padding: 5px;"/>
             <div class="selected-item" v-for="(dataset, id) in _datasets" :key="id" @click="open(id)">
+                here is it
                 <div @click.stop="unselect(dataset)" style="float: right; padding-right: 3px;" title="Unselect">
                     <icon name="times"></icon>
                 </div>
@@ -124,9 +125,11 @@
                 <small>
                     <tags :tags="dataset.datatype_tags"></tags>
                 </small>
+                <!-- how could the project be different?
                 <small v-if="dataset.project != project._id" style="opacity: 0.5">
                     <icon name="shield-alt"/> {{projects[dataset.project].name}}</span>
                 </small>
+                -->
             </div>
         </div>
 
@@ -166,7 +169,7 @@ export default {
     components: { 
         tags, pageheader, datatypetag, 
     },
-    props: ['project', 'projects', 'participants'],
+    props: ['project', 'participants'],
     data () {
         return {
             pages: [], //groups of datasets 
@@ -733,7 +736,6 @@ export default {
                         this.submit_process(opt.project_id, opt.instance);
                     } else {
                         //need to create a new instance
-                        //var project = this.projects[opt.project_id];
                         this.$http.post(Vue.config.wf_api+'/instance', {
                             desc: opt.desc,
                             config: {

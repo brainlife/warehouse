@@ -8,7 +8,6 @@
         </div>
     </div>
 
-
     <div class="page-content" @scroll="handleScroll" ref="scrollable">
         <div v-if="loading" style="margin: 40px; opacity: 0.5"><h3><icon name="cog" spin scale="2"/> Loading ..</h3></div>
         <div v-else>
@@ -40,6 +39,7 @@
             </div>
             <br v-if="recentProjects.length > 0" clear="both">
         </div>
+            <!--TODO - should refactor this.. similar to public y projects-->
             <div v-if="config.user" class="position: relative">
                 <h4 class="group-title">My Projects</h4>
                 <div style="padding: 10px;" v-if="mode == 'tile'">
