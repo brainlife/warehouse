@@ -90,7 +90,6 @@ router.get('/data', common.jwt({credentialsRequired: true}), (req, res, next)=> 
         if(err) return next(err);
         if(json.length == 0) return res.json([]); 
         //now we have the json, we need to filter it
-        console.log(JSON.parse(json));
         let dataFiltered = JSON.parse(json).profiles.map(entry => {
             if(entry.profile.private.position) return {position : entry.profile.private.position};
         });
