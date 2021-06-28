@@ -86,13 +86,19 @@ router.get('/', common.jwt({credentialsRequired: false}), (req, res, next)=>{
  */
 router.get('/data', common.jwt({credentialsRequired: true}), (req, res, next)=> {
     console.log("HI");
-    if(!req.body.admins) next();
-    let rs = "";
-    const t = "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJkaGVlcmFqLWRldi1zZXJ2ZXIiLCJleHAiOjE2MjUyNTA2MjkuMDc4LCJzY29wZXMiOnsiYnJhaW5saWZlIjpbInVzZXIiLCJhZG1pbiJdLCJ3YXJlaG91c2UiOlsiYWRtaW4iLCJkYXRhdHlwZS5jcmVhdGUiXSwiYW1hcmV0dGkiOlsiYWRtaW4iLCJyZXNvdXJjZS5jcmVhdGUiXSwiYXV0aCI6WyJhZG1pbiJdfSwic3ViIjoyLCJnaWRzIjpbMjEsMjIsMjMsMjRdLCJwcm9maWxlIjp7InVzZXJuYW1lIjoic3VwZXJhZG1pbiIsImVtYWlsIjoiZ3Vlc3RAMTIzIiwiZnVsbG5hbWUiOiJzdXBlckFkbWluIiwiYXVwIjp0cnVlfSwiaWF0IjoxNjI0NjQ1ODI5fQ.PyBz9p0Qvpi_DcewY1_cbaRsvHuTC5_NDIJpD6i16oPFEaX5NgKvQVt31wJxHHraT2Jg6NuKswS3HNbpDeS7KJPUpDJWdSqSQCfnmY4zGo2dwRGKNO-pyuN_iAUWz4sPIeXN29A2CM3Hm1VVWRDyN4SgowbJ1pHlaampltndqpXY5RZlU_WmjY2l90DPX1G2XIirO9k6X4348DIOpM8Pyt7B9sb9jDoy4l44p_pKrGRIDMPKfRObp5z0n9MeCqn-tqNcw8EmGuYKld623D1DYUOYGizOKB5vBs05EVW5xdTl22g0Kl43Y8sUtVAKukoCF_KO-hiZrZW2LO2uTPeQwQ";
-    request.get({ url : config.auth.api+'/profile/list', headers: { authorization: req.headers.authorization}}, (err, _res, body)=> {
-        rs += body;
+    // if(!req.body.admins) next();
+    console.log(req.body);
+    request.get({ url : config.auth.api+'/profile/list', headers: { authorization: req.headers.authorization}}, (err, _res, json)=> {
+        if(err) return next(err);
+        if(json.length == 0) return res.json([]); 
+        //now we have the json time to filter it
+        console.log(JSON.parse(json));
+        let dataFiltered = JSON.parse(json).profiles.map(entry => {
+            if(entry.profile.private.position) return {position : entry.profile.private.position};
+        });
+        if(!dataFiltered.length) return res.json([]);
+        return res.send(dataFiltered);
     });
-    res.json("{null : true}"+rs);
 });
 
 /**
