@@ -86,7 +86,6 @@ router.get('/', common.jwt({credentialsRequired: false}), (req, res, next)=>{
  */
 router.get('/data', common.jwt({credentialsRequired: true}), (req, res, next)=> {
     // if(!req.headers.authorization) next();
-    console.log(req.body);
     request.get({ url : config.auth.api+'/profile/list', headers: { authorization: req.headers.authorization}}, (err, _res, json)=> {
         if(err) return next(err);
         if(json.length == 0) return res.json([]); 
