@@ -58,10 +58,11 @@
                                     <icon v-if="dataset.status == 'failed'" name="exclamation-triangle" style="color: red;" scale="0.8"/>
                                     <icon v-if="dataset.status == 'archived'" name="archive" scale="0.8"/>
                                     <icon v-if="!dataset.status" name="question-circle" style="color: gray;" scale="0.8"/>
+                                    <b-badge size="small" v-if="dataset.storage != 'osiris'">{{dataset.storage}}</b-badge>
                                     <small style="font-size: 80%;" v-if="dataset.prov && dataset.prov.task && dataset.prov.task.name">
                                         {{dataset.prov.task.name}} / 
                                     </small>
-                                    <span style="">{{dataset.desc||'&nbsp;'}}</span>
+                                    <span>{{dataset.desc||'&nbsp;'}}</span>
                                 </b-col>
                                 <b-col cols="3" class="truncate">
                                     <small v-if="dataset.size" style="float: right;" :class="{'text-danger': dataset.size > 1000000000}">
@@ -549,13 +550,12 @@ export default {
                 */
             }
 
-            //console.dir(query);
             this.$http.get('dataset', {
                 params: {
                     find: JSON.stringify(query),
                     limit: 500,  //needs to be bigger than the largest dataset per subject x2 (bigger == slower for vue to render)
                     sort: 'meta.subject meta.session -create_date',
-                    select: 'create_date datatype datatype_tags prov.task.name desc size tags meta.subject meta.session meta.run status removed project',
+                    select: 'create_date datatype datatype_tags prov.task.name desc size tags meta.subject meta.session meta.run status removed project storage',
                 },
                 cancelToken: source.token
             })
@@ -634,7 +634,6 @@ export default {
 
         open(dataset_id) {
             this.$router.replace('/project/'+this.project._id+'/dataset/'+dataset_id);
-            //this.$root.$emit('dataset.view', {id: dataset_id});
         },
 
         check(dataset, event) {
@@ -762,12 +761,17 @@ export default {
                     Object.values(this.group_selected).forEach(group=>{
                         dataset_ids = dataset_ids.concat(Object.keys(group));
                     });
+                    this.$root.$emit("loading",{message: "Copying objects ..."});
                     this.$http.post('dataset/copy', {
                         dataset_ids,
                         project: opt.project_id,
                     }).then(res=>{
+                        this.$root.$emit("loading", {show: false});
                         this.clear_selected();
                         this.$router.push("/project/"+opt.project_id);
+                    }).catch(err=>{
+                        this.$root.$emit("loading", {show: false});
+                        this.$notify({text: err.response.data.message, type: "error"});
                     });
                 });
             });

@@ -190,9 +190,12 @@
                                 <b-col>
                                     <p>
                                         <span v-if="dataset.status == 'stored'">
+                                            <div v-if="dataset.storage == 'copy'">
+                                                <projectcard :project="dataset.project"/>
+                                            </div>
                                             <b>
                                                 {{dataset.storage}} 
-                                                <span v-if="dataset.storage == 'copy'">- {{dataset.storage_config.storage}}</span>
+                                                <span v-if="dataset.storage == 'copy'">({{dataset.storage_config.storage}})</span>
                                                 <span v-if="dataset.storage_config && dataset.storage_config.path" style="opacity: 0.8; font-weight: normal; font-size: 90%">{{dataset.storage_config.path}}</span>
                                             </b>
                                             <span class="text-muted" v-if="dataset.size">({{dataset.size | filesize}})</span>
@@ -347,6 +350,7 @@ export default {
         product, 
         secondary, 
         task,
+        projectcard: ()=>import('@/components/projectcard'),
 
         editor: require('vue2-ace-editor'),
     },

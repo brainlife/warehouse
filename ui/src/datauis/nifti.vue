@@ -1,5 +1,5 @@
 <template>
-<iframe src="/ui/volumeviewer"></iframe>
+<iframe :src="'/ui/'+ui"></iframe>
 </template>
 
 <script>
@@ -7,14 +7,11 @@
 import Vue from 'vue'
 
 export default {
-    //props: ['task', 'subdir', 'datatype'], //deprecated by uiconfig
-    props: ['uiconfig'],
+    props: ['uiconfig', 'ui'],
     data() {
         return {}
     },
     mounted() {
-        //console.log("volumeviewer given uiconfig");
-        //console.dir(this.uiconfig);
 
         //construct path
         var path = Vue.config.amaretti_api+"/task/download/"+this.uiconfig.task_id+"/";

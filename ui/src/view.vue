@@ -8,7 +8,8 @@
         <lifestats v-else-if="type == 'lifestats'" :task="task" :subdir="subdir" :datatype="datatype"/>
         <evaluator v-else-if="type == 'conneval'" :task="task" :subdir="subdir" :datatype="datatype"/>
         <images v-else-if="type == 'images'" :task="task" :subdir="subdir" :datatype="datatype"/>
-        <volumeviewer v-else-if="type == 'volumeviewer'" :uiconfig="uiconfig"/>
+        <nifti v-else-if="type == 'volumeviewer'" ui="volumeviewer"  :uiconfig="uiconfig"/>
+        <nifti v-else-if="type == 'papaya'" ui="papaya" :uiconfig="uiconfig"/>
         <nnview v-else-if="type == 'nnview'" :task="task" :subdir="subdir" :datatype="datatype"/>
         <prfview v-else-if="type == 'prf'" :task="task" :subdir="subdir" :datatype="datatype"/>
         
@@ -35,7 +36,7 @@ import lifestats from '@/datauis/lifestats'
 import lifeview from '@/datauis/lifeview'
 import evaluator from '@/datauis/evaluator'
 import images from '@/datauis/images'
-import volumeviewer from '@/datauis/volumeviewer'
+import nifti from '@/datauis/nifti'
 import nnview from '@/datauis/nnview'
 import prfview from '@/datauis/prfview'
 
@@ -49,7 +50,19 @@ export default {
     mixins: [ wait ],
     props: [ 'taskid', 'type', 'datatype64', 'subdir' ], //deprecated - use uiconfig
     components: { 
-        dtiinit, freesurfer, tractview, lifestats, lifeview, evaluator, images, volumeviewer, filebrowser, task, surfaces, nnview, prfview
+        dtiinit, 
+        freesurfer, 
+        tractview, 
+        lifestats, 
+        lifeview, 
+        evaluator, 
+        images, 
+        nifti, 
+        filebrowser, 
+        task, 
+        surfaces, 
+        nnview, 
+        prfview
     },
 
     data() {

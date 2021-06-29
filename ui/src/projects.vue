@@ -20,25 +20,28 @@
                 </b-form-group>
             </div>
 
-        <div v-if="query.length && !other_projects.length && !my_projects.length">
-            <p style="padding: 20px; opacity: 0.8;">No matching Projects</p>
-        </div>
-        <div v-if="recentProjects.length" class="position: relative">
-            <h4 class="group-title">Recent Projects</h4>
-            <div style="padding: 10px;" v-if="mode == 'tile'">
-                <div v-for="project in recentProjects" :key="project._id">
-                    <projectcard :project="project" v-if="project._visible"/>
-                    <div v-else class="projectcard" ref="project" :id="project._id"/> <!--placeholder-->
-                </div>
+            <div v-if="query.length && !other_projects.length && !my_projects.length">
+                <p style="padding: 20px; opacity: 0.8;">No matching Projects</p>
             </div>
-            <div style="padding: 10px;" v-if="mode == 'list'">
-                <div v-for="project in recentProjects" :key="project._id">
-                    <project :project="project" v-if="project._visible"/>
-                    <div v-else style="height: 40px; color: white;" ref="project" :id="project._id"/> <!--placeholder-->
+
+            <!--TODO - should refactor this.. similar to public y projects-->
+            <div v-if="recentProjects.length" class="position: relative">
+                <h4 class="group-title">Recent Projects</h4>
+                <div style="padding: 10px;" v-if="mode == 'tile'">
+                    <div v-for="project in recentProjects" :key="project._id">
+                        <projectcard :project="project" v-if="project._visible"/>
+                        <div v-else class="projectcard" ref="project" :id="project._id"/> <!--placeholder-->
+                    </div>
                 </div>
+                <div style="padding: 10px;" v-if="mode == 'list'">
+                    <div v-for="project in recentProjects" :key="project._id">
+                        <projectbar :project="project" v-if="project._visible"/>
+                        <div v-else style="height: 40px; color: white;" ref="project" :id="project._id"/> <!--placeholder-->
+                    </div>
+                </div>
+                <br v-if="recentProjects.length > 0" clear="both">
             </div>
-            <br v-if="recentProjects.length > 0" clear="both">
-        </div>
+
             <!--TODO - should refactor this.. similar to public y projects-->
             <div v-if="config.user" class="position: relative">
                 <h4 class="group-title">My Projects</h4>
@@ -50,7 +53,7 @@
                 </div>
                 <div style="padding: 10px;" v-if="mode == 'list'">
                     <div v-for="project in my_projects" :key="project._id">
-                        <project :project="project" v-if="project._visible"/>
+                        <projectbar :project="project" v-if="project._visible"/>
                         <div v-else style="height: 40px; color: white;" ref="project" :id="project._id"/> <!--placeholder-->
                     </div>
                 </div>
@@ -71,7 +74,7 @@
                 </div>
                 <div style="padding: 10px;" v-if="mode == 'list'">
                     <div v-for="project in other_projects" :key="project._id">
-                        <project :project="project" v-if="project._visible"/>
+                        <projectbar :project="project" v-if="project._visible"/>
                         <div v-else style="height: 40px; color: white;" ref="project" :id="project._id"/> <!--placeholder-->
                     </div>
                 </div>
@@ -87,14 +90,15 @@
 
 <script>
 import Vue from 'vue'
-import pageheader from '@/components/pageheader'
-import projectcard from '@/components/projectcard'
-import project from '@/components/project'
+import projectbar from '@/components/projectbar'
 
 let query_debounce;
 
 export default {
-    components: { projectcard, project },
+    components: { 
+        projectcard: ()=>import('@/components/projectcard'), 
+        projectbar: ()=>import('@/components/projectbar'), 
+    },
     data () {
         return {   
             projects: [],
@@ -154,7 +158,7 @@ export default {
             this.loading = true;
             this.$http.get('project/query', {params: {
                 q: this.query,
-                select: 'name desc stats.datasets create_date admins members guests',
+                select: 'name desc stats.datasets create_date admins members guests access',
             }}).then(res=>{
                 this.projects = res.data;
 

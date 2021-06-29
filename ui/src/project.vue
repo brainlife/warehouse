@@ -63,7 +63,7 @@
             <div class="page-content">
                 <!--detail-->
 
-                <b-alert :show="selected.removed" style="border-radius: 0px" variant="secondary">This project has been removed.</b-alert>
+                <b-alert :show="selected.removed" style="border-radius: 0px; color: #888;" variant="secondary">This project has been removed.</b-alert>
                 <b-alert :show="selected.access == 'private' && selected.listed" style="border-radius: 0px; color: #888;" variant="secondary">
                     This project is listed for all users but only the members of the project can access its datasets, processes, and pipelines.
                 </b-alert>
