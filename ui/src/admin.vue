@@ -57,6 +57,10 @@
                 </p>
             </div>
         </b-tab>
+        <b-tab title="Analytics">
+            <br>
+            <Plotly v-if="plot" :data="plot" :autoResize="true" :watchShallow="true"/>
+        </b-tab>
     </b-tabs>
 </div>
 </template>
@@ -67,9 +71,10 @@ import Vue from 'vue'
 import task from '@/components/task'
 
 import ReconnectingWebSocket from 'reconnectingwebsocket'
+import { Plotly } from 'vue-plotly'
 
 export default {
-    components: { task },
+    components: { task, Plotly },
     data () {
         return {
             //service_running: [],
@@ -82,6 +87,7 @@ export default {
             nextTasks: [],
 
             ws: null,
+            plot : null,
         }
     },
 
