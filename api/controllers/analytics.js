@@ -5,6 +5,20 @@ const router = express.Router();
 const request = require('request');
 const config = require('../config');
 const common = require('../common');
+
+const LabelNameMatch = {
+    "PhD Student": ["doctoral student", "graduate student","phd candidate","grad student","phd student"],
+    "Faculty" : ["prof", "senior research fellow", "chair", "instructor", "director", "scientist", "advisor", "principal investigator", "pi", "teacher","scholar", "lec"],
+    "Postdoctoral Researcher" : ["postdoctoral" ,"fellow", "research associate", "post", "phd" ,"research"],
+    "Research Assistant" : ["research assistant", "research coordinator", "intern","ra"],
+    "High School Student" : ["high school"],
+    "Clinician" : ["chief physician","clinical researcher","advanced imaging neuroscientist","presurgical tumor evaluation","md","radiologist","neuroradiologist",
+                "logist","physic","clinician","medical doctor","physician","neurologist"],
+    "College Student" : ["under", "teaching assistant",],
+    "Industry" : ["software", "product", "manager", "owner", "developer", "des", "engineer"],
+    "Masters Student" : ["masters", "phil", "mtech", "msc"],
+    "Student (unspecified)" : ["studen"],
+}
 /**
  * @apiGroup Projects
  * @api {get} /project/data
@@ -25,20 +39,6 @@ const common = require('../common');
             if(entry.profile.private.position) return {position : entry.profile.private.position};
         });
         if(!dataFiltered.length) return res.json([]);
-        const LabelNameMatch = {
-            "PhD Student": ["doctoral student", "graduate student","phd candidate","grad student","phd student"],
-            "Faculty" : ["prof", "senior research fellow", "chair", "instructor", "director", "scientist", "advisor", "principal investigator", "pi", "teacher","scholar", "lec"],
-            "Postdoctoral Researcher" : ["postdoctoral" ,"fellow", "research associate", "post", "phd" ,"research"],
-            "Research Assistant" : ["research assistant", "research coordinator", "intern","ra"],
-            "High School Student" : ["high school"],
-            "Clinician" : ["chief physician","clinical researcher","advanced imaging neuroscientist","presurgical tumor evaluation","md","radiologist","neuroradiologist",
-                        "logist","physic","clinician","medical doctor","physician","neurologist"],
-            "College Student" : ["under", "teaching assistant",],
-            "Industry" : ["software", "product", "manager", "owner", "developer", "des", "engineer"],
-            "Masters Student" : ["masters", "phil", "mtech", "msc"],
-            "Student (unspecified)" : ["studen"],
-        }
-
         return res.send(LabeltoValue(dataFiltered,LabelNameMatch));
     });
 });
