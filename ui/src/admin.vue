@@ -87,11 +87,15 @@ export default {
             nextTasks: [],
 
             ws: null,
-            plot : null,
+            plot : [],
         }
     },
 
     mounted() {
+        this.$http.get('analytics/data').then(res=>{
+            let plotlyObject = {"values"  : res.data.labelCount, "labels" : res.data.labelRes,  "type" : "pie"};
+            this.plot.push(plotlyObject);
+        });
     },
 
     methods: {
