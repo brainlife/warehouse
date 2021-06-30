@@ -683,6 +683,14 @@ exports.compose_pub_datacite_metadata = function(pub) {
     return metadata;
 }
 
+exports.hasScope = function(req, role) {
+    if(!req.user) return false;
+    if(!req.user.scopes) return false;
+    if(!req.user.scopes.warehouse) return false;
+    if(!~req.user.scopes.warehouse.indexOf(role)) return false;
+    return true;
+}
+
 exports.get_next_app_doi = function(cb) {
     //console.log("querying for next doi")
     db.Apps.find({}).select("doi").sort("-doi").limit(1).exec().then(recs=>{

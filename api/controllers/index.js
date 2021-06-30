@@ -6,6 +6,7 @@ const async = require('async');
 const config = require('../config');
 const db = require('../models');
 const health = require('../health');
+const { route } = require('./project');
 
 router.get('/health', (req, res, next)=>{
     health.get_reports((err, reports)=>{
@@ -43,6 +44,6 @@ router.use('/rule', require('./rule'));
 router.use('/datalad', require('./datalad'));
 router.use('/participant', require('./participant'));
 router.use('/secondary', require('./secondary'));
-
+router.use('/analytics', require('./analytics'));
 module.exports = router;
 
