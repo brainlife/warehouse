@@ -71,6 +71,8 @@ var projectSchema = mongoose.Schema({
 
     //list of agreemenets that user must agree before accessing datasets
     agreements: [ new mongoose.Schema({agreement: String}) ], 
+
+    publishParticipantsInfo: { type: Boolean, default: false }, //publish participants info as part of publications
     
     //basic stats for this app (aggregated by bin/projectinfo.js)
     stats: {
@@ -242,6 +244,7 @@ exports.Projects = mongoose.model("Projects", projectSchema);
 
 var participantsSchema = mongoose.Schema({
     project: {type: mongoose.Schema.Types.ObjectId, ref: "Projects"},
+
 
     //from participants.json keyed by (column header)
     columns: mongoose.Schema.Types.Mixed, 
@@ -438,7 +441,9 @@ var publicationSchema = mongoose.Schema({
     authors: [ String ], //list of users who are the author/creator of this publicaions
     contributors: [ String ], //list of users who contributed (PI, etc..)
 
-    publisher: String, //NatureScientificData //TODO - is this used?
+    //publishParticipantsInfo: { type: Boolean, default: false }, //publish project participants info
+
+    //publisher: String, //NatureScientificData //TODO - is this used?
     
     name: String, //title of the publication
     desc: String, 

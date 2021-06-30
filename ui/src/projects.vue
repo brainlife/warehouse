@@ -25,7 +25,7 @@
             </div>
 
             <!--TODO - should refactor this.. similar to public y projects-->
-            <div v-if="recentProjects.length" class="position: relative">
+            <div v-if="recentProjects.length && my_projects.length > 20" class="position: relative">
                 <h4 class="group-title">Recent Projects</h4>
                 <div style="padding: 10px;" v-if="mode == 'tile'">
                     <div v-for="project in recentProjects" :key="project._id">

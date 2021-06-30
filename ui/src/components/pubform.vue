@@ -47,6 +47,18 @@
     <b-form-group label="Contributors" horizontal>
         <contactlist v-model="pub.contributors"></contactlist>
     </b-form-group>
+
+    <!-- I am going to move this to project
+    <b-form-group label="Participants Info" horizontal>
+        <b-form-checkbox v-model="pub.publishParticipantsInfo">
+            Publish Participants Info<br>
+            <small>
+                Participants information stored in this project will be made public and included as part of this publication. Please be sure your participants info does not include any information that allows re-identification of your subjects nor contains any information unauthorized for public release. If you are not sure, please contact your IRB.
+            </small>
+ </b-form-checkbox>
+    </b-form-group>
+    -->
+
     <b-form-group label="Releases" horizontal>
         <p>
             <small opacity="0.7">This is where you list data objects you'd like to publish, and group analysis notebooks.</small>

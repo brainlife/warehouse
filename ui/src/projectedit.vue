@@ -132,6 +132,14 @@
                     <span class="form-header">Participants Info</span>
                 </b-col> 
                 <b-col cols="9">
+                    <b-form-group label="Participants Info" horizontal>
+                        <b-form-checkbox v-model="project.publishParticipantsInfo">
+                            Publish Participants Info<br>
+                            <small>
+                                Participants information stored in this project will be made public and included as part of publications from this project. Please be sure your participants info does not include any information that allows re-identification of your subjects nor contains any information unauthorized for public release. If you are not sure, please contact your IRB.
+                            </small>
+                         </b-form-checkbox>
+                    </b-form-group>
                     <p class="text-muted"><small>Key/value dictionary for each subject (participants.tsv). You can use this information in analysis tab. It should be array of objects containig at least 'subject' key and other fields</small></p>
                     <editor v-model="participants" @init="editorInit" lang="json" height="500"/>
 
