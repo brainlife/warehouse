@@ -32,36 +32,34 @@
                 </b-row>
             </div>
 
+            <b-modal id="taskEditModal" title="Edit Session" @ok="save">
+                <b-form-group label="Name">
+                    <b-form-input type="text" v-model="editingName"/>
+                </b-form-group>
+                <b-form-group label="Description">
+                    <b-form-textarea v-model="editingDesc" :rows="2"/>
+                </b-form-group>
+
+                <!--
+                <b-button-group style="float: right">
+                    <b-button variant="primary" size="sm" @click="save(task)">Update</b-button>
+                </b-button-group>
+                -->
+            </b-modal>
+
             <div v-for="task in visibleSessions" :key="task._id">
                 <div class="session">
                     <b-row>
                         <b-col>
-                            <div v-if="task._editing">
-
-                                <b-form-group label="Name">
-                                    <b-form-input type="text" v-model="task._name"/>
-                                </b-form-group>
-                                <b-form-group label="Description">
-                                    <b-form-textarea v-model="task._desc" :rows="2"/>
-                                </b-form-group>
-
-                                <b-button-group style="float: right">
-                                    <b-button variant="secondary" size="sm" @click="task._editing = false"><icon name="times"/></b-button>
-                                    <b-button variant="primary" size="sm" @click="save(task)">Update</b-button>
-                                </b-button-group>
-                            </div>
-
-                            <div v-if="!task._editing">
-                                <b-button-group style="float: right" size="sm">
-                                    <b-button variant="primary" @click="open(task)" v-if="!openWhenReady"><icon name="play" scale="0.8"/>&nbsp;&nbsp;Open</b-button>
-                                    <b-dropdown>
-                                        <b-dropdown-item variant="secondary" @click="edit(task)">Edit</b-dropdown-item>
-                                        <b-dropdown-item variant="secondary" @click="stop(task)">Stop</b-dropdown-item>
-                                    </b-dropdown>
-                                </b-button-group>
-                                <small><b>{{task.name}}</b></small><br>
-                                <small>{{task.desc}}</small>
-                            </div>
+                            <b-button-group style="float: right" size="sm">
+                                <b-button variant="primary" @click="open(task)" v-if="!openWhenReady"><icon name="play" scale="0.8"/>&nbsp;&nbsp;Open</b-button>
+                                <b-dropdown>
+                                    <b-dropdown-item variant="secondary" @click="edit(task)">Edit</b-dropdown-item>
+                                    <b-dropdown-item variant="secondary" @click="stop(task)">Stop</b-dropdown-item>
+                                </b-dropdown>
+                            </b-button-group>
+                            <small><b>{{task.name}}</b></small><br>
+                            <small>{{task.desc}}</small>
                         </b-col>
                         <b-col cols="3">
                             <statustag :status="task.status"/> {{task.status_msg}}<br>
@@ -181,6 +179,10 @@ export default {
                 */
             ],
 
+            editingTask: null,
+            editingName: "",
+            editingDesc: "",
+
             ready: false,
             config: Vue.config,
         }
@@ -264,7 +266,7 @@ export default {
                     if(task.service != "brainlife/ga-launcher") return; //don't care.
                     let existing_task = this.sessions.find(t=>t._id == task._id);
                     if(existing_task) {
-                        if(existing_task._editing) return; //don't update while editing..
+                        //if(existing_task._editing) return; //don't update while editing..
                         for(let k in task) existing_task[k] = task[k];
                     } else {
                         this.sessions.push(task); //new task
@@ -348,18 +350,18 @@ export default {
         },
 
         edit(task) {
-            Vue.set(task, '_editing', true);
-            Vue.set(task, '_name', task.name);
-            Vue.set(task, '_desc', task.desc);
+            this.editingTask = task;
+            this.editingName = task.name;
+            this.editingDesc = task.desc;
+            this.$bvModal.show("taskEditModal")
         },
 
-        save(task) {
-            task._editing = false;
-            this.$http.put(Vue.config.amaretti_api+'/task/'+task._id, {
-                name: task._name,
-                desc: task._desc,
+        save() {
+            this.$http.put(Vue.config.amaretti_api+'/task/'+this.editingTask._id, {
+                name: this.editingName,
+                desc: this.editingDesc,
             }).then(res=>{
-                this.$notify({ text: res.data.message, type: 'success'});
+                this.$notify({ text: "Updated information", type: 'success'});
             }).catch(err=>{
                 console.error(err); 
             });

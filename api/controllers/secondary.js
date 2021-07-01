@@ -245,15 +245,17 @@ router.post('/launchga', common.jwt(), (req, res, next)=>{
             */
             _config.group = instance.group_id;
 
-            //console.dir("submitting ga-launcher")
-            //console.dir(req.body);
+
+            const future = new Date("2100-07-27");
+
             axios.post(config.amaretti.api+"/task", {
                 name: req.body.name,
                 desc: req.body.desc,
                 service : "brainlife/ga-launcher",
                 service_branch: "master", //TODO
                 instance_id : instance._id,
-                max_runtime: 24*1000*3600, //24 hour should be enough?
+                max_runtime: 24*1000*3600, //auto stop after 24 hours .
+                remove_date: future, //set it far enough into future to prevent it from getting it removed
                 deps_config: req.body.deps_config,
                 config: _config,
             }, {
