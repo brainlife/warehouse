@@ -41,18 +41,23 @@ function getParticipants(req, project, cb) {
 /**
  * @apiGroup Participant
  * @api {get} /participant/:projectid  
- *                              Load participants data
- * @apiHeader {String} authorization 
+ *                              Load participants data. Guest user can download participants info if it's set to use
+ *                              publishParticipantsInfo
+ * @apiHeader {String} [authorization]
  *                              A valid JWT token "Bearer: xxxxx"
  * @apiSuccess {Object}         Content of participants record
  */
-router.get('/:projectid', common.jwt(), (req, res, next)=>{
+router.get('/:projectid', common.jwt({credentialsRequired: false}), (req, res, next)=>{
     //access control
     db.Projects.findById(req.params.projectid, (err, project)=>{
         if(err) return next(err);
         if(!project) return res.status(404).end();
-        if(!common.isadmin(req.user, project) && !common.ismember(req.user, project)) 
-            return res.status(401).end("you are not an administartor nor member of this project");
+
+        if( !project.publishParticipantsInfo && 
+            !common.isadmin(req.user, project) && 
+            !common.ismember(req.user, project)) {
+            return res.status(401).end("you are not an administartor nor member of this project (no public participants)");
+        }
             
         getParticipants(req, project, (err,participants)=>{
             if(err) return next(err);

@@ -149,6 +149,15 @@
                 <release v-for="release in pub.releases" :key="release._id" :release="release" :project="pub.project"/>
                 <br>
 
+                <b-row v-if="participants && Object.keys(participants).length">
+                    <b-col cols="2">
+                        <span class="form-header">Participants Info</span>
+                    </b-col>
+                    <b-col>
+                        <participants :rows="participants" :columns="participants_columns" style="overflow: auto; max-height: 500px;"/>
+                    </b-col>
+                </b-row>
+
             </div>
         </b-container>
         <br clear="right">
@@ -207,7 +216,6 @@
                             <br>
                         </b-col>
                     </b-row>
-
 
                     <b-row>
                         <b-col cols="2">
@@ -333,6 +341,7 @@ export default {
         mag,
         release,
         projectcard,
+        participants: ()=>import('@/components/participants'),
     },
 
     computed: {
@@ -371,71 +380,42 @@ export default {
 
             relatedPaperLimit: 3,
 
+            participants: null,
+            participants_columns: null,
+
             query: "",
             config: Vue.config,
         }
     },
 
-    mounted: function() {
+    async mounted() {
         //load publication detail
-        this.$http.get('pub', {params: {
+        const res = await this.$http.get('pub', {params: {
             find: JSON.stringify({_id: this.$route.params.id}),
             populate: 'project release',
             deref_contacts: true,
-        }})
-        .then(res=>{
-            this.pub = res.data.pubs[0];
-            if(!this.pub.project) alert('no project ');
+        }});
 
-            //sort release by date (new first)
-            if(this.pub.releases) {
-                this.pub.releases = this.pub.releases.sort((a,b)=>{
-                    if(a.create_date < b.create_date) return 1;
-                    if(a.create_date > b.create_date) return -1;
-                    return 0;
-                }).filter(release=>!release.removed);
+        this.pub = res.data.pubs[0];
+        if(!this.pub.project) alert('no project ');
+
+        //sort release by date (new first)
+        if(this.pub.releases) {
+            this.pub.releases = this.pub.releases.sort((a,b)=>{
+                if(a.create_date < b.create_date) return 1;
+                if(a.create_date > b.create_date) return -1;
+                return 0;
+            }).filter(release=>!release.removed);
+        }
+
+        //load participants
+        if(this.pub.project.publishParticipantsInfo) {
+            const pres = await this.axios.get("/participant/"+this.pub.project._id);
+            if(pres.data) {
+                this.participants = pres.data.subjects||{}; 
+                this.participants_columns = pres.data.columns||{}; 
             }
-/*
-
-            //load all datatypes
-            return this.$http.get('datatype');
-        })
-        .then(res=>{
-            res.data.datatypes.forEach((d)=>{
-                this.datatypes[d._id] = d;
-            });
-
-            //open dataset previously selected
-            if(document.location.hash) {
-                let id = document.location.hash.substring(1);
-                this.$root.$emit('dataset.view', {id});
-            }
-
-            Vue.nextTick(()=>{
-                //re-initialize altmetric badge - now that we have badge <div> placed
-                _altmetric_embed_init(this.$el);
-            });
-
-            //load all resources referenced for citations
-            let resource_ids = this.pub.project.stats.resources.map(r=>r.resource_id);
-            return this.$http.get(Vue.config.amaretti_api+"/resource", {params: {
-                find: JSON.stringify({
-                    _id: {$in: resource_ids},
-                }),
-                select: 'name config.desc',
-            }})
-        }).then(res=>{
-            //collect resource citation
-            this.pub.project.stats.resources.forEach(stat=>{
-                if(!stat.citation) return; //don't show resources with no citations
-                let resource = res.data.resources.find(r=>r._id == stat.resource_id);
-                if(!resource) return; //no such resource?
-                let resource_citations = this.resource_citations.find(r=>r.resource._id == stat.resource_id);
-                if(!resource_citations) this.resource_citations.push({resource, citation: stat.citation});    
-            });
-*/
-
-        }).catch(console.error);
+        }
     },
 
     updated() {

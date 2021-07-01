@@ -208,7 +208,7 @@
                         <div v-if="detailTab == 1">
                             <p><small>Participants info provides information for each subject and can be used for the group analysis.</small></p>                        
                             <b-alert variant="secondary" :show="selected.publishParticipantsInfo" style="margin-bottom: 15px;">This information will be published as part of all publications made from this project.</b-alert>
-                            <participants v-if="participants && Object.keys(participants).length > 0" :rows="participants" :columns="participants_columns" style="overflow: auto; max-height: 500px;"/>
+                            <participants v-if="participants && Object.keys(participants).length" :rows="participants" :columns="participants_columns" style="overflow: auto; max-height: 500px;"/>
                         </div>
 
                         <!--app info-->
@@ -592,6 +592,7 @@ export default {
                 };
                     
                 //optionally.. load participant info
+                //TODO - maybe I should expose it if publishParticipantsInfo is true
                 if(this.isadmin() || this.ismember()) {
                     this.participants = null;
                     this.axios.get("/participant/"+projectId).then(res=>{
