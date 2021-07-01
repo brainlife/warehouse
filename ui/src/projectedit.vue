@@ -136,7 +136,7 @@
                         <b-form-checkbox v-model="project.publishParticipantsInfo">
                             Publish Participants Info<br>
                             <small>
-                                Participants information stored in this project will be made public and included as part of publications from this project. Please be sure your participants info does not include any information that allows re-identification of your subjects nor contains any information unauthorized for public release. If you are not sure, please contact your IRB.
+                                Participants information will be made public and included as part of publications from this project. Please be sure to only include information authorized by your IRB or consented by your test subjects. Do not include any identifiable information.
                             </small>
                          </b-form-checkbox>
                     </b-form-group>

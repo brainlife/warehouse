@@ -37,7 +37,8 @@ async function handle(project) {
     console.log("handling project", project.name);
     //if(!!project.removed && project.xnat && project.xnat.enabled) await handleXNAT(project);
 
-    await tidyup(project);
+    //already ran it.. I don't think we need to keep running this.
+    //await tidyup(project);
 
     console.log("saving project");
     await project.save();

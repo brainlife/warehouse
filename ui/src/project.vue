@@ -174,7 +174,11 @@
                             <b-tab title="README" active/>
                             <b-tab>
                                 <template v-slot:title>
-                                    Participant Info <small v-if="participants">{{Object.keys(participants).length}}</small>
+                                    <span>
+                                        <b-badge v-if="!selected.publishParticipantsInfo"
+                                            variant="secondary" title="May contains sensitive information. Please do not share!"><icon name="lock" scale="0.8"/></b-badge>
+                                        Participant Info <small v-if="participants">{{Object.keys(participants).length}}</small>
+                                    </span>
                                 </template>
                             </b-tab>
 
@@ -203,6 +207,7 @@
                         <!--participants-->
                         <div v-if="detailTab == 1">
                             <p><small>Participants info provides information for each subject and can be used for the group analysis.</small></p>                        
+                            <b-alert variant="secondary" :show="selected.publishParticipantsInfo">This information will be published as part of all publications made from this project.</b-alert>
                             <participants v-if="participants && Object.keys(participants).length > 0" :rows="participants" :columns="participants_columns" style="overflow: auto; max-height: 500px;"/>
                         </div>
 

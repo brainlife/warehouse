@@ -318,9 +318,6 @@ function handle_task(task, cb) {
                     }
                 });
 
-                let remove_date = new Date();
-                remove_date.setDate(remove_date.getDate()+1); //remove in 1 day
-                
                 let dtv_task = await rp.post({
                     url: config.amaretti.api+"/task",
                     json: true,
@@ -333,10 +330,10 @@ function handle_task(task, cb) {
                         config: validator_config,
                         //max_runtime: 1000*3600, //1 hour should be enough for most..(nope.. it could be queued for a lone time)
                         
-                        //remove when source task is removed (but now I task handler has to keep checking the status from validatortor)
-                        //maybe we could remove this a lot sooner now that secondary output is archived to secondary storage?
-                        //remove_date: task.remove_date,  //or maybe I shouldn't remove it too soon?
-                        remove_date,
+                        //we can't set remove_date to something like (now+1 day) because we now submit validator when main task is submitted
+                        //main task could take weeks before it get submitted.. but I think it should be safe to remove when main task is
+                        //removed.. (or maybe we should add +1 day from task.remove_date - if it's set? or it is better to not set it at all?)
+                        remove_date: task.remove_date,  
 
                         //we want to run on the same resource that task has run on
                         follow_task_id: task._id,
