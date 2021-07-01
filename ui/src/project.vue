@@ -207,7 +207,7 @@
                         <!--participants-->
                         <div v-if="detailTab == 1">
                             <p><small>Participants info provides information for each subject and can be used for the group analysis.</small></p>                        
-                            <b-alert variant="secondary" :show="selected.publishParticipantsInfo">This information will be published as part of all publications made from this project.</b-alert>
+                            <b-alert variant="secondary" :show="selected.publishParticipantsInfo" style="margin-bottom: 15px;">This information will be published as part of all publications made from this project.</b-alert>
                             <participants v-if="participants && Object.keys(participants).length > 0" :rows="participants" :columns="participants_columns" style="overflow: auto; max-height: 500px;"/>
                         </div>
 

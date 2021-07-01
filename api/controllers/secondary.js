@@ -245,8 +245,8 @@ router.post('/launchga', common.jwt(), (req, res, next)=>{
             */
             _config.group = instance.group_id;
 
-            console.dir("subnmitting ga-launcher")
-            console.dir(req.body);
+            //console.dir("submitting ga-launcher")
+            //console.dir(req.body);
             axios.post(config.amaretti.api+"/task", {
                 name: req.body.name,
                 desc: req.body.desc,

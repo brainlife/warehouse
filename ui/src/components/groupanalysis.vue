@@ -36,22 +36,38 @@
                 <div class="session">
                     <b-row>
                         <b-col>
-                            <b-button variant="primary" size="sm" @click="open(task)" v-if="!openWhenReady" style="float: right;"> Open </b-button>
-                            <!-- <span v-if="task._id == openWhenReady"><icon name="cog" spin/> Opening..<br></span>-->
-                            <small><b>{{task.name}}</b></small><br>
-                            <small>{{task.desc}}</small>
-                            <!--{{task.desc}}<br> -->
+                            <div v-if="task._editing">
+
+                                <b-form-group label="Name">
+                                    <b-form-input type="text" v-model="task._name"/>
+                                </b-form-group>
+                                <b-form-group label="Description">
+                                    <b-form-textarea v-model="task._desc" :rows="2"/>
+                                </b-form-group>
+
+                                <b-button-group style="float: right">
+                                    <b-button variant="secondary" size="sm" @click="task._editing = false"><icon name="times"/></b-button>
+                                    <b-button variant="primary" size="sm" @click="save(task)">Update</b-button>
+                                </b-button-group>
+                            </div>
+
+                            <div v-if="!task._editing">
+                                <b-button-group style="float: right" size="sm">
+                                    <b-button variant="primary" @click="open(task)" v-if="!openWhenReady"><icon name="play" scale="0.8"/>&nbsp;&nbsp;Open</b-button>
+                                    <b-dropdown>
+                                        <b-dropdown-item variant="secondary" @click="edit(task)">Edit</b-dropdown-item>
+                                        <b-dropdown-item variant="secondary" @click="stop(task)">Stop</b-dropdown-item>
+                                    </b-dropdown>
+                                </b-button-group>
+                                <small><b>{{task.name}}</b></small><br>
+                                <small>{{task.desc}}</small>
+                            </div>
                         </b-col>
-                        <b-col>
+                        <b-col cols="3">
                             <statustag :status="task.status"/> {{task.status_msg}}<br>
                             <small>{{task._id}}</small><br>
                         </b-col>
                         <b-col cols="3">
-                            <!--
-                            <b-badge pill class="bigpill">
-                                <icon name="calendar" style="opacity: 0.4;"/>&nbsp;&nbsp;&nbsp;<small>Created</small>&nbsp;&nbsp;<time>{{new Date(task.create_date).toLocaleDateString()}}</time>
-                            </b-badge>
-                            -->
                             <timeago :datetime="task.create_date" :auto-update="10" style="font-size:85%;"/>
                             <b-button variant="secondary" size="sm" @click="remove(task)" style="float: right">
                                 <icon name="trash"/>
@@ -248,6 +264,7 @@ export default {
                     if(task.service != "brainlife/ga-launcher") return; //don't care.
                     let existing_task = this.sessions.find(t=>t._id == task._id);
                     if(existing_task) {
+                        if(existing_task._editing) return; //don't update while editing..
                         for(let k in task) existing_task[k] = task[k];
                     } else {
                         this.sessions.push(task); //new task
@@ -257,7 +274,6 @@ export default {
                         this.openWhenReady = null;
                         this.$root.$emit("loading", {show: false});
                         this.jump(task); 
-
                     }
                 }
             };
@@ -319,6 +335,34 @@ export default {
                 console.error("unknown task state:"+task.status);
                 console.error(task.status); 
             } 
+        },
+
+        stop(task) {
+            this.$http.put(Vue.config.wf_api+'/task/stop/'+task._id)
+            .then(res=>{
+                this.$notify({ text: res.data.message, type: 'success'});
+            })
+            .catch(err=>{
+                console.error(err); 
+            });
+        },
+
+        edit(task) {
+            Vue.set(task, '_editing', true);
+            Vue.set(task, '_name', task.name);
+            Vue.set(task, '_desc', task.desc);
+        },
+
+        save(task) {
+            task._editing = false;
+            this.$http.put(Vue.config.amaretti_api+'/task/'+task._id, {
+                name: task._name,
+                desc: task._desc,
+            }).then(res=>{
+                this.$notify({ text: res.data.message, type: 'success'});
+            }).catch(err=>{
+                console.error(err); 
+            });
         },
 
         jump(task) {

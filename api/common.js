@@ -1043,10 +1043,11 @@ exports.update_project_stats = async function(project, cb) {
         let groupanalysis = {
             sessions: [],
         }
+        /*
         let gaInstanceRes = await axios(config.amaretti.api+"/instance", {
             params: {
                 find: JSON.stringify({
-                    status: {$in: ["running", "stopped"]},
+                    //status: {$in: ["running", "stopped"]}, //this is for instance!
                     group_id: project.group_id,
                     name: "ga-launchers", //must match from ui' components[groupanslysis.vue]
                 }),
@@ -1054,26 +1055,32 @@ exports.update_project_stats = async function(project, cb) {
             headers: { authorization: "Bearer "+config.warehouse.jwt, },
         });
         let gaInstances = gaInstanceRes.data.instances;
+
         if(gaInstances.length > 0) {
-            let instance = gaInstances[0]; //there should be only 1
-            //load existing sessions
-            let sessionsRes = await axios(config.amaretti.api+"/task", {
-                params: {
-                    find: JSON.stringify({
-                        status: {$ne: "removed"},
-                        instance_id: instance._id,
-                    }),
-                    select: 'config.container'
-                },
-                headers: { authorization: "Bearer "+config.warehouse.jwt, },
-            });
-            groupanalysis.sessions = sessionsRes.data.tasks.map(t=>{
-                return {
-                    task_id: t._id,
-                    config: t.config,
-                }
-            });
-        }
+        let instance = gaInstances[0]; //there should be only 1
+        */
+
+        //load existing sessions
+        let sessionsRes = await axios(config.amaretti.api+"/task", {
+            params: {
+                find: JSON.stringify({
+                    status: {$ne: "removed"},
+                    service: "brainlife/ga-launcher",
+                    //instance_id: instance._id,
+                    _group_id: project.group_id,
+                }),
+                select: 'config.container'
+            },
+            headers: { authorization: "Bearer "+config.warehouse.jwt, },
+        });
+
+        console.log("tasks found", sessionsRes.data.tasks);
+        groupanalysis.sessions = sessionsRes.data.tasks.map(t=>{
+            return {
+                task_id: t._id,
+                config: t.config,
+            }
+        });
         
         //app stats -------------------------------------------------------------
         let recs = await exports.aggregateDatasetsByApps({project:project._id})
@@ -1153,6 +1160,7 @@ exports.update_project_stats = async function(project, cb) {
             //groupanalysis,
         }})
 
+        console.log("all done!!!!!!!!!!!!!!");
         if(cb) cb(null, newproject);
 
     } catch (err) {
