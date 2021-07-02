@@ -4,7 +4,7 @@
         <h4>Administration</h4>
     </div>
 
-    <b-tabs class="brainlife-tab">
+    <b-tabs class="brainlife-tab" v-model="tab">
         <b-tab title="Task"> 
             <br>
             <b-form inline style="margin: 0 15px;">
@@ -57,6 +57,13 @@
                 </p>
             </div>
         </b-tab>
+        <b-tab title="Analytics">
+            <br>
+            <div style="margin: 0 15px">
+                <small>This plot show groups of user private profile position for each users.</small>
+                <Plotly v-if="posCountData" :data="posCountData" :layout="posCountLayout" :autoResize="true"/>
+            </div>
+        </b-tab>
     </b-tabs>
 </div>
 </template>
@@ -67,9 +74,13 @@ import Vue from 'vue'
 import task from '@/components/task'
 
 import ReconnectingWebSocket from 'reconnectingwebsocket'
+import { Plotly } from 'vue-plotly'
 
 export default {
-    components: { task },
+    components: { 
+        task,
+        Plotly,
+    },
     data () {
         return {
             //service_running: [],
@@ -82,13 +93,35 @@ export default {
             nextTasks: [],
 
             ws: null,
+
+            tab: 0,
+
+            posCountData: null, 
+            posCountLayout : {"title" : "User Categories"}
         }
     },
 
     mounted() {
     },
 
+    watch: {
+        tab(v) {
+            if(v == 2) { //analytics tab
+                if(this.posCountData) return;
+                this.$http.get(Vue.config.auth_api+'/profile/poscount').then(res=>{
+                    let trace = {
+                        values: Object.values(res.data), 
+                        labels: Object.keys(res.data),  
+                        type: "pie"
+                    };
+                    this.posCountData = [trace];
+                });
+            }
+        }
+    },
+
     methods: {
+
         get_sulist(search, loading) {
             loading(true);
             this.$http.get(Vue.config.auth_api+'/users', { params: {
