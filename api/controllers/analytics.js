@@ -7,19 +7,6 @@ const axios = require('axios');
 const config = require('../config');
 const common = require('../common');
 
-const dataObject = {
-    "PhD Student": 0,
-    "Faculty" : 0,
-    "Postdoctoral Researcher" :0,
-    "Research Assistant" : 0,
-    "High School Student" : 0,
-    "Clinician" : 0,
-    "College Student" : 0,
-    "Industry" : 0,
-    "Masters Student" : 0,
-    "Student (unspecified)" :0,
-    "Other" : 0
-}
 /**
  * @apiGroup Analytics
  * @api {get} /userPosCounts
@@ -30,6 +17,19 @@ const dataObject = {
  * @apiSuccess {Object (JSON) }             Pie Chart Data
  */
  router.get('/userPosCounts', common.jwt({credentialsRequired: true}), (req, res, next)=> {
+    const dataObject = {
+        "PhD Student": 0,
+        "Faculty" : 0,
+        "Postdoctoral Researcher" :0,
+        "Research Assistant" : 0,
+        "High School Student" : 0,
+        "Clinician" : 0,
+        "College Student" : 0,
+        "Industry" : 0,
+        "Masters Student" : 0,
+        "Student (unspecified)" :0,
+        "Other" : 0
+    }
     // if(!req.headers.authorization) next();
     if(!common.hasScope(req, "admin")) return next("You need to be admin to access this");
     request.get({ url : config.auth.api+'/profile/list', headers: { authorization: req.headers.authorization}}, (err, _res, json)=> {
