@@ -47,7 +47,6 @@ function LabeltoValue(data,LabelNameMatch) {
     let labelCount = [];
     let labelRes = [];
     let totalValidCount = 0;
-    console.log(data)
     data.filter(entry => entry.position && entry.position.toLowerCase() != "n/a" && entry.position.length > 1).forEach(pos=> {
         totalValidCount++;
         let entry = pos.position; 

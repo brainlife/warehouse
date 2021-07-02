@@ -59,7 +59,7 @@
         </b-tab>
         <b-tab title="Analytics">
             <br>
-            <Plotly v-if="plot" :data="plot" :autoResize="true" :watchShallow="true"/>
+            <Plotly v-if="plot" :data="plot" :layout="layout" :autoResize="true" :watchShallow="true"/>
         </b-tab>
     </b-tabs>
 </div>
@@ -88,6 +88,7 @@ export default {
 
             ws: null,
             plot : [],
+            layout : {"title" : "User Categories"}
         }
     },
 
