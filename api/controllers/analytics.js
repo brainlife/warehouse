@@ -3,32 +3,33 @@
 const express = require('express');
 const router = express.Router();
 const request = require('request');
+const axios = require('axios');
 const config = require('../config');
 const common = require('../common');
 
-const LabelNameMatch = {
-    "PhD Student": ["doctoral student", "graduate student","phd candidate","grad student","phd student"],
-    "Faculty" : ["prof", "senior research fellow", "chair", "instructor", "director", "scientist", "advisor", "principal investigator", "pi", "teacher","scholar", "lec"],
-    "Postdoctoral Researcher" : ["postdoctoral" ,"fellow", "research associate", "post", "phd" ,"research"],
-    "Research Assistant" : ["research assistant", "research coordinator", "intern","ra"],
-    "High School Student" : ["high school"],
-    "Clinician" : ["chief physician","clinical researcher","advanced imaging neuroscientist","presurgical tumor evaluation","md","radiologist","neuroradiologist",
-                "logist","physic","clinician","medical doctor","physician","neurologist"],
-    "College Student" : ["under", "teaching assistant",],
-    "Industry" : ["software", "product", "manager", "owner", "developer", "des", "engineer"],
-    "Masters Student" : ["masters", "phil", "mtech", "msc"],
-    "Student (unspecified)" : ["studen"],
+const dataObject = {
+    "PhD Student": 0,
+    "Faculty" : 0,
+    "Postdoctoral Researcher" :0,
+    "Research Assistant" : 0,
+    "High School Student" : 0,
+    "Clinician" : 0,
+    "College Student" : 0,
+    "Industry" : 0,
+    "Masters Student" : 0,
+    "Student (unspecified)" :0,
+    "Other" : 0
 }
 /**
- * @apiGroup Projects
- * @api {get} /project/data
+ * @apiGroup Analytics
+ * @api {get} /userPosCounts
  * @apiDescription              Query data for pie chart
  * 
  * @apiHeader {String} [authorization]
  *                                  A valid JWT token "Bearer: xxxxx"
  * @apiSuccess {Object (JSON) }             Pie Chart Data
  */
- router.get('/data', common.jwt({credentialsRequired: true}), (req, res, next)=> {
+ router.get('/userPosCounts', common.jwt({credentialsRequired: true}), (req, res, next)=> {
     // if(!req.headers.authorization) next();
     if(!common.hasScope(req, "admin")) return next("You need to be admin to access this");
     request.get({ url : config.auth.api+'/profile/list', headers: { authorization: req.headers.authorization}}, (err, _res, json)=> {
@@ -37,35 +38,23 @@ const LabelNameMatch = {
         //now we have the json, we need to filter it
         let dataFiltered = JSON.parse(json).profiles.map(entry => {
             if(entry.profile.private.position) return {position : entry.profile.private.position};
-        });
+        }).filter(f=>!!f);
         if(!dataFiltered.length) return res.json([]);
-        return res.send(LabeltoValue(dataFiltered,LabelNameMatch));
+        dataFiltered.forEach(entry=>{
+            if(/\s(phd|doctoral|grad|graduate)+( candidate| student)/.test(entry.position.toLowerCase())) dataObject["Phd Student"] += 1;
+            else if(/prof|senior|pi|teacher|scholar|lec|advisor|inst|chair|scient|direc|invest/.test(entry.position.toLowerCase())) dataObject["Faculty"] += 1;
+            else if(/^(research)|^(post)|(phd)/.test(entry.position.toLowerCase())) dataObject["Postdoctoral Researcher"] += 1;
+            else if(/(research)[^\s]*( assistant| associate | coordinator) |(intern)|\bra/.test(entry.position.toLowerCase())) dataObject["Research Assistant"] +=1;
+            else if(/school/.test(entry.position.toLowerCase())) dataObject["High School Student"] += 1;
+            else if(/(logist)|(clin)|(neuro)|(chief)|(cal)|\b(md)|(physic)/.test(entry.position.toLowerCase())) dataObject["Clinician"] += 1;
+            else if(/undergrad|\bteaching assistant/.test(entry.position.toLowerCase())) dataObject["Undergraduate Student"] += 1;
+            else if(/masters|phil|mtech|msc/.test(entry.position.toLowerCase())) dataObject["Masters Student"] +=1;
+            else if(/software|product|manager|owner|developer|des|engineer/.test(entry.position.toLowerCase())) dataObject["Industry"] +=1;
+            else if(/student/.test(entry.position.toLowerCase())) dataObject["Student (unspecified)"] += 1;
+            else dataObject["Other"] += 1;
+        });
+        return res.send(dataObject);
     });
 });
-
-function LabeltoValue(data,LabelNameMatch) {
-    let labelCount = [];
-    let labelRes = [];
-    let totalValidCount = 0;
-    data.filter(entry => entry.position && entry.position.toLowerCase() != "n/a" && entry.position.length > 1).forEach(pos=> {
-        totalValidCount++;
-        let entry = pos.position; 
-        for (const [label,value] of Object.entries(LabelNameMatch)) {
-            if(value.some(query=> entry.toLowerCase().includes(query) || entry.toLowerCase() == query)) {
-                if(!labelRes.includes(label)) {
-                    labelRes.push(label);
-                    labelCount.push(0);
-                }
-                labelCount[labelRes.indexOf(label)] += 1;
-                break;
-            }
-        }
-    });
-    let OtherCount = totalValidCount - labelCount.reduce((a, b) => a + b, 0);
-    labelRes.push("Other");
-    labelCount.push(OtherCount);
-    return {labelRes, labelCount};
-}
-
 
 module.exports = router;

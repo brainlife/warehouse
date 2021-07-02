@@ -93,8 +93,8 @@ export default {
     },
 
     mounted() {
-        this.$http.get('analytics/data').then(res=>{
-            let plotlyObject = {"values"  : res.data.labelCount, "labels" : res.data.labelRes,  "type" : "pie"};
+        this.$http.get('analytics/userPosCounts').then(res=>{
+            let plotlyObject = {"values"  : Object.values(res.data), "labels" : Object.keys(res.data),  "type" : "pie"};
             this.plot.push(plotlyObject);
         });
     },
