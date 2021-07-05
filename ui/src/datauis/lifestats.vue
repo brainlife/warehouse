@@ -15,10 +15,12 @@
 import Vue from 'vue'
 
 //TODO - why can't I just use vue-plotly for this?
+/*
 var Plotly = require('plotly.js/lib/core');
 Plotly.register([
     require('plotly.js/lib/histogram')
 ]);
+*/
 
 export default {
     props: ['task', 'subdir'],
@@ -37,6 +39,7 @@ export default {
             var w = res.data.out.plot[1];
             this.stats = res.data.out.stats;
             
+            /*
             Plotly.plot(this.$refs.plot, [{
                 x: rmse.x.vals,
                 y: rmse.y.vals,
@@ -64,21 +67,24 @@ export default {
                 x: w.x.vals,
                 y: w.y.vals,
             }], {
-                xaxis: {title: 'beta weight' /*w.x.label*/}, //TODO - life.m is currently wrong
+                xaxis: {title: 'beta weight'}, //TODO - life.m is currently wrong
                 yaxis: {title: w.y.label},
                 //margin: {t: 0, b: 0, r: 0, l: 0},
             });
 
             this.resize();
             $(window).on('resize', this.resize);
+            */
         });
     },
 
     methods: {
+        /*
         resize: function() {
             Plotly.relayout(this.$refs.plot, {width: this.$refs.plot.clientWidth});
             Plotly.relayout(this.$refs.w, {width: this.$refs.w.clientWidth});
         }    
+        */
     }
 }
 </script>

@@ -118,7 +118,6 @@
         <div v-for="(_datasets, did) in group_selected" :key="did" v-if="datatypes[did]" class="select-group">
             <datatypetag :datatype="datatypes[did]" style="padding: 5px;"/>
             <div class="selected-item" v-for="(dataset, id) in _datasets" :key="id" @click="open(id)">
-                here is it
                 <div @click.stop="unselect(dataset)" style="float: right; padding-right: 3px;" title="Unselect">
                     <icon name="times"></icon>
                 </div>

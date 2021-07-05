@@ -5,8 +5,10 @@
         <tractview v-else-if="type == 'tractview'" :task="task" :subdir="subdir" :datatype="datatype"/>
         <surfaces v-else-if="type == 'surfaces'" :task="task" :subdir="subdir" :datatype="datatype"/>
         <lifeview v-else-if="type == 'lifeview'" :task="task" :subdir="subdir" :datatype="datatype"/>
+        <!--
         <lifestats v-else-if="type == 'lifestats'" :task="task" :subdir="subdir" :datatype="datatype"/>
         <evaluator v-else-if="type == 'conneval'" :task="task" :subdir="subdir" :datatype="datatype"/>
+        -->
         <images v-else-if="type == 'images'" :task="task" :subdir="subdir" :datatype="datatype"/>
         <nifti v-else-if="type == 'volumeviewer'" ui="volumeviewer"  :uiconfig="uiconfig"/>
         <nifti v-else-if="type == 'papaya'" ui="papaya" :uiconfig="uiconfig"/>
@@ -27,42 +29,28 @@
 <script>
 import Vue from 'vue'
 
-// datatype UIs
-import dtiinit from '@/datauis/dtiinit'
-import freesurfer from '@/datauis/freesurfer'
-import tractview from '@/datauis/tractview'
-import surfaces from '@/datauis/surfaces'
-import lifestats from '@/datauis/lifestats'
-import lifeview from '@/datauis/lifeview'
-import evaluator from '@/datauis/evaluator'
-import images from '@/datauis/images'
-import nifti from '@/datauis/nifti'
-import nnview from '@/datauis/nnview'
-import prfview from '@/datauis/prfview'
-
-import filebrowser from '@/components/filebrowser'
-import task from '@/components/task'
 import ReconnectingWebSocket from 'reconnectingwebsocket'
-
 import wait from '@/mixins/wait'
 
 export default {
     mixins: [ wait ],
     props: [ 'taskid', 'type', 'datatype64', 'subdir' ], //deprecated - use uiconfig
     components: { 
-        dtiinit, 
-        freesurfer, 
-        tractview, 
-        lifestats, 
-        lifeview, 
-        evaluator, 
-        images, 
-        nifti, 
-        filebrowser, 
-        task, 
-        surfaces, 
-        nnview, 
-        prfview
+        //data UIs
+        dtiinit: () => import('@/datauis/dtiinit'), 
+        freesurfer: () => import('@/datauis/freesurfer'), 
+        tractview: () => import('@/datauis/tractview'), 
+        //lifestats: () => import('@/datauis/lifestats'), 
+        //evaluator: () => import('@/datauis/evaluator'), 
+        lifeview: () => import('@/datauis/lifeview'), 
+        images: () => import('@/datauis/images'), 
+        nifti: () => import('@/datauis/nifti'), 
+        surfaces: () => import('@/datauis/surfaces'), 
+        nnview: () => import('@/datauis/nnview'), 
+        prfview: () => import('@/datauis/prfview'), 
+
+        filebrowser: () => import('@/components/filebrowser'), 
+        task:() => import('@/components/task'), 
     },
 
     data() {

@@ -10,14 +10,13 @@
 import Vue from 'vue'
 import pageheader from '@/components/pageheader'
 
-import vis from 'vis/dist/vis-network.min.js'
+const getVis = ()=>import('vis/dist/vis-network.min')
 import 'vis/dist/vis-network.min.css'
 
 export default {
     components: { pageheader },
     data () {
         return {
-            graph: null,
             config: Vue.config,
         }
     },
@@ -57,7 +56,6 @@ export default {
         init_vis: function(apps) {
             var $it = this;
 
-            console.log("initializing");
             var nodes = [];
             var edges = [];
             var datatype_nodes = {};
@@ -107,35 +105,37 @@ export default {
                 });
             });
 
-            var graph = new vis.Network(this.$refs.vis, {
-                nodes: new vis.DataSet(nodes), 
-                edges: new vis.DataSet(edges),
-            }, {
-                layout: {  
-                    improvedLayout: false,
-                },
-                /*
-                layout: {
-                hierarchical: {
-                    direction:"LR",
-                    levelSeparation: 100,
-                    sortMethod: "hubsize",
-                }
-                },
-                */
-                //physics:{barnesHut:{/*gravitationalConstant:-3500, springConstant: 0.01, avoidOverlap: 0.02*/}},
-                /*
-                physics:{
-                    barnesHut:{
-                        gravitationalConstant: -6000,
+            getVis().then(vis=>{
+                new vis.Network(this.$refs.vis, {
+                    nodes: new vis.DataSet(nodes), 
+                    edges: new vis.DataSet(edges),
+                }, {
+                    layout: {  
+                        improvedLayout: false,
+                    },
+                    /*
+                    layout: {
+                    hierarchical: {
+                        direction:"LR",
+                        levelSeparation: 100,
+                        sortMethod: "hubsize",
                     }
-                },
-                */
+                    },
+                    */
+                    //physics:{barnesHut:{/*gravitationalConstant:-3500, springConstant: 0.01, avoidOverlap: 0.02*/}},
+                    /*
+                    physics:{
+                        barnesHut:{
+                            gravitationalConstant: -6000,
+                        }
+                    },
+                    */
 
-                nodes: {
-                    shadow: true,
-                    borderWidth: 0,
-                },
+                    nodes: {
+                        shadow: true,
+                        borderWidth: 0,
+                    },
+                });
             });
         },
     },

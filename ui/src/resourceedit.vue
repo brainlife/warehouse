@@ -223,7 +223,8 @@ import contactlist from '@/components/contactlist'
 import contact from '@/components/contact'
 import tageditor from '@/components/tageditor'
 
-const forge = require('node-forge');
+//let's lazy fetch node-forge (it's pretty big..)
+const getForge = ()=>import('node-forge')
 
 export default {
     components: { 
@@ -304,13 +305,15 @@ export default {
 
         reset_sshkey() {
             delete this.resource.config.enc_ssh_private;
-            forge.pki.rsa.generateKeyPair({bits: 2048, workers: 2/*e: 0x10001*/}, (err, keypair)=>{
-                if(err) {
-                    this.$notify({type: 'error', text: err});
-                    return;
-                }
-                Vue.set(this.resource.config, 'ssh_public', forge.ssh.publicKeyToOpenSSH(keypair.publicKey));//, "pubkey comment");
-                Vue.set(this.resource.config, 'enc_ssh_private', forge.ssh.privateKeyToOpenSSH(keypair.privateKey));
+            getForge().then(forge=>{
+                forge.pki.rsa.generateKeyPair({bits: 2048, workers: 2/*e: 0x10001*/}, (err, keypair)=>{
+                    if(err) {
+                        this.$notify({type: 'error', text: err});
+                        return;
+                    }
+                    Vue.set(this.resource.config, 'ssh_public', forge.ssh.publicKeyToOpenSSH(keypair.publicKey));//, "pubkey comment");
+                    Vue.set(this.resource.config, 'enc_ssh_private', forge.ssh.privateKeyToOpenSSH(keypair.privateKey));
+                });
             });
         },
 

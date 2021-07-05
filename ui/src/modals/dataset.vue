@@ -322,7 +322,7 @@ import agreementMixin from '@/mixins/agreement'
 import secondaryWaiter from '@/mixins/secondarywaiter'
 import resourceCache from '@/mixins/resource_cache'
 
-import vis from 'vis/dist/vis-network.min.js'
+const getVis = ()=>import('vis/dist/vis-network.min')
 import 'vis/dist/vis-network.min.css'
 
 const lib = require('@/lib');
@@ -512,65 +512,67 @@ export default {
                 
                 if(this.prov.edges.length) {
                     Vue.nextTick(()=>{
-                        var gph = new vis.Network(this.$refs.vis, res.data, {
-                            layout: {
-                                randomSeed: 0,
-                            },
-                            physics:{
-                                //enabled: true, //default true
-                                barnesHut:{
-                                    //springConstant: 0.20,
-                                    //springLength: 150,
-                                    //avoidOverlap: 0.2,
-                                    //damping: 0.3,
-                                    gravitationalConstant: -3000,
-                                }
-                            },
-                            nodes: {
-                                shadow: {
-                                    enabled: true,
-                                    //make it less pronounced than default
-                                    size: 3,
-                                    x: 1,
-                                    y: 1 ,
-                                    color: 'rgba(0,0,0,0.2)',
+                        getVis().then(vis=>{
+                            var gph = new vis.Network(this.$refs.vis, res.data, {
+                                layout: {
+                                    randomSeed: 0,
                                 },
-                                borderWidth: 0,
-                            },
-                        });
-                        gph.on("doubleClick", e=>{
-                            /*e.edges, e.event, e.nodes. e.pointer*/
-                            e.nodes.forEach(node=>{
-                                if(node.startsWith("dataset.")) {
-                                    let dataset_id = node.substring(8);
-                                    //for archive/datasets page
-                                    if(this.$route.path.includes(this.dataset._id)) {
-                                        //this should trigger reload
-                                        this.$router.replace(this.$route.path.replace(this.dataset._id, dataset_id));
-                                    } else {
-                                        this.$root.$emit('dataset.view', {id: dataset_id});
+                                physics:{
+                                    //enabled: true, //default true
+                                    barnesHut:{
+                                        //springConstant: 0.20,
+                                        //springLength: 150,
+                                        //avoidOverlap: 0.2,
+                                        //damping: 0.3,
+                                        gravitationalConstant: -3000,
                                     }
-                                }
-                                if(node.startsWith("task.")) {
-                                    let fullnode = this.prov.nodes.find(n=>n.id == node);
-                                    if(fullnode._app) this.$router.replace("/app/"+fullnode._app);
-                                }
+                                },
+                                nodes: {
+                                    shadow: {
+                                        enabled: true,
+                                        //make it less pronounced than default
+                                        size: 3,
+                                        x: 1,
+                                        y: 1 ,
+                                        color: 'rgba(0,0,0,0.2)',
+                                    },
+                                    borderWidth: 0,
+                                },
                             });
-                            if(this.prov) {
-                                e.edges.forEach(edge_id=>{
-                                    let edge = this.prov.edges.find(e=>e.id == edge_id);
-                                    if(edge._archived_dataset_id) {
-                                        this.$router.replace(this.$route.path.replace(this.dataset._id, edge._archived_dataset_id)); 
+                            gph.on("doubleClick", e=>{
+                                /*e.edges, e.event, e.nodes. e.pointer*/
+                                e.nodes.forEach(node=>{
+                                    if(node.startsWith("dataset.")) {
+                                        let dataset_id = node.substring(8);
+                                        //for archive/datasets page
+                                        if(this.$route.path.includes(this.dataset._id)) {
+                                            //this should trigger reload
+                                            this.$router.replace(this.$route.path.replace(this.dataset._id, dataset_id));
+                                        } else {
+                                            this.$root.$emit('dataset.view', {id: dataset_id});
+                                        }
+                                    }
+                                    if(node.startsWith("task.")) {
+                                        let fullnode = this.prov.nodes.find(n=>n.id == node);
+                                        if(fullnode._app) this.$router.replace("/app/"+fullnode._app);
                                     }
                                 });
-                            }
-                        });
+                                if(this.prov) {
+                                    e.edges.forEach(edge_id=>{
+                                        let edge = this.prov.edges.find(e=>e.id == edge_id);
+                                        if(edge._archived_dataset_id) {
+                                            this.$router.replace(this.$route.path.replace(this.dataset._id, edge._archived_dataset_id)); 
+                                        }
+                                    });
+                                }
+                            });
 
-                        gph.on("showPopup", e=>{
-                            //console.log("popup!", e);
-                        });
-                        gph.on("hoverNode", e=>{
-                            //console.log("hovernode!", e);
+                            gph.on("showPopup", e=>{
+                                //console.log("popup!", e);
+                            });
+                            gph.on("hoverNode", e=>{
+                                //console.log("hovernode!", e);
+                            });
                         });
                     });
                 }

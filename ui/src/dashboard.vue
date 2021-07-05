@@ -83,11 +83,6 @@
                         </div>
                     </b-card>
                 </b-card-group>
-                <!--
-                <h5>Resources</h5>
-                <small>This graph shows number of jobs executed on resources that you have access to</small>
-                <div ref="resource_vis"/>
-                -->
             </div>
         </div>
     </div><!--page-content-->
@@ -102,8 +97,10 @@ import contact from '@/components/contact'
 
 import authprofilecache from '@/mixins/authprofilecache'
 
+/*
 import vis from 'vis/dist/vis.min.js'
 import 'vis/dist/vis.min.css'
+*/
 
 const lib = require('@/lib'); //for avatar_url
 
@@ -113,7 +110,7 @@ export default {
         pageheader, 
         statusicon,
         contact,
-        vis,
+        //vis,
     },
 
     data () {
@@ -158,6 +155,7 @@ export default {
     methods: {
         avatar_url: lib.avatar_url,
 
+        /*
         async update_resource_vis() {
             var groups = new vis.DataSet();
             let gid = 0;
@@ -196,6 +194,7 @@ export default {
                 //end: max_time,
             });
         },
+        */
 
         opentask(task) {
             let project = this.projects[task._group_id];

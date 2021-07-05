@@ -29,42 +29,24 @@
 
 import Vue from 'vue'
 
-import viewselecter from '@/modals/viewselecter'
-import dataset from '@/modals/dataset'
-import datasetselecter from '@/modals/datasetselecter'
-import uploader from '@/modals/uploader'
-import instanceselecter from '@/modals/instanceselecter'
-import archiver from '@/modals/archiver'
-import agreements from '@/modals/agreements'
-import downscript from '@/modals/downscript'
-import taskinfo from '@/modals/taskinfo'
-import appsubmit from '@/modals/appsubmit'
-import copytarget from '@/modals/copytarget'
-import participants from '@/modals/participants'
-import galauncher from '@/modals/galauncher'
-import gaarchiver from '@/modals/gaarchiver'
-
-import dataladimporter from '@/modals/dataladimporter'
-import ezbidsimporter from '@/modals/ezbidsimporter'
-
 export default {
     components: {
-        viewselecter, 
-        dataset, 
-        uploader, 
-        datasetselecter, 
-        instanceselecter, 
-        archiver, 
-        agreements, 
-        downscript, 
-        taskinfo, 
-        appsubmit, 
-        copytarget, 
-        participants,
-        galauncher,
-        gaarchiver,
-        dataladimporter, 
-        ezbidsimporter, 
+        viewselecter: ()=>import('@/modals/viewselecter'),
+        dataset: ()=>import('@/modals/dataset'), 
+        uploader: ()=>import('@/modals/uploader'),
+        datasetselecter: ()=>import('@/modals/datasetselecter'),
+        instanceselecter: ()=>import('@/modals/instanceselecter'),
+        archiver: ()=>import('@/modals/archiver'),
+        agreements: ()=>import('@/modals/agreements'),
+        downscript: ()=>import('@/modals/downscript'),
+        taskinfo: ()=>import('@/modals/taskinfo'),
+        appsubmit: ()=>import('@/modals/appsubmit'),
+        copytarget: ()=>import('@/modals/copytarget'),
+        participants: ()=>import('@/modals/participants'),
+        galauncher: ()=>import('@/modals/galauncher'),
+        gaarchiver: ()=>import('@/modals/gaarchiver'),
+        dataladimporter: ()=>import('@/modals/dataladimporter'),
+        ezbidsimporter: ()=>import('@/modals/ezbidsimporter'),
     },
     data() {
         return {
