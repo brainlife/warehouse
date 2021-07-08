@@ -204,25 +204,23 @@
                             <b-form-input id="inputCurrentPassword" v-model="form.currentPassword" type="password" required/>
                         </b-form-group>
                         <b-form-group id="newPassword" label="New Password" label-for="inputNewPassword">
-                            <b-form-input id="inputNewPassword" v-model="form.newPassword" type="password" aria-describedby="password-help-block" required/>
+                            <b-form-input id="inputNewPassword" :state="validatePass" v-model="form.newPassword" type="password" aria-describedby="password-help-block" required/>
                         </b-form-group>
-                        <b-form-text id="password-help-block">
-                            Your password must be 8-20 characters long, contain letters and numbers, and must not
-                            contain spaces, special characters, or emoji.
-                        </b-form-text>
+                        <b-form-invalid-feedback :state="validatePass">
+                        Your password must be 8-20 characters long, contain letters and numbers, and must not
+                        contain spaces, special characters, or emoji.                        </b-form-invalid-feedback>
                         <b-form-group id="repeatPassword" label="Re-enter New Password" label-for="inputrepeatPassword">
-                            <b-form-input id="inputrepeatPassword" v-model="form.repeatPassword" :state="validatenewPass" type="password" required/>
+                            <b-form-input id="inputrepeatPassword" v-model="form.repeatPassword" :state="validaterepeatPass" type="password" required/>
                         </b-form-group>
-                        <b-form-invalid-feedback :state="validatenewPass">
-                            Passwords so not match
+                        <b-form-invalid-feedback :state="validaterepeatPass">
+                            Passwords do not match
                         </b-form-invalid-feedback>
-                        <b-form-valid-feedback :state="validatenewPass">
-                            Looks Good.
-                        </b-form-valid-feedback>
+                        <br>
                         <b-button type="submit" variant="primary">Submit</b-button>                           
                     </b-form>
 
                 </b-container>
+                <br>
                 Please visit the legacy <a href="/auth/#!/settings/account" target="_blank">Account Settings</a> page for more account settings.
             </div>
 
@@ -364,15 +362,23 @@ export default {
                 password_old : this.form.currentPassword,
                 password: this.form.newPassword
             }).then(res=>{
-
+                if(res.status != 200) window.alert("Erro"+res);
+            }).catch(err=>{
+                window.alert("Error"+err);
+                console.error(err);
             });
         }
     },
 
     computed : {
-        validatenewPass() {
-            if(this.form.repeatPassword == this.form.newPassword) return true;
-            return false;
+        validaterepeatPass() {
+            if(!this.form.repeatPassword || !this.form.newPassword) return;
+            return this.form.repeatPassword == this.form.newPassword;
+        },
+        validatePass() {
+            const regPattern = new RegExp("^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[-+_!@#$%^&*.,?]).+$");
+            if(!this.form.newPassword) return;
+            return this.form.newPassword.length > 8 && this.form.newPassword.length < 20 && regPattern.test(this.form.newPassword);
         }
     }
 }
