@@ -207,8 +207,8 @@
                             <b-form-input id="inputNewPassword" :state="validatePass" v-model="form.newPassword" type="password" aria-describedby="password-help-block" required/>
                         </b-form-group>
                         <b-form-invalid-feedback :state="validatePass">
-                        Your password must be 8-20 characters long, contain letters and numbers, and must not
-                        contain spaces, special characters, or emoji.                        </b-form-invalid-feedback>
+                        Your password must be 8-20 characters long, contain letters, numbers and special characters, and must not
+                        contain spaces or emoji.                        </b-form-invalid-feedback>
                         <b-form-group id="repeatPassword" label="Re-enter New Password" label-for="inputrepeatPassword">
                             <b-form-input id="inputrepeatPassword" v-model="form.repeatPassword" :state="validaterepeatPass" type="password" required/>
                         </b-form-group>
@@ -358,13 +358,21 @@ export default {
         },
         changePassword(e) {
             e.preventDefault()
+            if(!this.validaterepeatPass || !this.validatePass) return;
             this.$http.put(Vue.config.auth_api+"/local/setpass",{
                 password_old : this.form.currentPassword,
                 password: this.form.newPassword
             }).then(res=>{
-                if(res.status != 200) window.alert("Erro"+res);
+                this.$bvToast.toast('Successfully Updated Password',{
+                    variant : "success",
+                    solid : true
+                });
+                this.$router.push(Vue.config.auth_signout);
             }).catch(err=>{
-                window.alert("Error"+err);
+                this.$bvToast.toast('Error in updating password',{
+                    variant : "danger",
+                    solid : true
+                });
                 console.error(err);
             });
         }
