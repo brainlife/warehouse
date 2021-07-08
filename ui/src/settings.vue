@@ -188,7 +188,7 @@
             <!--account-->
             <div v-if="tab == 1">
                 <b-container>
-                    <b-row v-if="config.debug">
+                  <!---  <b-row v-if="config.debug">
                         <b-col cols="2">
                             <span class="form-header">Username</span>
                         </b-col>
@@ -196,26 +196,31 @@
                             <b-form-input/>
                             <br>
                         </b-col>
-                    </b-row>
-                    <hr>
-                    <h5>Change Password</h5>                
-                    <b-row v-if="config.debug">
-                        <b-col cols="2">
-                            <span class="form-header">Current Password *</span>
-                            <br>
-                            <span class="form-header">New Password</span>
-                            <br>
-                            <span class="form-header">Confirm New Password *</span>
-                            <br>
-                        </b-col>
-                        <b-col>
-                            <b-form-input/>
-                            <br>
-                            <b-form-input/>
-                            <br>
-                            <b-form-input/>
-                        </b-col>
-                    </b-row>
+                    </b-row> -->
+                    <h5>Change Password</h5>     
+                    <hr>           
+                    <b-form @submit.stop.prevent v-if="config.debug">
+                        <b-form-group id="currentPassword" label="Current Password" label-for="inputCurrentPassword">
+                            <b-form-input id="inputCurrentPassword" v-model="form.currentPassword" type="password" required/>
+                        </b-form-group>
+                        <b-form-group id="newPassword" label="New Password" label-for="inputNewPassword">
+                            <b-form-input id="inputNewPassword" v-model="form.newPassword" type="password" aria-describedby="password-help-block" required/>
+                        </b-form-group>
+                        <b-form-text id="password-help-block">
+                            Your password must be 8-20 characters long, contain letters and numbers, and must not
+                            contain spaces, special characters, or emoji.
+                        </b-form-text>
+                        <b-form-group id="repeatPassword" label="Re-enter New Password" label-for="inputrepeatPassword">
+                            <b-form-input id="inputrepeatPassword" v-model="form.repeatPassword" :state="validatenewPass" type="password" required/>
+                        </b-form-group>
+                        <b-form-invalid-feedback :state="validatenewPass">
+                            Passwords so not match
+                        </b-form-invalid-feedback>
+                        <b-form-valid-feedback :state="validatenewPass">
+                            Looks Good.
+                        </b-form-valid-feedback>
+                        <b-button type="submit" variant="primary">Submit</b-button>                           
+                    </b-form>
 
                 </b-container>
                 Please visit the legacy <a href="/auth/#!/settings/account" target="_blank">Account Settings</a> page for more account settings.
@@ -291,6 +296,11 @@ export default {
             ready: false,
 
             fullname: "",
+            form : {
+                currentPassword : "",
+                newPassword : "",
+                repeatPassword : "",
+            },
             profile: {
                 public: {
                     institution: "",
@@ -349,6 +359,13 @@ export default {
             });            
         },
     },
+
+    computed : {
+        validatenewPass() {
+            if(this.form.repeatPassword == this.form.newPassword) return true;
+            return false;
+        }
+    }
 }
 </script>
 
