@@ -199,7 +199,7 @@
                     </b-row> -->
                     <h5>Change Password</h5>     
                     <hr>           
-                    <b-form @submit.stop.prevent v-if="config.debug">
+                    <b-form @submit="changePassword" v-if="config.debug">
                         <b-form-group id="currentPassword" label="Current Password" label-for="inputCurrentPassword">
                             <b-form-input id="inputCurrentPassword" v-model="form.currentPassword" type="password" required/>
                         </b-form-group>
@@ -358,6 +358,15 @@ export default {
                 this.$router.push("/projects");
             });            
         },
+        changePassword(e) {
+            e.preventDefault()
+            this.$http.put(Vue.config.auth_api+"/local/setpass",{
+                password_old : this.form.currentPassword,
+                password: this.form.newPassword
+            }).then(res=>{
+
+            });
+        }
     },
 
     computed : {
