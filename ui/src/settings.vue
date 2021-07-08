@@ -188,15 +188,6 @@
             <!--account-->
             <div v-if="tab == 1">
                 <b-container>
-                  <!---  <b-row v-if="config.debug">
-                        <b-col cols="2">
-                            <span class="form-header">Username</span>
-                        </b-col>
-                        <b-col>
-                            <b-form-input/>
-                            <br>
-                        </b-col>
-                    </b-row> -->
                     <h5>Change Password</h5>     
                     <hr>           
                     <b-form @submit="changePassword" v-if="config.debug">
@@ -218,7 +209,6 @@
                         <br>
                         <b-button type="submit" variant="primary">Submit</b-button>                           
                     </b-form>
-
                 </b-container>
                 <br>
                 Please visit the legacy <a href="/auth/#!/settings/account" target="_blank">Account Settings</a> page for more account settings.
