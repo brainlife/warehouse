@@ -42,10 +42,12 @@ axios.get(config.auth.api+"/users", {
             return next_user();
         }
         const inst = pprofile.institution;
+        /*
         if(!inst || inst.length < 7) {
             console.log("bad institution info", inst);
             return next_user();
         }
+        */
         console.log("need to look up... inst:", inst);
         lookupAddress(inst, (err, info)=>{
             const update = {};
@@ -58,7 +60,7 @@ axios.get(config.auth.api+"/users", {
                 update["profile.public.lng"] = info.lng;
             }
             
-            console.log("updating", user.sub);
+            console.log(update);
             axios.put(config.auth.api+"/user/"+user.sub, update, {
                 headers: {
                     authorization: "Bearer "+config.warehouse.jwt
@@ -75,8 +77,12 @@ axios.get(config.auth.api+"/users", {
 });
 
 async function lookupAddress(inst, cb) {
+    if(!inst) return cb("no inst");
     //try the cache first
-    if(cache[inst]) return cb(null, cache[inst]);
+    if(cache[inst]) {
+        console.log("using cache");
+        return cb(null, cache[inst]);
+    }
 
     console.log("no cache.. looking up from google");
 
