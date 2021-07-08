@@ -3,7 +3,7 @@
     <small v-if="!mode">Loading..</small>
     <small v-if="mode == 'unknown'">Unknown datatype tag {{datatype_tags}}</small>
     <div v-if="mode == 'profiles'">
-        <Plotly v-if="structure && measure" :data="profileGraphs[structure+'.'+measure.id].data" :layout="profileGraphs[structure+'.'+measure.id].layout" :autoResize="true"/>
+        <ExportablePlotly v-if="structure && measure" :data="profileGraphs[structure+'.'+measure.id].data" :layout="profileGraphs[structure+'.'+measure.id].layout"/>
         <br>
         <b-row>
             <b-col cols="2">
@@ -26,7 +26,7 @@
 
         <b>Structures</b>
         <v-select multiple v-model="structures" :options="structureOptions" placeholder="Search structure name to add"/>
-        <Plotly v-if="macroGraph" :data="macroGraph" :layout="macroLayout" :autoResize="true" ref="plotly" :watchShallow="false"/>
+        <ExportablePlotly v-if="macroGraph" :data="macroGraph" :layout="macroLayout" :watchShallow="false"/>
     </div>
 </div>
 </template>
@@ -35,15 +35,12 @@
 import Vue from 'vue'
 import axios from 'axios'
 
-//import Plotly from '@statnett/vue-plotly'
-import { Plotly } from 'vue-plotly'
-
 import { parseCSV, string2hue } from '@/lib'
 
 export default {
     props: ['task', 'output_id', 'datatype_tags', 'product'],
     components: {
-        Plotly
+        ExportablePlotly: ()=>import('@/components/ExportablePlotly'),
     },
     data() {
         return {

@@ -263,7 +263,6 @@ Vue.config.has_role = function(role, service = "warehouse") {
     return false;
 }
 
-//Vue.http.options.root = Vue.config.api; //default root for $http
 axios.defaults.baseURL = Vue.config.api; //default root for $http
 
 console.log("ENV", process.env.NODE_ENV);
@@ -333,8 +332,10 @@ router.beforeEach(function (to, from, next) {
 if (!Vue.config.debug) {
     Vue.use(VueGtag, { 
         //pageTrackerExcludedRotues: ['route_path_value', 'route_name_value'],
-        config: { id: 'UA-118407195-1' }
+        config: { id: process.env.GTAG }
     }, router)
+} else {
+    console.log("it's running on debug.. skipping using gtag", process.env.GTAG);
 }
 
 const soundHost = "https://raw.githubusercontent.com/brainlife/warehouse/master/ui/sounds/";
@@ -470,3 +471,5 @@ new Vue({
         },
     },
 })
+
+

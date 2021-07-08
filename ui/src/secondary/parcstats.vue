@@ -8,7 +8,7 @@
     <b>Structure</b>
     <v-select multiple v-model="structures" :options="structureOptions" placeholder="Search structure name to add"/>
 
-    <Plotly v-if="graphData" :data="graphData" :layout="graphLayout" :autoResize="true" ref="plotly" :watchShallow="false"/>
+    <ExportablePlotly v-if="graphData" :data="graphData" :layout="graphLayout" :watchShallow="false"/>
 </div>
 </template>
 
@@ -16,15 +16,12 @@
 import Vue from 'vue'
 import axios from 'axios'
 
-//import Plotly from '@statnett/vue-plotly'
-import { Plotly } from 'vue-plotly'
-
 import { parseCSV, string2hue } from '@/lib'
 
 export default {
     props: [ 'task', 'output_id', 'product' ],
     components: {
-        Plotly
+        ExportablePlotly: ()=>import('@/components/ExportablePlotly'),
     },
     data() {
         return {

@@ -311,7 +311,6 @@ import datatype from '@/components/datatype'
 import pageheader from '@/components/pageheader'
 import appavatar from '@/components/appavatar'
 import datatypetag from '@/components/datatypetag'
-import task from '@/components/task'
 import pubcard from '@/components/pubcard'
 import tageditor from '@/components/tageditor'
 import taskconfig from '@/components/taskconfig'
@@ -349,10 +348,10 @@ export default {
         taskconfig, 
         product, 
         secondary, 
-        task,
-        projectcard: ()=>import('@/components/projectcard'),
+        task: ()=>import('@/components/task'),
 
-        editor: require('vue2-ace-editor'),
+        projectcard: ()=>import('@/components/projectcard'),
+        editor: ()=>import('vue2-ace-editor'),
     },
 
     data () {
@@ -391,8 +390,6 @@ export default {
                 this.close();
             }
         });
-
-        //this.editor.setTheme("ace/theme/twilight");
     },
 
     destroyed() {
@@ -1022,18 +1019,12 @@ export default {
                 this.$notify({ text: 'Failed to parse JSON', type: 'error' }); 
             }
         },
-        editorInit(editor) {
-            require('brace/mode/json')
-            editor.container.style.lineHeight = 1.25;
-            editor.renderer.updateFontSize();
-            if(!this.dataset._canedit) editor.setReadOnly(true);
-        },
 
-        /*
-        findOutputConfig() {
-            return this.dataset.prov.task.config._outputs.find(o=>o.id == this.dataset.prov.output_id);
+        editorInit(editor) {
+            lib.editorInit(editor, err=>{
+                if(!this.dataset._canedit) editor.setReadOnly(true);
+            });
         },
-        */
     }
 }
 

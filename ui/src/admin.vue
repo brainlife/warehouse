@@ -61,7 +61,7 @@
             <br>
             <div style="margin: 0 15px">
                 <small>This plot show groups of user private profile position for each users.</small>
-                <Plotly v-if="posCountData" :data="posCountData" :layout="posCountLayout" :autoResize="true"/>
+                <ExportablePlotly v-if="posCountData" :data="posCountData" :layout="posCountLayout"/>
             </div>
         </b-tab>
     </b-tabs>
@@ -74,12 +74,12 @@ import Vue from 'vue'
 import task from '@/components/task'
 
 import ReconnectingWebSocket from 'reconnectingwebsocket'
-import { Plotly } from 'vue-plotly'
+//import { Plotly } from 'vue-plotly'
 
 export default {
     components: { 
         task,
-        Plotly,
+        ExportablePlotly: ()=>import('@/components/ExportablePlotly')
     },
     data () {
         return {

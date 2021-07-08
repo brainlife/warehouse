@@ -425,7 +425,7 @@ export default {
         taskRecord, 
         projectcard,
 
-        editor: require('vue2-ace-editor'),
+        editor: ()=>import('vue2-ace-editor'),
     },
 
     data () {
@@ -631,19 +631,13 @@ export default {
         },
 
         editorInit(editor) {
-            require('brace/mode/json')
-            require('brace/theme/chrome')
-            require('brace/snippets/javascript')
-
-            editor.container.style.lineHeight = 1.25;
-            editor.renderer.updateFontSize();
-            editor.setReadOnly(true);  // false to make it editable
-
-            editor.setAutoScrollEditorIntoView(true);
-            editor.setOption("maxLines", 30);
-            editor.setOption("minLines", 3);
-
-            editor.setShowPrintMargin(true);
+            lib.editorIni(editor, ()=>{
+                //editor.setReadOnly(true);  // false to make it editable
+                editor.setAutoScrollEditorIntoView(true);
+                editor.setOption("maxLines", 30);
+                editor.setOption("minLines", 3);
+                editor.setShowPrintMargin(true);
+            });
         },
 
         //override the datatype's file id with the mapping used in config.json so we can show to user the actual config.json key

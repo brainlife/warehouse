@@ -24,28 +24,32 @@
                 <b-form @submit="submit_profile">
    
                     <h5>Avatar</h5>
-                    <b-img thumbnail :src="avatar_url(config.user.profile, 100)" style="float: left;"/>
-                    <div style="margin-left: 150px;">
-                        <p>
-                            Your avatar is handled by <a href="https://gravatar.com">gravatar.com</a> using your account email address 
-                            <span style="opacity: 0.8;">({{config.user.profile.email}})</span>.
-                        </p>
-                        <div style="background-color: white; padding: 10px; opacity: 0.8;">
-                            <h6>What is Gravatar?</h6>
-                            <a href="https://en.gravatar.com/support/what-is-gravatar/">https://en.gravatar.com/support/what-is-gravatar/</a>
-                            <br>
-                            <br>
-                            <blockquote>
-                                An "avatar" is an image that represents you online—a little picture that appears next to your name when you interact with websites.
-                            </blockquote>
-                            <blockquote>
-                                A Gravatar is a Globally Recognized Avatar. You upload it and create your profile just once, and then when you participate in any Gravatar-enabled site, your Gravatar image will automatically follow you there.
-                            </blockquote>
-                            <blockquote>
-                                Gravatar is a free service for site owners, developers, and users. It is automatically included in every WordPress.com account and is run and supported by Automattic.
-                            </blockquote>
-                        </div>
-                    </div>
+                    <b-row>
+                        <b-col cols="2">
+                            <b-img thumbnail :src="avatar_url(config.user.profile, 100)" style="float: left;"/>
+                        </b-col>
+                        <b-col>
+                            <p>
+                                Your avatar is handled by <a href="https://gravatar.com">gravatar.com</a> using your account email address 
+                                <span style="opacity: 0.8;">({{config.user.profile.email}})</span>.
+                            </p>
+                            <div style="background-color: white; padding: 10px; opacity: 0.8;">
+                                <h6>What is Gravatar?</h6>
+                                <a href="https://en.gravatar.com/support/what-is-gravatar/">https://en.gravatar.com/support/what-is-gravatar/</a>
+                                <br>
+                                <br>
+                                <blockquote>
+                                    An "avatar" is an image that represents you online—a little picture that appears next to your name when you interact with websites.
+                                </blockquote>
+                                <blockquote>
+                                    A Gravatar is a Globally Recognized Avatar. You upload it and create your profile just once, and then when you participate in any Gravatar-enabled site, your Gravatar image will automatically follow you there.
+                                </blockquote>
+                                <blockquote>
+                                    Gravatar is a free service for site owners, developers, and users. It is automatically included in every WordPress.com account and is run and supported by Automattic.
+                                </blockquote>
+                            </div>
+                        </b-col>
+                    </b-row>
 
                     <hr>
                     <h5>Public Profile</h5>
@@ -69,6 +73,34 @@
                             <br>
                         </b-col>
                     </b-row>
+
+                    <b-row>
+                        <b-col cols="2">
+                            <span class="form-header">User Map</span>
+                        </b-col>
+                        <b-col>
+                            <b-form-checkbox v-model="profile.public.showOnMap">
+                                Show my institution on the brainlife.io user map
+                            </b-form-checkbox>
+                            <div v-if="profile.public.showOnMap">
+                                <small>Please specify longitude / latitude of your institution to show on map</small>
+                                <b-row>
+                                    <b-col>
+                                        <b-form-group label="Latitude">
+                                            <b-form-input v-model="profile.public.lat"/>
+                                        </b-form-group>
+                                    </b-col>
+                                    <b-col>
+                                        <b-form-group label="Longitude">
+                                            <b-form-input v-model="profile.public.lng"/>
+                                        </b-form-group>
+                                    </b-col>
+                                </b-row>
+                            </div>
+                            <br>
+                        </b-col>
+                    </b-row>
+
 
                     <b-row>
                         <b-col cols="2">
@@ -265,6 +297,11 @@ export default {
                     institution: "",
                     position: "",
                     bio: "",
+
+                    //institution map coordinate
+                    showOnMap: false,
+                    lat: "",
+                    lng: "",
                 },
                 private: {
                     aup: false,

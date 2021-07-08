@@ -138,3 +138,30 @@ export function string2hue(s) {
     return sum%360;
 }
 
+export function editorInit(editor, cb) {
+    require('brace/mode/json')
+    require('brace/theme/chrome')
+    require('brace/snippets/javascript')
+
+    require('brace/ext/language_tools')
+    require('brace/mode/sh')
+    require('brace/mode/json')
+    require('brace/mode/matlab')
+    require('brace/mode/python')
+    require('brace/mode/javascript')
+    require('brace/mode/r')
+    require('brace/mode/markdown')
+    //require('brace/mode/html') //53kb gzipped!
+    require('brace/mode/dockerfile')
+
+    require('brace/theme/chrome')
+
+    require('brace/snippets/javascript')
+
+    console.log("setting container style", editor.container);
+    editor.container.style.lineHeight = 1.25;
+    editor.renderer.updateFontSize();
+    if(cb) cb();
+}
+
+

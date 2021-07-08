@@ -567,17 +567,13 @@ export default {
                 let groups = this.last_groups; //start with the last subject group from previous load
                 let last_group = null;
 
-                //console.log("query", query);
-                //console.log("returned", res.data.datasets.length);
-
                 res.data.datasets.forEach((dataset, idx)=>{
                     dataset.checked = this.selected[dataset._id]; //TODO - what is this?
                     var group = "nosub"; //not all datasets has subject tag(TODO - should be required?)
-                    if(dataset.meta) { //TODO all dataset should have meta.. (make it so!)
-                        this.last_meta = dataset.meta;
-                        if(dataset.meta.subject) group = dataset.meta.subject; 
-                        if(dataset.meta.session) group += " / " + dataset.meta.session;
-                    }
+
+                    this.last_meta = dataset.meta;
+                    if(dataset.meta.subject) group = dataset.meta.subject; 
+                    if(dataset.meta.session) group += " / " + dataset.meta.session;
                     last_group = group;
                     if(!groups[group]) Vue.set(groups, group, []);
                     groups[group]._subject = dataset.meta.subject; //to help with displaying meta data for this subject
@@ -592,7 +588,6 @@ export default {
                         loaded++;
                     }
                 });
-                //console.log("total datasets added", loaded);
 
                 this.last_groups = {};
                 if(this.total_datasets != loaded) {

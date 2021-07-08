@@ -235,10 +235,8 @@
                             <div v-if="resource_usage && total_walltime > 3600*1000">
                                 <span class="form-header">Resource Usage</span>
                                 <p><small>Data-objects on this project has been computed using the following apps/resources.</small></p>             
-                                <Plotly :data="resource_usage.data" 
+                                <ExportablePlotly :data="resource_usage.data" 
                                         :layout="resource_usage.layout" 
-                                        :options="resource_usage.options"
-                                        ref="resource_usage" 
                                         :autoResize="true" 
                                         :watchShallow="true"/>
                                 <br>
@@ -358,7 +356,8 @@ import mag from '@/components/mag'
 import app from '@/components/app'
 
 //import Plotly from '@statnett/vue-plotly'
-import { Plotly } from 'vue-plotly'
+//import { Plotly } from 'vue-plotly'
+
 
 //modals
 import newtaskModal from '@/modals/newtask'
@@ -392,7 +391,7 @@ export default {
 
         //noprocess, 
         resource, 
-        Plotly,
+        ExportablePlotly: ()=>import('@/components/ExportablePlotly'),
 
         newtaskModal, 
         datatypeselecterModal, 
@@ -683,6 +682,7 @@ export default {
                         paper_bgcolor: "#fff0",
                     };
 
+                    /*
                     let options = {
                         //until my PR gets accepted, we need to resize this ... https://github.com/statnett/vue-plotly/pull/18
                         toImageButtonOptions: {
@@ -702,11 +702,12 @@ export default {
                             },
                             click: ()=>{
                                 let plot = this.$refs.resource_usage;
-                                plot.downloadImage({format: 'svg'/*, height: plot.$el.clientHeight, width: plot.$el.clientWidth*/});
+                                plot.downloadImage({format: 'svg'});
                             }
                         }],
                     }
-                    this.resource_usage = {options, data, layout};
+                    */
+                    this.resource_usage = {data, layout};
                 });
             }
         },

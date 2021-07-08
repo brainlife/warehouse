@@ -28,10 +28,12 @@ import Vue from 'vue'
 
 import product from '@/components/product'
 
+const lib = require('@/lib');
+
 export default {
     components: { 
         product,
-        editor: require('vue2-ace-editor'),
+        editor: ()=>import('vue2-ace-editor'),
     },
     data() {
         return {
@@ -49,9 +51,7 @@ export default {
 
     methods: {
         editorInit(editor) {
-            require('brace/mode/json')
-            editor.container.style.lineHeight = 1.25;
-            editor.renderer.updateFontSize();
+            lib.editorInit(editor);
         },
         
         updateProduct() {

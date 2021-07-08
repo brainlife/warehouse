@@ -111,7 +111,7 @@
                         </b-col>
                         <b-col>
                             <p>
-                                <Plotly v-if="usage_data" :data="usage_data" :layout="usage_layout" style="background-color: #fff;"/>
+                                <ExportablePlotly v-if="usage_data" :data="usage_data" :layout="usage_layout"/>
                             </p>
                         </b-col>
                     </b-row>
@@ -286,7 +286,7 @@ import Vue from 'vue'
 import Router from 'vue-router'
 
 //import Plotly from '@statnett/vue-plotly'
-import {Plotly} from 'vue-plotly'
+//import {Plotly} from 'vue-plotly'
 
 import pageheader from '@/components/pageheader'
 import group from '@/components/group'
@@ -304,7 +304,7 @@ export default {
         group, 
         statustag, 
         stateprogress, 
-        Plotly,
+        ExportablePlotly: ()=>import('@/components/ExportablePlotly'),
         taskRecord, 
 
         editor: require('vue2-ace-editor'),
@@ -429,7 +429,7 @@ export default {
                             color: 'gray',
                         },
                     },
-                    font: Vue.config.plotly.font,
+                    //font: Vue.config.plotly.font,
                     plot_bgcolor: "#fff0",
                     paper_bgcolor: "#fff0",
                 };

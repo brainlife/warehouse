@@ -14,13 +14,8 @@
     <b-tabs class="brainlife-tab" v-model="tab" v-if="shouldShowTab">
         <b-tab v-for="(p, $idx) in plots" :title="p.name||$idx" :key="$idx">
             <p v-if="p.desc" style="background-color: white; padding: 5px 10px; margin: 0;"><small>{{p.desc}}</small></p>
-            <Plotly v-if="tab == $idx && p.data" :data="p.data" :layout="p.layout" :options="p.options" ref="plotrefs" :autoResize="true" :watchShallow="true"/>
+            <ExportablePlotly v-if="tab == $idx && p.data" :data="p.data" :layout="p.layout"/>
         </b-tab>
-        <!-- product.json is now just used to pass small info back to ui
-        <b-tab title="product.json" v-if="others">
-            <editor v-model="others" @init="editorInit" lang="json"></editor>
-        </b-tab>
-        -->
         <b-tab v-for="(p, $idx) in images" :title="p.name||$idx" :key="$idx">
             <p v-if="p.desc"><small>{{p.desc}}</small></p>
             <a :download="'image.'+p.type.split('/')[1]" :href="'data:'+p.type+';base64,'+p.base64">
@@ -35,17 +30,16 @@
 
 import Vue from 'vue'
 
-//import Plotly from '@statnett/vue-plotly' //doesn't work with 3d
-import { Plotly } from 'vue-plotly'
-
 const alert_types = ["error", "info", "danger", "warning", "success"];
 
 export default {
     props: ['product', 'skipFollow'],
 
     components: {
-        Plotly,
-        editor: require('vue2-ace-editor'), 
+        //import Plotly from '@statnett/vue-plotly' //doesn't work with 3d
+        //Plotly: ()=>import('vue-plotly').then(m=>m.Plotly) //ugly..?
+        ExportablePlotly: ()=>import('@/components/ExportablePlotly')
+        //editor: ()=>import('vue2-ace-editor'), 
     },
 
     data() {
@@ -66,18 +60,21 @@ export default {
             delete all.brainlife;
             return all;
         },
+
         alerts() {
             if(!this.product.brainlife) return [];
             let items = this.product.brainlife.filter(p=>alert_types.includes(p.type)); 
             if(this.skipFollow) items = this.filterFollow(items);
             return items;
         },
+
         plots() {
             if(!this.product.brainlife) return [];
             let items = this.product.brainlife.filter(p=>p.type == 'plotly');
             if(this.skipFollow) items = this.filterFollow(items);
             return items;
         },
+        
         images() {
             if(!this.product.brainlife) return [];
             let items = this.product.brainlife.filter(p=>p.type.startsWith('image/'));
@@ -99,23 +96,8 @@ export default {
             return items.filter(item=>!Boolean(item._follow));
         },
 
-        editorInit(editor) {
-            require('brace/mode/json')
-
-            editor.container.style.lineHeight = 1.25;
-            editor.renderer.updateFontSize();
-            editor.setReadOnly(true);  // false to make it editable
-
-            editor.setAutoScrollEditorIntoView(true);
-            editor.setOption("maxLines", 30);
-            editor.setOption("minLines", 3);
-            //editor.setShowPrintMargin(true);
-        },
-
         updateData() {
             if(!this.product) return;
-
-            //console.log("updateData - component/product");
 
             //list "other" graphs
             let others = Object.assign({}, this.product);
@@ -130,6 +112,7 @@ export default {
                     if(p.type != 'plotly') return;
                     if(p._svg_added) return;
                     p._svg_added = true;
+                    /*
                     if(!p.options) p.options = {};
                     p.options.modeBarButtonsToAdd = [];
 
@@ -156,19 +139,22 @@ export default {
                     });
                     if(!p.layout) p.layout = {};
                     p.layout.font = Vue.config.plotly.font;
+                    */
                 });
             }
         },
     },
 
     watch: {
+        /*
         tab() {
             this.$nextTick(()=>{
                 if(!this.$refs.plotrefs) return; //console.log("plotrefs not set (yet?)");
-                let p = this.$refs.plotrefs[this.tab];
+                //let p = this.$refs.plotrefs[this.tab];
                 //if(p) p.newPlot(); //this causes it to be resized
             });
         },
+        */
 
         product(nv, ov) {
             this.updateData();

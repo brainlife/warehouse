@@ -33,15 +33,6 @@
             :task="task" :output_id="output_id" :datatype_tags="datatype_tags" :product="product"/>
         <parcstats v-else-if="datatype_id == '5edd3b77c5972b8c47b3a2c3'" 
             :task="task" :output_id="output_id" :product="product"/>
-
-        <!--
-        <div v-else>
-            <b-alert show variant="secondary">
-                No secondary data UI registered for {{output.datatype}}<br>
-                <pre>{{output}}</pre>
-            </b-alert>
-        </div>
-        -->
     </div>
 </div>
 </template>

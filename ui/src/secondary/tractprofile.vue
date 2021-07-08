@@ -39,7 +39,7 @@
             <b-row v-if="plots[o.path]" no-gutters>
                 <b-col v-for="column_name in shownColumns" :key="column_name" v-if="">
                     <div v-if="plots[o.path][column_name]">
-                        <Plotly :data="plots[o.path][column_name].data" :layout="plots[o.path][column_name].layout" :autoResize="true" @hover="hover"/>
+                        <ExportablePlotly :data="plots[o.path][column_name].data" :layout="plots[o.path][column_name].layout" @hover="hover"/>
                     </div>
                     <span v-else>No {{column_name}}</span>
                 </b-col>
@@ -54,13 +54,10 @@
 import Vue from 'vue'
 import axios from 'axios'
 
-//import Plotly from '@statnett/vue-plotly'
-import { Plotly } from 'vue-plotly'
-
 export default {
-    props: ['task', 'output', 'product'],
+    props: ['task', 'output_id', 'product'],
     components: {
-        Plotly
+        ExportablePlotly: ()=>import('@/components/ExportablePlotly'),
     },
     data() {
         return {
@@ -203,7 +200,7 @@ export default {
         },
 
         showHideTract(show, o) {
-            console.log("showdhide", o.path);
+            //console.log("showdhide", o.path);
             if(show) {
                 if(this.plots[o.path] == null) {
                     this.loadCSV(o.path);
@@ -212,9 +209,9 @@ export default {
         },
 
         loadCSV(path) {
-            console.log("loading", path);
+            console.log("loading", this.output_id);
             Vue.set(this.plots, path, {});
-            this.$http.get('secondary/'+this.task._id+'/'+this.output.id+'/secondary/profiles/'+path, {responseType: 'text'}).then(res=>{
+            this.$http.get('secondary/'+this.task._id+'/'+this.output_id+'/secondary/profiles/'+path, {responseType: 'text'}).then(res=>{
                 this.plots[path] = this.createPlot(res.data);
             });
         },

@@ -141,16 +141,16 @@
                
                     <!-- without watchShallow, vue-plotly will go infinite loop with layout watch event and locks up the browser-->
                     <div v-if="smon.cpu.data">
-                        <Plotly :data="smon.cpu.data" :layout="smon.cpu.layout" :autoResize="true" :watchShallow="true"/>
+                        <ExportablePlotly :data="smon.cpu.data" :layout="smon.cpu.layout" :watchShallow="true"/>
                     </div>
                     <div v-if="smon.memory_rss.data">
-                        <Plotly :data="smon.memory_rss.data" :layout="smon.memory_rss.layout" :autoResize="true" :watchShallow="true"/>
+                        <ExportablePlotly :data="smon.memory_rss.data" :layout="smon.memory_rss.layout" :watchShallow="true"/>
                     </div>
                     <div v-if="smon.memory_vsz.data">
-                        <Plotly :data="smon.memory_vsz.data" :layout="smon.memory_vsz.layout" :autoResize="true" :watchShallow="true"/>
+                        <ExportablePlotly :data="smon.memory_vsz.data" :layout="smon.memory_vsz.layout" :watchShallow="true"/>
                     </div>
                     <div v-if="smon.disk.data">
-                        <Plotly :data="smon.disk.data" :layout="smon.disk.layout" :autoResize="true" :watchShallow="true"/>
+                        <ExportablePlotly :data="smon.disk.data" :layout="smon.disk.layout" :watchShallow="true"/>
                     </div>
                     <br>
 
@@ -173,24 +173,19 @@
 <script>
 import Vue from 'vue'
 
-import app from '@/components/app'
-import datatypetag from '@/components/datatypetag'
-import configform from '@/components/configform'
-import advanced from '@/components/appadvanced'
-import tageditor from '@/components/tageditor'
-
-import contact from '@/components/contact'
-import VueMarkdown from 'vue-markdown'
-
-//import Plotly from '@statnett/vue-plotly'
-import { Plotly } from 'vue-plotly'
-  
-const lib = require('../lib');
-
 export default {
     components: { 
-        app, datatypetag, configform, advanced, tageditor, contact, VueMarkdown, Plotly,
-        editor: require('vue2-ace-editor'), 
+        app: ()=>import('@/components/app'), 
+        datatypetag: ()=>import('@/components/datatypetag'), 
+        configform: ()=>import('@/components/configform'), 
+        //appdvanced: ()=>import('@/components/appadvanced'), 
+        tageditor: ()=>import('@/components/tageditor'), 
+        contact: ()=>import('@/components/contact'), 
+        ExportablePlotly: ()=>import('@/components/ExportablePlotly'),
+
+        VueMarkdown: ()=>import('vue-markdown'), 
+
+        editor: ()=>import('vue2-ace-editor'), 
     },
 
     data() {
