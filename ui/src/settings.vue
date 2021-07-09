@@ -195,11 +195,9 @@
                             <b-form-input id="inputCurrentPassword" v-model="form.currentPassword" type="password" required/>
                         </b-form-group>
                         <b-form-group id="newPassword" label="New Password" label-for="inputNewPassword">
-                            <b-form-input id="inputNewPassword" :state="validatePass" v-model="form.newPassword" type="password" aria-describedby="password-help-block" required/>
+                            <b-form-input id="inputNewPassword" v-model="form.newPassword" type="password" aria-describedby="password-help-block" required/>
+                            <password v-model="form.newPassword" :strength-meter-only="true"/>
                         </b-form-group>
-                        <b-form-invalid-feedback :state="validatePass">
-                        Your password must be 8-20 characters long, contain letters, numbers and special characters, and must not
-                        contain spaces or emoji.                        </b-form-invalid-feedback>
                         <b-form-group id="repeatPassword" label="Re-enter New Password" label-for="inputrepeatPassword">
                             <b-form-input id="inputrepeatPassword" v-model="form.repeatPassword" :state="validaterepeatPass" type="password" required/>
                         </b-form-group>
@@ -269,12 +267,13 @@
 import Vue from 'vue'
 import pageheader from '@/components/pageheader'
 import statustag from '@/components/statustag'
+import Password from 'vue-password-strength-meter'
 
 const lib = require('@/lib'); //for avatar_url
 
 export default {
     components: { 
-        pageheader, statustag,
+        pageheader, statustag, Password
     },
 
     data () {
@@ -348,7 +347,7 @@ export default {
         },
         changePassword(e) {
             e.preventDefault()
-            if(!this.validaterepeatPass || !this.validatePass) return;
+            if(!this.validaterepeatPass) return;
             this.$http.put(Vue.config.auth_api+"/local/setpass",{
                 password_old : this.form.currentPassword,
                 password: this.form.newPassword
@@ -373,11 +372,6 @@ export default {
             if(!this.form.repeatPassword || !this.form.newPassword) return;
             return this.form.repeatPassword == this.form.newPassword;
         },
-        validatePass() {
-            const regPattern = new RegExp("^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[-+_!@#$%^&*.,?]).+$");
-            if(!this.form.newPassword) return;
-            return this.form.newPassword.length > 8 && this.form.newPassword.length < 20 && regPattern.test(this.form.newPassword);
-        }
     }
 }
 </script>
@@ -402,6 +396,9 @@ export default {
 h5 {
     margin-bottom: 20px;
     opacity: 0.7;
+}
+.Password {
+    max-width: 100% !important;
 }
 </style>
 
