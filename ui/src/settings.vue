@@ -267,13 +267,13 @@
 import Vue from 'vue'
 import pageheader from '@/components/pageheader'
 import statustag from '@/components/statustag'
-import Password from 'vue-password-strength-meter'
 
 const lib = require('@/lib'); //for avatar_url
 
 export default {
     components: { 
-        pageheader, statustag, Password
+        pageheader, statustag,
+        Password: ()=>import('vue-password-strength-meter'), 
     },
 
     data () {
@@ -398,7 +398,7 @@ h5 {
     opacity: 0.7;
 }
 .Password {
-    max-width: 100% !important;
+    max-width: 100% ;
 }
 </style>
 
