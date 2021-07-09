@@ -191,15 +191,15 @@
                     <h5>Change Password</h5>     
                     <hr>           
                     <b-form @submit="changePassword" v-if="config.debug">
-                        <b-form-group id="currentPassword" label="Current Password" label-for="inputCurrentPassword">
-                            <b-form-input id="inputCurrentPassword" v-model="form.currentPassword" type="password" required/>
+                        <b-form-group label="Current Password">
+                            <b-form-input v-model="form.currentPassword" type="password" required/>
                         </b-form-group>
-                        <b-form-group id="newPassword" label="New Password" label-for="inputNewPassword">
-                            <b-form-input id="inputNewPassword" v-model="form.newPassword" type="password" aria-describedby="password-help-block" required/>
+                        <b-form-group label="New Password">
+                            <b-form-input v-model="form.newPassword" type="password" required/>
                             <password v-model="form.newPassword" :strength-meter-only="true"/>
                         </b-form-group>
-                        <b-form-group id="repeatPassword" label="Re-enter New Password" label-for="inputrepeatPassword">
-                            <b-form-input id="inputrepeatPassword" v-model="form.repeatPassword" :state="validaterepeatPass" type="password" required/>
+                        <b-form-group label="Re-enter New Password">
+                            <b-form-input v-model="form.repeatPassword" :state="validaterepeatPass" type="password" required/>
                         </b-form-group>
                         <b-form-invalid-feedback :state="validaterepeatPass">
                             Passwords do not match
