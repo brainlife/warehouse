@@ -228,7 +228,9 @@
                         </b-form-group>
                         <b-form-group label="New Password">
                             <b-form-input v-model="form.newPassword" type="password" required/>
-                            <password v-model="form.newPassword" :strength-meter-only="true"/>
+                            <password v-model="form.newPassword" :strength-meter-only="true" @feedback="updatePasswordFeedback"/>
+                            <b-alert show v-for="(msg, idx) in passwordSuggestions" variant="secondary" :key="idx">{{msg}}</b-alert>
+                            <b-alert :show="!!passwordWarning" variant="danger">{{passwordWarning}}</b-alert>
                         </b-form-group>
                         <b-form-group label="Re-enter New Password">
                             <b-form-input v-model="form.repeatPassword" :state="validaterepeatPass" type="password" required/>
@@ -237,7 +239,7 @@
                             Passwords do not match
                         </b-form-invalid-feedback>
                         <br>
-                        <b-button type="submit" variant="primary">Submit</b-button>                           
+                        <b-button type="submit" variant="primary" v-if="validaterepeatPass">Update</b-button>                           
                     </b-form>
                 </b-container>
                 <br>
@@ -305,7 +307,7 @@ const lib = require('@/lib'); //for avatar_url
 export default {
     components: { 
         pageheader, statustag,
-        Password: ()=>import('vue-password-strength-meter'), 
+        password: ()=>import('vue-password-strength-meter'), 
     },
 
     data () {
@@ -315,11 +317,14 @@ export default {
             ready: false,
 
             fullname: "",
-            form : {
-                currentPassword : "",
-                newPassword : "",
-                repeatPassword : "",
+            form: {
+                currentPassword: "",
+                newPassword: "",
+                repeatPassword: "",
             },
+            passwordSuggestions: [],
+            passwordWarning: [],
+            
             profile: {
                 public: {
                     institution: "",
@@ -363,7 +368,6 @@ export default {
     mounted() {
         this.$http.get(Vue.config.auth_api+"/profile").then(res=>{
             this.fullname = res.data.fullname;
-            //if(res.data.profile) Object.assign(this.profile, res.data.profile);
             if(res.data.profile) lib.mergeDeep(this.profile, res.data.profile);
             this.ready = true;
         })
@@ -385,23 +389,20 @@ export default {
         changePassword(e) {
             e.preventDefault()
             if(!this.validaterepeatPass) return;
-            this.$http.put(Vue.config.auth_api+"/local/setpass",{
-                password_old : this.form.currentPassword,
+            this.$http.put(Vue.config.auth_api+"/local/setpass", {
+                password_old: this.form.currentPassword,
                 password: this.form.newPassword
             }).then(res=>{
-                this.$bvToast.toast('Successfully Updated Password',{
-                    variant : "success",
-                    solid : true
-                });
-                this.$router.push(Vue.config.auth_signout);
+                this.$notify('Successfully Updated Password');
             }).catch(err=>{
-                this.$bvToast.toast('Error in updating password',{
-                    variant : "danger",
-                    solid : true
-                });
-                console.error(err);
+                console.error(err.response);
+                this.$notify({type: "error", text: err.response.data.message});
             });
-        }
+        },
+        updatePasswordFeedback(feedback) {
+            this.passwordSuggestions = feedback.suggestions;
+            this.passwordWarning = feedback.warning;
+        },
     },
 
     computed : {
@@ -433,9 +434,6 @@ export default {
 h5 {
     margin-bottom: 20px;
     opacity: 0.7;
-}
-.Password {
-    max-width: 100% ;
 }
 </style>
 
