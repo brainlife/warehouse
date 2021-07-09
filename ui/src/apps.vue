@@ -121,23 +121,6 @@ export default {
     },
 
     created() {
-        /*
-        //load datatypes first.. then load apps
-        this.$http.get('datatype', {params: {select: "_id name -uis"}}).then(res=>{
-            console.log("loaded datatypes");
-            console.dir(res.data);
-            this.datatypes = {};
-            res.data.datatypes.forEach((d)=>{
-                this.datatypes[d._id] = d;
-            });
-
-            this.query = sessionStorage.getItem("apps.query")||"";
-            this.show_dep = (localStorage.getItem("apps.show_dep") == "true");
-            this.load();
-        }).catch(err=>{
-            console.error(err);
-        });
-        */
         this.query = sessionStorage.getItem("apps.query")||"";
         this.show_dep = (localStorage.getItem("apps.show_dep") == "true");
         this.load();

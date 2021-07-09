@@ -232,7 +232,6 @@ export default {
             //add "this data" first (to claim the default blue color!)
             let x = [];
             let y = [];
-            console.dir(this.data);
             this.data.forEach(rec=>{
                 const id = rec.TractName || rec.structureID;
                 if(id && !this.structures.includes(id)) return;
