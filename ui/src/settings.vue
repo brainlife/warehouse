@@ -219,6 +219,28 @@
 
             <!--account-->
             <div v-if="tab == 1">
+                <b-container>
+                    <h5>Change Password</h5>     
+                    <hr>           
+                    <b-form @submit="changePassword" v-if="config.debug">
+                        <b-form-group label="Current Password">
+                            <b-form-input v-model="form.currentPassword" type="password" required/>
+                        </b-form-group>
+                        <b-form-group label="New Password">
+                            <b-form-input v-model="form.newPassword" type="password" required/>
+                            <password v-model="form.newPassword" :strength-meter-only="true"/>
+                        </b-form-group>
+                        <b-form-group label="Re-enter New Password">
+                            <b-form-input v-model="form.repeatPassword" :state="validaterepeatPass" type="password" required/>
+                        </b-form-group>
+                        <b-form-invalid-feedback :state="validaterepeatPass">
+                            Passwords do not match
+                        </b-form-invalid-feedback>
+                        <br>
+                        <b-button type="submit" variant="primary">Submit</b-button>                           
+                    </b-form>
+                </b-container>
+                <br>
                 Please visit the legacy <a href="/auth/#!/settings/account" target="_blank">Account Settings</a> page for more account settings.
             </div>
 
@@ -283,6 +305,7 @@ const lib = require('@/lib'); //for avatar_url
 export default {
     components: { 
         pageheader, statustag,
+        Password: ()=>import('vue-password-strength-meter'), 
     },
 
     data () {
@@ -292,6 +315,11 @@ export default {
             ready: false,
 
             fullname: "",
+            form : {
+                currentPassword : "",
+                newPassword : "",
+                repeatPassword : "",
+            },
             profile: {
                 public: {
                     institution: "",
@@ -354,7 +382,34 @@ export default {
                 this.$router.push("/projects");
             });            
         },
+        changePassword(e) {
+            e.preventDefault()
+            if(!this.validaterepeatPass) return;
+            this.$http.put(Vue.config.auth_api+"/local/setpass",{
+                password_old : this.form.currentPassword,
+                password: this.form.newPassword
+            }).then(res=>{
+                this.$bvToast.toast('Successfully Updated Password',{
+                    variant : "success",
+                    solid : true
+                });
+                this.$router.push(Vue.config.auth_signout);
+            }).catch(err=>{
+                this.$bvToast.toast('Error in updating password',{
+                    variant : "danger",
+                    solid : true
+                });
+                console.error(err);
+            });
+        }
     },
+
+    computed : {
+        validaterepeatPass() {
+            if(!this.form.repeatPassword || !this.form.newPassword) return;
+            return this.form.repeatPassword == this.form.newPassword;
+        },
+    }
 }
 </script>
 
@@ -378,6 +433,9 @@ export default {
 h5 {
     margin-bottom: 20px;
     opacity: 0.7;
+}
+.Password {
+    max-width: 100% ;
 }
 </style>
 
