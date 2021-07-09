@@ -124,6 +124,16 @@
                                     {{smon.info.walltime_requested/3600}} hours
                                 </td>
                             </tr>
+                            <tr v-if="smon.info.gpus">
+                                <th>GPUs</th>
+                                <td>
+                                    <p v-for="gpu in smon.info.gpus" :key="gpu.index">
+                                        <small title="bus_id">{{gpu.bus_id}}</small><br>
+                                        {{gpu.name}} | driver: {{gpu.driver_version}}<br>
+                                        Memory: {{gpu['memory.total']}} | Mode: {{gpu.compute_mode}}<br>
+                                    </p>
+                                </td>
+                            </tr>
                             </table>
                         </b-col>
                     </b-row>
@@ -201,6 +211,7 @@ export default {
                     data: null,
                     layout: null,
                 },
+
                 cpu: {
                     data: null,
                     layout: null,
@@ -226,7 +237,7 @@ export default {
             this.task = opt.task;
             this.resource = opt.resource;
             this.open = true;
-            this.load_smon();
+            this.loadSmon();
             this.taskConfigJson = JSON.stringify(this.task.config, null, 4);
         });
         //TODO - call removeEventListener in destroy()? Or I should do this everytime modal is shown/hidden?
@@ -254,7 +265,7 @@ export default {
             editor.setShowPrintMargin(true);
         },
 
-        load_smon() {
+        loadSmon() {
             this.loading = true;
             this.smon.info = null;
             this.$http.get(Vue.config.amaretti_api+'/task/download/'+this.task._id+'/_smon.out', {
@@ -264,7 +275,6 @@ export default {
                     return res;
                 },
             }).then(res=>{
-                //console.dir(res);
                 let records = res.data.split("\n");
 
                 //first record should be host/job info
@@ -296,11 +306,18 @@ export default {
                     line: {width: 0},
                     fill: 'tozeroy'
                 }; 
+
                 let pcpus = {};
+
                 let memory_rss = {};
                 let memory_vsz = {};
+
+                let gpus_gpu = {};
+                let gpus_memory = {};
+                let gpus_temp = {};
+
+                //first organize data into different groups
                 records.forEach(record_json=>{
-                    //console.log(record_json);
                     if(record_json == "") return;
                     try {
                         let record = JSON.parse(record_json);
@@ -330,12 +347,30 @@ export default {
                             memory_vsz[p.pid].x.push(time);
                             memory_vsz[p.pid].y.push((p.vsz*1024)/(1000*1000*1000)); //convert kiloBytes to GB
                         });
+
+                        //deal with gpu info
+                        if(record.gpus) record.gpus.forEach(g=>{
+                            if(!gpus_gpu[g.index]) {
+                                gpus_gpu[g.index] = {x: [], y: [], name: g.name, mode: 'lines', yaxis: "y2"}
+                                gpus_memory[g.index] = {x: [], y: [], name: g.name, mode: 'lines', yaxis: "y2"}
+                                gpus_temp[g.index] = {x: [], y: [], name: g.name+" temperature"}
+                            }
+                            gpus_gpu[g.index].x.push(time);
+                            gpus_memory[g.index].x.push(time);
+                            gpus_temp[g.index].x.push(time);
+
+                            gpus_gpu[g.index].y.push(g['utilization.gpu']);
+                            gpus_memory[g.index].y.push(g['utilization.memory']);
+                            gpus_temp[g.index].y.push(g['temperature.gpu']);
+                        });
                     } catch(err) {
                         //parse error?
                         console.log(record_json);
                         console.error(err);
                     }
                 });
+
+                //then construct plotly data/layout
                 this.smon.disk.data = [disk];
                 this.smon.disk.layout = {
                     title: "Disk Usage",
@@ -376,7 +411,7 @@ export default {
                     },
                     yaxis: {
                         title: 'CPU%',
-                        overlaying: "y",
+                        //overlaying: "y",
                         //side: "right",
                         //type: 'log',
                     },
@@ -385,13 +420,11 @@ export default {
                         font: {
                             family: 'sans-serif',
                             size: 10,
-                        }
+                        },
+                        x: 1.1,
                     },
                     height: 400,
                     margin: {
-                        //l: 50, 
-                        //r: 10, 
-                        //b: 80,
                         t: 25,
                     },
                     shapes: [
@@ -430,7 +463,7 @@ export default {
                     },
                     yaxis: {
                         title: 'GB',
-                        overlaying: "y",
+                        //overlaying: "y",
                         //side: "right",
                         //type: 'log',
                     },
@@ -441,12 +474,10 @@ export default {
                           family: 'sans-serif',
                           size: 10,
                         },
+                        x: 1.1,
                     },
                     height: 400,
                     margin: {
-                        //l: 50, 
-                        //r: 10, 
-                        //b: 80,
                         t: 25,
                     },
                     shapes: [
@@ -469,6 +500,37 @@ export default {
                 this.smon.memory_vsz.layout = Object.assign({}, this.smon.memory_rss.layout, {
                     title: "Virtual Memory Usage (VSZ)",
                 });
+
+                if(this.smon.info.gpus) {
+                    for(let id in gpus_gpu) {
+                        this.smon.cpu.data.unshift(gpus_gpu[id]);
+                        this.smon.memory_rss.data.unshift(gpus_memory[id]);
+                        //this.smon.gpu.data.push(gpus_temp[id]);
+                    }
+
+                    //add another axis
+                    Object.assign(this.smon.cpu.layout, {
+                        title: "CPU (ps/pcpu) & GPU (nvidia-smi) Usage",
+                        yaxis2: {
+                            title: 'GPU%',
+                            overlaying: 'y',
+                            side: 'right',
+                            //position: 0.90,
+                            range: [0, 100],
+                        },
+                    });
+                    //add another axis
+                    Object.assign(this.smon.memory_rss.layout, {
+                        yaxis2: {
+                            title: 'GPU%',
+                            //anchor: 'x',
+                            overlaying: 'y',
+                            side: 'right',
+                            //position: 0.90,
+                            range: [0, 100],
+                        },
+                    });
+                }
 
                 this.loading = false;
             }).catch(err=>{
