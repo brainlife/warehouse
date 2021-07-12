@@ -59,9 +59,15 @@
         </b-tab>
         <b-tab title="Analytics">
             <br>
-            <div style="margin: 0 15px">
+            <div style="margin: 0 15px" v-if="posCountData">
+                <span class="form-header">User Categories</span>
                 <small>This plot show groups of user private profile position for each users.</small>
-                <ExportablePlotly v-if="posCountData" :data="posCountData" :layout="posCountLayout"/>
+                <ExportablePlotly :data="posCountData" :layout="posCountLayout"/>
+            </div>
+            <div style="margin: 0 15px" v-if="appItems">
+                <span class="form-header">App Usage</span>
+                <small>Most Used Apps</small>
+                <b-table :small="true" :items="appItems" :fields="appFields"></b-table>
             </div>
         </b-tab>
     </b-tabs>
@@ -71,10 +77,13 @@
 <script>
 import Vue from 'vue'
 
+
 import task from '@/components/task'
 
 import ReconnectingWebSocket from 'reconnectingwebsocket'
 //import { Plotly } from 'vue-plotly'
+
+const numeral = require('numeral');
 
 export default {
     components: { 
@@ -97,7 +106,19 @@ export default {
             tab: 0,
 
             posCountData: null, 
-            posCountLayout : {"title" : "User Categories"}
+            posCountLayout : {
+                //"title" : "User Categories"
+            },
+
+            appItems: null,
+            appFields: [
+                { key: "name", label: "App Name", sortable: true },
+                { key: "requested", label: "Execution Count", sortable: true },
+                { key: "runtimeMean", label: "Avg. Walltime (min)", sortable: true },
+                { key: "successRate", label: "Success Rate(%)", sortable: true },
+                { key: "users", label: "Users", sortable: true },
+                { key: "resourcesCount", label: "Resources", sortable: true },
+            ],
         }
     },
 
@@ -106,21 +127,45 @@ export default {
 
     watch: {
         tab(v) {
-            if(v == 2) { //analytics tab
-                if(this.posCountData) return;
-                this.$http.get(Vue.config.auth_api+'/profile/poscount').then(res=>{
-                    let trace = {
-                        values: Object.values(res.data), 
-                        labels: Object.keys(res.data),  
-                        type: "pie"
-                    };
-                    this.posCountData = [trace];
-                });
+            //analytics tab
+            if(v == 2) { 
+                if(!this.posCountData) this.loadAnalytics();
             }
         }
     },
 
     methods: {
+        loadAnalytics() {
+            console.log("loading analytics info");
+
+            this.$http.get(Vue.config.auth_api+'/profile/poscount').then(res=>{
+                let trace = {
+                    values: Object.values(res.data), 
+                    labels: Object.keys(res.data),  
+                    type: "pie"
+                };
+                this.posCountData = [trace];
+            });
+
+            this.$http.get('/app', {
+                params: {
+                    select: 'name stats',
+                }
+            }).then(res=>{
+                this.appItems = [];
+                res.data.apps.forEach(app=>{
+                    if(!app.stats) return;
+                    this.appItems.push({
+                       name: app.name,
+                       requested: app.stats.requested,
+                       runtimeMean: numeral(app.stats.runtime_mean/(1000*60)).format('0,0'),
+                       successRate: numeral(app.stats.success_rate).format('00.0'),
+                       users: app.stats.users,
+                       resourcesCount: app.stats.resources.length,
+                    });
+                });
+            });
+        },
 
         get_sulist(search, loading) {
             loading(true);

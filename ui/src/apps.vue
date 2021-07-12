@@ -101,7 +101,6 @@ import app from '@/components/app'
 import PerfectScrollbar from 'perfect-scrollbar'
 
 let query_debounce;
-var ps;
 
 export default {
     components: { app },
@@ -209,7 +208,7 @@ export default {
                     }
                     this.handle_scroll();
                     let grouplist = this.$refs["group-list"];
-                    ps = new PerfectScrollbar(grouplist);
+                    new PerfectScrollbar(grouplist);
                     grouplist.scrollTop = 0;
                 });
             }, res=>{
