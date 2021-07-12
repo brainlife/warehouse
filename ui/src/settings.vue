@@ -222,14 +222,14 @@
                 <b-container>
                     <h5>Change Password</h5>     
                     <hr>           
-                    <b-form @submit="changePassword" v-if="config.debug">
+                    <b-form @submit="changePassword">
                         <b-form-group label="Current Password">
                             <b-form-input v-model="form.currentPassword" type="password" required/>
                         </b-form-group>
                         <b-form-group label="New Password">
                             <b-form-input v-model="form.newPassword" type="password" required/>
                             <password v-model="form.newPassword" :strength-meter-only="true" @feedback="updatePasswordFeedback"/>
-                            <b-alert show v-for="(msg, idx) in passwordSuggestions" variant="secondary" :key="idx">{{msg}}</b-alert>
+                            <b-alert v-for="(msg, idx) in passwordSuggestions" variant="secondary" :key="idx">{{msg}}</b-alert>
                             <b-alert :show="!!passwordWarning" variant="danger">{{passwordWarning}}</b-alert>
                         </b-form-group>
                         <b-form-group label="Re-enter New Password">
@@ -323,7 +323,7 @@ export default {
                 repeatPassword: "",
             },
             passwordSuggestions: [],
-            passwordWarning: [],
+            passwordWarning: "" ,
             
             profile: {
                 public: {
