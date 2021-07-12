@@ -113,6 +113,7 @@ export default {
             appItems: null,
             appFields: [
                 { key: "name", label: "App Name", sortable: true },
+                { key: "doi", label: "DOI", sortable: true },
                 { key: "requested", label: "Execution Count", sortable: true },
                 { key: "runtimeMean", label: "Avg. Walltime (min)", sortable: true },
                 { key: "successRate", label: "Success Rate(%)", sortable: true },
@@ -149,14 +150,17 @@ export default {
 
             this.$http.get('/app', {
                 params: {
-                    select: 'name stats',
+                    //find: JSON.stringify({removed: false}),
+                    select: 'name stats removed doi',
                 }
             }).then(res=>{
                 this.appItems = [];
                 res.data.apps.forEach(app=>{
                     if(!app.stats) return;
+                    if(!app.stats.resources) app.stats.resources = [];
                     this.appItems.push({
-                       name: app.name,
+                       name: app.name+(app.removed?' (removed)':''),
+                       doi: app.doi,
                        requested: app.stats.requested,
                        runtimeMean: numeral(app.stats.runtime_mean/(1000*60)).format('0,0'),
                        successRate: numeral(app.stats.success_rate).format('00.0'),
