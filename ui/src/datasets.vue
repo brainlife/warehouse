@@ -325,7 +325,6 @@ export default {
             this.datasets = [];
 
             let find = { removed: false };
-            if(this.query) find["$text"] = {$search: this.query};
                 //TODO - mongo text search is handy, but it's very limited.
                 //for example, it doesn't allow partial search. like "btc" doesn't find "BTC_postop".
                 //we might want to switch to constructing a query much like project/archive search            
@@ -354,7 +353,14 @@ export default {
 
                 if(this.query) {
                     let tokens = this.query.toLowerCase().split(" ");
-                    this.filtered = this.datasets.filter(dataset=>tokens.every(token=>dataset.path.includes(token)));
+                    if(tokens.some(token=>!isNaN(token))) {
+                        this.datasets = this.datasets.filter(dataset=>{
+                            if(/[1-9]/.test(dataset.path.toString())) {
+                                console.log(dataset.path);
+                                if(tokens.some(token=>dataset.path.substring(dataset.path.match(/[1-9]/).index) == token)) return dataset;
+                            }
+                        });
+                    }
                 }
                 
                 //scroll list to the selected element
