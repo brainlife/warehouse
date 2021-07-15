@@ -356,7 +356,6 @@ export default {
                     if(tokens.some(token=>!isNaN(token))) {
                         this.datasets = this.datasets.filter(dataset=>{
                             if(/[1-9]/.test(dataset.path.toString())) {
-                                console.log(dataset.path);
                                 if(tokens.some(token=>dataset.path.substring(dataset.path.match(/[1-9]/).index) == token)) return dataset;
                             }
                         });
