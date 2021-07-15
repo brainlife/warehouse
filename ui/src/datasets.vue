@@ -358,7 +358,7 @@ export default {
                             dataset.dataset_description.Name,
                             dataset.path,
                             dataset.dataset_description.DatasetDOI,
-                        ]
+                        ];
                         const text = stuff.filter(thing=>!!thing).join(" ").toLowerCase();
                         return tokens.every(token=>text.includes(token));
                     });

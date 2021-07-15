@@ -155,7 +155,7 @@ export default {
             this.applyFilter();
         },
 
-        applyFilter(){
+        applyFilter() {
             let tokens = this.query.toLowerCase().split(" ");
             this.filtered = this.datatypes.filter(datatype=>{
                 //pull all the tokens I want to search from datatype
