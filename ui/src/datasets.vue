@@ -361,9 +361,6 @@ export default {
                         ]
                         const text = stuff.filter(thing=>!!thing).join(" ").toLowerCase();
                         return tokens.every(token=>text.includes(token));
-                        // if(/[1-9]/.test(dataset.path.toString())) {
-                        //     if(tokens.some(token=>dataset.path.substring(dataset.path.match(/[1-9]/).index) == token)) return dataset;
-                        // }
                     });
                 }
                 
