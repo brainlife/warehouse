@@ -353,13 +353,18 @@ export default {
 
                 if(this.query) {
                     let tokens = this.query.toLowerCase().split(" ");
-                    if(tokens.some(token=>!isNaN(token))) {
-                        this.datasets = this.datasets.filter(dataset=>{
-                            if(/[1-9]/.test(dataset.path.toString())) {
-                                if(tokens.some(token=>dataset.path.substring(dataset.path.match(/[1-9]/).index) == token)) return dataset;
-                            }
-                        });
-                    }
+                    this.datasets = this.datasets.filter(dataset=>{
+                        let stuff = [
+                            dataset.dataset_description.Name,
+                            dataset.path,
+                            dataset.dataset_description.DatasetDOI,
+                        ]
+                        const text = stuff.filter(thing=>!!thing).join(" ").toLowerCase();
+                        return tokens.every(token=>text.includes(token));
+                        // if(/[1-9]/.test(dataset.path.toString())) {
+                        //     if(tokens.some(token=>dataset.path.substring(dataset.path.match(/[1-9]/).index) == token)) return dataset;
+                        // }
+                    });
                 }
                 
                 //scroll list to the selected element
