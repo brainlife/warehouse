@@ -421,16 +421,15 @@ exports.load_github_detail = function(service_name, cb) {
 }
 
 exports.generateQueries = async function(query, cb) {
-    let params = {
-        query,
-        //complete: 1,
-        //count: 4,
-    };
-    const headers = {
-        'Ocp-Apim-Subscription-Key': config.mag.subscriptionKey,
-        'User-Agent': 'brainlife',
-    };
-    const res = await axios.get("https://api.labs.cognitive.microsoft.com/academic/v1.0/interpret",{headers,params});
+    const res = await axios.get("https://api.labs.cognitive.microsoft.com/academic/v1.0/interpret",{
+        headers: {
+            'Ocp-Apim-Subscription-Key': config.mag.subscriptionKey,
+            'User-Agent': 'brainlife',
+        },
+        params: {
+            query,
+        }
+    });
     if(res.status != 200) return cb("failed to call mag interpret api");
     const queries = [];
     res.data.interpretations.forEach(i=>{
@@ -441,19 +440,19 @@ exports.generateQueries = async function(query, cb) {
 }
 
 exports.getRelatedPaper = function(query, cb) {
-    let params = {
-        expr: query,
-        count: 10, 
-        offset: 0, 
-        model: 'latest', 
-        attributes: 'Id,AA.AfId,AA.AfN,AA.AuId,AA.AuN,AA.DAuN,CC,CN,D,Ti,F.FId,F.FN,Y,VFN,DOI,IA',
-    }
-    const headers = {
-        'Ocp-Apim-Subscription-Key': config.mag.subscriptionKey,
-        'User-Agent': 'brainlife',
-    }
-
-    axios.get("https://api.labs.cognitive.microsoft.com/academic/v1.0/evaluate",{headers,params}).then(res=>{
+    axios.get("https://api.labs.cognitive.microsoft.com/academic/v1.0/evaluate", {
+        headers: {
+            'Ocp-Apim-Subscription-Key': config.mag.subscriptionKey,
+            'User-Agent': 'brainlife',
+        },
+        params: {
+            expr: query,
+            count: 10, 
+            offset: 0, 
+            model: 'latest', 
+            attributes: 'Id,AA.AfId,AA.AfN,AA.AuId,AA.AuN,AA.DAuN,CC,CN,D,Ti,F.FId,F.FN,Y,VFN,DOI,IA',
+        },
+    }).then(res=>{
         if(res.status != 200) return cb("failed to call mag api");
         cb(null, res.data.entities);
     });

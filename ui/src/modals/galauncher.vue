@@ -129,13 +129,18 @@ export default {
 
             templates: [
                 {
-                    name: "python/dipy", 
-                    //img: "https://kanoki.org/wp-content/uploads/2017/07/Screen-Shot-2017-07-15-at-04.59.36.png",
+                    name: "python/dipy (jupyterlab-2.1.1)", 
                     desc: "Jupyter Datascience Notebook (lab-2.1.1) with Dipy(1.3.0) and Fury",
 
                     container: "brainlife/ga-dipy:lab211-dipy130",
                     app: "soichih/ga-test",
-                    //dataset_id: "11111111", //TODO - archive ga-test?
+                },
+                {
+                    name: "python/dipy (jupyterlab-3.0.16)", 
+                    desc: "Jupyter Datascience Notebook (lab-2.1.1) with Dipy(1.3.0) and Fury",
+
+                    container: "brainlife/ga-dipy:lab3016-dipy130",
+                    app: "soichih/ga-test",
                 },
                 {
                     name: "Octave(matlab)", 
