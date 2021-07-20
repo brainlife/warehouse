@@ -8,6 +8,8 @@
                     <b-tab title="Profile"/>
                     <b-tab title="Account"/>
                     <b-tab title="Notification"/>
+                    <b-tab v-if="config.user.scopes.brainlife.includes('admin')" title="Users"/>
+                    {{config.user.scopes.brainlife}}
                 </b-tabs>
             </b-container>
         </div><!--header-->
@@ -293,11 +295,6 @@
             <div v-if="tab == 3">
                 <h5>Users</h5>
             </div>
-
-            <div v-if="tab == 3">
-                <h5>Groups</h5>
-            </div>
-
         </b-container>
         <br>
         <br>
