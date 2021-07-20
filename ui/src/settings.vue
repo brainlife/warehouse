@@ -293,10 +293,9 @@
 
             <div v-if="tab == 3">
                 <h5>Users</h5>
-                    <li v-for="user in users" :key="user._id">
-                        {{ user }}
+                    <div v-for="user in users" :key="user._id">
                         <user :user="user"/>
-                    </li>
+                    </div>
             </div>
         </b-container>
         <br>

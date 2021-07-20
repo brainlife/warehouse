@@ -9,25 +9,24 @@
             <h6>{{user.fullname}} | {{user.email}} <b-badge v-if="user.email_confirmed" variant="success">Confirmed</b-badge> <b-badge v-else variant="danger">Not Confirmed</b-badge></h6>
         
             <b-collapse v-bind:id="user._id" class="mt-2">
-                <b-card>
-                    <b-container class="bv-example-row">
+                <div>
+                    <b-container class="data-container">
                         <b-row>
                             <b-col>
-                                <h6>User Profile</h6>
+                                <b>User Profile</b>
                                 <pre>{{user.profile}}</pre>
-                                <br>
-                                <h6>Scopes</h6>
+                                <b>Scopes</b>
                                 <pre>{{user.scopes}}}</pre>
                             </b-col>
                             <b-col>
-                                <h6>Timestamps</h6>
+                                <b>Timestamps</b>
                                 <pre>{{user.times}}</pre>
-                                <h6>Ext</h6>
+                                <b>Ext</b>
                                 <pre>{{user.ext}}</pre>
                             </b-col>
                         </b-row>
                     </b-container>
-                </b-card>
+                </div>
             </b-collapse>
         </b-card>    
     </div>
@@ -45,5 +44,8 @@ export default {
 pre {
     background: #ececec;
     padding : 15px;
+}
+.data-container {
+    padding-left : 0;
 }
 </style>
