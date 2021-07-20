@@ -8,8 +8,7 @@
                     <b-tab title="Profile"/>
                     <b-tab title="Account"/>
                     <b-tab title="Notification"/>
-                    <b-tab v-if="config.user.scopes.brainlife.includes('admin')" title="Users"/>
-                    {{config.user.scopes.brainlife}}
+                    <b-tab v-if="config.user.scopes.auth.includes('admin')" title="Users"/>
                 </b-tabs>
             </b-container>
         </div><!--header-->
@@ -408,6 +407,14 @@ export default {
             this.passwordSuggestions = feedback.suggestions;
             this.passwordWarning = feedback.warning;
         },
+        loadUsers() {
+            this.$http.get(Vue.config.auth_api+"/users").then(res=>{
+                this.$notify('Successfully loaded users');
+            }).catch(err=>{
+                console.error(err.response);
+                this.$notify({type: "error", text: err});
+            });
+        }
     },
 
     computed : {
@@ -415,7 +422,14 @@ export default {
             if(!this.form.repeatPassword || !this.form.newPassword) return;
             return this.form.repeatPassword == this.form.newPassword;
         },
+    },
+
+    watch: {
+        tab : function() {
+            if(this.tab == 3) this.loadUsers();
+        }
     }
+
 }
 </script>
 
