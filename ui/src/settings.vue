@@ -293,6 +293,10 @@
 
             <div v-if="tab == 3">
                 <h5>Users</h5>
+                    <li v-for="user in users" :key="user._id">
+                        {{ user }}
+                        <user :user="user"/>
+                    </li>
             </div>
         </b-container>
         <br>
@@ -312,11 +316,13 @@ export default {
     components: { 
         pageheader, statustag,
         password: ()=>import('vue-password-strength-meter'), 
+        user : ()=>import('@/components/user')
     },
 
     data () {
         return {
             tab: 0,
+            users : [],
 
             ready: false,
 
@@ -409,7 +415,7 @@ export default {
         },
         loadUsers() {
             this.$http.get(Vue.config.auth_api+"/users").then(res=>{
-                this.$notify('Successfully loaded users');
+                this.users = res.data;
             }).catch(err=>{
                 console.error(err.response);
                 this.$notify({type: "error", text: err});
