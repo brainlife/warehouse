@@ -1,9 +1,10 @@
 <template>
     <div v-if="user">
         <b-card>
+        {{index}}
             <div style="float: right;top: 0px">
-                <icon name="edit" scale="1.25"/>
-                  <b-button v-b-toggle="''+user._id">Show More</b-button>
+                <div class="button" title="Edit user" @click="edit()"><icon name="edit" scale="1.25"/></div>
+                <b-button v-b-toggle="''+user._id" >Show More</b-button>
             </div>
             <h5>{{user.username}}</h5>
             <p>{{user.fullname}} | {{user.email}} <b-badge v-if="user.email_confirmed" variant="success">Confirmed</b-badge> <b-badge v-else variant="danger">Not Confirmed</b-badge></p>
@@ -37,6 +38,13 @@ import Vue from 'vue'
 export default {
     props : {
         user : Object,
+        index : Number,
+    },
+    methods: {
+        edit() {
+            console.log("changing link"+this.index);
+            this.$router.push('/settings/user/'+(this.index + 1)+'/edit');
+        }
     }
 }
 </script>

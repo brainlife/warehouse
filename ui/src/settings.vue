@@ -293,8 +293,8 @@
 
             <div v-if="tab == 3">
                 <h5>Users</h5>
-                    <div v-for="user in users" :key="user._id">
-                        <user :user="user"/>
+                    <div v-for="(user,index) in users" :key="user._id">
+                        <user :user="user" :index="index"/>
                     </div>
             </div>
         </b-container>
