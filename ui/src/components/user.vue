@@ -6,7 +6,7 @@
                   <b-button v-b-toggle="''+user._id">Show More</b-button>
             </div>
             <h5>{{user.username}}</h5>
-            <h6>{{user.fullname}} | {{user.email}} <b-badge v-if="user.email_confirmed" variant="success">Confirmed</b-badge> <b-badge v-else variant="danger">Not Confirmed</b-badge></h6>
+            <p>{{user.fullname}} | {{user.email}} <b-badge v-if="user.email_confirmed" variant="success">Confirmed</b-badge> <b-badge v-else variant="danger">Not Confirmed</b-badge></p>
         
             <b-collapse v-bind:id="user._id" class="mt-2">
                 <div>
