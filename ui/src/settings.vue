@@ -300,9 +300,31 @@
             </div>
             <div v-if="tab == 4">
                 <h5>Groups</h5>
-                    <ul v-for=" group in groups">
-                        <li>{{group}}</li>
-                    </ul>
+                <div style="float: right|top;">
+                    <b-button>Create Group</b-button>
+                </div>
+                <br>
+                <div v-for="group in groups">
+                    <b-card>
+                        <div style="float: right;top: 0px">
+                            <div class="button" title="Edit Group" @click="edit()"><icon name="edit" scale="1.25"/></div>
+                        </div>
+                        <h5>{{group.name}} <b-badge v-if="!group.active" variant="danger">Inactive</b-badge></h5>
+                        <p>{{group.desc}}</p>
+                        <b-container>
+                            <b-row>
+                                <b-col>
+                                    <b>Admins</b>
+                                    <contact v-for="c in group.admins" :id="c._id"></contact>
+                                </b-col>
+                                <b-col>
+                                    <b>Members</b>
+                                    <contact v-for="c in group.members" :key="c._id"></contact>
+                                </b-col>
+                            </b-row>
+                        </b-container>
+                    </b-card>
+                </div>
             </div>
         </b-container>
         <br>
@@ -322,7 +344,8 @@ export default {
     components: { 
         pageheader, statustag,
         password: ()=>import('vue-password-strength-meter'), 
-        user : ()=>import('@/components/user')
+        user : ()=>import('@/components/user'),
+        contact: ()=>import('@/components/contact')
     },
 
     data () {
