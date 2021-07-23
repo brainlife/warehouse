@@ -1,7 +1,6 @@
 <template>
     <div v-if="user">
         <b-card>
-        {{index}}
             <div style="float: right;top: 0px">
                 <div class="button" title="Edit user" @click="edit()"><icon name="edit" scale="1.25"/></div>
                 <b-button v-b-toggle="''+user._id" >Show More</b-button>
@@ -42,7 +41,6 @@ export default {
     },
     methods: {
         edit() {
-            console.log("changing link"+this.index);
             this.$router.push('/settings/user/'+(this.index + 1)+'/edit');
         }
     }

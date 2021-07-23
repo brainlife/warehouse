@@ -50,21 +50,17 @@
 import Vue from 'vue'
 
 export default {
-    components: {
-
-    },
-
+    components: {},
     data () {
         return {
             user: {
                 fullname: "",
                 username: "",
-                profile: {
-                },
+                profile: {},
                 _id: "",
                 scopes: {}, 
                 email_confirmation: false,
-                exit: {},
+                ext: {},
                 times: {},
                 active: false,
             }
