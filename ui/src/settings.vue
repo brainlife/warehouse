@@ -9,6 +9,7 @@
                     <b-tab title="Account"/>
                     <b-tab title="Notification"/>
                     <b-tab v-if="config.user.scopes.auth.includes('admin')" title="Users"/>
+                    <b-tab v-if="config.user.scopes.auth.includes('admin')" title="Groups"/>
                 </b-tabs>
             </b-container>
         </div><!--header-->
@@ -297,6 +298,12 @@
                         <user :user="user" :index="index"/>
                     </div>
             </div>
+            <div v-if="tab == 4">
+                <h5>Groups</h5>
+                    <ul v-for=" group in groups">
+                        <li>{{group}}</li>
+                    </ul>
+            </div>
         </b-container>
         <br>
         <br>
@@ -322,6 +329,7 @@ export default {
         return {
             tab: 0,
             users : [],
+            groups : [],
 
             ready: false,
 
@@ -419,6 +427,14 @@ export default {
                 console.error(err.response);
                 this.$notify({type: "error", text: err});
             });
+        },
+        loadGroups() {
+            this.$http.get(Vue.config.auth_api+"/groups").then(res=>{
+                this.groups = res.data;
+            }).catch(err=>{
+                console.error(err.response);
+                this.$notify({type: "error", text: err});
+            });
         }
     },
 
@@ -432,6 +448,7 @@ export default {
     watch: {
         tab : function() {
             if(this.tab == 3) this.loadUsers();
+            if(this.tab == 4) this.loadGroups();
         }
     }
 
