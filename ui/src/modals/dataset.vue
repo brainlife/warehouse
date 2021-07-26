@@ -154,10 +154,11 @@
                                 <b-col cols="10">
                                     <app slot="header"
                                         :appid="dataset.prov.task && dataset.prov.task.config._app" 
-                                        :branch="dataset.prov.task.service_branch||'master'">
-                                        <taskconfig style="margin: 10px; margin-bottom: 40px;" :task="dataset.prov.task"/>
+                                        :branch="(followTask && followTask.service_branch)||dataset.prov.task.service_branch||'master'">
+                                        <taskconfig style="margin: 10px; margin-bottom: 40px;" :task="followTask||dataset.prov.task"/>
                                     </app>
                                     <br>
+
                                     <p v-if="!isimporttask(dataset.prov.task)">
                                         <a :href="'https://github.com/'+dataset.prov.task.service+'/tree/'+dataset.prov.task.commit_id" title="App Commit ID">
                                             <b-badge pill class="bigpill">
@@ -165,9 +166,12 @@
                                             </b-badge>
                                         </a>
                                     </p>
-                                    <p v-else>
-                                        <!-- TODO.. we need to load the follow_task_id task, and and show that commit_id-->
-                                        commit_id not available
+                                    <p v-else-if="followTask">
+                                        <a :href="'https://github.com/'+followTask.service+'/tree/'+followTask.commit_id" title="App Commit ID">
+                                            <b-badge pill class="bigpill">
+                                                <icon name="brands/github" style="opacity: 0.4;"/>&nbsp;&nbsp;Commit ID&nbsp;&nbsp;&nbsp;{{followTask.commit_id}}
+                                            </b-badge>
+                                        </a>
                                     </p>
                                 </b-col>
                             </b-row>
@@ -363,6 +367,7 @@ export default {
 
             dtv: null,
             secondary: null,
+            followTask: null,
             
             resource: null,
 
@@ -602,6 +607,9 @@ export default {
 
         load_secondary() {
             console.log("loading secondary");
+
+            //if follow_task_id is set, that means this data object came from _dtv
+            //_dtv may produces secondary archive, so wait for that
             //see the secondary output archive diagram to understand this
             if(this.dataset.prov.task.follow_task_id) {
                 console.log("waiting for secondary archive");
@@ -625,7 +633,6 @@ export default {
                     limit: 1,
                 }})
                 .then(res=>{
-                    //console.dir(res.data.tasks)
                     if(res.data.tasks.length == 1) {
                         this.dtv = res.data.tasks[0];
                         this.waitSecondaryArchive(this.dtv, (err, secondary)=>{
@@ -791,7 +798,8 @@ export default {
             });
         },
 
-        load(id) {
+        async load(id) {
+            //reset previously loaded stuff
             this.dataset = null;
             this.prov = null;
             this.apps = null;
@@ -801,10 +809,11 @@ export default {
             this.alltags = null;
             this.dtv = null;
             this.secondary = null;
+            this.followTask = null;
 
             if(!id) return;
 
-            this.$http.get('dataset', {params: {
+            const datasetRes = await this.$http.get('dataset', {params: {
                 find: JSON.stringify({_id: id}),
                 populate: JSON.stringify({
                     path: "project datatype prov.deps.dataset",
@@ -813,61 +822,79 @@ export default {
                         model: "UIs",
                     }
                 }),
-            }})
-            .then(res=>{
-                if(res.data.count == 0) {
-                    throw new Error("can't find dataset id:"+id);
-                }
-                this.dataset = res.data.datasets[0];
-                if(this.dataset.status == "storing") {
-                    this.tm_load_status = setTimeout(()=>{ this.load_status(id); }, 5000);
-                }
-                this.load_archive_task(); 
-                this.load_product();
+            }});
 
-                Vue.set(this.dataset, '_meta',  JSON.stringify(this.dataset.meta, null, 4));
-                Vue.set(this.dataset, '_meta_dirty',  false);
-                Vue.set(this.dataset, '_tags_dirty',  false);
-                Vue.set(this.dataset, '_desc_dirty',  false);
+            if(datasetRes.data.count == 0) {
+                throw new Error("can't find dataset id:"+id);
+            }
+            this.dataset = datasetRes.data.datasets[0];
+            if(this.dataset.status == "storing") {
+                this.tm_load_status = setTimeout(()=>{ this.load_status(id); }, 5000);
+            }
+            this.load_archive_task(); 
+            this.load_product();
 
-                //old dataset that doesn't have prov.task.. need to deref
-                if(this.dataset.prov) {
-                    if(!this.dataset.prov.task && this.dataset.prov.task_id) {
-                        this.$http.get(Vue.config.amaretti_api+'/task/'+this.dataset.prov.task_id).then(res=>{
-                            this.dataset.prov.task = res.data;
-                            this.load_resource();
-                        });
-                    } else if(this.dataset.prov.task) {
+            Vue.set(this.dataset, '_meta',  JSON.stringify(this.dataset.meta, null, 4));
+            Vue.set(this.dataset, '_meta_dirty',  false);
+            Vue.set(this.dataset, '_tags_dirty',  false);
+            Vue.set(this.dataset, '_desc_dirty',  false);
+
+            //old dataset that doesn't have prov.task.. need to deref
+            if(this.dataset.prov) {
+                if(!this.dataset.prov.task && this.dataset.prov.task_id) {
+                    this.$http.get(Vue.config.amaretti_api+'/task/'+this.dataset.prov.task_id).then(res=>{
+                        this.dataset.prov.task = res.data;
                         this.load_resource();
-                        this.load_secondary();
-                    }
+                    });
+                } else if(this.dataset.prov.task) {
+                    this.load_resource();
+                    this.load_secondary();
                 }
+            }
 
-                //load tags from other datasets in this project
-                return this.$http.get('dataset/distinct', {params: {
+            /////////////////////////////////////////////////////////////////////////////
+
+            // load follow_task if set
+            if(this.dataset.prov.task.follow_task_id) {
+                console.log("loading follow_task");
+                const taskRes = await this.$http.get(Vue.config.amaretti_api+'/task', {params: {
+                    find: JSON.stringify({ 
+                        _id: this.dataset.prov.task.follow_task_id,
+                    }),
+                }});
+                this.followTask = taskRes.data.tasks[0];
+            }
+
+            /////////////////////////////////////////////////////////////////////////////
+
+            //load tags from other datasets in this project
+            const tagsRes = await this.$http.get('dataset/distinct', {params: {
                     find: JSON.stringify({"project": this.dataset.project._id}),
                     distinct: 'tags',
-                }});
-            }).then(res=>{
-                this.alltags = res.data;
-                if(!this.dataset) return; //modal closed while we are loading (TODO can I cancel?)
+            }});
+            if(!this.dataset) return; //modal closed while we are loading (TODO can I cancel?)
+            this.alltags = tagsRes.data;
 
-                //load all publications that this dataobjects is published in
-                let find = {};
-                if(this.dataset.publications) {
-                    find["releases._id"] = {$in: this.dataset.publications};
-                }
-                return this.$http.get('pub', {params: {
-                    find: JSON.stringify(find),
-                }});
-            }).then(res=>{
-                if(!this.dataset) return; //modal closed while we are loading (TODO can I cancel?)
-                this.$set(this.dataset, '_pubs', res.data.pubs);
+            /////////////////////////////////////////////////////////////////////////////
+
+            //load all publications that this dataobjects is published in
+            let find = {};
+            if(this.dataset.publications) {
+                find["releases._id"] = {$in: this.dataset.publications};
+            }
+            const pubRes = await this.$http.get('pub', {params: {
+                find: JSON.stringify(find),
+            }});
+            if(!this.dataset) return; //modal closed while we are loading (TODO can I cancel?)
+            this.$set(this.dataset, '_pubs', pubRes.data.pubs);
+
+            /*
             }).catch(err=>{
                 console.error(err);
                 //not all user have access to all data.. so let's ignore if that's the case
                 //this.$notify({type: 'error', text: err});
             });
+            */
         },
 
         load_resource() {

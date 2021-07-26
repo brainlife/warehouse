@@ -106,6 +106,11 @@ exports.escape_dot = function(obj) {
 
 //TODO should inline this?
 function register_dataset(task, output, product, cb) {
+
+    //WATCH OUT.. "task" here could be the _dtv.. not the main task.
+    //so service/servide_branch etc.. might not be meaningful..
+    //we need to lookup the task via follow_task_id if it's set
+
     db.Datasets.create({
         user_id: task.user_id,
         project: output.archive.project,

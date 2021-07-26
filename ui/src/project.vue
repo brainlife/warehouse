@@ -141,20 +141,21 @@
                         <b-row>
                             <b-col lg>
                                 <span class="form-header">Admins</span>
-                                <p style="height: 50px; margin-bottom: 3px;">
-                                    <small class="text-muted">can update project details, share processes, and create rules / publications.</small>
+                                <p class="text-muted" v-if="selected.admins.length == 0"><small>No Admins</small></p><!--only happens on dev?-->
+                                <p v-else>
+                                    <contact v-for="c in selected.admins" :key="c._id" :id="c" size="small" style="line-height: 150%;"/>
                                 </p>
-                                <contact v-for="c in selected.admins" :key="c._id" :id="c" size="small" style="line-height: 150%;"/>
+                                <small class="text-muted">Admins can update project details, share processes, and create pipeline rules / publications.</small>
                                 <br>
                             </b-col>
 
                             <b-col lg>
                                 <span class="form-header">Members</span>
-                                <p style="height: 50px; margin-bottom: 3px;">
-                                    <small class="text-muted">has read/write access to data, share processes, and create rules / publications.</small>
-                                </p>
-                                <contact v-for="c in selected.members" :key="c._id" :id="c" size="small" style="line-height: 150%;"/>
                                 <p class="text-muted" v-if="selected.members.length == 0"><small>No Members</small></p>
+                                <p v-else>
+                                    <contact v-for="c in selected.members" :key="c._id" :id="c" size="small" style="line-height: 150%;"/>
+                                </p>
+                                <small class="text-muted">Members have read/write access to archived data, processes, and create pipeline rules / publications.</small>
                                 <br>
                             </b-col>
 
