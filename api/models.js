@@ -7,25 +7,9 @@ const common = require("./common"); //circular?
 
 mongoose.set("debug", config.mongoose_debug);
 
-//let amqp_conn = null;
-//let dataset_ex; //deprecated by warehouse_ex
-
-/*
-function init_amqp(cb) {
-    common.connectAMQP((err, conn)=>{
-        if(err) throw err;
-        amqp_conn = conn;
-        //deprecated by warehouse_ex
-        amqp_conn.exchange("warehouse.dataset", {autoDelete: false, durable: true, type: 'topic', confirm: true}, (ex)=>{
-            dataset_ex = ex;
-        });
-        cb();
-    });
-}
-*/
-
 exports.init = (cb)=>{
     mongoose.connect(config.mongodb, {
+        readPreference: 'nearest',
         useNewUrlParser: true,
         useUnifiedTopology: true,
         auto_reconnect: true,
