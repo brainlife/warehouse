@@ -3,7 +3,7 @@
     <small v-if="!mode">Loading..</small>
     <small v-if="mode == 'unknown'">Unknown datatype tag {{datatype_tags}}</small>
     <div v-if="mode == 'profiles'">
-        <ExportablePlotly v-if="structure && measure" :data="profileGraphs[structure+'.'+measure.id].data" :layout="profileGraphs[structure+'.'+measure.id].layout"/>
+        <ExportablePlotly v-if="profileGraph" :data="profileGraph" :layout="profileLayout"/>
         <br>
         <b-row>
             <b-col cols="2">
@@ -20,6 +20,7 @@
             </b-col>
         </b-row>
     </div>
+
     <div v-if="mode == 'macro'">
         <b>Measure</b>
         <v-select :options="measures" v-model="measure"></v-select>
@@ -51,11 +52,12 @@ export default {
             measure: null, //fa, etc..
 
             //reference
-            refdata: null,
+            //refdata: null,
             refNodeCount: 50,
 
             //for <profiles>
-            profileGraphs: null, 
+            profileGraph: null,
+            profileLayout: null,
             structure: null, //forcepsMajor, etc..
 
             //for <macro>
@@ -137,95 +139,86 @@ export default {
     methods: {
 
         async drawProfiles() {
+            console.log("drawing profiles");
 
-            //create graph for each measure for each structure
-            this.profileGraphs = {};
-            for(const structureID in this.structures) {
-                this.measures.forEach(measure=>{
+            //load reference
+            console.log("loading refdata for", this.structure);
+            const refdata = await fetch('https://raw.githubusercontent.com/brainlife/reference/master/neuro/tractmeasures/tractmeasures_reference_ping-siemens_cam-can_hcp_'+this.structure+'.json').then(res=>res.json());
 
-                    const data = [];
-                    data.push({
-                        name: "This Data",
-                        x: this.structures[structureID].x,
-                        y: this.structures[structureID][measure.id],
-                    });
+            this.profileGraph = [];
+            this.profileGraph.push({
+                name: "This Data",
+                x: this.structures[this.structure].x,
+                y: this.structures[this.structure][this.measure.id],
+            });
 
-                    //find reference
-                    this.refdata.forEach(ref=>{
-                        const refMean = ref[measure.id].mean;
-                        const refSD = ref[measure.id].sd;
+            refdata.forEach(ref=>{
+                const refMean = ref[this.measure.id].mean;
+                const refSD = ref[this.measure.id].sd;
+                    const sampleNodeCount = this.structures[this.structure].x.length;
+                    //const step = sampleNodeCount/this.refNodeCount;
+                    const x = [];
+                    for(let n = 0;n < this.refNodeCount; n++) {
+                        x.push(sampleNodeCount/this.refNodeCount*n);
+                    }
+                    const xcopy = [...x];
+                    const y = [];
+                    const yrev = [];
+                    for(let i = 0;i < refMean.length;++i) {
+                        y.push(refMean[i]+refSD[i]);
+                        yrev.push(refMean[i]-refSD[i]);
+                    }
 
-                        if(ref.structurename == structureID) {
-                            const sampleNodeCount = this.structures[structureID].x.length;
-                            const step = sampleNodeCount/this.refNodeCount;
-                            const x = [];
-                            for(let n = 0;n < this.refNodeCount; n++) {
-                                x.push(sampleNodeCount/this.refNodeCount*n);
-                            }
-                            const xcopy = [...x];
-                            const y = [];
-                            const yrev = [];
-                            for(let i = 0;i < refMean.length;++i) {
-                                y.push(refMean[i]+refSD[i]);
-                                yrev.push(refMean[i]-refSD[i]);
-                            }
-
-                            //mean
-                            data.push({
-                                name: ref.source,
-                                x, y: refMean,
-                                line: {
-                                    color: 'hsla('+string2hue(ref.source)+',80%,30%,0.5)',
-                                    width: 1.5,
-                                }
-                            });
-
-                            //sdev area
-                            data.push({
-                                name: ref.source+" sdev",
-                                showlegend: false,
-                                fill: "tozerox",
-                                fillcolor: 'hsla('+string2hue(ref.source)+',80%,30%,0.2)',
-                                line: {
-                                    width: 0,
-                                },
-                                x: [...x, ...xcopy.reverse()], 
-                                y: [...y, ...yrev.reverse()],
-                            })
+                    //mean
+                    this.profileGraph.push({
+                        name: ref.source,
+                        x, y: refMean,
+                        line: {
+                            color: 'hsla('+string2hue(ref.source)+',80%,30%,0.5)',
+                            width: 1.5,
                         }
                     });
 
-                    const layout = {
-                        //showlegend: false,
-                        margin: {
-                            l: 40, r: 10, b: 40, t: 30, pad: 0 
+                    //sdev area
+                    this.profileGraph.push({
+                        name: ref.source+" sdev",
+                        showlegend: false,
+                        fill: "tozerox",
+                        fillcolor: 'hsla('+string2hue(ref.source)+',80%,30%,0.2)',
+                        line: {
+                            width: 0,
                         },
-                        xaxis: {
-                            title: {
-                                text: "Node Position",
-                                font: {
-                                    color: '#999',
-                                    size: 11,
-                                },
-                            },
-                        },
-                        yaxis: {
-                            title: {
-                                text: this.labels[measure.id].unit,
-                                font: {
-                                    color: '#999',
-                                    size: 11,
-                                },
-                            },
-                        },
-                        //title: this.labels[measure.id].title,
-                        height: 300,
-                    }
-                    
-                    this.profileGraphs[structureID+"."+measure.id] = {data, layout};
-                });
-            }
+                        x: [...x, ...xcopy.reverse()], 
+                        y: [...y, ...yrev.reverse()],
+                    })
+            });
 
+            this.profileLayout = {
+                //showlegend: false,
+                margin: {
+                    l: 40, r: 10, b: 40, t: 30, pad: 0 
+                },
+                xaxis: {
+                    title: {
+                        text: "Node Position",
+                        font: {
+                            color: '#999',
+                            size: 11,
+                        },
+                    },
+                },
+                yaxis: {
+                    title: {
+                        text: this.labels[this.measure.id].unit,
+                        font: {
+                            color: '#999',
+                            size: 11,
+                        },
+                    },
+                },
+                //title: this.labels[this.measure.id].title,
+                height: 300,
+            }
         }, 
 
         async drawMacro() {
@@ -416,7 +409,7 @@ export default {
         }
 
         //load reference data
-        this.refdata = await fetch('https://raw.githubusercontent.com/brainlife/reference/master/neuro/tractmeasures/reference.json').then(res=>res.json());
+        //this.refdata = await fetch('https://raw.githubusercontent.com/brainlife/reference/master/neuro/tractmeasures/reference.json').then(res=>res.json());
 
         //list all measures
         this.measures = [];
@@ -447,15 +440,11 @@ export default {
 
         //set graph mode based on datatype tags
         if(this.datatype_tags.includes("profiles")) {
-            this.mode = "profiles";
-
             //preselect the first one
             this.measure = this.measures[0]; 
             this.structure = Object.keys(this.structures)[0];
-
+            this.mode = "profiles";
         } else if(this.datatype_tags.includes("macro")) {
-            this.mode = "macro";
-
             //create catalog of structures
             this.structureOptions = [];
             this.data.forEach(rec=>{
@@ -465,18 +454,27 @@ export default {
 
             this.measure = this.measures[0]; 
             this.structures = this.structureOptions.slice(-5); //select first 5
+            this.mode = "macro";
         } else {
             this.mode = "unknown";
         }
-
         this.draw();
     },
 
     watch: {
-        measure() {
+        measure(v, ov) {
+            if(!ov) return;
+            console.log("measure updated", this.mode);
             this.draw();
         },
-        structures() {
+        structures(v, ov) {
+            if(!ov) return;
+            console.log("structures updated", this.mode);
+            this.draw();
+        },
+        structure(v, ov) {
+            if(!ov) return;
+            console.log("structure updated", this.mode);
             this.draw();
         },
     },

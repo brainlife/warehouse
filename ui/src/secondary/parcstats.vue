@@ -96,7 +96,7 @@ export default {
             //load reference
             //TODO - we might be splitting up the reference into different structures.. if we do, then we should load references that we haven't loaded yet
             //based on this.structures selections
-            const refdata = await fetch('https://raw.githubusercontent.com/brainlife/reference/master/neuro/parc-stats/reference.json').then(res=>res.json());
+            const refdata = await fetch('https://raw.githubusercontent.com/brainlife/reference/master/neuro/parc-stats/old/reference.json').then(res=>res.json());
 
             //add "this data" first (to claim the default blue color!)
             let x = [];

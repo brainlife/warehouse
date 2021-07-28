@@ -64,10 +64,19 @@
                 <small>This plot show groups of user private profile position for each users.</small>
                 <ExportablePlotly :data="posCountData" :layout="posCountLayout"/>
             </div>
+
+            <br>
             <div style="margin: 0 15px" v-if="appItems">
-                <span class="form-header">App Usage</span>
-                <small>Most Used Apps</small>
-                <b-table :small="true" :items="appItems" :fields="appFields"></b-table>
+                <span class="form-header">App Stats</span>
+                <small>{{appItems.length}} apps</small>
+                <b-table :small="true" :items="appItems" :fields="appFields" selectable @row-selected="appSelected">
+                    <template #cell(name)="data">
+                        {{data.item.name}}
+                        <b-badge v-if="data.item.removed" variant="danger">Removed</b-badge>
+                        <b-badge v-if="data.item.deprecated" variant="secondary">Deprecated</b-badge>
+                        <b-badge v-if="data.item.private" variant="warning">Private</b-badge>
+                    </template>
+                </b-table>
             </div>
         </b-tab>
     </b-tabs>
@@ -76,12 +85,8 @@
 
 <script>
 import Vue from 'vue'
-
-
 import task from '@/components/task'
-
 import ReconnectingWebSocket from 'reconnectingwebsocket'
-//import { Plotly } from 'vue-plotly'
 
 const numeral = require('numeral');
 
@@ -92,7 +97,6 @@ export default {
     },
     data () {
         return {
-            //service_running: [],
             su_options: [],
             config: Vue.config,
 
@@ -113,6 +117,7 @@ export default {
             appItems: null,
             appFields: [
                 { key: "name", label: "App Name", sortable: true },
+                { key: "github", label: "Github", sortable: true },
                 { key: "doi", label: "DOI", sortable: true },
                 { key: "requested", label: "Execution Count", sortable: true },
                 { key: "runtimeMean", label: "Avg. Walltime (min)", sortable: true },
@@ -136,6 +141,11 @@ export default {
     },
 
     methods: {
+        appSelected(items) {
+            const appId = items[0]._id;
+            this.$router.push('/app/'+appId);
+        },
+
         loadAnalytics() {
             console.log("loading analytics info");
 
@@ -150,8 +160,8 @@ export default {
 
             this.$http.get('/app', {
                 params: {
-                    //find: JSON.stringify({removed: false}),
-                    select: 'name stats removed doi',
+                    select: 'name github stats removed doi deprecated_by projects',
+                    limit: 2000,
                 }
             }).then(res=>{
                 this.appItems = [];
@@ -159,7 +169,12 @@ export default {
                     if(!app.stats) return;
                     if(!app.stats.resources) app.stats.resources = [];
                     this.appItems.push({
-                       name: app.name+(app.removed?' (removed)':''),
+                       _id: app._id,
+                       name: app.name,
+                       removed: app.removed,
+                       deprecated: !!app.deprecated_by,
+                       github: app.github,
+                       private: !!app.projects.length,
                        doi: app.doi,
                        requested: app.stats.requested,
                        runtimeMean: numeral(app.stats.runtime_mean/(1000*60)).format('0,0'),

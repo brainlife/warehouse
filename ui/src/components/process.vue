@@ -730,8 +730,6 @@ export default {
             .then(res=>{
                 //load products
                 this.tasks = res.data.tasks.filter(task=>{
-                    console.log(task._id, task.service, task.status, task.follow_task_id);
-
                     //we want to load validator product as long as follow_task_id isn't removed yet
                     if(task.service.includes("brainlife/validator-")) {
                         const followed = res.data.tasks.find(t=>t._id == task.follow_task_id);

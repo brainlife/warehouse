@@ -407,6 +407,8 @@ import projectcard from '@/components/projectcard'
 
 import resource_cache from '@/mixins/resource_cache'
 
+const lib = require('@/lib');
+
 export default {
     mixins: [ resource_cache ],
     components: { 
@@ -631,7 +633,7 @@ export default {
         },
 
         editorInit(editor) {
-            lib.editorIni(editor, ()=>{
+            lib.editorInit(editor, ()=>{
                 //editor.setReadOnly(true);  // false to make it editable
                 editor.setAutoScrollEditorIntoView(true);
                 editor.setOption("maxLines", 30);
