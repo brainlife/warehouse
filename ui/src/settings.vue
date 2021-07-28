@@ -299,10 +299,7 @@
                     </div>
             </div>
             <div v-if="tab == 4">
-                <h5>Groups</h5>
-                <div style="float: right|top;">
-                    <b-button>Create Group</b-button>
-                </div>
+                <h5>Groups <span style="float: right"><b-button>Create Group</b-button></span></h5>
                 <br>
                 <div v-for="group in groups">
                     <b-card>
@@ -315,11 +312,11 @@
                             <b-row>
                                 <b-col>
                                     <b>Admins</b>
-                                    <contact v-for="c in group.admins" :id="c._id"></contact>
+                                    <contact v-for="c in group.admins" :key="c._id" :id="c._id" size="small"></contact>
                                 </b-col>
                                 <b-col>
                                     <b>Members</b>
-                                    <contact v-for="c in group.members" :key="c._id"></contact>
+                                    <contact v-for="c in group.members" :key="c._id" :id="c._id" size="small"></contact>
                                 </b-col>
                             </b-row>
                         </b-container>
