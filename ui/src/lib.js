@@ -113,6 +113,13 @@ export function mergeDeep(target, ...sources) {
   return mergeDeep(target, ...sources);
 }
 
+//https://stackoverflow.com/questions/175739/built-in-way-in-javascript-to-check-if-a-string-is-a-valid-number
+function isNumeric(str) {
+    if (typeof str != "string") return false;
+    return !isNaN(str) && // use type coercion to parse the _entirety_ of the string (`parseFloat` alone does not do this)...
+        !isNaN(parseFloat(str)) // ...and ensure strings of whitespace fail
+}
+
 export function parseCSV(csv) {
     const csv_rows = csv.split("\n"); 
     const headers = csv_rows.shift().split(",");
@@ -121,8 +128,9 @@ export function parseCSV(csv) {
         const values = csv_row.split(",");
         const row = {};
         values.forEach((v,idx)=>{
-            const f = parseFloat(v);
-            if(!isNaN(f)) v = f;
+            //const f = parseFloat(v);
+            //if(!isNaN(f)) v = f;
+            if(isNumeric(v)) v = parseFloat(v);
             row[headers[idx]] = v;
         });
         rows.push(row);

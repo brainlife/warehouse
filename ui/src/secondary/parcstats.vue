@@ -50,6 +50,7 @@ export default {
             //reload data source and update catalogs
             const res = await this.$http.get('secondary/'+this.task._id+'/'+this.output_id+'/parc-stats/'+this.source+'.csv');
             this.data = parseCSV(res.data);           
+            console.dir(this.data);
 
             const sample = this.data[0];
             const ignore = ["parcID", "subjectID", "structureID", "nodeID", "segID", "ROI_name"];
@@ -63,6 +64,7 @@ export default {
             //create catalog of structures
             this.structureOptions = [];
             this.data.forEach(rec=>{
+                console.log(rec.structureID);
                 if(rec.structureID && !this.structureOptions.includes(rec.structureID)) this.structureOptions.push(rec.structureID);
                 if(rec.ROI_name && !this.structureOptions.includes(rec.ROI_name)) this.structureOptions.push(rec.ROI_name);
             });
@@ -159,7 +161,7 @@ export default {
                         }
                     });
                 } catch(err) {
-                    console.error("couldn't find", this.source, this.structure);
+                    console.error("couldn't find / mulformed json", this.source, structure);
                 }
             }
 
@@ -211,6 +213,4 @@ export default {
 }
 </script>
 
-<style scoped>
-</style>
 
