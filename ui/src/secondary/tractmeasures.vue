@@ -120,16 +120,14 @@ export default {
                 volume: {
                     title: "Volume",
                     unit: "mm^3",
-                    refid: "volume",
                 },
                 StreamlineCount: {
                     title: "Streamline Counts",
-                    refid: "count",
+                    //unit: "count",
                 },
                 avgerageStreamlineLength: {
                     title: "Avg Streamline Length",
                     unit: "mm",
-                    refid: "length",
                 },
             },
 
@@ -141,9 +139,8 @@ export default {
         async drawProfiles() {
             console.log("drawing profiles");
 
-            //load reference
-            console.log("loading refdata for", this.structure);
-            const refdata = await fetch('https://raw.githubusercontent.com/brainlife/reference/master/neuro/tractmeasures/tractmeasures_reference_ping-siemens_cam-can_hcp_'+this.structure+'.json').then(res=>res.json());
+            //load reference for selected structure
+            const refdata = await fetch('https://raw.githubusercontent.com/brainlife/reference/master/neuro/tractmeasures/'+this.structure+'.json').then(res=>res.json());
 
             this.profileGraph = [];
             this.profileGraph.push({
@@ -216,49 +213,32 @@ export default {
                         },
                     },
                 },
-                //title: this.labels[this.measure.id].title,
                 height: 300,
             }
         }, 
 
         async drawMacro() {
-            //add "this data" first (to claim the default blue color!)
-            let x = [];
-            let y = [];
-            this.data.forEach(rec=>{
-                const id = rec.TractName || rec.structureID;
-                if(id && !this.structures.includes(id)) return;
-                /*
-                {
-                    "TractName": "wbfg",
-                    "StreamlineCount": 1500000,
-                    "volume": 689042,
-                    "avgerageStreamlineLength": 52.3374268320154,
-                    "streamlineLengthStdev": 24.5019123600965,
-                    "averageFullDisplacement": 37.4882340792743,
-                    "fullDisplacementStdev": 15.7604755775957,
-                    "ExponentialFitA": 0.0313347189722198,
-                    "ExponentialFitB": -0.0292611175183509,
-                    "StreamlineLengthTotal": 78506140.248023,
-                    "endpoint1Density": "NaN",
-                    "Endpoint2Density": "NaN",
-                    "AverageEndpointDistanceFromCentroid1": "NaN",
-                    "AverageEndpointDistanceFromCentroid2": "NaN",
-                    "stdevOfEndpointDistanceFromCentroid1": "NaN",
-                    "stdevEndpointDistanceFromCentroid2": "NaN",
-                    "MidpointDensity": "NaN",
-                    "averageMidpointDistanceFromCentroid": "NaN",
-                    "stDevOfMidpointDistanceFromCentroid": "NaN",
-                    "TotalVolumeProportion": 1,
-                    "TotalCountProportion": 1,
-                    "TotalWiringProportion": 1
-                }
-                */
-                y.push(id);
-                x.push(rec[this.measure.id]);
-            });
-
             this.macroGraph = [];
+
+            //create totalcount for streamlinecount proportion
+            const totalStreamlineCount = this.data.filter(v=>!!v.StreamlineCount).reduce((a,v)=>a+v.StreamlineCount, 0);
+            
+            //add "this data" first (to claim the default blue color!)
+            let x = []; //value
+            let y = []; //structure name
+            for(let i = 0; i < this.data.length; ++i) {
+                const rec = this.data[i];
+                const id = rec.TractName || rec.structureID;
+                if(!id) continue;
+                if(!this.structures.includes(id)) continue;
+
+                let v = rec[this.measure.id];
+                if(this.measure.id == "StreamlineCountProportion") {
+                    v = rec.StreamlineCount / totalStreamlineCount;
+                }
+                x.push(v);
+                y.push(id);
+            }
             this.macroGraph.push({
                 x,
                 y,
@@ -274,89 +254,62 @@ export default {
 
             //boxplots from summary stats
             //https://github.com/plotly/plotly.js/pull/4432
-            //group reference into each source
             const sources = {};
-            this.refdata.forEach(rec=>{
+            for(let i = 0;i < this.structures.length; ++i) {
+                //.forEach(async structure=>{
+                const structure = this.structures[i];
+                const refdata = await fetch('https://raw.githubusercontent.com/brainlife/reference/master/neuro/tractmeasures/'+structure+'.json').then(res=>res.json());
                 /*
-                {
-                    "structurename": "leftmeyer",
-                    "source": "ping-siemens",
-                    ...
-                    "count": {
-                        "mean": 427.56,
-                        "min": 165,
-                        "max": 714,
-                        "sd": 128.84
-                    },
-                    "length": {
-                        "mean": 74.99,
-                        "min": 63.12,
-                        "max": 86.64,
-                        "sd": 5.62
-                    },
-                    "volume": {
-                        "mean": 12536.7,
-                        "min": 7947,
-                        "max": 17164,
-                        "sd": 2111.73
-                    }
-                }
+                StreamlineCount: {data: Array(99)}
+                StreamlineLengthTotal: {data: Array(99)}
+                TotalCountProportion: {data: Array(99)}
+                TotalVolumeProportion: {data: Array(99)}
+                TotalWiringProportion: {data: Array(99)}
+                ad: {mean: Array(50), min: Array(50), max: Array(50), sd: Array(50), 5_percentile: Array(50), …}
+                averageFullDisplacement: {data: Array(99)}
+                avgerageStreamlineLength: {data: Array(99)}
+                fa: {mean: Array(50), min: Array(50), max: Array(50), sd: Array(50), 5_percentile: Array(50), …}
+                fullDisplacementStdev: {data: Array(99)}
+                md: {mean: Array(50), min: Array(50), max: Array(50), sd: Array(50), 5_percentile: Array(50), …}
+                rd: {mean: Array(50), min: Array(50), max: Array(50), sd: Array(50), 5_percentile: Array(50), …}
+                source: "ping-siemens"
+                streamlineLengthStdev: {data: Array(99)}
+                structurename: "rightThalamicoCerebellar"
+                volume: {data: Array(100)}
                 */
-                if(!sources[rec.source]) sources[rec.source] = {
-                    //x: [],
+                refdata.forEach(ref=>{
+                    if(!sources[ref.source]) sources[ref.source] = {x: [], y: []};
+                    if(this.measure.id == "StreamlineCountProportion") {
+                        ref.StreamlineCount.data.forEach(v=>{
+                            sources[ref.source].x.push(v/ref.TotalStreamlineCount);
+                            sources[ref.source].y.push(structure);
+                        })
+                    } else {
+                        ref[this.measure.id].data.forEach(v=>{
+                            sources[ref.source].x.push(v);
+                            sources[ref.source].y.push(structure);
+                        })
+                    }
+                });
+            }
+            for(let source in sources) {
+                const s = sources[source];
+                this.macroGraph.push({
+                    x: s.x, //values
+                    y: s.y, //group ids
+                    orientation: 'h',
                     type: 'box',
-                    y: [],
-                    lowerfence: [],
-                    upperfence: [],
-                    q1: [],
-                    mean: [],
-                    sd: [],
-                    median: [],
-                    q3: [],
-
+                    /*
                     line: {
                         width: 1
                     },
-                    marker: {
-                        color: 'hsla('+string2hue(rec.source)+',80%,30%,0.2)',
-                    },
-                    name: rec.source,
-                    /*
-                    error_x: {
-                        type: 'data', 
-                        symmetric: true,
-                        array: [],
-                    }
                     */
-                }
-                if(this.structures.includes(rec.structurename)) {
-                    const stat = rec[this.measure.refid];
-                    if(!stat) {
-                        console.log("no", this.measure, "in reference rec", rec);
-                    } else {
-                        sources[rec.source].y.push(rec.structurename);
-
-                        //we don't have quartile.. so let's approximate
-                        const q1 = stat.mean - stat.sd*0.675;
-                        const q3 = stat.mean + stat.sd*0.675;
-                        //const iqr = q3 - q1;
-                        
-                        sources[rec.source].lowerfence.push(stat.min);
-                        sources[rec.source].upperfence.push(stat.max);
-
-                        //we don't have q1/median/q3.. let's approximate from mean/sd
-                        sources[rec.source].q1.push(q1);
-                        sources[rec.source].q3.push(q3);
-                        sources[rec.source].median.push(stat.mean);
-
-                        /*
-                        sources[rec.source].mean.push(stat.mean);
-                        sources[rec.source].sd.push(stat.sd);
-                        */
-                        //sources[rec.source].error_x.array.push(stat.sd);
-                    }
-                }
-            });
+                    marker: {
+                        color: 'hsla('+string2hue(source)+',80%,30%,0.2)',
+                    },
+                    name: source+' ('+s.x.length+')',
+                });
+            }
 
             //I can't just reset height.. I guess it's not set to deep: true?
             //https://github.com/David-Desmaisons/vue-plotly/issues/20#issuecomment-854926404
@@ -380,12 +333,6 @@ export default {
                 },
                 boxmode: 'group',
             }
-
-            //finally reorg to data
-            for(let source in sources) {
-                this.macroGraph.push(sources[source]);
-            }
-
         }, 
 
         draw() {
@@ -417,9 +364,22 @@ export default {
             //?_mean should be treated as ?
             if(key.includes("_mean")) key = key.split("_")[0];
 
-            if(!this.labels[key]) continue;
+            if(!this.labels[key]) {
+                console.log("don't have label infor for", key);
+                continue;
+            }
             const label = this.labels[key];
             this.measures.push(Object.assign({id: key, label: label.title}, label));
+
+            //inject proportion field for streamlinecount
+            if(key == "StreamlineCount") {
+                this.measures.push({
+                    id: "StreamlineCountProportion", 
+                    label: "Streamline Count (proportion)", 
+                    title: "Streamline Count (proportion)", 
+                    unit: "%",
+                });
+            }
         }
 
         //split into different structures

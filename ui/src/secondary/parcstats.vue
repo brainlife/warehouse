@@ -4,7 +4,6 @@
     <v-select v-model="source" :options="sourceOptions"/>
     <b>Measure</b>
     <v-select v-model="measure" :options="measureOptions"/>
-
     <b>Structure</b>
     <v-select multiple v-model="structures" :options="structureOptions" placeholder="Search structure name to add"/>
 
@@ -40,15 +39,15 @@ export default {
             graphData: null,
             graphLayout: null,
 
+            drawing: false,
+
             config: Vue.config,
-            csv: 'cortex',
         }
     },
 
     watch: {
         async source() {
             //reload data source and update catalogs
-            console.log("loading source", this.source, this.measure);
             const res = await this.$http.get('secondary/'+this.task._id+'/'+this.output_id+'/parc-stats/'+this.source+'.csv');
             this.data = parseCSV(res.data);           
 
@@ -72,10 +71,10 @@ export default {
             this.draw();
         },
 
-        structures() {
+        structures(v, ov) {
             this.draw();
         },
-        measure() {
+        measure(v, ov) {
             this.draw();
         },
     },
@@ -86,69 +85,19 @@ export default {
 
     methods: {
         async draw() {
-            /*
-            //subjectID,Total_Brain_volume,Total_Intracranial_volume,Total_Gray_Matter_volume,Total_White_Matter_volume,Left_Hemisphere_Gray_Matter_volume,Right_Hemisphere_Gray_Matter_volume,Left_Hemisphere_White_Matter_volume,Right_Hemisphere_White_Matter_volume,Left_Hemisphere_Mean_Gray_Matter_thickness,Right_Hemisphere_Mean_Gray_Matter_thickness
-            //soichi,1245338.0,1554102.356326,510700.772537,490168.0,258217.335363,252483.437174,247827.0,242341.0,2.5156400000000003,2.46113
-            res = await this.$http.get('secondary/'+this.task._id+'/'+this.output_id+'/parc-stats/whole_brain.csv');
-            const wholeBrain = parseCSV(res.data);           
-            */
-
-            //load reference
-            //TODO - we might be splitting up the reference into different structures.. if we do, then we should load references that we haven't loaded yet
-            //based on this.structures selections
-            const refdata = await fetch('https://raw.githubusercontent.com/brainlife/reference/master/neuro/parc-stats/old/reference.json').then(res=>res.json());
+            if(this.drawing) return;
+            this.drawing = true;
+            
+            this.graphData = [];
 
             //add "this data" first (to claim the default blue color!)
             let x = [];
             let y = [];
             this.data.forEach(rec=>{
                 if(rec.structureID && !this.structures.includes(rec.structureID)) return;
-                /* 
-                (roi)
-                {
-                    "parcID": 72,
-                    "subjectID": "soichi",
-                    "structureID": "rh_S_temporal_inf",
-                    "nodeID": 1,
-                    "number_of_vertices": 1502,
-                    "surface_area_mm^2": 995,
-                    "gray_matter_volume_mm^3": 2012,
-                    "average_thickness_mm": 2.4819999999999998,
-                    "thickness_stddev_mm": 0.474,
-                    "integrated_rectified_mean_curvature_mm^-1": 0.106,
-                    "integrated_rectified_gaussian_curvature_mm^-2": 0.018000000000000002,
-                    "folding_index": 8,
-                    "intrinsic_curvature_index": 1.3
-                }
-                (cortex)
-                {
-                    average_thickness_mm: 2.7
-                    folding_index: 5
-                    gray_matter_volume_mm^3: 1120
-                    integrated_rectified_gaussian_curvature_mm^-2: 0.023
-                    integrated_rectified_mean_curvature_mm^-1: 0.113
-                    intrinsic_curvature_index: 0.6
-                    nodeID: 1
-                    number_of_vertices: 641
-                    parcID: 33
-                    structureID: "rh_transversetemporal"
-                    subjectID: "soichi"
-                    surface_area_mm^2: 391
-                    thickness_stddev_mm: 0.371
-                }gray_matter_volume_mm^3
-                */
-                /* sample (subcortical)
-                    gray_matter_volume_mm^3: 0
-                    nodeID: 1
-                    number_of_voxels: 0
-                    segID: 81
-                    structureID: "Left-non-WM-hypointensities"
-                    subjectID: "soichi"
-                */
                 y.push(rec.structureID);
                 x.push(rec[this.measure]);
             });
-            this.graphData = [];
             this.graphData.push({
                 x,
                 y,
@@ -162,66 +111,77 @@ export default {
                 },
             });
 
+            //load reference
+            //TODO - we might be splitting up the reference into different structures.. if we do, then we should load references that we haven't loaded yet
+            //based on this.structures selections
+            //const refdata = await fetch('https://raw.githubusercontent.com/brainlife/reference/master/neuro/parc-stats/old/reference.json').then(res=>res.json());
+
             //boxplots from summary stats
             //https://github.com/plotly/plotly.js/pull/4432
             //group reference into each source
             const sources = {};
-            refdata.forEach(rec=>{
-                //init
-                if(!sources[rec.source]) sources[rec.source] = {
-                    //x: [],
+            for(let i = 0;i < this.structures.length; ++i) {
+                const structure = this.structures[i];
+                try {
+                    //come up with refrence json url
+                    let url = "https://raw.githubusercontent.com/brainlife/reference/master/neuro/parc-stats/";
+                    switch(this.source) {
+                    case "cortex":
+                        url += "cortical";
+                        break;
+                    case "subcortical":
+                        url += "subcortical";
+                        break;
+                    default:
+                        throw "unknow source:"+this.source;
+                    }
+                    url +='/'+structure+'.json';
+
+                    //create plotly graph
+                    const refdata = await fetch(url).then(res=>res.json());
+                    refdata.forEach(rec=>{
+                        if(!sources[rec.source]) sources[rec.source] = {x: [], y: []};
+
+                        const measureFieldOverride = {
+                            //"number_of_voxels": "number_of_voxels",
+                            "gray_matter_volume_mm^3": "volume",
+                        }
+                        let statField = measureFieldOverride[this.measure];
+                        if(!statField) statField = this.measure; //assume it's the same name
+                        const stat = rec[statField];
+                        if(!stat) {
+                            console.log("no", this.measure, statField, "in reference rec", rec);
+                        } else {
+                            stat.data.forEach(v=>{
+                                sources[rec.source].x.push(v);
+                                sources[rec.source].y.push(structure);
+                            });
+                        }
+                    });
+                } catch(err) {
+                    console.error("couldn't find", this.source, this.structure);
+                }
+            }
+
+            //finally reorg to data
+            for(let source in sources) {
+                const s = sources[source];
+                this.graphData.push({
+                    x: s.x, //values
+                    y: s.y, //group ids
+                    orientation: 'h',
                     type: 'box',
-                    y: [],
-                    lowerfence: [],
-                    upperfence: [],
-                    q1: [],
-                    mean: [],
-                    sd: [],
-                    median: [],
-                    q3: [],
-
-                    line: {
-                        width: 1,
-                        color: 'hsla('+string2hue(rec.source)+',80%,30%,0.5)',
-                    },
-
-                    name: rec.source,
                     /*
-                    error_x: {
-                        type: 'data', 
-                        symmetric: true,
-                        array: [],
-                    }
+                    line: {
+                        width: 1
+                    },
                     */
-                }
-                if(this.structures.includes(rec.structurename)) {
-                    const stat = rec[this.measure];
-                    if(!stat) {
-                        console.log("no", this.measure, "in reference rec", rec);
-                    } else {
-                        sources[rec.source].y.push(rec.structurename);
-
-                        //we don't have quartile.. so let's approximate
-                        const q1 = stat.mean - stat.sd*0.675;
-                        const q3 = stat.mean + stat.sd*0.675;
-                        //const iqr = q3 - q1;
-                        
-                        sources[rec.source].lowerfence.push(stat.min);
-                        sources[rec.source].upperfence.push(stat.max);
-
-                        //we don't have q1/median/q3.. let's approximate from mean/sd
-                        sources[rec.source].q1.push(q1);
-                        sources[rec.source].q3.push(q3);
-                        sources[rec.source].median.push(stat.mean);
-
-                        /*
-                        sources[rec.source].mean.push(stat.mean);
-                        sources[rec.source].sd.push(stat.sd);
-                        */
-                        //sources[rec.source].error_x.array.push(stat.sd);
-                    }
-                }
-            });
+                    marker: {
+                        color: 'hsla('+string2hue(source)+',80%,30%,0.2)',
+                    },
+                    name: source+' ('+s.x.length+')',
+                });
+            }
 
             //I can't just reset height.. I guess it's not set to deep: true?
             //https://github.com/David-Desmaisons/vue-plotly/issues/20#issuecomment-854926404
@@ -245,12 +205,7 @@ export default {
                 },
                 boxmode: 'group',
             }
-
-            //finally reorg to data
-            for(let source in sources) {
-                this.graphData.push(sources[source]);
-            }
-
+            this.drawing = false;
         }
     },
 }
