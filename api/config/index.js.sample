@@ -11,7 +11,8 @@ const mkdirp = require('mkdirp'); //for dc2
 const path = require('path');
 const archiver = require('archiver');
 const ssh2 = require('ssh2');
-const request = require('request');
+const axios = require('axios');
+const request = require('request'); //deprecate!
 const zlib = require('zlib');
 const async = require('async');
 
@@ -464,16 +465,21 @@ exports.storage_systems.project = {
     download: (dataset, cb)=>{
         let resource_id = dataset.storage_config.resource_id; 
         let path = dataset.project+"/"+dataset._id+".tar";
-        let stream = request.get({
+        axios({
+            method: 'get',
             url: exports.amaretti.api+"/resource/archive/download/"+resource_id+"/"+path, 
+            responseType: 'stream',
             headers: {Authorization: "Bearer "+ exports.warehouse.jwt}
+        }).then(res=>{
+            cb(null, res.data, dataset._id+".tar");
         });
-        cb(null, stream, dataset._id+".tar");
     },
 
+    /*
     remove: (dataset, cb)=>{
         console.log("project/remove - todo");
     }
+    */
 } 
 
 function get_copysource_dataset(dataset) {
@@ -810,6 +816,44 @@ exports.storage_systems["datalad"] = {
         });
    },
 }
+
+exports.storage_systems.xnat = {
+    need_backup: false,
+    test: cb=>{
+        console.log("xnat storage test - todo");
+        cb();
+    }, 
+
+    stat: (dataset, cb)=>{
+        cb();
+    },
+
+    upload: (dataset, cb)=>{
+        cb("TODO..");
+    },
+
+    download: (dataset, cb)=>{
+        let url = dataset.storage_config.url; 
+        /*
+        let path = dataset.project+"/"+dataset._id+".tar";
+        let stream = request.get({
+            url: exports.amaretti.api+"/resource/archive/download/"+resource_id+"/"+path, 
+            headers: {Authorization: "Bearer "+ exports.warehouse.jwt}
+        });
+        */
+        axios({
+            method: 'get',
+            responseType: 'stream',
+            url: dataset.storage_config.url,
+            auth: dataset.storage_config.auth,
+            params: {
+                format: "zip", //zstd?
+            },
+        }).then(res=>{
+            cb(null, res.data, dataset._id+".DICOM.zip");
+        });
+    },
+} 
 
 //config used to backup data from warehouse 
 exports.sda = {

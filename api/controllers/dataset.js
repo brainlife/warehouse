@@ -1249,7 +1249,6 @@ router.get('/download/:id', common.jwt({
 }), function(req, res, next) {
     var id = req.params.id;
 
-    //console.debug("download requested for %s", id);
     if(!req.user) console.error("no auth request");
     db.Datasets.findById(id).populate('datatype').exec(function(err, dataset) {
         if(err) return next(err);

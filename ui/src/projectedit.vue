@@ -210,7 +210,7 @@
                                 </b-row>
                             </div>
                             <br>
-                            <b-button type="button" variant="secondary" @click="project.xnat.scans.push({})"><icon name="plus"/> Add Scan</b-button>
+                            <b-button type="button" variant="secondary" @click="project.xnat.scans.push({})"><icon name="plus"/> Add Scan Mapping</b-button>
 
                         </b-form-group>
                     </div>

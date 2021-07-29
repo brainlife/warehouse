@@ -15,10 +15,7 @@ db.init(function(err) {
 });
 
 function run() {
-    db.Projects.find({
-        //removed: false,
-        //"xnat.enabled": true,
-    })
+    db.Projects.find({}) //get all projects!
     .exec((err, projects)=>{
         if(err) throw err;
         async.eachSeries(projects, handle, err=>{
@@ -34,13 +31,11 @@ function run() {
 }
 
 async function handle(project) {
-    console.log("handling project", project.name);
-    //if(!!project.removed && project.xnat && project.xnat.enabled) await handleXNAT(project);
+    if(!project.removed && project.xnat && project.xnat.enabled) await handleXNAT(project);
 
     //already ran it.. I don't think we need to keep running this.
     //await tidyup(project);
 
-    console.log("saving project");
     await project.save();
 }
 
@@ -61,7 +56,7 @@ async function tidyup(project) {
 }
 
 async function handleXNAT(project) {
-    coinsole.log(" ..xnat");
+    console.log("handleXNAT --------------");
 
     const dago = new Date();
     dago.setDate(dago.getDate()-1);
@@ -156,7 +151,28 @@ async function handleXNAT(project) {
                         },
                         datatype: mapping.datatype,
                         datatype_tags: mapping.datatype_tags,
-                        desc: oScan.note,
+
+                        desc: (oScan.note||oScan.series_description),
+                        tags: [oScan.type], //has to exist for ui
+
+                        storage: "xnat",
+                        storage_config: {
+                            /*
+                            project: project.id, //xnat hostname/user/pass to use
+
+                            subject: oSubject.label,
+                            experiment: oExperiment.label,
+                            scan: oScan.ID,
+                            */
+                            url: `${project.xnat.hostname}/data/projects/${project.xnat.project}/subjects/${oSubject.label}/experiments/${oExperiment.label}/scans/${oScan.ID}/resources/DICOM/files`,
+                            auth, //is it too dangerous to do this? alternative is to lookup project.xnat everytime I need to access data
+                        },
+                        create_date: new Date(oExperiment.insert_date),
+                        user_id: project.user_id, //using project creator's id (not always right?)
+                        project: project.id,
+
+                        removed: false,
+                        status: "stored",
                     });
                 }
 
@@ -333,8 +349,16 @@ async function handleXNAT(project) {
         }
     }
 
-    console.log("----------  done loading objects");
-    console.log(JSON.stringify(objects, null, 4));
+    console.log("----------  done enumerating objects");
+    //console.log(JSON.stringify(objects, null, 4));
+    for(let object of objects) {
+        console.log(JSON.stringify(object, null, 4));
+        let res = await db.Datasets.findOneAndUpdate({
+            "storage": "xnat",
+            "storage_config.url": object.storage_config.url,
+        }, object, {new: true, upsert: true, rawResult: true});
+        console.dir(res.lastErrorObject); 
+    }
 
 }
 

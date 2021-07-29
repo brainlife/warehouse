@@ -488,7 +488,8 @@ var datasetSchema = mongoose.Schema({
     
     //any extra storage config (maybe like subdir needed to access the dataset)
     storage_config: mongoose.Schema.Types.Mixed, 
-    //size of datasets (when downloaded). at the momenet, size is only set when it's copied to SDA
+    
+    //size of datasets (when downloaded)
     size: Number,
 
     //not set if user uploaded it. 
@@ -505,8 +506,7 @@ var datasetSchema = mongoose.Schema({
         ///////////////////////////////////////
     },
 
-    //product.json content for this dataset (new) - might be subset of task.product
-    product: mongoose.Schema.Types.Mixed,
+    product: mongoose.Schema.Types.Mixed, //is this still used?
 
     //storing - dataset is currently being archived (default)
     //stored -  dataset is stored on storage system (removed flag might be set to true if it's "logically" removed - but data still exists)
@@ -528,7 +528,7 @@ var datasetSchema = mongoose.Schema({
     remove_date: Date, //date when this dataset was removed
     update_date: { type: Date }, //date which this document was last updated (used by rule handler, and to see when this dataset was last downloaded / used /touched, etc..)
 
-    removed: { type: Boolean, default: false},
+    removed: { type: Boolean, default: false },
 
     //list of publications that this datasets is published under (point to releases ID under publications)
     publications: [{type: mongoose.Schema.Types.ObjectId, ref: 'Releases', index: true}],
