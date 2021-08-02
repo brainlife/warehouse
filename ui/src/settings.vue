@@ -294,6 +294,10 @@
 
             <div v-if="tab == 3">
                 <h5>Users</h5>
+                    <b-pagination v-model="currentPage" :total-rows="rowUsers" :per-page="perPage" aria-controls="my-table"></b-pagination>
+                    <p class="mt-3">Current Page: {{ currentPage }}</p>
+                    <b-table id="my-table" striped hover :items="users" :fields="fields" :per-page="perPage" :current-page="currentPage" small>
+                    </b-table>
                     <div v-for="(user,index) in users" :key="user._id">
                         <user :user="user" :index="index"/>
                     </div>
@@ -348,11 +352,12 @@ export default {
     data () {
         return {
             tab: 0,
-            users : [],
-            groups : [],
-
+            users: [],
+            groups: [],
+            fields: ["fullname", "username", "active", "email"],
+            perPage: 20,
+            currentPage: 1,
             ready: false,
-
             fullname: "",
             form: {
                 currentPassword: "",
@@ -463,6 +468,9 @@ export default {
             if(!this.form.repeatPassword || !this.form.newPassword) return;
             return this.form.repeatPassword == this.form.newPassword;
         },
+        rowUsers() {
+            return this.users.length;
+        }
     },
 
     watch: {
