@@ -3,7 +3,7 @@
     <b-badge v-if="datatype.validator" variant="light" class="validator-sign" :title="datatype.validator">
         <icon name="check" scale="0.6"/> Validator
     </b-badge>
-    <datatypetag :datatype="datatype" :tags="datatype_tags" :title="id" :clickable="clickable"/> 
+    <datatypetag :datatype="datatype" :tags="datatype_tags" :clickable="clickable"/> 
     <slot name="tag_extra"/>
     <p style="margin-bottom: 0px;"><small style="opacity:.7;">{{datatype.desc}}</small></p>
     <div>
@@ -26,27 +26,14 @@ export default {
     props: {
         datatype: Object,
         datatype_tags: Array,
-        id: String,
+        //id: String,
         clickable: { type: Boolean, default: true, },
-        /*
-        showtag: {
-            type: Boolean,
-            default: true,
-        }
-        */
     },
     data() {
         return {
             activeSections: ['files']
         }
     },
-    /*
-    methods: {
-        click() {
-            this.$router.push('/datatypes/'+this.datatype._id);
-        },
-    }
-    */
 }
 </script>
 

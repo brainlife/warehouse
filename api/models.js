@@ -35,8 +35,6 @@ var projectSchema = mongoose.Schema({
 
     group_id: {type: Number, unique: true} , //group id from auth service to host admins/members
 
-    //tags: [String], //used to classify projects (TODO - I don't think this is used yet..)
-
     name: String,
     desc: String, 
 
@@ -650,6 +648,12 @@ var appSchema = mongoose.Schema({
         datatype_tags: [ String ], //add specifificity to datatype (like "acpc-aligned")
 
         optional: { type: Boolean, default: false}, //input is optional (false for arra means requires at least one)
+
+        //file/dirs to include in data xfer (one path per each line)
+        //  output/stats/***
+        //  output/label/***
+        includes: String, 
+
         multi: { type: Boolean, default: false}, //array input
         advanced: { type: Boolean, default: false}, //advanced option (show under advanced section)
     })],

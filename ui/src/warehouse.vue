@@ -377,6 +377,12 @@ small {
     display: block;
 }
 
+.form-sub-header {
+    font-weight: bold;
+    opacity: 0.8;
+    font-size: 11px;
+}
+
 .vs__actions button.clear {
     position: relative;
     top: 2px;

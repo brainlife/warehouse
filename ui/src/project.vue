@@ -171,6 +171,48 @@
                         <br>
                         <br>
 
+                        <div v-if="selected.xnat.enabled">
+                            <span class="form-header">XNAT Integration</span>
+                            <p>
+                                <small>Data Archive on this project is mapped to the XNAT instance</small>
+                            </p>
+                            <b-row>
+                                <b-col sm="3"><span class="form-sub-header">XNAT Hostname</span></b-col>
+                                <b-col><pre>{{selected.xnat.hostname}}</pre></b-col>
+                            </b-row>
+                            <br>
+                            <b-row>
+                                <b-col sm="3"><span class="form-sub-header">XNAT Project</span></b-col>
+                                <b-col><b>{{selected.xnat.project}}</b></b-col>
+                            </b-row>
+                            <br>
+                            <b-row>
+                                <b-col sm="3"><span class="form-sub-header">SCAN Mapping</span></b-col>
+                                <b-col>
+                                    <b-row>
+                                        <b-col>
+                                            <small>XNAT Scan</small>
+                                        </b-col>
+                                        <b-col sm="1"> </b-col>
+                                        <b-col>
+                                            <small>Brainlife Datatype</small>
+                                        </b-col>
+                                    </b-row>
+                                    <hr style="margin: 5px;">
+                                    <b-row v-for="(map, idx) in selected.xnat.scans" :key="idx">
+                                        <b-col>
+                                            <b>{{map.scan}}</b>
+                                        </b-col>
+                                        <b-col sm="1"> ➜ </b-col>
+                                        <b-col>
+                                            <datatypetag :datatype="map.datatype" :tags="map.datatype_tags"/>
+                                        </b-col>
+                                    </b-row>
+                                </b-col>
+                            </b-row>
+                            <br>
+                        </div>
+
                         <b-tabs class="brainlife-tab sub-tab" v-model="detailTab">
                             <b-tab title="README" active/>
                             <b-tab>
@@ -348,19 +390,14 @@ import publications from '@/components/publications'
 import pipelines from '@/components/pipelines'
 import agreements from '@/components/agreements'
 import stateprogress from '@/components/stateprogress'
-//import noprocess from '@/assets/noprocess'
 import resource from '@/components/resource'
+import datatype from '@/components/datatype'
 import datatypetag from '@/components/datatypetag'
 import participants from '@/components/participants'
 import doibadge from '@/components/doibadge'
 import mag from '@/components/mag'
 import app from '@/components/app'
 
-//import Plotly from '@statnett/vue-plotly'
-//import { Plotly } from 'vue-plotly'
-
-
-//modals
 import newtaskModal from '@/modals/newtask'
 import datatypeselecterModal from '@/modals/datatypeselecter'
 import ReconnectingWebSocket from 'reconnectingwebsocket'

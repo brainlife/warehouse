@@ -351,7 +351,7 @@ Normally, the App description is automatically pulled from github repo descripti
                                 <div class="button" @click="remove_file(idx, fidx)" style="float: right">
                                     <icon name="trash"/>
                                 </div>
-                                <b-row>
+                                <b-row no-gutters>
                                     <b-col cols="5">
                                         <b-input-group prepend="config.json key">
                                             <b-form-input type="text" v-model="file.id" required/>
@@ -367,24 +367,19 @@ Normally, the App description is automatically pulled from github repo descripti
                                     </b-col>
                                 </b-row>
                             </div>
-                            <!--
-                            <div class="file-map">
-                                <b-row v-if="input.files.length > 0">
-                                    <b-col cols="5">
-                                        <small>key used in config.json</small>
-                                    </b-col>
-                                    <b-col cols="2">
-                                    </b-col>
-                                    <b-col v-if="input.datatype" cols="5">
-                                        <small>* shows files that are always present in this datatype.</small>
-                                    </b-col>
-                                </b-row>
-                            </div>
-                            -->
                             <div class="file-map">
                                 <b-button v-if="input.datatype" @click="add_file(idx)" size="sm">Add Optional File Mapping</b-button>
                             </div>
+
                             <br>
+                            <b>Object Subsetting <small>(experimental)</small></b><br>
+                            <small>If your app only use part of this input data object, you can reduce the scratch disk usage and shorten the data transfer time by specifying file paths that you need for your app.</small>
+                            <small>Enter each file paths required by your App in separate lines. You can use "*" to match wildcards. All path should be relative to the root of datatype hierarchy. For example, if you need to access neuro/freesurfer's stats directory and aparc parcellation files, enter something like the following.</small>
+                            <small><pre>output/stats
+output/mri/aparc* </pre></small>
+                            <small>or.. if your app needs just bvecs file from neuro/dwi (no dwi.nii.gz), then you can enter..</small>
+                            <small><pre>dwi.bvecs</pre></small>
+                            <b-textarea v-model="input.includes" placeholder="(leave it blank to transfer the entire data object)"/>
                         </div>
                     </b-card>
                 </div>
@@ -584,8 +579,6 @@ export default {
 
                 //finally time to load app to edit
                 this.$http.get('app/'+this.$route.params.id, {params: {
-                    //find: JSON.stringify({_id: this.$route.params.id}),
-                    //limit: 1,
                     populate: 'deprecated_by',
                 }}).then(res=>{
                     this.app = res.data;
@@ -948,7 +941,7 @@ padding: 10px 0px;
 opacity: 0.8;
 }
 .file-map {
-margin: 7px;
+margin-bottom: 7px;
 }
 .page-content h4 {
 color: #999;

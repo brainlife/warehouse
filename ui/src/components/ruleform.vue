@@ -62,7 +62,7 @@
             </b-form-group>
 
             <b-form-group label="Inputs" horizontal>
-                <p class="text-muted">Rule handler will look for subjects that <b>contain</b> the following inputs.</p>
+                <p class="text-muted">The rule handler will look for subjects that <b>contain</b> the following inputs.</p>
 
                 <div style="border-left: 4px solid rgb(0, 123, 355); padding-left: 10px;">
                     <b-card v-for="input in rule.app.inputs" :key="input._id" class="card">
@@ -114,7 +114,7 @@
             </b-form-group>
 
             <b-form-group label="Outputs" horizontal>
-                <p class="text-muted">Rule handler will submit Apps if the following datasets are <b>missing</b> in the archive.</p>
+                <p class="text-muted">For each subject found, the rule handler will submit the App if the following output is <b>not yet generated</b></p>
                 <div style="border-left: 4px solid rgb(40, 167, 69); padding-left: 10px;">
                     <b-card v-for="output in rule.app.outputs" :key="output._id" class="card">
                         <div slot="header">

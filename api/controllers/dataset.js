@@ -1724,7 +1724,6 @@ router.post('/finalize-upload', common.jwt({secret: config.express.pubkey}), (re
                 group_id: task._group_id,
                 instance_id: task.instance_id,
                 task_id: task._id,
-                //subdir: "upload",
 
                 //used to create object index
                 datatype: {
@@ -1732,14 +1731,6 @@ router.post('/finalize-upload', common.jwt({secret: config.express.pubkey}), (re
                     name: datatype.name,
                 }, 
                 output,
-                /*
-                app: {
-                    service: task.service,
-                    service_branch: task.service_branch,
-                    commit_id: task.commit_id,
-                    name: task.name,
-                },
-                */
                 finish_date: task.finish_date,
             }
 

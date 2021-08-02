@@ -352,8 +352,6 @@ function handle_task(task, cb) {
                         authorization: "Bearer "+config.warehouse.jwt,
                     }
                 });
-                //console.log("submitted new validator------------------------------");
-                //console.dir(dtv_task);
             }, next);
         },
         

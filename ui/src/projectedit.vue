@@ -152,7 +152,7 @@
                 </b-col>
             </b-row>
 
-            <b-row v-if="config.debug">
+            <b-row>
                 <b-col cols="3">
                     <span class="form-header">XNAT Integration (experimental)</span>
                 </b-col> 
@@ -165,6 +165,9 @@
                         <b-form-group label="XNAT Hostname">
                             <b-input type="text" v-model="project.xnat.hostname" placeholder="https://example.xnat.com" required/>
                         </b-form-group>
+                        <b-form-group label="XNAT Project Name">
+                            <b-input type="text" v-model="project.xnat.project" required/>
+                        </b-form-group>
 
                         <p style="background-color: #eee; padding: 10px;">
                             <small>Please issue access token/secret on your XNAT project to allow accesss from brianlife. Brainlife will automatically refresh your token periodically.</small>
@@ -174,10 +177,9 @@
                             <b-form-group label="Secret">
                                 <b-input type="password" v-model="project.xnat.secret" required/>
                             </b-form-group>
+                            <b-button size="sm" @click="testXnat">Test</b-button>
+                            <pre v-if="xnatTestResult" style="padding: 10px; background-color: white; margin-top: 10px;">{{xnatTestResult}}</pre>
                         </p>
-                        <b-form-group label="XNAT Project Name">
-                            <b-input type="text" v-model="project.xnat.project" required/>
-                        </b-form-group>
 
                         <b-form-group label="Scan Mapping">
                             <small>Please enter mapping between XNAT scans names and brainlife datatype/tags</small>
@@ -285,6 +287,8 @@ export default {
                 //group_analysis: false,
             },
 
+            xnatTestResult: null,
+
             participants: null,
             participants_columns: null,
 
@@ -376,6 +380,15 @@ export default {
                     this.$router.push('/projects');        
                 });
             }
+        },
+
+        testXnat() {
+            this.xnatTestResult = null;
+            this.$http.post('project/xnattest', {
+                xnat: this.project.xnat,
+            }).then(res=>{
+                this.xnatTestResult = res.data;
+            });
         },
 
         remove_agreement(idx) {

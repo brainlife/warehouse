@@ -462,11 +462,12 @@ function handle_rule(rule, cb) {
                 rlogger.info("missing input for "+input.id);
             } else {
                 inputs[input.id] = input._datasets[input_group_id][0]; //(TODO for multiinput, we could grab all?)
+                inputs[input.id]._inputSpec = input;
             }
         });
 
         if(missing) {
-            rlogger.info("Found the output datasets that need to be generated, but input are missing");
+            rlogger.info("Found the output datasets that need to be generated, but some required inputs are missing and can't submit the app.");
             return next_group();
         }
 
@@ -484,7 +485,7 @@ function handle_rule(rule, cb) {
         var next_tid = null;
         var stage_jwt = null;
 
-        var _app_inputs = []; 
+        var _app_inputs = [];  //list of input data objects
         var deps_config = [];
         var tasks = {};
 
@@ -607,30 +608,33 @@ function handle_rule(rule, cb) {
                     function canuse_source() {
                         var task = null;
                         if(input.prov && input.prov.task && input.prov.task._id) task = tasks[input.prov.task._id];
-                        if(isalive(task)) {
-                            console.log("found the task ", task)
-                            rlogger.debug("found the task generated the input dataset for output:"+input.prov.output_id);
+                        if(!isalive(task)) return false;
 
-                            //find output from task
-                            let output_detail = task.config._outputs.find(it=>it.id == input.prov.output_id);
+                        //console.log("found the alive task! ", task)
+                        rlogger.debug("found the task generated the input dataset for output:"+input.prov.output_id);
+                        console.log("using alive source", input.id);
 
-                            let dep_config = {task: task._id};
-                            if(input.prov.subdir) dep_config.subdirs = [ input.prov.subdir ];
-                            deps_config.push(dep_config);
-
-                            //TODO I should only put stuff that I need output input..
-                            _app_inputs.push(Object.assign({}, input, {
-                                datatype: input.datatype._id, //unpopulate datatype to keep it clean
-                                task_id: task._id,
-                                subdir: input.prov.subdir,
-                                dataset_id: input._id,
-                                keys,
-
-                                files: output_detail.files, //needed by process_input_config to map to correct output
-                            }));
-                            return true;
+                        //find output from task
+                        let output_detail = task.config._outputs.find(it=>it.id == input.prov.output_id);
+                        let dep_config = {task: task._id};
+                        if(input.prov.subdir) { //most app should use subdir by now?
+                            dep_config.subdirs = appendIncludes(input.prov.subdir, input._inputSpec.includes);
                         }
-                        return false;
+                        console.log("using alive source with dep_config", dep_config);
+                        deps_config.push(dep_config);
+
+                        //TODO I should only put stuff that I need output input..
+                        _app_inputs.push(Object.assign({}, input, {
+                            datatype: input.datatype._id, //unpopulate datatype to keep it clean
+                            task_id: task._id,
+                            subdir: input.prov.subdir,
+                            dataset_id: input._id,
+                            keys,
+
+                            files: output_detail.files, //needed by process_input_config to map to correct output
+                        }));
+
+                        return true;
                     }
 
                     function canuse_staged() {
@@ -646,25 +650,28 @@ function handle_rule(rule, cb) {
                                 }
                             }
                         }
-                        if(output) {
-                            rlogger.debug("found the input dataset already staged previously");
+                        if(!output) return false;
 
-                            let dep_config = {task: task._id};
-                            if(output.subdir) dep_config.subdirs = [ output.subdir ];
-                            deps_config.push(dep_config);
+                        rlogger.debug("found the input dataset already staged previously");
 
-                            //TODO I should only put stuff that I need output input..
-                            _app_inputs.push(Object.assign({}, input, {
-                                datatype: input.datatype._id, //unpopulate datatype to keep it clean
-                                task_id: task._id,
-                                subdir: output.subdir, 
-                                dataset_id: output.dataset_id,
-                                prov: null, //remove dataset prov
-                                keys,
-                            }));
-                            return true;
+                        let dep_config = {task: task._id};
+                        if(output.subdir) {  //most app should use subdir by now..
+                            dep_config.subdirs = appendIncludes(output.subdir, input._inputSpec.includes);
                         }
-                        return false;
+                        console.log("using staged with dep_config", dep_config);
+                        deps_config.push(dep_config);
+
+                        //TODO I should only put stuff that I need output input..
+                        _app_inputs.push(Object.assign({}, input, {
+                            datatype: input.datatype._id, //unpopulate datatype to keep it clean
+                            task_id: task._id,
+                            subdir: output.subdir, 
+                            dataset_id: output.dataset_id,
+                            prov: null, //remove dataset prov
+                            keys,
+                        }));
+
+                        return true;
                     }
                     
                     if(!canuse_source() && !canuse_staged()) {
@@ -704,7 +711,18 @@ function handle_rule(rule, cb) {
                     _app_inputs.forEach(input=>{
                         if(!input.task_id) input.task_id = task_stage._id;
                     });
-                    deps_config.push({task: task_stage._id});
+
+                    //join all required subdirs together
+                    let subdirs = [];
+                    downloads.forEach(download=>{
+                        subdirs = [...subdirs, ...appendIncludes(download._id, input._inputSpec.includes)];
+                    });
+                    console.log("constructed more specific subdirs using _inputSpec", subdirs);
+
+                    deps_config.push({
+                        task: task_stage._id,
+                        subdirs,
+                    });
 
                     rlogger.debug("submitted staging task");
                     next();
@@ -864,4 +882,17 @@ function process_input_config(app, input_info, _app_inputs) {
     }
     return out;
 }
+
+function appendIncludes(subdir, includes) {
+    const subdirs = [];
+    if(includes) {
+        includes.split("\n").forEach(include=>{
+            subdirs.push("include:"+subdir+"/"+include);
+        });
+    } else {
+        subdirs.push(subdir); //old way of listing dir..
+    }
+    return subdirs;
+}
+
 

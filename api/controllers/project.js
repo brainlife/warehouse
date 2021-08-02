@@ -4,6 +4,7 @@ const express = require('express');
 const router = express.Router();
 const winston = require('winston');
 const request = require('request');
+const axios = require('axios');
 
 const config = require('../config');
 const logger = winston.createLogger(config.logger.winston);
@@ -191,6 +192,21 @@ router.post('/', common.jwt(), function(req, res, next) {
         });
     });
 });
+
+router.post('/xnattest', common.jwt(), async (req, res, next)=>{
+    const auth = {
+        username: req.body.xnat.token,
+        password: req.body.xnat.secret,
+    }
+    try {
+        const resXnat = await axios.get(req.body.xnat.hostname+"/data/services/tokens/issue", {auth});
+        res.json({status: resXnat.status, message: resXnat.statusText});
+    } catch (err) {
+        console.error(err.response);
+        res.json({status: err.response.status, message: err.response.statusText});
+    }
+});
+
 
 /**
  * @apiGroup Project
