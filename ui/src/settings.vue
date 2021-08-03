@@ -297,12 +297,8 @@
                         <b-row>
                             <b-col>
                                 <h5>Users</h5>
-                                <div class="search-box onRight">
-                                    <b-form-input v-model="query" type="text" placeholder="Search Datatypes" @input="changeQueryDebounce" class="input"/>
-                                    <icon name="search" class="search-icon" scale="1.5"/>
-                                    <icon name="times" class="clear-search" scale="1.5" @click="clearQuery()" v-if="query"/>
-                                </div>
-                                <b-table id="my-table" striped hover :items="users" :fields="fields" :per-page="perPage" :current-page="currentPage" small  @row-clicked="selectUser"></b-table>
+                                <b-form-input v-model="queryUser" type="text" placeholder="Search Users" @input="changeQueryDebounce" class="input"/>
+                                <b-table :tbody-tr-class="rowClass" ref="userTable" striped hover :items="loadUsers()" :fields="fields" :per-page="perPage" :current-page="currentPage" small  @row-clicked="selectUser"></b-table>
                                 <b-pagination v-model="currentPage" :total-rows="rowUsers" :per-page="perPage" aria-controls="my-table"></b-pagination>
                                 <p class="mt-3">Current Page: {{ currentPage }}</p>
                             </b-col>
@@ -392,7 +388,7 @@ import pageheader from '@/components/pageheader'
 import statustag from '@/components/statustag'
 
 const lib = require('@/lib'); //for avatar_url
-
+let queryDebounceUser;
 export default {
     components: { 
         pageheader, statustag,
@@ -405,6 +401,8 @@ export default {
         return {
             tab: 0,
             users: [],
+            queryUser: "", 
+            filteredUsers: [],
             groups: [],
             fields: ["fullname", "username", "active", "email"],
             perPage: 200,
@@ -516,6 +514,8 @@ export default {
                 console.error(err.response);
                 this.$notify({type: "error", text: err});
             });
+            if(this.queryUser.length) return this.filteredUsers;
+            return this.users;
         },
         loadGroups() {
             this.$http.get(Vue.config.auth_api+"/groups").then(res=>{
@@ -525,15 +525,12 @@ export default {
                 this.$notify({type: "error", text: err});
             });
         },
-        selectUser(user, index) {
-            let row_prev = this.users.find(user => user._rowVariant);
-            if(row_prev) {
-                row_prev._rowVariant = null;
-                this.$forceUpdate();
-            }
+        selectUser(user) {
             this.userEdit = user;
-            user._rowVariant = "success";
-            this.$forceUpdate();
+        },
+        rowClass(item, type) {
+            if (!item || type !== 'row') return
+            if (item._id == this.userEdit._id) return 'table-success'
         },
         submitUser(e) {
             e.preventDefault();
@@ -542,6 +539,29 @@ export default {
                 this.userEdit = {};
                 this.$forceUpdate();
             }).catch(err=>console.error(err));
+        },
+        changeQueryDebounce() {
+            clearTimeout(queryDebounceUser);
+            queryDebounceUser = setTimeout(this.changeQueryUser, 300);        
+        },
+        changeQueryUser() {
+            if(!this.users) return setTimeout(this.changeQueryUser, 300);
+            sessionStorage.setItem("user.query", this.queryUser);
+            this.applyFilterUser();
+        },
+        applyFilterUser() {
+            let tokens = this.queryUser.toLowerCase().split(" ");
+            this.filteredUsers = this.users.filter(user=>{
+                let stuff = [
+                    user.fullname,
+                    user.username,
+                    user.email
+                ];
+                console.log(stuff);
+                const text = stuff.filter(thing=>!!thing).join(" ").toLowerCase();
+                return tokens.every(token=>text.includes(token));
+            });
+
         }
     },
 
@@ -559,6 +579,9 @@ export default {
         tab : function() {
             if(this.tab == 3) this.loadUsers();
             if(this.tab == 4) this.loadGroups();
+        },
+        queryUser : function() {
+            this.applyFilterUser();
         }
     }
 
