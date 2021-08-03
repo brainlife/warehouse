@@ -374,12 +374,15 @@ Normally, the App description is automatically pulled from github repo descripti
                             <br>
                             <b>Object Subsetting <small>(experimental)</small></b><br>
                             <small>If your app only use part of this input data object, you can reduce the scratch disk usage and shorten the data transfer time by specifying file paths that you need for your app.</small>
-                            <small>Enter each file paths required by your App in separate lines. You can use "*" to match wildcards. All path should be relative to the root of datatype hierarchy. For example, if you need to access neuro/freesurfer's stats directory and aparc parcellation files, enter something like the following.</small>
-                            <small><pre>output/stats
-output/mri/aparc* </pre></small>
-                            <small>or.. if your app needs just bvecs file from neuro/dwi (no dwi.nii.gz), then you can enter..</small>
-                            <small><pre>dwi.bvecs</pre></small>
+                            <small>Enter each file paths required by your App in separate lines. You can use "*" to match wildcards. All path should be relative to the root of datatype hierarchy. </small>
                             <b-textarea v-model="input.includes" placeholder="(leave it blank to transfer the entire data object)"/>
+                            <p style="background-color: #ddd; border-radius: 5px; padding: 10px; margin: 5px 0;">
+                                <small>For example, if you need to access neuro/freesurfer's stats directory and aparc parcellation files, enter something like the following.</small>
+                                <small><pre>output/stats
+output/mri/aparc* </pre></small>
+                                <small>or.. if your app needs just bvecs file from neuro/dwi (no dwi.nii.gz), then you can enter..</small>
+                                <small><pre>dwi.bvecs</pre></small>
+                            </p>
                         </div>
                     </b-card>
                 </div>

@@ -618,7 +618,8 @@ function handle_rule(rule, cb) {
                         let output_detail = task.config._outputs.find(it=>it.id == input.prov.output_id);
                         let dep_config = {task: task._id};
                         if(input.prov.subdir) { //most app should use subdir by now?
-                            dep_config.subdirs = appendIncludes(input.prov.subdir, input._inputSpec.includes);
+                            if(input._inputSpec.includes) dep_config.subdirs = appendIncludes(input.prov.subdir, input._inputSpec.includes);
+                            else dep_config.subdirs = [input.prov.subdir];
                         }
                         console.log("using alive source with dep_config", dep_config);
                         deps_config.push(dep_config);
@@ -656,7 +657,8 @@ function handle_rule(rule, cb) {
 
                         let dep_config = {task: task._id};
                         if(output.subdir) {  //most app should use subdir by now..
-                            dep_config.subdirs = appendIncludes(output.subdir, input._inputSpec.includes);
+                            if(input._inputSpec.includes) dep_config.subdirs = appendIncludes(output.subdir, input._inputSpec.includes);
+                            else dep_config.subdirs = [output.subdir];
                         }
                         console.log("using staged with dep_config", dep_config);
                         deps_config.push(dep_config);
@@ -708,14 +710,15 @@ function handle_rule(rule, cb) {
                     next_tid++;
 
                     //reset task_id  (TODO - what is this for?)
-                    _app_inputs.forEach(input=>{
-                        if(!input.task_id) input.task_id = task_stage._id;
+                    _app_inputs.forEach(_input=>{
+                        if(!_input.task_id) _input.task_id = task_stage._id;
                     });
 
                     //join all required subdirs together
                     let subdirs = [];
                     downloads.forEach(download=>{
-                        subdirs = [...subdirs, ...appendIncludes(download._id, input._inputSpec.includes)];
+                        if(input._inputSpec.incluedes) subdirs = [...subdirs, ...appendIncludes(download._id, input._inputSpec.includes)];
+                        else subdirs.push(download._id);
                     });
                     console.log("constructed more specific subdirs using _inputSpec", subdirs);
 
@@ -884,15 +887,9 @@ function process_input_config(app, input_info, _app_inputs) {
 }
 
 function appendIncludes(subdir, includes) {
-    const subdirs = [];
-    if(includes) {
-        includes.split("\n").forEach(include=>{
-            subdirs.push("include:"+subdir+"/"+include);
-        });
-    } else {
-        subdirs.push(subdir); //old way of listing dir..
-    }
-    return subdirs;
+    return includes.split("\n").map(include=>{
+        return "include:"+subdir+"/"+include;
+    });
 }
 
 

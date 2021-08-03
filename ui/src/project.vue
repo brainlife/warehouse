@@ -208,7 +208,15 @@
                                             <datatypetag :datatype="map.datatype" :tags="map.datatype_tags"/>
                                         </b-col>
                                     </b-row>
+
+                                    <br>
+                                    <p>
+                                        <small>brainlife.io will perodically crawl XNAT and update object listed in archive. If you'd like to load the objects now, please click this button.</small><br>
+                                        <b-button size="sm" @click="loadXNATObjects">Load Objects</b-button>
+                                    </p>
+
                                 </b-col>
+
                             </b-row>
                             <br>
                         </div>
@@ -759,6 +767,15 @@ export default {
             case "failed": return "danger";
             default: return "dark";
             }
+        },
+
+        loadXNATObjects() {
+            this.$root.$emit("loading",{message: "Loading XNAT Objects"});
+            this.$http.post("/xnat/load/"+this.selected._id).then(res=>{
+                this.$root.$emit("loading", {show: false});
+                this.$notify({ text: "Loaded "+res.data.length+" objects" });
+                console.dir(res);
+            });
         },
     },
 }

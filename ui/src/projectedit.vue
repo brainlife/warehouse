@@ -2,11 +2,13 @@
 <div class="projectedit">
     <div class="page-header">
         <b-container>
+            <!--
             <p style="float: right">
                 <b-button size="sm" variant="outline-secondary" href="https://brainlife.io/docs/user/project" target="doc">
                     <icon name="book"/> Documentation
                 </b-button>
             </p>
+            -->
             <h4 style="margin-right: 150px">{{project.name||'No name'}}</h4>
         </b-container>
     </div>
@@ -212,7 +214,7 @@
                                 </b-row>
                             </div>
                             <br>
-                            <b-button type="button" variant="secondary" @click="project.xnat.scans.push({})"><icon name="plus"/> Add Scan Mapping</b-button>
+                            <b-button type="button" variant="secondary" @click="project.xnat.scans.push({})" size="sm"><icon name="plus"/> Add Scan Mapping</b-button>
 
                         </b-form-group>
                     </div>
@@ -384,8 +386,12 @@ export default {
 
         testXnat() {
             this.xnatTestResult = null;
-            this.$http.post('project/xnattest', {
-                xnat: this.project.xnat,
+            this.$http.get('xnat/validate', {
+                params: {
+                    hostname: this.project.xnat.hostname,
+                    token: this.project.xnat.token,
+                    secret: this.project.xnat.secret,
+                }
             }).then(res=>{
                 this.xnatTestResult = res.data;
             });
