@@ -367,10 +367,17 @@ export default {
                 this.form.inputs[input.id] = this.form.inputs[input.id].filter(ps=>ps.dataset!=null);
             });
 
+            const subdirs = [];
             var all_dataset_ids = [];
             for(var input_id in this.form.inputs) {
+                const inputSpec = this.app.inputs.find(input=>input.id == input_id);
                 this.form.inputs[input_id].forEach(ps=>{
                     all_dataset_ids.push(ps.dataset.id);
+                    if(inputSpec.includes) {
+                        inputSpec.includes.split("\n").forEach(include=>{
+                            subdirs.push("include:"+ps.dataset.id+"/"+include);
+                        });
+                    } else subdirs.push(ps.dataset.id);
                 });
             }
 
@@ -429,7 +436,7 @@ export default {
                     _inputs: [],
                     _outputs: [],
                 });
-    
+
                 for(let input_id in this.form.inputs) {
 
                     //find config.json key mapped to this input
@@ -462,7 +469,6 @@ export default {
                     });
                     return meta;
                 }, {});
-                console.log("reduced meta", meta)
 
                 //prepare _outputs
                 this.app.outputs.forEach(output=>{
@@ -503,7 +509,7 @@ export default {
                     config,
                     deps_config: [ {
                         task: download_task._id,
-                        subdirs: all_dataset_ids,
+                        subdirs,
                     } ],
                 };
                 if (this.form.advanced.resource) submissionParams.preferred_resource_id = this.form.advanced.resource;
@@ -511,8 +517,6 @@ export default {
                 
                 return this.$http.post(Vue.config.wf_api+'/task', submissionParams);
             }).then(res=>{
-                //console.log("submitted app task", res.data.task);
-                //console.log("/project/"+this.project+"/process/"+instance._id);
                 this.$router.push("/project/"+this.project+"/process/"+instance._id);
             }).catch(err=>{
                 console.error(err);

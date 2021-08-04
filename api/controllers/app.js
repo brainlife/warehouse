@@ -352,74 +352,80 @@ router.post('/', common.jwt(), (req, res, next)=>{
  */
 router.put('/:id', common.jwt(), (req, res, next)=>{
     var id = req.params.id;
-    common.validate_projects(req.user, req.body.projects, err=>{
+
+    //let's not validate project - as different maintainer has access to different set of projects
+    //and if the project is entered by different maintainer, we don't want to error out..
+    //TODO.. UI only load project that user has read access to, so we need to make sure we load project
+    //currently listed in the project field..
+    //common.validate_projects(req.user, req.body.projects, err=>{
+    //    if(err) return next(err);
+
+    db.Apps.findById(id, (err, app)=>{
         if(err) return next(err);
-        db.Apps.findById(id, (err, app)=>{
-            if(err) return next(err);
-            if(!app) return res.status(404).end();
-            if(!canedit(req.user, app)) {
-                return res.status(401).end("you are not administartor of this app");
-            } else {
-                for(var k in req.body) {
-                    //white list fields that user can update
-                    switch(k) {
-                    case "admins":
-                    case "avatar":
-                    case "name":
-                    case "config":
-                    case "desc_override":
-                    case "github":
-                    case "github_branch":
-                    case "inputs":
-                    case "outputs":
-                    case "projects":
-                    case "retry":
-                    case "removed":
-                    case "deprecated_by":
-                        app[k] = req.body[k];    
-                        if(req.body[k] === null) app[k] = undefined; //remove 
-                        break;
-                    default:
-                        logger.debug("can't update %s", k);
-                    }
+        if(!app) return res.status(404).end();
+        if(!canedit(req.user, app)) {
+            return res.status(401).end("you are not administartor of this app");
+        } else {
+            for(var k in req.body) {
+                //white list fields that user can update
+                switch(k) {
+                case "admins":
+                case "avatar":
+                case "name":
+                case "config":
+                case "desc_override":
+                case "github":
+                case "github_branch":
+                case "inputs":
+                case "outputs":
+                case "projects":
+                case "retry":
+                case "removed":
+                case "deprecated_by":
+                    app[k] = req.body[k];    
+                    if(req.body[k] === null) app[k] = undefined; //remove 
+                    break;
+                default:
+                    logger.debug("can't update %s", k);
                 }
-
-                async.series([
-                    //update info from github
-                    cb=>{
-                        common.update_appinfo(app, cb);
-                    },
-
-                    //update datacite info
-                    cb=>{
-                        if(!app.doi) return cb(); //doi not set...skip
-                        let metadata = common.compose_app_datacite_metadata(app);
-                        common.doi_post_metadata(metadata, err=>{
-                            if(err) {
-                                logger.error("failed to update metadata for datacite");
-                                logger.error(err);
-                                return cb(); //sometime datacite is broken.. let's skip if this happens
-                            }
-                            cb();
-                        });
-                    },
-
-                    //now save
-                    cb=>{
-                        app.save((err)=>{
-                            if(err) return cb(err);
-                            app = JSON.parse(JSON.stringify(app));
-                            app._canedit = canedit(req.user, app);
-                            cb();
-                        });
-                    },
-                ], err=>{
-                    if(err) return next(err);
-                    res.json(app);
-                });
             }
-        });
+
+            async.series([
+                //update info from github
+                cb=>{
+                    common.update_appinfo(app, cb);
+                },
+
+                //update datacite info
+                cb=>{
+                    if(!app.doi) return cb(); //doi not set...skip
+                    let metadata = common.compose_app_datacite_metadata(app);
+                    common.doi_post_metadata(metadata, err=>{
+                        if(err) {
+                            logger.error("failed to update metadata for datacite");
+                            logger.error(err);
+                            return cb(); //sometime datacite is broken.. let's skip if this happens
+                        }
+                        cb();
+                    });
+                },
+
+                //now save
+                cb=>{
+                    app.save((err)=>{
+                        if(err) return cb(err);
+                        app = JSON.parse(JSON.stringify(app));
+                        app._canedit = canedit(req.user, app);
+                        cb();
+                    });
+                },
+            ], err=>{
+                if(err) return next(err);
+                res.json(app);
+            });
+        }
     });
+    //});
 });
 
 /**

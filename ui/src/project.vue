@@ -171,7 +171,7 @@
                         <br>
                         <br>
 
-                        <div v-if="selected.xnat.enabled">
+                        <div v-if="selected.xnat.enabled" style="background-color: #eee; padding: 10px; border-radius: 10px">
                             <span class="form-header">XNAT Integration</span>
                             <p>
                                 <small>Data Archive on this project is mapped to the XNAT instance</small>
@@ -218,8 +218,8 @@
                                 </b-col>
 
                             </b-row>
-                            <br>
                         </div>
+                        <br>
 
                         <b-tabs class="brainlife-tab sub-tab" v-model="detailTab">
                             <b-tab title="README" active/>
