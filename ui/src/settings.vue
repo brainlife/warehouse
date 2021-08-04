@@ -297,7 +297,7 @@
                         <b-row>
                             <b-col>
                                 <h5>Users</h5>
-                                <b-form-input v-model="queryUser" type="text" placeholder="Search Users" @input="changeQueryDebounce" class="input"/>
+                                <b-form-input v-model="queryUser" type="text" placeholder="Search Users" @input="changeQueryDebounceUser" class="input"/>
                                 <b-table :tbody-tr-class="rowClass" ref="userTable" striped hover :items="loadUsers()" :fields="fields" :per-page="perPage" :current-page="currentPage" small  @row-clicked="selectUser"></b-table>
                                 <b-pagination v-model="currentPage" :total-rows="rowUsers" :per-page="perPage" aria-controls="my-table"></b-pagination>
                                 <p class="mt-3">Current Page: {{ currentPage }}</p>
@@ -355,8 +355,8 @@
                     <b-row>
                         <b-col>
                             <h5>Groups <span style="float: right"><b-button>Create Group</b-button></span></h5>
-                            <br>
-                            <b-table :tbody-tr-class="rowClass" ref="groupTable" striped hover :items="groups" :fields="groupfields" :per-page="perPage" :current-page="currentPage" small  @row-clicked="selectGroup"></b-table>
+                            <b-form-input v-model="queryGroup" type="text" placeholder="Search Groups" @input="changeQueryDebounceGroup" class="input"/>
+                            <b-table :tbody-tr-class="rowClass" ref="groupTable" striped hover :items="loadGroups()" :fields="groupfields" :per-page="perPage" :current-page="currentPage" small  @row-clicked="selectGroup"></b-table>
                             <b-pagination v-model="currentPage" :total-rows="rowUsers" :per-page="perPage" aria-controls="my-table"></b-pagination>
                             <p class="mt-3">Current Page: {{ currentPage }}</p>
                         </b-col>
@@ -395,6 +395,8 @@ import statustag from '@/components/statustag'
 
 const lib = require('@/lib'); //for avatar_url
 let queryDebounceUser;
+let queryDebounceGroup;
+
 export default {
     components: { 
         pageheader, statustag,
@@ -408,7 +410,9 @@ export default {
             tab: 0,
             users: [],
             queryUser: "", 
+            queryGroup: "",
             filteredUsers: [],
+            filteredGroups: [],
             groups: [],
             fields: ["fullname", "username", "active", "email"],
             groupfields: ["name", "active"],
@@ -536,11 +540,12 @@ export default {
         loadGroups() {
             this.$http.get(Vue.config.auth_api+"/groups").then(res=>{
                 this.groups = res.data;
-                console.log("LOADED groups"+this.groups);
             }).catch(err=>{
                 console.error(err.response);
                 this.$notify({type: "error", text: err});
             });
+            if(this.queryGroup.length) return this.filteredGroups;
+            return this.groups;
         },
         selectUser(user) {
             this.userEdit = user;
@@ -569,14 +574,23 @@ export default {
                 this.$forceUpdate();
             }).catch(err=>console.error(err));
         },
-        changeQueryDebounce() {
+        changeQueryDebounceUser() {
             clearTimeout(queryDebounceUser);
             queryDebounceUser = setTimeout(this.changeQueryUser, 300);        
+        },
+        changeQueryDebounceGroup() {
+            clearTimeout(queryDebounceGroup);
+            queryDebounceGroup = setTimeout(this.changeQueryGroup,300);
         },
         changeQueryUser() {
             if(!this.users) return setTimeout(this.changeQueryUser, 300);
             sessionStorage.setItem("user.query", this.queryUser);
             this.applyFilterUser();
+        },
+        changeQueryGroup() {
+            if(!this.groups) return setTimeout(this.changeQueryGroup,300);
+            sessionStorage.setItem("group.query", this.queryGroup);
+            this.applyFilterGroup();
         },
         applyFilterUser() {
             let tokens = this.queryUser.toLowerCase().split(" ");
@@ -586,11 +600,21 @@ export default {
                     user.username,
                     user.email
                 ];
-                console.log(stuff);
                 const text = stuff.filter(thing=>!!thing).join(" ").toLowerCase();
                 return tokens.every(token=>text.includes(token));
             });
 
+        },
+        applyFilterGroup() {
+            let tokens = this.queryGroup.toLowerCase().split(" ");
+            this.filteredGroups = this.groups.filter(group=>{
+                let stuff = [
+                    group.name,
+                    group.description,
+                ];
+                const text = stuff.filter(thing=>!!thing).join(" ").toLowerCase();
+                return tokens.every(token=>text.includes(token));
+            });
         }
     },
 
