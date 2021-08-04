@@ -369,9 +369,10 @@
                                     <span class="form-header">Description</span>
                                     <b-form-textarea v-model="groupEdit.desc" rows="8"></b-form-textarea>
                                     <span class="form-header">Members</span>
-                                    <b-form-textarea v-model="groupEdit.members" rows="4"></b-form-textarea>
+                                    {{groupEdit.members}}
+                                    <contactlist v-model="groupEdit.members"></contactlist>
                                     <span class="form-header">Admins</span>
-                                    <b-form-textarea v-model="groupEdit.admins" rows="4"></b-form-textarea>
+                                    <contactlist v-model="groupEdit.admins"></contactlist>
                                     <b-form-checkbox v-model="groupEdit.active">Active</b-form-checkbox>
                                 </b-col>
                             </b-row>
@@ -402,7 +403,7 @@ export default {
         pageheader, statustag,
         password: ()=>import('vue-password-strength-meter'), 
         user : ()=>import('@/components/user'),
-        contact: ()=>import('@/components/contact')
+        contactlist: ()=>import('@/components/contactlist')
     },
 
     data () {
@@ -541,8 +542,8 @@ export default {
         rowClass(item, type) {
             if (!item || type !== 'row') return;
             // if (item._id == this.userEdit._id || this.groupEdit._id == item._id) return 'table-success'
-            if(this.userEdit && this.userEdit._id == item._id) return 'table-success';
-            if(this.groupEdit && this.groupEdit._id == item._id) return 'table-success';
+            if(this.userEdit && this.userEdit._id == item._id) return 'table-primary';
+            if(this.groupEdit && this.groupEdit._id == item._id) return 'table-primary';
         },
         submitUser(e) {
             e.preventDefault();
@@ -617,7 +618,7 @@ export default {
         },
         rowUsers() {
             return this.users.length;
-        }
+        },
     },
 
     watch: {
