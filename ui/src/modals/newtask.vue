@@ -424,6 +424,8 @@ export default {
 
         //transform config object
         process_input_config(config) {
+            console.log("app spec");
+            console.dir(this.app);
             for(var k in this.app.config) { 
                 var node = this.app.config[k];
                 //console.log("processing input", k, node);
@@ -435,7 +437,6 @@ export default {
                     input.selected.forEach(selected=>{
                         if(!selected) return; //not set for optional input?
                         var dataset = selected.dataset;
-                        //console.log("dataset info", dataset);
 
                         let dep_config = this.deps_config.find(dep=>dep.task == dataset.task._id);
                         if(!dep_config) {
@@ -446,7 +447,6 @@ export default {
                         //use file path specified in datatype..
                         var file = input.datatype.files.find(file=>file.id == node.file_id);
                         if(!file) {
-                            //console.error("failed to find file id", node.file_id);
                             config[k] = "no such file_id:"+node.file_id;
                             return;
                         }
@@ -460,9 +460,16 @@ export default {
                             //add to subdirs list
                             if(!dep_config.subdirs) dep_config.subdirs = [];
                             if(!dep_config.subdirs.includes(dataset.subdir)) {
-                                dep_config.subdirs.push(dataset.subdir);
+                                if(input.includes) {
+                                    input.includes.split("\n").forEach(include=>{
+                                        dep_config.subdirs.push("include:"+dataset.subdir+"/"+include);
+                                    });
+                                } else dep_config.subdirs.push(dataset.subdir);
                             }
                         }
+
+                        console.log("input");
+                        console.dir(input);
 
                         var path = base+"/"+(file.filename||file.dirname);
                         if(dataset.files && dataset.files[node.file_id]) {

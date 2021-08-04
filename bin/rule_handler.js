@@ -142,12 +142,11 @@ function handle_rule(rule, cb) {
             //see if any datasets that this rule uses as input got updates recently
             let projects = [ rule.project._id ];
             if(rule.input_project_override) {
-                for(var input_id in rule.input_project_override) {
+                for(const input_id in rule.input_project_override) {
                     projects.push(rule.input_project_override[input_id]); 
                 }
             }                
 
-            //console.log("looking for the last dataset update date for rule:"+rule._id);
             db.Datasets.findOne({
                 project: { $in: projects }, 
                 update_date: { $exists: true } , 
@@ -216,7 +215,7 @@ function handle_rule(rule, cb) {
 
         //get all tasks submitted for this rule
         next=>{
-            var limit = 5000;
+            const limit = 5000;
             request.get({
                 url: config.amaretti.api+"/task", json: true,
                 headers: { authorization: "Bearer "+jwt },
@@ -253,7 +252,7 @@ function handle_rule(rule, cb) {
         next=>{
             let projects = [ rule.project._id ];
             if(rule.input_project_override) {
-                for(var input_id in rule.input_project_override) {
+                for(const input_id in rule.input_project_override) {
                     projects.push(mongoose.Types.ObjectId(rule.input_project_override[input_id])); 
                 }
             }                
@@ -287,7 +286,7 @@ function handle_rule(rule, cb) {
         //find all output datasets that this rule is looking for
         next=>{
             async.eachSeries(rule.app.outputs, (output, next_output)=>{
-                var query = {
+                const query = {
                     project: rule.project._id,
                     datatype: output.datatype,
 
@@ -300,7 +299,7 @@ function handle_rule(rule, cb) {
                     removed: false,
                 }
                 if(output.datatype_tags.length > 0) query.datatype_tags = { $all: output.datatype_tags };
-                let tags = rule.output_tags[output.id];
+                const tags = rule.output_tags[output.id];
                 if(tags && tags.length > 0) query.tags = { $all: tags };
 
                 db.Datasets.find(query)
@@ -320,7 +319,7 @@ function handle_rule(rule, cb) {
                 input._datasets = {}; //keyed by subject array of matchind datasets (should be sorted by "selection_method")
 
                 //defaults
-                var query = {
+                const query = {
                     project: rule.project._id,
                     datatype: input.datatype,
                     storage: { $exists: true },
@@ -422,7 +421,7 @@ function handle_rule(rule, cb) {
         }
         
         //find all outputs from the app with tags specified in rule.output_tags[output_id]
-        var output_missing = false;
+        let output_missing = false;
         rule.app.outputs.forEach(output=>{
             //I should ignore missing output if user doesn't want to archive it?
             if(!rule.archive || !rule.archive[output.id] || !rule.archive[output.id].do) {
@@ -477,17 +476,17 @@ function handle_rule(rule, cb) {
     }
 
     function submit_tasks(group, inputs, cb) {
-        var instance = null;
-        var task_stage = null;
-        var task_app = null;
-        var task_out = null;
-        var meta = {}; //metadata to store for archived dataset
-        var next_tid = null;
-        var stage_jwt = null;
+        let instance = null;
+        let task_stage = null;
+        let task_app = null;
+        let task_out = null;
+        const meta = {}; //metadata to store for archived dataset
+        let next_tid = null;
+        let stage_jwt = null;
 
-        var _app_inputs = [];  //list of input data objects
-        var deps_config = [];
-        var tasks = {};
+        const _app_inputs = [];  //list of input data objects
+        const deps_config = [];
+        const tasks = {};
 
         running++;
 
@@ -546,7 +545,6 @@ function handle_rule(rule, cb) {
             
             //get tasks submitted.. and compute next _tid
             next=>{
-                console.log("querying taskfor instance", instance._id)
                 request.get({
                     url: config.amaretti.api+"/task", json: true,
                     headers: { authorization: "Bearer "+jwt },
@@ -564,7 +562,6 @@ function handle_rule(rule, cb) {
                         return next(body);
                     }
                     body.tasks.forEach(task=>{
-                        //console.log("task", task._id, task.service)
                         tasks[task._id] = task;
                     });
 
@@ -588,10 +585,10 @@ function handle_rule(rule, cb) {
 
             //submit input staging task for datasets that aren't staged yet
             next=>{
-                var _outputs = [];
-                var downloads = [];
-                for(var input_id in inputs) {
-                    var input = inputs[input_id];
+                const _outputs = [];
+                const downloads = [];
+                for(let input_id in inputs) {
+                    let input = inputs[input_id];
                     rlogger.debug("looking for source/staged dataset "+input._id+" for input "+input_id);
 
                     //although we need to construct _outputs for product_raw, we are reusing most of the info
@@ -601,19 +598,16 @@ function handle_rule(rule, cb) {
                     
                     //enumerate json keys for this input
                     let keys = [];
-                    for(var key in rule.app.config) {
+                    for(const key in rule.app.config) {
                         if(rule.app.config[key].input_id == input_id) keys.push(key);
                     }
 
                     function canuse_source() {
-                        var task = null;
+                        let task = null;
                         if(input.prov && input.prov.task && input.prov.task._id) task = tasks[input.prov.task._id];
                         if(!isalive(task)) return false;
 
-                        //console.log("found the alive task! ", task)
                         rlogger.debug("found the task generated the input dataset for output:"+input.prov.output_id);
-                        console.log("using alive source", input.id);
-
                         //find output from task
                         let output_detail = task.config._outputs.find(it=>it.id == input.prov.output_id);
                         let dep_config = {task: task._id};
@@ -621,7 +615,6 @@ function handle_rule(rule, cb) {
                             if(input._inputSpec.includes) dep_config.subdirs = appendIncludes(input.prov.subdir, input._inputSpec.includes);
                             else dep_config.subdirs = [input.prov.subdir];
                         }
-                        console.log("using alive source with dep_config", dep_config);
                         deps_config.push(dep_config);
 
                         //TODO I should only put stuff that I need output input..
@@ -640,9 +633,9 @@ function handle_rule(rule, cb) {
 
                     function canuse_staged() {
                         //see if there are input task that has the dataset already staged
-                        var task = null;
-                        var output = null;
-                        for(var task_id in tasks) {
+                        let task = null;
+                        let output = null;
+                        for(const task_id in tasks) {
                             task = tasks[task_id];
                             if(task.service == "soichih/sca-product-raw" || task.service == "brainlife/app-stage") {
                                 if(isalive(task)) {
@@ -660,7 +653,6 @@ function handle_rule(rule, cb) {
                             if(input._inputSpec.includes) dep_config.subdirs = appendIncludes(output.subdir, input._inputSpec.includes);
                             else dep_config.subdirs = [output.subdir];
                         }
-                        console.log("using staged with dep_config", dep_config);
                         deps_config.push(dep_config);
 
                         //TODO I should only put stuff that I need output input..
@@ -682,7 +674,7 @@ function handle_rule(rule, cb) {
                         downloads.push(input);
                         
                         //TODO I should only put stuff that I need output input..
-                        var output = Object.assign({}, input, {
+                        const output = Object.assign({}, input, {
                             datatype: input.datatype._id, //unpopulate datatype to keep it clean
                             subdir: input._id,
                             dataset_id: input._id, 
@@ -717,10 +709,9 @@ function handle_rule(rule, cb) {
                     //join all required subdirs together
                     let subdirs = [];
                     downloads.forEach(download=>{
-                        if(input._inputSpec.incluedes) subdirs = [...subdirs, ...appendIncludes(download._id, input._inputSpec.includes)];
+                        if(input._inputSpec.includes) subdirs = [...subdirs, ...appendIncludes(download._id, input._inputSpec.includes)];
                         else subdirs.push(download._id);
                     });
-                    console.log("constructed more specific subdirs using _inputSpec", subdirs);
 
                     deps_config.push({
                         task: task_stage._id,
@@ -737,8 +728,8 @@ function handle_rule(rule, cb) {
                 //copy some hierarchical metadata from input
                 //simialr code in ui/modal/appsubmit
                 //similar code in ui/newtask.vue
-                for(var input_id in inputs) {
-                    var input = inputs[input_id];
+                for(const input_id in inputs) {
+                    const input = inputs[input_id];
                     //let's copy hierarchical metadata only
                     ["subject", "session", "run"].forEach(k=>{
                         if(!meta[k]) meta[k] = input.meta[k]; //use first one
@@ -759,7 +750,7 @@ function handle_rule(rule, cb) {
             //cli
             //submit the app task!
             next=>{
-                var _config = Object.assign(
+                const _config = Object.assign(
                     rule.config||{}, 
                     process_input_config(rule.app, inputs, _app_inputs), 
                     {
@@ -776,7 +767,7 @@ function handle_rule(rule, cb) {
                 );
 
                 rule.app.outputs.forEach(output=>{
-                    var output_req = {
+                    const output_req = {
                         id: output.id,
                         datatype: output.datatype,
                         desc: output.desc,
@@ -806,10 +797,10 @@ function handle_rule(rule, cb) {
                     }
 
                     //handle tag passthrough
-                    var tags = [];
+                    let tags = [];
                     if(output.datatype_tags_pass) {
                         //TODO - how is multi input handled here?
-                        var dataset = inputs[output.datatype_tags_pass];
+                        const dataset = inputs[output.datatype_tags_pass];
                         if(!dataset) logger.error("datatype_tags_pass set but can't find the input:"+output.datatype_tags_pass);
                         if(dataset && dataset.datatype_tags) {
                             tags = dataset.datatype_tags; //could be null?
@@ -855,27 +846,27 @@ function handle_rule(rule, cb) {
 //input_info - input datasets that can be used for app (datatype populated)
 //_app_inputs ... similar to input_info.. selected to submit?
 function process_input_config(app, input_info, _app_inputs) {
-    var out = {};
-    for(var k in app.config) {
-        var node = app.config[k];
+    const out = {};
+    for(const k in app.config) {
+        const node = app.config[k];
         if(node.type && node.type == "input") {
-            var input = app.inputs.find(it=>it.id == node.input_id);
+            const input = app.inputs.find(it=>it.id == node.input_id);
             if(input.multi) out[k] = [];
 
             //TODO - multi could have more than 1 dataset... (let's just process first one for now?)
-            var dataset = _app_inputs.find(d=>d.id == node.input_id);
+            const dataset = _app_inputs.find(d=>d.id == node.input_id);
             if(!dataset) continue; //optional input that's ignored?
 
-            var base = "../"+dataset.task_id;
+            let base = "../"+dataset.task_id;
             if(dataset.subdir) base+="/"+dataset.subdir;
 
-            var info = input_info[node.input_id];
-            var file = info.datatype.files.find(file=>file.id == node.file_id);
+            const info = input_info[node.input_id];
+            const file = info.datatype.files.find(file=>file.id == node.file_id);
             if(!file) {
                 console.error("referencing to missing file "+node.file_id);
                 continue;
             }
-            var path = base+"/"+(file.filename||file.dirname);
+            let path = base+"/"+(file.filename||file.dirname);
             if(dataset.files && dataset.files[node.file_id]) {
                 path = base+"/"+dataset.files[node.file_id];
             }

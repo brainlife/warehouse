@@ -1,6 +1,6 @@
 <template>
 <div v-if="ready" class="dt" :class="{'dt-clickable': clickable}" @click="click">
-    <icon v-if="_datatype.groupAnalysis" name="dot-circle" :style="{color}" scale="1" class="dot"/>
+    <icon v-if="_datatype && _datatype.groupAnalysis" name="dot-circle" :style="{color}" scale="1" class="dot"/>
     <icon v-else name="circle" :style="{color}" scale="1" class="dot"/>
     {{name}}
     <div class="tags" v-if="tags" v-for="(tag, idx) in tags" :key="idx">

@@ -54,6 +54,17 @@ export default {
                 this.options.push({text: group_header, children: option_groups[access]});
             }
 
+            //user might not have access to the project that's already selected.. if so add it to "other"
+            const others = [];
+            this.value.forEach(id=>{
+                const p = res.data.projects.find(p=>p._id == id);  
+                if(p === undefined) others.push({id, text: id+" (you don't have access)"});
+            });
+            console.dir(others);
+            if(others.length) {
+                this.options.push({text: "others", children: others});
+            }
+
             this.selected = this.value;
         });
     }

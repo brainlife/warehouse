@@ -167,7 +167,6 @@ export default {
 
                 //filter out deprecated ones
                 if(!this.show_dep) {
-                    console.log("filtering out deprecated apps");
                     this.apps = this.apps.filter(app=>!app.deprecated_by);
                 }
 
