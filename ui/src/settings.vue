@@ -369,8 +369,7 @@
                                     <span class="form-header">Description</span>
                                     <b-form-textarea v-model="groupEdit.desc" rows="8"></b-form-textarea>
                                     <span class="form-header">Members</span>
-                                    {{groupEdit.members}}
-                                    <contactlist v-model="groupEdit.members"></contactlist>
+                                    <contactlist type="text" v-model="groupEdit.members"></contactlist>
                                     <span class="form-header">Admins</span>
                                     <contactlist v-model="groupEdit.admins"></contactlist>
                                     <b-form-checkbox v-model="groupEdit.active">Active</b-form-checkbox>
@@ -525,6 +524,12 @@ export default {
             if(!this.groups.length) {
                 this.$http.get(Vue.config.auth_api+"/groups").then(res=>{
                     this.groups = res.data;
+                    this.groups.forEach(group=>{
+                        if(group.admins) {
+                            group.admins = group.admins.map(admins=>admins.sub);
+                            group.members = group.members.map(members=>members.sub);
+                        }
+                    });
                 }).catch(err=>{
                     console.error(err.response);
                     this.$notify({type: "error", text: err});
@@ -554,7 +559,6 @@ export default {
         },
         submitGroup(e) {
             e.preventDefault();
-            console.log(this.groupEdit);
             if(!this.groupEdit.id) {
                 this.$http.post(Vue.config.auth_api+"/group/",this.groupEdit).then(res=>{
                     this.$notify({type: "success", text: res.data.message});
