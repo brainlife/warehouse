@@ -303,7 +303,7 @@
                                 <p class="mt-3">Current Page: {{ currentPage }}</p>
                             </b-col>
                             <b-col>
-                                <div v-if="userEdit.username">
+                                <div v-if="userEdit">
                                     <b-form @submit="submitUser">
                                         <b-container>
                                             <b-form-group>
@@ -354,14 +354,14 @@
                 <b-container>
                     <b-row>
                         <b-col>
-                            <h5>Groups <span style="float: right"><b-button>Create Group</b-button></span></h5>
+                            <h5>Groups <span style="float: right"><b-button v-on:click="groupEdit = {}">Create Group</b-button></span></h5>
                             <b-form-input v-model="queryGroup" type="text" placeholder="Search Groups" @input="changeQueryDebounceGroup" class="input"/>
                             <b-table :tbody-tr-class="rowClass" ref="groupTable" striped hover :items="loadGroups()" :fields="groupfields" :per-page="perPage" :current-page="currentPage" small  @row-clicked="selectGroup"></b-table>
                             <b-pagination v-model="currentPage" :total-rows="rowUsers" :per-page="perPage" aria-controls="my-table"></b-pagination>
                             <p class="mt-3">Current Page: {{ currentPage }}</p>
                         </b-col>
                         <b-col>
-                            <b-form v-if="groupEdit.name" @submit="submitGroup">
+                            <b-form v-if="groupEdit" @submit="submitGroup">
                             <b-row>
                                 <b-col cols="12">
                                     <span class="form-header">Name</span>
@@ -417,27 +417,8 @@ export default {
             fields: ["fullname", "username", "active", "email"],
             groupfields: ["name", "active"],
             perPage: 200,
-            userEdit: {
-                fullname: "",
-                username: "",
-                profile: {},
-                _id: "",
-                scopes: {}, 
-                email_confirmation: false,
-                ext: {},
-                times: {},
-                sub: "",
-                active: false,
-            },
-            groupEdit: {
-                active: false,
-                members: [],
-                array: [],
-                desc: "",
-                id: "",
-                _id: "",
-                _v: "",
-            },
+            userEdit: null,
+            groupEdit: null,
             currentPage: 1,
             ready: false,
             fullname: "",
@@ -528,51 +509,62 @@ export default {
             this.passwordWarning = feedback.warning;
         },
         loadUsers() {
-            this.$http.get(Vue.config.auth_api+"/users").then(res=>{
-                this.users = res.data;
-            }).catch(err=>{
-                console.error(err.response);
-                this.$notify({type: "error", text: err});
-            });
+            if(!this.users.length) {
+                this.$http.get(Vue.config.auth_api+"/users").then(res=>{
+                    this.users = res.data;
+                }).catch(err=>{
+                    console.error(err.response);
+                    this.$notify({type: "error", text: err});
+                });
+            }
             if(this.queryUser.length) return this.filteredUsers;
             return this.users;
         },
         loadGroups() {
-            this.$http.get(Vue.config.auth_api+"/groups").then(res=>{
-                this.groups = res.data;
-            }).catch(err=>{
-                console.error(err.response);
-                this.$notify({type: "error", text: err});
-            });
+            if(!this.groups.length) {
+                this.$http.get(Vue.config.auth_api+"/groups").then(res=>{
+                    this.groups = res.data;
+                }).catch(err=>{
+                    console.error(err.response);
+                    this.$notify({type: "error", text: err});
+                });
+            }
             if(this.queryGroup.length) return this.filteredGroups;
             return this.groups;
         },
         selectUser(user) {
-            this.userEdit = user;
+            this.userEdit = Object.assign({}, this.userEdit, user);
         },
         selectGroup(group) {
-            this.groupEdit = group;
+            this.groupEdit = Object.assign({}, this.groupEdit, group);
         },
         rowClass(item, type) {
             if (!item || type !== 'row') return;
-            if (item._id == this.userEdit._id || this.groupEdit._id == item._id) return 'table-success'
+            // if (item._id == this.userEdit._id || this.groupEdit._id == item._id) return 'table-success'
+            if(this.userEdit && this.userEdit._id == item._id) return 'table-success';
+            if(this.groupEdit && this.groupEdit._id == item._id) return 'table-success';
         },
         submitUser(e) {
             e.preventDefault();
             this.$http.put(Vue.config.auth_api+"/user/"+this.userEdit.sub,this.userEdit).then(res=>{
                 this.$notify({type: "success", text: res.data.message});
-                this.userEdit = {};
-                this.$forceUpdate();
-            }).catch(err=>console.error(err));
+                this.userEdit = null;
+            }).catch(console.error);
         },
         submitGroup(e) {
             e.preventDefault();
-            console.log("Submit Group"+JSON.stringify(this.groupEdit));
+            console.log(this.groupEdit);
+            if(!this.groupEdit.id) {
+                this.$http.post(Vue.config.auth_api+"/group/",this.groupEdit).then(res=>{
+                    this.$notify({type: "success", text: res.data.message});
+                    this.groupEdit = null;
+                }).catch(console.error);
+                return;
+            }
             this.$http.put(Vue.config.auth_api+"/group/"+this.groupEdit.id,this.groupEdit).then(res=>{
                 this.$notify({type: "success", text: res.data.message});
-                this.groupEdit = {};
-                this.$forceUpdate();
-            }).catch(err=>console.error(err));
+                this.groupEdit = null;
+            }).catch(console.error);
         },
         changeQueryDebounceUser() {
             clearTimeout(queryDebounceUser);
