@@ -267,7 +267,6 @@ export default {
                 var selected = this.instances.find(it=>it._id == subid);
                 if(this.selected && this.selected._id != subid) {
                     //update
-                    console.log("need to open different process", subid);
                     this.toggle_instance(selected);
                 } else {
                     if(!this.selected) this.toggle_instance(selected);
@@ -320,7 +319,6 @@ export default {
         },
 
         toggle_instance(instance, task) {
-            console.log("toggle_instance");
             let url = "/project/"+this.project._id+"/process";
             if(this.selected != instance) {
                 this.selected = instance;

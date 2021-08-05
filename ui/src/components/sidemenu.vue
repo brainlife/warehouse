@@ -78,8 +78,8 @@
     <ul class="items items-bottom">
         <li v-if="config.user" id="user-popover">
             <img :src="avatar_url(config.user.profile, 22)" width="18px" class="avatar"/>
-            <h5>{{config.user.profile.fullname}}</h5>
-            <b-popover target="user-popover" triggers="hover" placement="right">
+            <h5>{{config.user.profile.fullname}} abrah cadabra hoge</h5>
+            <b-popover target="user-popover" triggers="hover" placement="top">
                  <template v-slot:title>
                     {{config.user.profile.username}}&nbsp;
                     <span style="float: right; opacity: 0.8; font-size: 80%;">{{config.user.sub}}</span>
@@ -296,14 +296,22 @@ margin-left: 15px;
 text-transform: uppercase;
 color: white;
 }
+
+.avatar {
+    position: absolute;
+    top: 11px;
+    left: 10px;
+}
 .items li h5 {
 position: relative;
-top: 1px;
-line-height: 100%;
 font-size: 10pt;
 display: inline-block;
-margin-left: 15px;
+margin-top: 2px;
+margin-left: 35px;
 color: white;
+overflow: hidden;
+text-overflow: ellipsis;
+width: 130px;
 }
 
 .items li:not(.divider):hover {

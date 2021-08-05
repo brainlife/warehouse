@@ -899,9 +899,6 @@ export default {
 
         remove() {
             if(confirm("Do you really want to remove this process and all tasks?")) {
-                //unselect if selected
-                //if(this.selected == this.instance) this.toggle_instance(instance);
-
                 //remove for real
                 this.$http.delete(Vue.config.amaretti_api+'/instance/'+this.instance._id).then(res=>{
                     this.$notify({type: "success", text: "Removing the process.."});
