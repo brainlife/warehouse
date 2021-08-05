@@ -401,7 +401,6 @@ export default {
     components: { 
         pageheader, statustag,
         password: ()=>import('vue-password-strength-meter'), 
-        user : ()=>import('@/components/user'),
         contactlist: ()=>import('@/components/contactlist')
     },
 
@@ -525,10 +524,8 @@ export default {
                 this.$http.get(Vue.config.auth_api+"/groups").then(res=>{
                     this.groups = res.data;
                     this.groups.forEach(group=>{
-                        if(group.admins) {
-                            group.admins = group.admins.map(admins=>admins.sub);
-                            group.members = group.members.map(members=>members.sub);
-                        }
+                        if(group.admins) group.admins = group.admins.map(admins=>admins.sub);
+                        if(group.members) group.members = group.members.map(members=>members.sub);
                     });
                 }).catch(err=>{
                     console.error(err.response);
@@ -632,6 +629,9 @@ export default {
         },
         queryUser : function() {
             this.applyFilterUser();
+        },
+        queryGroup: function() {
+            this.applyFilterGroup();
         }
     }
 

@@ -32,7 +32,6 @@ import pub from '@/pub'
 import admin from '@/admin'
 import openneuro from '@/openneuro'
 import settings from '@/settings'
-import useredit from '@/useredit'
 import test from '@/test'
 import missing from '@/missing'
 
