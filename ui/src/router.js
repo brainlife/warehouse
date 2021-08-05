@@ -32,7 +32,6 @@ import pub from '@/pub'
 import admin from '@/admin'
 import openneuro from '@/openneuro'
 import settings from '@/settings'
-
 import test from '@/test'
 import missing from '@/missing'
 
@@ -187,6 +186,7 @@ export default new Router({
         {path: '/settings', component: settings, meta: {
             sidemenu: "setting",       
         }},
+
 
         {path: '/test', component: test, meta: {
             sidemenu: null,
