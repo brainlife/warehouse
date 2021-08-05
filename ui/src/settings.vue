@@ -8,8 +8,8 @@
                     <b-tab title="Profile"/>
                     <b-tab title="Account"/>
                     <b-tab title="Notification"/>
-                    <b-tab v-if="config.user.scopes.auth.includes('admin')" title="Users"/>
-                    <b-tab v-if="config.user.scopes.auth.includes('admin')" title="Groups"/>
+                    <b-tab v-if="config.is_admin" title="Users"/>
+                    <b-tab v-if="config.is_admin" title="Groups"/>
                 </b-tabs>
             </b-container>
         </div><!--header-->
@@ -298,7 +298,12 @@
                             <b-col>
                                 <h5>Users</h5>
                                 <b-form-input v-model="queryUser" type="text" placeholder="Search Users" @input="changeQueryDebounceUser" class="input"/>
-                                <b-table :tbody-tr-class="rowClass" ref="userTable" striped hover :items="loadUsers()" :fields="fields" :per-page="perPage" :current-page="currentPage" small  @row-clicked="selectUser"></b-table>
+                                <b-table :tbody-tr-class="rowClass" ref="userTable" striped hover small
+                                :items="loadUsers()" 
+                                :fields="fields" 
+                                :per-page="perPage" 
+                                :current-page="currentPage" 
+                                @row-clicked="selectUser"/>
                                 <b-pagination v-model="currentPage" :total-rows="rowUsers" :per-page="perPage" aria-controls="my-table"></b-pagination>
                                 <p class="mt-3">Current Page: {{ currentPage }}</p>
                             </b-col>
@@ -320,23 +325,23 @@
                                                         <br>
                                                         <b-form-checkbox v-model="userEdit.active">Active</b-form-checkbox>
                                                         <span class="form-header">Full Name</span>
-                                                        <b-form-input v-model="userEdit.fullname"></b-form-input>
+                                                        <b-form-input v-model="userEdit.fullname"/>
                                                         <br>
                                                         <span class="form-header">Username</span>
-                                                        <b-form-input v-model="userEdit.username"></b-form-input>
+                                                        <b-form-input v-model="userEdit.username"/>
                                                         <br>
                                                         <span class="form-header">Email</span>
-                                                        <b-form-input v-model="userEdit.email"></b-form-input>
+                                                        <b-form-input v-model="userEdit.email"/>
                                                         <b-form-checkbox v-model="userEdit.email_confirmed">Confirmed</b-form-checkbox>
                                                         <hr>
                                                         <span class="form-header">Google ID</span>
-                                                        <b-form-input v-model="userEdit.ext.googleid"></b-form-input>
+                                                        <b-form-input v-model="userEdit.ext.googleid"/>
                                                         <span class="form-header">Open ID</span>
-                                                        <b-form-input v-model="userEdit.ext.openids"></b-form-input>
+                                                        <b-form-input v-model="userEdit.ext.openids"/>
                                                         <span class="form-header">Orcid</span>
-                                                        <b-form-input v-model="userEdit.ext.orcid"></b-form-input>
+                                                        <b-form-input v-model="userEdit.ext.orcid"/>
                                                         <span class="form-header">Github</span>
-                                                        <b-form-input v-model="userEdit.ext.github"></b-form-input>
+                                                        <b-form-input v-model="userEdit.ext.github"/>
                                                         <hr>
                                                         <pre>{{userEdit.times}}</pre>
                                                     </b-col>
@@ -356,7 +361,12 @@
                         <b-col>
                             <h5>Groups <span style="float: right"><b-button v-on:click="groupEdit = {}">Create Group</b-button></span></h5>
                             <b-form-input v-model="queryGroup" type="text" placeholder="Search Groups" @input="changeQueryDebounceGroup" class="input"/>
-                            <b-table :tbody-tr-class="rowClass" ref="groupTable" striped hover :items="loadGroups()" :fields="groupfields" :per-page="perPage" :current-page="currentPage" small  @row-clicked="selectGroup"></b-table>
+                            <b-table :tbody-tr-class="rowClass" ref="groupTable" striped hover small 
+                            :items="loadGroups()" 
+                            :fields="groupfields" 
+                            :per-page="perPage" 
+                            :current-page="currentPage"  
+                            @row-clicked="selectGroup"/>
                             <b-pagination v-model="currentPage" :total-rows="rowUsers" :per-page="perPage" aria-controls="my-table"></b-pagination>
                             <p class="mt-3">Current Page: {{ currentPage }}</p>
                         </b-col>
@@ -365,9 +375,9 @@
                             <b-row>
                                 <b-col cols="12">
                                     <span class="form-header">Name</span>
-                                    <b-form-input v-model="groupEdit.name"></b-form-input>
+                                    <b-form-input v-model="groupEdit.name"/>
                                     <span class="form-header">Description</span>
-                                    <b-form-textarea v-model="groupEdit.desc" rows="8"></b-form-textarea>
+                                    <b-form-textarea v-model="groupEdit.desc" rows="8"/>
                                     <span class="form-header">Members</span>
                                     <contactlist type="text" v-model="groupEdit.members"></contactlist>
                                     <span class="form-header">Admins</span>
@@ -552,21 +562,22 @@ export default {
             this.$http.put(Vue.config.auth_api+"/user/"+this.userEdit.sub,this.userEdit).then(res=>{
                 this.$notify({type: "success", text: res.data.message});
                 this.userEdit = null;
+                this.users = [];
             }).catch(console.error);
         },
         submitGroup(e) {
             e.preventDefault();
-            if(!this.groupEdit.id) {
+            if(this.groupEdit.id) {
+                this.$http.put(Vue.config.auth_api+"/group/"+this.groupEdit.id,this.groupEdit).then(res=>{
+                    this.$notify({type: "success", text: res.data.message});
+                }).catch(console.error);                
+            } else {
                 this.$http.post(Vue.config.auth_api+"/group/",this.groupEdit).then(res=>{
                     this.$notify({type: "success", text: res.data.message});
-                    this.groupEdit = null;
                 }).catch(console.error);
-                return;
             }
-            this.$http.put(Vue.config.auth_api+"/group/"+this.groupEdit.id,this.groupEdit).then(res=>{
-                this.$notify({type: "success", text: res.data.message});
-                this.groupEdit = null;
-            }).catch(console.error);
+            this.groupEdit = null;
+            this.groups = [];
         },
         changeQueryDebounceUser() {
             clearTimeout(queryDebounceUser);
