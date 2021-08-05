@@ -188,9 +188,6 @@ export default new Router({
             sidemenu: "setting",       
         }},
 
-        {path: '/settings/user/:id/edit', component: useredit, meta: {
-            sidemenu: "setting",
-        }},
 
         {path: '/test', component: test, meta: {
             sidemenu: null,
