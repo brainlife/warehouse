@@ -315,33 +315,33 @@
                                                 <b-row>
                                                     <b-col cols="6">
                                                         <span class="form-header">Profile</span>
-                                                        <b-form-textarea id="profile" v-model="userEdit.profile" rows="8"></b-form-textarea>
+                                                        <b-form-textarea v-if="userEdit.profile" v-model="userEdit.profile" rows="8"/>
                                                     </b-col>
                                                     <b-col cols="6">
                                                         <span class="form-header">Scope</span>
-                                                        <b-form-textarea id="scope" v-model="userEdit.scopes" rows="8"></b-form-textarea>
+                                                        <b-form-textarea v-if="userEdit.scopes" v-model="userEdit.scopes" rows="8"/>
                                                     </b-col>
                                                     <b-col cols="12">
                                                         <br>
                                                         <b-form-checkbox v-model="userEdit.active">Active</b-form-checkbox>
                                                         <span class="form-header">Full Name</span>
-                                                        <b-form-input v-model="userEdit.fullname"/>
+                                                        <b-form-input v-if="userEdit.fullname" v-model="userEdit.fullname"/>
                                                         <br>
                                                         <span class="form-header">Username</span>
-                                                        <b-form-input v-model="userEdit.username"/>
+                                                        <b-form-input v-if="userEdit.username" v-model="userEdit.username"/>
                                                         <br>
                                                         <span class="form-header">Email</span>
-                                                        <b-form-input v-model="userEdit.email"/>
+                                                        <b-form-input v-if="userEdit.email" v-model="userEdit.email"/>
                                                         <b-form-checkbox v-model="userEdit.email_confirmed">Confirmed</b-form-checkbox>
                                                         <hr>
                                                         <span class="form-header">Google ID</span>
-                                                        <b-form-input v-model="userEdit.ext.googleid"/>
+                                                        <b-form-input v-if="userEdit.ext" v-model="userEdit.ext.googleid"/>
                                                         <span class="form-header">Open ID</span>
-                                                        <b-form-input v-model="userEdit.ext.openids"/>
+                                                        <b-form-input v-if="userEdit.ext" v-model="userEdit.ext.openids"/>
                                                         <span class="form-header">Orcid</span>
-                                                        <b-form-input v-model="userEdit.ext.orcid"/>
+                                                        <b-form-input v-if="userEdit.ext" v-model="userEdit.ext.orcid"/>
                                                         <span class="form-header">Github</span>
-                                                        <b-form-input v-model="userEdit.ext.github"/>
+                                                        <b-form-input v-if="userEdit.ext" v-model="userEdit.ext.github"/>
                                                         <hr>
                                                         <pre>{{userEdit.times}}</pre>
                                                     </b-col>
@@ -367,7 +367,7 @@
                             :per-page="perPage" 
                             :current-page="currentPage"  
                             @row-clicked="selectGroup"/>
-                            <b-pagination v-model="currentPage" :total-rows="rowUsers" :per-page="perPage" aria-controls="my-table"></b-pagination>
+                            <b-pagination v-model="currentPage" :total-rows="rowGroups" :per-page="perPage" aria-controls="my-table"></b-pagination>
                             <p class="mt-3">Current Page: {{ currentPage }}</p>
                         </b-col>
                         <b-col>
@@ -375,13 +375,13 @@
                             <b-row>
                                 <b-col cols="12">
                                     <span class="form-header">Name</span>
-                                    <b-form-input v-model="groupEdit.name"/>
+                                    <b-form-input v-if="groupEdit.name" v-model="groupEdit.name"/>
                                     <span class="form-header">Description</span>
-                                    <b-form-textarea v-model="groupEdit.desc" rows="8"/>
+                                    <b-form-textarea v-if="groupEdit.desc" v-model="groupEdit.desc" rows="8"/>
                                     <span class="form-header">Members</span>
-                                    <contactlist type="text" v-model="groupEdit.members"></contactlist>
+                                    <contactlist type="text" v-if="groupEdit.members" v-model="groupEdit.members"></contactlist>
                                     <span class="form-header">Admins</span>
-                                    <contactlist v-model="groupEdit.admins"></contactlist>
+                                    <contactlist v-if="groupEdit.admins" v-model="groupEdit.admins"></contactlist>
                                     <b-form-checkbox v-model="groupEdit.active">Active</b-form-checkbox>
                                 </b-col>
                             </b-row>
@@ -425,7 +425,7 @@ export default {
             groups: [],
             fields: ["fullname", "username", "active", "email"],
             groupfields: ["name", "active"],
-            perPage: 200,
+            perPage: 100,
             userEdit: null,
             groupEdit: null,
             currentPage: 1,
@@ -631,6 +631,9 @@ export default {
         rowUsers() {
             return this.users.length;
         },
+        rowGroups() {
+            return this.groups.length;
+        }
     },
 
     watch: {
