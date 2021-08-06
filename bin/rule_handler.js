@@ -587,6 +587,7 @@ function handle_rule(rule, cb) {
             next=>{
                 const _outputs = [];
                 const downloads = [];
+                let subdirs = [];
                 for(let input_id in inputs) {
                     let input = inputs[input_id];
                     rlogger.debug("looking for source/staged dataset "+input._id+" for input "+input_id);
@@ -672,6 +673,10 @@ function handle_rule(rule, cb) {
                         //we don't have it.. we need to stage from warehouse
                         rlogger.debug("couldn't find source task/staged dataset.. need to load from warehouse");
                         downloads.push(input);
+
+                        //handle subdirs
+                        if(input._inputSpec.includes) subdirs = [...subdirs, ...appendIncludes(input._id, input._inputSpec.includes)];
+                        else subdirs.push(input._id);
                         
                         //TODO I should only put stuff that I need output input..
                         const output = Object.assign({}, input, {
@@ -706,12 +711,16 @@ function handle_rule(rule, cb) {
                         if(!_input.task_id) _input.task_id = task_stage._id;
                     });
 
+                    /*
                     //join all required subdirs together
                     let subdirs = [];
                     downloads.forEach(download=>{
+                        console.log("handling download", download._id);
+                        console.dir(input);
                         if(input._inputSpec.includes) subdirs = [...subdirs, ...appendIncludes(download._id, input._inputSpec.includes)];
                         else subdirs.push(download._id);
                     });
+                    */
 
                     deps_config.push({
                         task: task_stage._id,
