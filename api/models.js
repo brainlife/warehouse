@@ -179,7 +179,6 @@ var projectSchema = mongoose.Schema({
     storage: String,  //default to warehouse config.archive.storage_default
     storage_config: mongoose.Schema.Types.Mixed, 
     
-    create_date: { type: Date, default: Date.now },
 
     //experimental
     xnat: {
@@ -218,7 +217,14 @@ var projectSchema = mongoose.Schema({
     //enable group_analysis UI (experimental)
     //group_analysis: { type: Boolean, default: false },
 
+    create_date: { type: Date, default: Date.now },
+    update_date: { type: Date, default: Date.now }, //added on 8/6/2021
+
     removed: { type: Boolean, default: false },
+});
+projectSchema.pre('save', function(next) {
+    this.update_date = new Date;
+    next();
 });
 exports.Projects = mongoose.model("Projects", projectSchema);
 
