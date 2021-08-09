@@ -339,7 +339,7 @@
                                                         <span class="form-header">Google ID</span>
                                                         <b-form-input v-if="userEdit.ext" v-model="userEdit.ext.googleid"/>
                                                         <span class="form-header">Open ID</span>
-                                                        <b-form-input v-if="userEdit.ext" v-model="userEdit.ext.openids"/>
+                                                        <b-form-input v-if="openids" v-model="openids"/>
                                                         <span class="form-header">Orcid</span>
                                                         <b-form-input v-if="userEdit.ext" v-model="userEdit.ext.orcid"/>
                                                         <span class="form-header">Github</span>
@@ -436,6 +436,7 @@ export default {
             fullname: "",
             profile: null,
             scopes: null,
+            openids : null,
             form: {
                 currentPassword: "",
                 newPassword: "",
@@ -554,6 +555,7 @@ export default {
             this.userEdit = Object.assign({}, this.userEdit, user);
             this.profile = JSON.stringify(user.profile, null, 4);
             this.scopes = JSON.stringify(user.scopes, null, 4);
+            this.openids = user.ext.openids[0] || " ";
         },
         selectGroup(group) {
             this.groupEdit = Object.assign({}, this.groupEdit, group);
@@ -567,7 +569,8 @@ export default {
         submitUser(e) {
             e.preventDefault();
             this.userEdit.profile = JSON.parse(this.profile||"{}");
-            this.userEdit.scope = JSON.parse(this.scopes||"{}");
+            this.userEdit.scopes = JSON.parse(this.scopes||"{}");
+            this.userEdit.ext.openids[0] = this.openids;
             this.$http.put(Vue.config.auth_api+"/user/"+this.userEdit.sub,this.userEdit).then(res=>{
                 this.$notify({type: "success", text: res.data.message});
                 this.userEdit = null;
