@@ -315,33 +315,35 @@
                                                 <b-row>
                                                     <b-col cols="6">
                                                         <span class="form-header">Profile</span>
-                                                        <b-form-textarea id="profile" v-model="userEdit.profile" rows="8"></b-form-textarea>
+                                                        <editor v-model="profile" @init="editorInit" lang="json" height="300"/>
+                                                        <!-- <b-form-textarea v-if="userEdit.profile" v-model="userEdit.profile" rows="8"/> -->
                                                     </b-col>
                                                     <b-col cols="6">
                                                         <span class="form-header">Scope</span>
-                                                        <b-form-textarea id="scope" v-model="userEdit.scopes" rows="8"></b-form-textarea>
+                                                        <editor v-model="scopes" @init="editorInit" lang="json" height="300"/>
+                                                        <!-- <b-form-textarea v-if="userEdit.scopes" v-model="userEdit.scopes" rows="8"/> -->
                                                     </b-col>
                                                     <b-col cols="12">
                                                         <br>
                                                         <b-form-checkbox v-model="userEdit.active">Active</b-form-checkbox>
                                                         <span class="form-header">Full Name</span>
-                                                        <b-form-input v-model="userEdit.fullname"/>
+                                                        <b-form-input v-if="userEdit.fullname" v-model="userEdit.fullname"/>
                                                         <br>
                                                         <span class="form-header">Username</span>
-                                                        <b-form-input v-model="userEdit.username"/>
+                                                        <b-form-input v-if="userEdit.username" v-model="userEdit.username"/>
                                                         <br>
                                                         <span class="form-header">Email</span>
-                                                        <b-form-input v-model="userEdit.email"/>
+                                                        <b-form-input v-if="userEdit.email" v-model="userEdit.email"/>
                                                         <b-form-checkbox v-model="userEdit.email_confirmed">Confirmed</b-form-checkbox>
                                                         <hr>
                                                         <span class="form-header">Google ID</span>
-                                                        <b-form-input v-model="userEdit.ext.googleid"/>
+                                                        <b-form-input v-if="userEdit.ext" v-model="userEdit.ext.googleid"/>
                                                         <span class="form-header">Open ID</span>
-                                                        <b-form-input v-model="userEdit.ext.openids"/>
+                                                        <b-form-input v-if="openids" v-model="openids"/>
                                                         <span class="form-header">Orcid</span>
-                                                        <b-form-input v-model="userEdit.ext.orcid"/>
+                                                        <b-form-input v-if="userEdit.ext" v-model="userEdit.ext.orcid"/>
                                                         <span class="form-header">Github</span>
-                                                        <b-form-input v-model="userEdit.ext.github"/>
+                                                        <b-form-input v-if="userEdit.ext" v-model="userEdit.ext.github"/>
                                                         <hr>
                                                         <pre>{{userEdit.times}}</pre>
                                                     </b-col>
@@ -359,7 +361,7 @@
                 <b-container>
                     <b-row>
                         <b-col>
-                            <h5>Groups <span style="float: right"><b-button v-on:click="groupEdit = {}">Create Group</b-button></span></h5>
+                            <h5>Groups <span style="float: right"><b-button v-on:click="initGroup()">Create Group</b-button></span></h5>
                             <b-form-input v-model="queryGroup" type="text" placeholder="Search Groups" @input="changeQueryDebounceGroup" class="input"/>
                             <b-table :tbody-tr-class="rowClass" ref="groupTable" striped hover small 
                             :items="loadGroups()" 
@@ -367,7 +369,7 @@
                             :per-page="perPage" 
                             :current-page="currentPage"  
                             @row-clicked="selectGroup"/>
-                            <b-pagination v-model="currentPage" :total-rows="rowUsers" :per-page="perPage" aria-controls="my-table"></b-pagination>
+                            <b-pagination v-model="currentPage" :total-rows="rowGroups" :per-page="perPage" aria-controls="my-table"></b-pagination>
                             <p class="mt-3">Current Page: {{ currentPage }}</p>
                         </b-col>
                         <b-col>
@@ -375,13 +377,13 @@
                             <b-row>
                                 <b-col cols="12">
                                     <span class="form-header">Name</span>
-                                    <b-form-input v-model="groupEdit.name"/>
+                                    <b-form-input v-if="groupEdit.name" v-model="groupEdit.name"/>
                                     <span class="form-header">Description</span>
-                                    <b-form-textarea v-model="groupEdit.desc" rows="8"/>
+                                    <b-form-textarea v-if="groupEdit.desc" v-model="groupEdit.desc" rows="8"/>
                                     <span class="form-header">Members</span>
-                                    <contactlist type="text" v-model="groupEdit.members"></contactlist>
+                                    <contactlist type="text" v-if="groupEdit.members" v-model="groupEdit.members"></contactlist>
                                     <span class="form-header">Admins</span>
-                                    <contactlist v-model="groupEdit.admins"></contactlist>
+                                    <contactlist v-if="groupEdit.admins" v-model="groupEdit.admins"></contactlist>
                                     <b-form-checkbox v-model="groupEdit.active">Active</b-form-checkbox>
                                 </b-col>
                             </b-row>
@@ -411,7 +413,8 @@ export default {
     components: { 
         pageheader, statustag,
         password: ()=>import('vue-password-strength-meter'), 
-        contactlist: ()=>import('@/components/contactlist')
+        contactlist: ()=>import('@/components/contactlist'),
+        editor: ()=>import('vue2-ace-editor'),
     },
 
     data () {
@@ -425,12 +428,15 @@ export default {
             groups: [],
             fields: ["fullname", "username", "active", "email"],
             groupfields: ["name", "active"],
-            perPage: 200,
+            perPage: 100,
             userEdit: null,
             groupEdit: null,
             currentPage: 1,
             ready: false,
             fullname: "",
+            profile: null,
+            scopes: null,
+            openids : null,
             form: {
                 currentPassword: "",
                 newPassword: "",
@@ -547,6 +553,9 @@ export default {
         },
         selectUser(user) {
             this.userEdit = Object.assign({}, this.userEdit, user);
+            this.profile = JSON.stringify(user.profile, null, 4);
+            this.scopes = JSON.stringify(user.scopes, null, 4);
+            this.openids = user.ext.openids[0] || " ";
         },
         selectGroup(group) {
             this.groupEdit = Object.assign({}, this.groupEdit, group);
@@ -559,10 +568,15 @@ export default {
         },
         submitUser(e) {
             e.preventDefault();
+            this.userEdit.profile = JSON.parse(this.profile||"{}");
+            this.userEdit.scopes = JSON.parse(this.scopes||"{}");
+            this.userEdit.ext.openids[0] = this.openids;
             this.$http.put(Vue.config.auth_api+"/user/"+this.userEdit.sub,this.userEdit).then(res=>{
                 this.$notify({type: "success", text: res.data.message});
                 this.userEdit = null;
                 this.users = [];
+                this.scopes = null;
+                this.profile = null;
             }).catch(console.error);
         },
         submitGroup(e) {
@@ -620,6 +634,19 @@ export default {
                 const text = stuff.filter(thing=>!!thing).join(" ").toLowerCase();
                 return tokens.every(token=>text.includes(token));
             });
+        },
+        editorInit(editor) {
+            require('brace/mode/json')
+            editor.container.style.lineHeight = 1.25;
+            editor.renderer.updateFontSize();
+        },
+        initGroup() {
+            this.groupEdit = {
+                name : " ",
+                desc : " ",
+                members : [],
+                admins : [],
+            }
         }
     },
 
@@ -631,6 +658,9 @@ export default {
         rowUsers() {
             return this.users.length;
         },
+        rowGroups() {
+            return this.groups.length;
+        }
     },
 
     watch: {
