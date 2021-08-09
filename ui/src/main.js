@@ -354,6 +354,8 @@ new Vue({
             //things we can access via $root
             sidemenuWide: true,
             rightviewOpen: null,
+                
+            ezbidsSession: null, //set this to ezbids {sessionId} to open ezbidssession dialog on modal load
 
             notificationSounds: {},
         }

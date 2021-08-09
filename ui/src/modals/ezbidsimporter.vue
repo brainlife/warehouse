@@ -93,9 +93,17 @@ export default {
     },
 
     mounted() {
-        this.$root.$on("ezbidsimporter.open", opt=>{
-            console.log("ezbidsimporter.open received")
+        this.$root.$on("ezbidsimporter.open", this.open);
 
+        //preopened?
+        if(this.$root.ezbidsSession) {
+            this.open(this.$root.ezbidsSession);
+            this.$root.ezbidsSession = null;
+        }
+    },
+
+    methods: {
+        open(opt) {
             if(!this.$refs.modal) return console.log("received ezbidsimporter.open but this.$refs.modal not yet initialized");
 
             //initialize
@@ -103,7 +111,6 @@ export default {
             this.task = null;
             
             //load finalized ezbids content
-            console.log("loading", this.sessionId);
             this.$http.get(Vue.config.ezbids_api+"/download/"+this.sessionId+"/finalized.json").then(res=>{
                 this.ezBIDS = res.data;
                 this.project_name = this.ezBIDS.datasetDescription.Name;
@@ -123,7 +130,6 @@ export default {
                 },
             }).then(res=>{
                 if(res.data.tasks.length != 0) {
-                    console.log("importer already submitted!");
                     this.task = res.data.tasks[res.data.tasks.length-1];
                     this.subscribeTask(this.task);
                 }
@@ -133,10 +139,8 @@ export default {
             });
 
             this.$refs.modal.show();
-        });
-    },
+        },
 
-    methods: {
         close() {
             if(this.ws) this.ws.close();
             this.$refs.modal.hide();
@@ -156,7 +160,6 @@ export default {
                 desc: this.project_desc,
             }).then(res=>{
                 this.project = res.data._id;
-                console.log("refreshing jwt.. so I can write to the project");
                 this.$root.$emit("refresh_jwt", this.submit_import);
             }).catch(err=>{
                 console.error(err);
@@ -198,7 +201,6 @@ export default {
                     return cb(null, instance);
                 }
 
-                //console.log("creating new instance");
                 this.$http.post(Vue.config.amaretti_api+'/instance', {
                     name,
                     group_id: this.project.group_id,

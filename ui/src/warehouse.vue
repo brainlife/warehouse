@@ -42,16 +42,14 @@ export default {
     
     methods: {
         handleHashRequest() {
-            //console.log("parsing hash request", document.location.hash);
             if(document.location.hash.startsWith("#ezbids")) {
                 if(!Vue.config.jwt) {
                     sessionStorage.setItem('auth_redirect', document.location.href);
                     document.location = Vue.config.auth_signin;
                 } else {
                     const sessionId = document.location.hash.substring(8);
-                    console.log("opeining session", sessionId);
-                    this.$root.$emit("ezbidsimporter.open", {sessionId});
-                    //history.replaceState(undefined, undefined, "#"); //remove hashrequest
+                    console.log("opening ezbids session", sessionId);
+                    this.$root.ezbidsSession = {sessionId};
                 }
             }
         },
