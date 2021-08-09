@@ -315,11 +315,13 @@
                                                 <b-row>
                                                     <b-col cols="6">
                                                         <span class="form-header">Profile</span>
-                                                        <b-form-textarea v-if="userEdit.profile" v-model="userEdit.profile" rows="8"/>
+                                                        <editor v-model="profile" @init="editorInit" lang="json" height="300"/>
+                                                        <!-- <b-form-textarea v-if="userEdit.profile" v-model="userEdit.profile" rows="8"/> -->
                                                     </b-col>
                                                     <b-col cols="6">
                                                         <span class="form-header">Scope</span>
-                                                        <b-form-textarea v-if="userEdit.scopes" v-model="userEdit.scopes" rows="8"/>
+                                                        <editor v-model="scopes" @init="editorInit" lang="json" height="300"/>
+                                                        <!-- <b-form-textarea v-if="userEdit.scopes" v-model="userEdit.scopes" rows="8"/> -->
                                                     </b-col>
                                                     <b-col cols="12">
                                                         <br>
@@ -359,7 +361,7 @@
                 <b-container>
                     <b-row>
                         <b-col>
-                            <h5>Groups <span style="float: right"><b-button v-on:click="groupEdit = {}">Create Group</b-button></span></h5>
+                            <h5>Groups <span style="float: right"><b-button v-on:click="initGroup()">Create Group</b-button></span></h5>
                             <b-form-input v-model="queryGroup" type="text" placeholder="Search Groups" @input="changeQueryDebounceGroup" class="input"/>
                             <b-table :tbody-tr-class="rowClass" ref="groupTable" striped hover small 
                             :items="loadGroups()" 
@@ -411,7 +413,8 @@ export default {
     components: { 
         pageheader, statustag,
         password: ()=>import('vue-password-strength-meter'), 
-        contactlist: ()=>import('@/components/contactlist')
+        contactlist: ()=>import('@/components/contactlist'),
+        editor: ()=>import('vue2-ace-editor'),
     },
 
     data () {
@@ -431,6 +434,8 @@ export default {
             currentPage: 1,
             ready: false,
             fullname: "",
+            profile: null,
+            scopes: null,
             form: {
                 currentPassword: "",
                 newPassword: "",
@@ -547,6 +552,8 @@ export default {
         },
         selectUser(user) {
             this.userEdit = Object.assign({}, this.userEdit, user);
+            this.profile = JSON.stringify(user.profile, null, 4);
+            this.scopes = JSON.stringify(user.scopes, null, 4);
         },
         selectGroup(group) {
             this.groupEdit = Object.assign({}, this.groupEdit, group);
@@ -559,10 +566,14 @@ export default {
         },
         submitUser(e) {
             e.preventDefault();
+            this.userEdit.profile = JSON.parse(this.profile||"{}");
+            this.userEdit.scope = JSON.parse(this.scopes||"{}");
             this.$http.put(Vue.config.auth_api+"/user/"+this.userEdit.sub,this.userEdit).then(res=>{
                 this.$notify({type: "success", text: res.data.message});
                 this.userEdit = null;
                 this.users = [];
+                this.scopes = null;
+                this.profile = null;
             }).catch(console.error);
         },
         submitGroup(e) {
@@ -620,6 +631,19 @@ export default {
                 const text = stuff.filter(thing=>!!thing).join(" ").toLowerCase();
                 return tokens.every(token=>text.includes(token));
             });
+        },
+        editorInit(editor) {
+            require('brace/mode/json')
+            editor.container.style.lineHeight = 1.25;
+            editor.renderer.updateFontSize();
+        },
+        initGroup() {
+            this.groupEdit = {
+                name : " ",
+                desc : " ",
+                members : [],
+                admins : [],
+            }
         }
     },
 
