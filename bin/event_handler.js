@@ -160,6 +160,8 @@ function health_check() {
 }
 
 function handle_task(task, cb) {
+    if(!task) return cb("null task..");
+
     console.debug("task", (task._status_changed?"+++":"---"), task._id, task.name, task.service, task.status, task.status_msg);
 
     inc_count("health.tasks");
@@ -621,6 +623,8 @@ function debounce(key, action, delay) {
 }
 
 function handle_instance(instance, cb) {
+    if(!instance) return cb("null instance..");
+    
     console.debug("instance ---", instance._id, instance.status);
     inc_count("health.instances");
     
@@ -643,6 +647,7 @@ function handle_instance(instance, cb) {
 }
 
 function handle_dataset(dataset, cb) {
+    if(!dataset) return cb("null dataset");
     console.debug("dataset:%s", dataset._id);
     let pid = dataset.project._id||dataset.project; //unpopulate project if necessary
     debounce("update_dataset_stats."+pid, ()=>{
