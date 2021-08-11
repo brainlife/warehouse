@@ -7,7 +7,6 @@
                 <b-tabs class="brainlife-tab" v-model="tab">
                     <b-tab title="Profile"/>
                     <b-tab title="Account"/>
-                    <b-tab title="Connected Accounts"/>
                     <b-tab title="Notification"/>
                 </b-tabs>
             </b-container>
@@ -244,11 +243,9 @@
                     </b-form>
                 </b-container>
                 <br>
-                Please visit the legacy <a href="/auth/#!/settings/account" target="_blank">Account Settings</a> page for more account settings.
-            </div>
-
-            <div v-if="tab == 2">
                 <h5>Connected Accounts</h5>
+                <hr>
+                Please visit the legacy <a href="/auth/#!/settings/account" target="_blank">Account Settings</a> page for more account settings.
             </div>
             <!--notification-->
             <div v-if="tab == 3">
