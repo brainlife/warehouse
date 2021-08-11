@@ -245,6 +245,9 @@
                 <br>
                 <h5>Connected Accounts</h5>
                 <hr>
+                <div class="well">
+                    <img src="../images/iu.account_logo.png" class="account pull-left" style="padding-right: 10px;">
+                </div>
                 Please visit the legacy <a href="/auth/#!/settings/account" target="_blank">Account Settings</a> page for more account settings.
             </div>
             <!--notification-->
@@ -435,6 +438,15 @@ export default {
 h5 {
     margin-bottom: 20px;
     opacity: 0.7;
+}
+.well{
+    min-height: 20px;
+    padding: 19px;
+    margin-bottom: 20px;
+    background-color: #fafafa;
+    border: 1px solid #e8e8e8;
+    border-radius: 0;
+    box-shadow: inset 0 1px 1px rgb(0 0 0 / 5%)
 }
 </style>
 

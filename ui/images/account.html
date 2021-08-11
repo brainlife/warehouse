@@ -1,0 +1,177 @@
+<div class="fixed-top">
+    <div class="header">
+        <div class="container">
+        <h2>Settings</h2>
+        </div>
+    </div>
+    <sca-menutab menu="settings_menu" active="'account'" user="menu.user"></sca-menutab>
+</div>
+<div class="container" style="margin-top: 130px;">
+    <ul class="list-group settings">
+        <li class="list-group-item heading" ng-if="appconf.show.local">
+            <h4 class="list-group-item-heading">Account Profile</h4>
+        </li>
+        <li class="list-group-item">
+            <form name="profile_form" ng-submit="submit_profile();">
+                <p class="text-muted">You will need to sign out / login again before your change to account profile takes effect.</p>
+                <div class="form-group">
+                    <label>Username</label>
+                    <input type="text" class="form-control" ng-model="user.username" disabled/>
+                </div>
+                <div class="form-group">
+                    <label>Login Email</label>
+                    <p class="text-muted">An email address used to login to your account</p>
+
+                    <input type="text" class="form-control" ng-model="user.email" disabled/>
+                </div>
+                <div class="form-group">
+                    <label>Full Name *</label>
+                    <input type="text" class="form-control" ng-model="user.fullname" required/>
+                </div>
+                <input type="submit" class="btn btn-primary" value="Update" ng-if="profile_form.$dirty"/>
+            </form>
+        </li>
+        <li class="list-group-item heading" ng-if="appconf.show.local">
+            <h4 class="list-group-item-heading">Change Password</h4>
+        </li>
+        <li class="list-group-item" ng-if="appconf.show.local">
+            <form name="password_form" ng-submit="submit_password();">
+                <p class="text-muted" ng-if="!user.password_hash">You have not set your password for this application.</p>
+                <div class="form-group" ng-if="user.password_hash">
+                    <a class="pull-right" href="#!/forgotpass">I forgot my password</a>
+                    <label>Current Password *</label>
+                    <input type="password" class="form-control" ng-model="form_password.old" required/>
+                </div>
+                <div class="form-group">
+                    <label>New Password</label *>
+                    <input type="password" class="form-control" ng-model="form_password.new" required/>
+                    <!-- see https://blogs.dropbox.com/tech/2012/04/zxcvbn-realistic-password-strength-estimation/ -->
+                    <password-strength password="form_password.new" user="user" profile="menu._profile"></password-strength>
+                </div>
+                <div class="form-group">
+                    <label>Confirm New Password *</label>
+                    <input type="password" class="form-control" ng-model="form_password.confirm" match="form_password.confirm != form_password.new? 'Passwords don\'t match' : ''"/>
+                </div>
+                <input type="submit" class="btn btn-primary" ng-if="password_form.$dirty" value="Update Password"/>
+            </form><!--profile form-->
+        </li>
+        <li class="list-group-item heading">
+            <h4 class="list-group-item-heading">Connected Accounts</h4>
+        </li>
+        <li class="list-group-item">
+            <form>
+                <div class="well" ng-if="appconf.show.ldap">
+                    <img ng-src="{{appconf.ldap_logo}}" class="account pull-left" style="padding-right: 10px;">
+                    <p class="pull-right text-muted" style="margin: 11px;">
+                        <span ng-if="user.username"><b>{{user.username}}</b> |</span>
+                        Last Login: 
+                        <span ng-if="!user.times.ldap_login">Never</span>
+                        <time ng-if="user.times.ldap_login">{{user.times.ldap_login | date:'medium'}}</time>
+                    </p>
+                    <h4>LDAP</h4>
+                </div> 
+                <div class="well" ng-if="appconf.show.iucas">
+                    <img src="images/iu.account_logo.png" class="account pull-left" style="padding-right: 10px;">
+                    <button class="btn pull-right" ng-if="user.ext.iucas" ng-click="disconnect('iucas')">Disconnect</button>
+                    <button class="btn pull-right" ng-if="!user.ext.iucas" ng-click="iucas_connect()">Connect</button>
+                    <p class="pull-right text-muted" style="margin: 11px;">
+                        <span ng-if="user.ext.iucas"><b>{{user.ext.iucas}}</b> |</span>
+                        Last Login: 
+                        <span ng-if="!user.times.iucas_login">Never</span>
+                        <time ng-if="user.times.iucas_login">{{user.times.iucas_login | date:'medium'}}</time>
+                    </p>
+                    <h4>Indiana University CAS</h4>
+                </div> 
+                <div class="well" ng-if="appconf.show.google">
+                    <button class="btn pull-right" ng-if="user.ext.googleid" ng-click="disconnect('google')">Disconnect</button>
+                    <button class="btn pull-right" ng-if="!user.ext.googleid" ng-click="connect('google')">Connect</button>
+                    <p class="pull-right text-muted" style="margin: 11px;">
+                        <span ng-if="user.ext.googleid"><b>{{user.ext.googleid}}</b> |</span>
+                        Last Login: 
+                        <span ng-if="!user.times.google_login">Never</span>
+                        <time ng-if="user.times.google_login">{{user.times.google_login | date:'medium'}}</time>
+                    </p>
+                    <h4><i class="fa fa-google" aria-hidden="true"></i> Google</h4>
+                </div>
+                <div class="well" ng-if="appconf.show.github">
+                    <button class="btn pull-right" ng-if="user.ext.github" ng-click="disconnect('github')">Disconnect</button>
+                    <button class="btn pull-right" ng-if="!user.ext.github" ng-click="connect('github')">Connect</button>
+                    <p class="pull-right text-muted" style="margin: 11px;">
+                        <span ng-if="user.ext.github"><b>{{user.ext.github}}</b> |</span>
+                        Last Login: 
+                        <span ng-if="!user.times.github_login">Never</span>
+                        <time ng-if="user.times.github_login">{{user.times.github_login | date:'medium'}}</time>
+                    </p>
+                    <h4><i class="fa fa-github" aria-hidden="true"></i> Github</h4>
+                </div>
+                <div class="well" ng-if="appconf.show.orcid">
+                    <img src="images/orcid.ico" class="account pull-left" style="padding-right: 10px;">
+                    <button class="btn pull-right" ng-if="user.ext.orcid" ng-click="disconnect('orcid')">Disconnect</button>
+                    <button class="btn pull-right" ng-if="!user.ext.orcid" ng-click="connect('orcid')">Connect</button>
+                    <p class="pull-right text-muted" style="margin: 11px;">
+                        <span ng-if="user.ext.orcid"><b>{{user.ext.orcid}}</b> |</span>
+                        Last Login: 
+                        <span ng-if="!user.times.orcid_login">Never</span>
+                        <time ng-if="user.times.orcid_login">{{user.times.orcid_login | date:'medium'}}</time>
+                    </p>
+                    <h4>ORCID</h4>
+                </div>
+                <div class="well" ng-if="appconf.show.facebook">
+                    <button class="btn pull-right" ng-if="user.ext.facebook" ng-click="disconnect('facebook')">Disconnect</button>
+                    <button class="btn pull-right" ng-if="!user.ext.facebook" ng-click="connect('facebook')">Connect</button>
+                    <p class="pull-right text-muted" style="margin: 11px;">
+                        <span ng-if="user.ext.facebook"><b>{{user.ext.facebook}}</b> |</span>
+                        Last Login: 
+                        <span ng-if="!user.times.facebook_login">Never</span>
+                        <time ng-if="user.times.facebook_login">{{user.times.facebook_login | date:'medium'}}</time>
+                    </p>
+                    <h4><i class="fa fa-facebook" aria-hidden="true"></i> Facebook</h4>
+                </div>
+                <div class="well" ng-if="appconf.show.x509">
+                    <span class="pull-left" style="font-size: 200%; padding-right: 10px;"><i class="fa fa-certificate"></i></span>
+                    <button class="btn pull-right" ng-click="x509_connect()">Connect</button>
+                    <h4>X509 Certificate</h4>
+                    <ul class="list-group" style="padding-top: 10px" ng-if="user.ext.x509dns.length > 0">
+                        <li class="list-group-item" ng-repeat="dn in user.ext.x509dns">
+                            <button class="btn btn-xs pull-right" ng-click="disconnect('x509', {dn})">Disconnect</button>
+                            <p>
+                                {{dn}} 
+                                <span class="text-muted"> | Last Login: 
+                                    <span ng-if="!user.times['x509_login:'+dn]">Never</span>
+                                    <time>{{user.times['x509_login:'+dn] | date:'medium'}}</time>
+                                </span>
+                            </p>
+                        </li>
+                    </ul>
+                </div>
+                <div class="well" ng-if="appconf.show.oidc">
+                    <img ng-src="{{appconf.oidc_logo}}" class="account pull-left" style="padding-right: 10px;">
+                    <button class="btn pull-right" ng-click="connect('oidc')">Connect</button>
+                    <h4>{{appconf.oidc_label||'OpenID Connect'}}</h4>
+                    <ul class="list-group" style="padding-top: 10px" ng-if="user.ext.openids.length > 0">
+                        <li class="list-group-item" ng-repeat="dn in user.ext.openids">
+                            <button class="btn btn-xs pull-right" ng-if="user.ext.openids" ng-click="disconnect('oidc', {dn})">Disconnect</button>
+                            <p>
+                                {{dn}}
+                                <span class="text-muted"> | Last Login: 
+                                    <span ng-if="!user.times['oidc_login:'+profile.sub]">Never</span>
+                                    <time>{{user.times['oidc_login:'+profile.sub] | date:'medium'}}</time>
+                                </span>
+                            </p>
+                        </li>
+                    </ul>
+                </div>
+            </form>
+        </li>
+        <li class="list-group-item heading heading-clickable" ng-click="show_debug = true;">
+            <h4 class="list-group-item-heading">Nerdy Things</h4>
+        </li>
+        <li class="list-group-item" ng-if="show_debug">
+            <h4>JWT</h4>
+            <pre>{{debug.jwt|json}}</pre>
+            <h4>User Record</h4>
+            <pre>{{user|json}}</pre>
+        </li>
+    </ul>
+    <ng-include src="'t/footer.html'"></ng-include> <!--should this be part of view?-->
+</div>
