@@ -257,8 +257,8 @@
                     <h4><i class="fa fa-google" aria-hidden="true"></i> Google</h4>
                 </div>
                 <div class="well">
-                    <b-button class="float-right" v-if="user.ext.github" @v-click="disconnect('github')">Disconnect</b-button>
-                    <b-button class="float-right" v-if="!user.ext.github" @v-click="connect('github')">Connect</b-button>
+                    <b-button class="float-right" v-if="user.ext.github" @click="disconnect('github')">Disconnect</b-button>
+                    <b-button class="float-right" v-if="!user.ext.github" @click="connect('github')">Connect</b-button>
                     <p class="float-right text-muted" style="margin: 11px;">
                         <span v-if="user.ext.github"><b>{{user.ext.github}}</b> |</span>
                         Last Login: 
@@ -279,8 +279,8 @@
                     <h4><i class="fa fa-orcid" aria-hidden="true"></i> ORCID</h4>
                 </div>
                 <div class="well">
-                    <b-button class="float-right" v-if="user.ext.facebook" @v-click="disconnect('facebook')">Disconnect</b-button>
-                    <b-button class="float-right" v-if="!user.ext.facebook" @v-click="connect('facebook')">Connect</b-button>
+                    <b-button class="float-right" v-if="user.ext.facebook" @click="disconnect('facebook')">Disconnect</b-button>
+                    <b-button class="float-right" v-if="!user.ext.facebook" @click="connect('facebook')">Connect</b-button>
                     <p class="float-right text-muted" style="margin: 11px;">
                         <span v-if="user.ext.facebook"><b>{{user.ext.facebook}}</b> |</span>
                         Last Login: 
@@ -418,15 +418,15 @@ export default {
             this.fullname = res.data.fullname;
             if(res.data.profile) lib.mergeDeep(this.profile, res.data.profile);
             this.ready = true;
-        });
-        this.$http.get(Vue.config.auth_api+"/me").then(res=>{
             const jwt = localStorage.getItem("jwt");
             if(jwt) {
                 this.user = JSON.parse(atob(this.jwt.split('.')[1]));
                 this.debug = {jwt : this.user};
+                this.jwt = jwt;
             }
+        });
+        this.$http.get(Vue.config.auth_api+"/me").then(res=>{
             this.user = res.data;
-            this.jwt = jwt;
         });
     },
     
@@ -461,8 +461,16 @@ export default {
             this.passwordWarning = feedback.warning;
         },
         connect(type) {
-            window.location = "api/auth"+type+"/associate/"+this.jwt;
-        }
+            window.location = "api/auth/"+type+"/associate/"+this.jwt;
+        },
+        disconnect(type, data) {
+            this.$http.put(Vue.config.auth_api+'/'+type+'/disconnect',data).then(res=>{
+                this.$notify({type: "success", text:res.data.message});
+            }).catch(err=>{
+                console.error(err);
+                this.$notify({type: "error", text: response.data.message});
+            })
+        },
     },
 
     computed : {
