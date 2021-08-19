@@ -246,7 +246,48 @@
                 <h5>Connected Accounts</h5>
                 <hr>
                 <div class="well">
-                    <img src="../images/iu.account_logo.png" class="account pull-left" style="padding-right: 10px;">
+                    <b-button class="float-right" v-if="user.ext.googleid" @v-click="disconnect('google')">Disconnect</b-button>
+                    <b-button class="float-right" v-if="!user.ext.googleid" @v-click="connect('google')">Connect</b-button>
+                    <p class="float-right text-muted" style="margin: 11px;">
+                        <span v-if="user.ext.googleid"><b>{{user.ext.googleid}}</b> |</span>
+                        Last Login: 
+                        <span v-if="!user.times.google_login">Never</span>
+                        <time v-if="user.times.google_login">{{user.times.google_login}}</time>
+                    </p>
+                    <h4><i class="fa fa-google" aria-hidden="true"></i> Google</h4>
+                </div>
+                <div class="well">
+                    <b-button class="float-right" v-if="user.ext.github" @v-click="disconnect('github')">Disconnect</b-button>
+                    <b-button class="float-right" v-if="!user.ext.github" @v-click="connect('github')">Connect</b-button>
+                    <p class="float-right text-muted" style="margin: 11px;">
+                        <span v-if="user.ext.github"><b>{{user.ext.github}}</b> |</span>
+                        Last Login: 
+                        <span v-if="!user.times.github">Never</span>
+                        <time v-if="user.times.github_login">{{user.times.github_login}}</time>
+                    </p>
+                    <h4><i class="fa fa-github" aria-hidden="true"></i> Github</h4>
+                </div>
+                <div class="well">
+                    <b-button class="float-right" v-if="user.ext.orcid" @v-click="disconnect('orcid')">Disconnect</b-button>
+                    <b-button class="float-right" v-if="!user.ext.orcid" @v-click="connect('oricd')">Connect</b-button>
+                    <p class="float-right text-muted" style="margin: 11px;">
+                        <span v-if="user.ext.orcid"><b>{{user.ext.orcid}}</b> |</span>
+                        Last Login: 
+                        <span v-if="!user.times.orcid">Never</span>
+                        <time v-if="user.times.orcid_login">{{user.times.orcid_login}}</time>
+                    </p>
+                    <h4><i class="fa fa-orcid" aria-hidden="true"></i> ORCID</h4>
+                </div>
+                <div class="well">
+                    <b-button class="float-right" v-if="user.ext.facebook" @v-click="disconnect('facebook')">Disconnect</b-button>
+                    <b-button class="float-right" v-if="!user.ext.facebook" @v-click="connect('facebook')">Connect</b-button>
+                    <p class="float-right text-muted" style="margin: 11px;">
+                        <span v-if="user.ext.facebook"><b>{{user.ext.facebook}}</b> |</span>
+                        Last Login: 
+                        <span v-if="!user.times.facebook">Never</span>
+                        <time v-if="user.times.facebook_login">{{user.times.facebook}}</time>
+                    </p>
+                    <h4><i class="fa fa-facebook" aria-hidden="true"></i> Facebook</h4>
                 </div>
                 Please visit the legacy <a href="/auth/#!/settings/account" target="_blank">Account Settings</a> page for more account settings.
             </div>
@@ -319,6 +360,9 @@ export default {
             tab: 0,
 
             ready: false,
+            user: null,
+            debug: null,
+            jwt: null,
 
             fullname: "",
             form: {
@@ -374,7 +418,16 @@ export default {
             this.fullname = res.data.fullname;
             if(res.data.profile) lib.mergeDeep(this.profile, res.data.profile);
             this.ready = true;
-        })
+        });
+        this.$http.get(Vue.config.auth_api+"/me").then(res=>{
+            const jwt = localStorage.getItem("jwt");
+            if(jwt) {
+                this.user = JSON.parse(atob(this.jwt.split('.')[1]));
+                this.debug = {jwt : this.user};
+            }
+            this.user = res.data;
+            this.jwt = jwt;
+        });
     },
     
     methods: {
@@ -407,6 +460,9 @@ export default {
             this.passwordSuggestions = feedback.suggestions;
             this.passwordWarning = feedback.warning;
         },
+        connect(type) {
+            window.location = "api/auth"+type+"/associate/"+this.jwt;
+        }
     },
 
     computed : {
