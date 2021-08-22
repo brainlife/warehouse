@@ -43,10 +43,12 @@
                 </small>
                 <br>
                 <small v-if="release.desc">{{release.desc}}<br></small>
-
-                 <div v-if="release.sets" v-for="(set, idx) in release.sets" :key="idx" style="margin-right: 5px; display: inline-block;">
+                <div v-if="release.sets" v-for="(set, idx) in release.sets.slice(0,10)" :key="idx" style="margin-right: 5px; display: inline-block;">
                     <releaseset :set="set"/>
                 </div>
+                <span v-if="release.sets && release.sets.length >= 10">
+                    ... <small>{{release.sets.length - 10}} more</small>
+                </span>
                 <gaarchive v-for="gaarchive in release.gaarchives" :key="gaarchive._id" :gaarchive="gaarchive" style="margin-top: 10px; margin-right: 10px;"/>
             </div>
         </div>
@@ -85,16 +87,8 @@ export default {
     data() {
         return {
             config: Vue.config,
+            setShowMax: [],
         }
-    },
-
-    computed: {
-        /*
-        lastRelease() {
-            if(!this.pub.releases || this.pub.releases.length == 0) return null;
-            return this.pub.releases[this.pub.releases.length-1];
-        }
-        */
     },
 
     methods: {

@@ -1,15 +1,14 @@
 <template>
 <div style="height: 100%; overflow: auto;">
     <div v-if="task && task.status == 'finished'" style="padding: 20px;">
-        <!--<h4>Staging Data</h4>-->
         <task :task="task"/>
         <br>
-        <!--<h4>Starting Viewer</h4>-->
         <task :task="novnc_task"/>
     </div>
     <div v-else style="padding: 20px;">
         <!--<h4>Staging Data</h4>-->
         <task :task="task"/>
+        <p class="waiting"><icon name="cog"/> Waiting data to be staged out of archive ... </p>
     </div>
 </div>
 </template>
@@ -207,4 +206,13 @@ export default {
     }
 }
 </script>
+
+<style scoped>
+.waiting {
+    padding: 10px;
+    border-radius: 10px;
+    margin: 0 20px;
+    background-color: #eee;
+}
+</style>
 

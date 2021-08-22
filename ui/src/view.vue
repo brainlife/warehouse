@@ -5,10 +5,6 @@
         <tractview v-else-if="type == 'tractview'" :task="task" :subdir="subdir" :datatype="datatype"/>
         <surfaces v-else-if="type == 'surfaces'" :task="task" :subdir="subdir" :datatype="datatype"/>
         <lifeview v-else-if="type == 'lifeview'" :task="task" :subdir="subdir" :datatype="datatype"/>
-        <!--
-        <lifestats v-else-if="type == 'lifestats'" :task="task" :subdir="subdir" :datatype="datatype"/>
-        <evaluator v-else-if="type == 'conneval'" :task="task" :subdir="subdir" :datatype="datatype"/>
-        -->
         <images v-else-if="type == 'images'" :task="task" :subdir="subdir" :datatype="datatype"/>
         <nifti v-else-if="type == 'volumeviewer'" ui="volumeviewer"  :uiconfig="uiconfig"/>
         <nifti v-else-if="type == 'papaya'" ui="papaya" :uiconfig="uiconfig"/>
@@ -40,8 +36,6 @@ export default {
         dtiinit: () => import('@/datauis/dtiinit'), 
         freesurfer: () => import('@/datauis/freesurfer'), 
         tractview: () => import('@/datauis/tractview'), 
-        //lifestats: () => import('@/datauis/lifestats'), 
-        //evaluator: () => import('@/datauis/evaluator'), 
         lifeview: () => import('@/datauis/lifeview'), 
         images: () => import('@/datauis/images'), 
         nifti: () => import('@/datauis/nifti'), 

@@ -527,7 +527,8 @@ export default {
 
                     //lookup resource names
                     this.tasks.forEach(task=>{
-                        this.resource_cache(task.resource_id, (err, resource)=>{
+                        task._resource = {name: "N/A"};
+                        if(task.resource_id) this.resource_cache(task.resource_id, (err, resource)=>{
                             task._resource = resource;
                         });
                     });

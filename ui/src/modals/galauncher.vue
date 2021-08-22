@@ -128,6 +128,7 @@ export default {
             notebooks: null, //published notebooks that user can launch
 
             templates: [
+                /*
                 {
                     name: "python/dipy (jupyterlab-2.1.1)", 
                     desc: "Jupyter Datascience Notebook (lab-2.1.1) with Dipy(1.3.0) and Fury",
@@ -135,6 +136,7 @@ export default {
                     container: "brainlife/ga-dipy:lab211-dipy130",
                     app: "soichih/ga-test",
                 },
+                */
                 {
                     name: "python/dipy (jupyterlab-3.0.16)", 
                     desc: "Jupyter Datascience Notebook (lab-2.1.1) with Dipy(1.3.0) and Fury",
