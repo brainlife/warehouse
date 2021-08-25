@@ -166,7 +166,7 @@ export function editorInit(editor, cb) {
 
     require('brace/snippets/javascript')
 
-    console.log("setting container style", editor.container);
+    //console.log("setting container style", editor.container);
     editor.container.style.lineHeight = 1.25;
     editor.renderer.updateFontSize();
     if(cb) cb();

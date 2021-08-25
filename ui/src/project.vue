@@ -496,7 +496,6 @@ export default {
             this.publishing = false;
             this.pub_editing = null;
             if(this.$route.params.tab != this.tabs[this.tab].id) {
-                console.log("switching to different tab............");
                 this.$router.replace("/project/"+this.selected._id+"/"+this.tabs[this.tab].id);
             }
         },
@@ -531,7 +530,6 @@ export default {
         },
 
         handleRouteParams() {
-            console.log("handleRouteParams", this.$route.params)
             var tab_id = this.$route.params.tab;
             if(tab_id) {
                 //lookup tab index from the tab_id

@@ -62,6 +62,8 @@
 <script>
 import Vue from 'vue'
 
+const lib = require('@/lib');
+
 export default {
     name: "filebrowser", //needed to recurse itself
     props: {
@@ -99,32 +101,18 @@ export default {
     
     methods: {
         editorInit(editor) {
-            require('brace/ext/language_tools')
+            lib.editorInit(editor, err=>{
+                editor.container.style.lineHeight = 1.25;
+                editor.renderer.updateFontSize();
+                editor.setReadOnly(true);  // false to make it editable
 
-            require('brace/mode/sh')
-            require('brace/mode/json')
-            require('brace/mode/matlab')
-            require('brace/mode/python')
-            require('brace/mode/javascript')
-            require('brace/mode/r')
-            require('brace/mode/markdown')
-            //require('brace/mode/html') //53kb gzipped!
-            require('brace/mode/dockerfile')
+                editor.setAutoScrollEditorIntoView(true);
+                editor.setOption("maxLines", 30);
+                editor.setOption("minLines", 3);
 
-            require('brace/theme/chrome')
-
-            require('brace/snippets/javascript')
-
-            editor.container.style.lineHeight = 1.25;
-            editor.renderer.updateFontSize();
-            editor.setReadOnly(true);  // false to make it editable
-
-            editor.setAutoScrollEditorIntoView(true);
-            editor.setOption("maxLines", 30);
-            editor.setOption("minLines", 3);
-
-            //editor.setHighlightActiveLine(false); //not enough.
-            editor.setShowPrintMargin(true);
+                //editor.setHighlightActiveLine(false); //not enough.
+                editor.setShowPrintMargin(true);
+            });
         },
 
         subpath(file) {

@@ -16,6 +16,8 @@
 <script>
 import Vue from 'vue'
 
+const lib = require('@/lib');
+
 export default {
     props: {
         id: { type: String },
@@ -65,19 +67,17 @@ export default {
         },
 
         editorInit(editor) {
-            require('brace/mode/text')
-            require('brace/theme/chrome')
-            require('brace/snippets/javascript')
+            lib.editorInit(editor, err=>{
+                editor.container.style.lineHeight = 1.25;
+                editor.renderer.updateFontSize();
+                editor.setReadOnly(true);  // false to make it editable
 
-            editor.container.style.lineHeight = 1.25;
-            editor.renderer.updateFontSize();
-            editor.setReadOnly(true);  // false to make it editable
+                editor.setAutoScrollEditorIntoView(true);
+                editor.setOption("maxLines", 30);
+                editor.setOption("minLines", 3);
 
-            editor.setAutoScrollEditorIntoView(true);
-            editor.setOption("maxLines", 30);
-            editor.setOption("minLines", 3);
-
-            editor.setShowPrintMargin(true);
+                editor.setShowPrintMargin(true);
+            });
         },
     }
 }

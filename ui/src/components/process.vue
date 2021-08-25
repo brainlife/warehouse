@@ -593,10 +593,7 @@ export default {
 
         load(cb) {
             this.loading = true;
-            if(this.ws) {
-                console.log("closing previous ws")
-                this.ws.close();
-            }
+            if(this.ws) this.ws.close();
 
             var url = Vue.config.event_ws+"/subscribe?jwt="+Vue.config.jwt;
             this.ws = new ReconnectingWebSocket(url, null, {/*debug: Vue.config.debug,*/ reconnectInterval: 3000});

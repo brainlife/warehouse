@@ -20,6 +20,7 @@ function canedit(user, rec) {
     return false;
 }
 
+//TODO - do we still need this now that we have /query api?
 /**
  * @apiGroup App
  * @api {get} /app              Query apps
@@ -126,12 +127,6 @@ router.get('/query', common.jwt({credentialsRequired: false}), (req, res, next)=
                 app.doi, 
                 ...app.tags
             ];
-            /*
-            app.contributors.forEach(contact=>{
-                tokens.push(contact.name);
-                tokens.push(contact.email);
-            });
-            */
             app.inputs.forEach(input=>{
                 tokens = [...tokens, ...input.datatype_tags, input.datatype.name, input.datatype.desc];
             });

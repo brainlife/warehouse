@@ -8,8 +8,8 @@
     <div v-else style="padding: 20px;">
         <!--<h4>Staging Data</h4>-->
         <task :task="task"/>
-        <p class="waiting"><icon name="cog"/> Waiting data to be staged out of archive ... </p>
     </div>
+    <p v-if="!novnc_task && type" class="waiting"><b>{{type}}</b> UI will start once the data is ready.</p>
 </div>
 </template>
 
@@ -76,7 +76,6 @@ export default {
                     })
                 }})
                 .then(res=>{
-                    console.log("query result", res.data.tasks);
                     if(res.data.tasks.length == 0) {
 
                         //compose window title (same code in view.vue)
@@ -210,7 +209,6 @@ export default {
 <style scoped>
 .waiting {
     padding: 10px;
-    border-radius: 10px;
     margin: 0 20px;
     background-color: #eee;
 }

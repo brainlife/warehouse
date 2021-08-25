@@ -70,13 +70,11 @@ export default {
     mounted() {
         //this.loadProduct();
         if(this.task.finish_date) {
-            console.log("waiting for secondary acchive");
             this.waitSecondaryArchive(this.task, (err, secondary)=>{
                 if(err) {
                     console.error(err); //let it continue
                     this.secondaryError = err;
                 }
-                console.log("done secondary archive!");
                 this.secondary = secondary;
             });
         }

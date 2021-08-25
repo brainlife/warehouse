@@ -183,6 +183,8 @@
 <script>
 import Vue from 'vue'
 
+const lib = require('@/lib');
+
 export default {
     components: { 
         app: ()=>import('@/components/app'), 
@@ -250,19 +252,17 @@ export default {
 
     methods: {
         editorInit(editor) {
-            require('brace/ext/language_tools')
-            require('brace/mode/json')
-            require('brace/theme/chrome')
+            lib.editorInit(editor, error => {
+                editor.container.style.lineHeight = 1.25;
+                editor.renderer.updateFontSize();
+                editor.setReadOnly(true);  // false to make it editable
 
-            editor.container.style.lineHeight = 1.25;
-            editor.renderer.updateFontSize();
-            editor.setReadOnly(true);  // false to make it editable
+                editor.setAutoScrollEditorIntoView(true);
+                editor.setOption("maxLines", 30);
+                editor.setOption("minLines", 3);
 
-            editor.setAutoScrollEditorIntoView(true);
-            editor.setOption("maxLines", 30);
-            editor.setOption("minLines", 3);
-
-            editor.setShowPrintMargin(true);
+                editor.setShowPrintMargin(true);
+            });
         },
 
         loadSmon() {
