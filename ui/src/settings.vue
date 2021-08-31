@@ -254,7 +254,7 @@
                         <span v-if="!user.times.google_login">Never</span>
                         <time v-if="user.times.google_login">{{user.times.google_login}}</time>
                     </p>
-                    <h4><i class="fa fa-google" aria-hidden="true"></i> Google</h4>
+                    <h4><icon name="brands/google" size="1.2"></icon> Google</h4>
                 </div>
                 <div class="well">
                     <b-button class="float-right" v-if="user.ext.github" @click="disconnect('github')">Disconnect</b-button>
@@ -265,7 +265,7 @@
                         <span v-if="!user.times.github">Never</span>
                         <time v-if="user.times.github_login">{{user.times.github_login}}</time>
                     </p>
-                    <h4><i class="fa fa-github" aria-hidden="true"></i> Github</h4>
+                    <h4><icon name="brands/github" size="1.2"></icon> Github</h4>
                 </div>
                 <div class="well">
                     <b-button class="float-right" v-if="user.ext.orcid" @v-click="disconnect('orcid')">Disconnect</b-button>
@@ -276,7 +276,7 @@
                         <span v-if="!user.times.orcid">Never</span>
                         <time v-if="user.times.orcid_login">{{user.times.orcid_login}}</time>
                     </p>
-                    <h4><i class="fa fa-orcid" aria-hidden="true"></i> ORCID</h4>
+                    <h4><icon name="brands/orcid" size="1.2"></icon> ORCID</h4>
                 </div>
                 <div class="well">
                     <b-button class="float-right" v-if="user.ext.facebook" @click="disconnect('facebook')">Disconnect</b-button>
@@ -287,7 +287,7 @@
                         <span v-if="!user.times.facebook">Never</span>
                         <time v-if="user.times.facebook_login">{{user.times.facebook}}</time>
                     </p>
-                    <h4><i class="fa fa-facebook" aria-hidden="true"></i> Facebook</h4>
+                    <h4><icon name="brands/facebook" size="1.2"></icon> Facebook</h4>
                 </div>
                 Please visit the legacy <a href="/auth/#!/settings/account" target="_blank">Account Settings</a> page for more account settings.
             </div>
