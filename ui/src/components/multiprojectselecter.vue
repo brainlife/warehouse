@@ -40,6 +40,7 @@ export default {
             }),
             limit: 500,
             sort: 'name',
+            select: 'name access',
         }}).then(res=>{
             var option_groups = {} 
             res.data.projects.forEach(project=>{

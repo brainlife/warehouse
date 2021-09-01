@@ -28,6 +28,7 @@ const common = require('../common');
  * @apiSuccess {Object}         List of projects (maybe limited / skipped) and total count
  */
 router.get('/', common.jwt({credentialsRequired: false}), (req, res, next)=>{
+    console.log(new Date(), "top of project");
     var find = {};
     if(req.query.find) find = JSON.parse(req.query.find);
 
@@ -57,6 +58,10 @@ router.get('/', common.jwt({credentialsRequired: false}), (req, res, next)=>{
         find.access = "public"; //guest can only see public projects
     }
 
+    console.log("querying project-------------------------------------");
+    console.dir(find);
+
+    console.log(new Date());
     db.Projects.find(find)
     .select(select)
     .skip(+skip)
@@ -66,8 +71,10 @@ router.get('/', common.jwt({credentialsRequired: false}), (req, res, next)=>{
     .lean()
     .exec((err, recs)=>{
         if(err) return next(err);
+        console.log(new Date(), "done query.. now counting");
         db.Projects.countDocuments(find).exec((err, count)=>{
             if(err) return next(err);
+            console.log(new Date(), "done counting .. now sending data");
             res.json({
                 projects: recs, 
                 count

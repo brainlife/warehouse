@@ -741,7 +741,7 @@ export default {
             
             for (let output of this.output_datasets) {
                 if (!output.id) {
-                    return cb("Not all output ids are non-null");
+                    return cb("Output directory name is empty");
                 }
                 if (outputTable[output.id]) {
                     return cb("Duplicate ID '" + output.id + "' found in list of outputs");

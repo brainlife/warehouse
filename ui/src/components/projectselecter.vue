@@ -78,6 +78,7 @@ export default {
                 find: JSON.stringify(find),
                 limit: 500,
                 sort: 'name',
+                select: 'name desc',
             }}).then(res=>{
                 this.options = [];
                 if(!this.required) this.options.push({value: null, text: this.placeholder||''});

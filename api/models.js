@@ -10,9 +10,12 @@ mongoose.set("debug", config.mongoose_debug);
 exports.init = (cb)=>{
     mongoose.connect(config.mongodb, {
         readPreference: 'nearest',
+        writeConcern: {
+            w: 'majority', //isn't this the default?
+        },
+        readConcernLevel: 'majority',//prevents read to grab stale data from secondary
         useNewUrlParser: true,
         useUnifiedTopology: true,
-        auto_reconnect: true,
     }, err=>{
         if(err) return cb(err);
         cb();
@@ -225,6 +228,13 @@ var projectSchema = mongoose.Schema({
 projectSchema.pre('save', function(next) {
     this.update_date = new Date;
     next();
+});
+console.log("creting.....................");
+projectSchema.index({ 
+    "removed": 1, 
+    "openneuro": 1,
+    "stats.datasets.datatypes_detail.type": 1,
+    /*"members": 1, "admins": 1, "guests": 1*/
 });
 exports.Projects = mongoose.model("Projects", projectSchema);
 

@@ -150,10 +150,10 @@ export default {
             });
 
             refdata.forEach(ref=>{
+                if(!ref[this.measure.id]) return; //some ref doesn't have all measures
                 const refMean = ref[this.measure.id].mean;
                 const refSD = ref[this.measure.id].sd;
                     const sampleNodeCount = this.structures[this.structure].x.length;
-                    //const step = sampleNodeCount/this.refNodeCount;
                     const x = [];
                     for(let n = 0;n < this.refNodeCount; n++) {
                         x.push(sampleNodeCount/this.refNodeCount*n);
