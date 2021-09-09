@@ -337,7 +337,7 @@ exports.archive_task_outputs = async function(user_id, task, outputs, cb) {
                     name: "archive",
                     deps_config: [ {task: task._id, subdirs } ],
                     service: "brainlife/app-archive",
-                    service_branch: "1.1",
+                    //service_branch: "1.1", //why did we do this?
                     instance_id: task.instance_id,
                     config: {
                         datasets: dataset_configs,

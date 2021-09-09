@@ -210,31 +210,6 @@ function handle_task(task, cb) {
             });
         },
         
-        /*
-        //I need to apply the task_product (meta, tag, datatype_tags) to task.config._outputs for further processing below
-        next=>{
-            if(task.status != "finished") return next();
-            
-            //some app (like brainlife/app-archive-secondary) doesn't have any output
-            if(!task.config || !task.config._outputs) return next();
-
-            console.log("merging product.json meta/tag/datatype_tags into task.config._outputs");
-            const meta = common.split_product(task_product, task.config._outputs);
-            task.config._outputs.forEach(output=>{
-                output.meta = meta[output.id].meta;
-                output.tags = meta[output.id].tags;
-                output.datatype_tags = meta[output.id].datatype_tags;
-            });
-
-            //when a user create a pipeline like App1 > validator > App2.
-            //App2 needs product.json from validator as part of its config.json / meta.
-            //so when the validator finishes, we need to update dep tasks's config 
-            //with the content from taskproduct BEFORE app2 is started
-        
-            next();
-        },
-        */
-        
         //submit output validators
         next=>{
             //we don't wait for the job to finish before we submit validator

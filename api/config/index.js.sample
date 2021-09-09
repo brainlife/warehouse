@@ -103,9 +103,9 @@ exports.mail = {
 
 exports.metrics = {
     counts: {
-        interval: 300, //emit every 5min
-        path: "/usr/local/graphite.5min/warehouse.counts", 
+        path: "/usr/local/graphite.24h/warehouse.counts", 
         prefix: "dev.warehouse", 
+        interval: 3600*24, 
     },
 
     service_prefix: "dev.amaretti.service",
