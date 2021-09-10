@@ -290,20 +290,19 @@
                     <h4><icon name="brands/facebook" size="2.4"></icon> Facebook</h4>
                 </div>
                 <div class="well">
-                    <b-button class="float-right" @click="connect('oidc')">Connect</b-button>
-                        <!-- <ul v-if="user.exit.openids.length > 0">
-                            <li v-for="dn in user.ext.openids">
-                                <b-button v-if="user.ext.openids" @click="disconnect('oidc', {dn})">Disconnect</b-button>
-                                <p>
+                    <h4><img src="../images/cilogon.png" width="24" height="24"> OpenID Connect <span><b-button class="float-right" @click="connect('oidc')">Connect</b-button></span></h4>
+                        <b-list-group v-if="user.ext.openids.length" style="margin:20px">
+                            <b-list-group-item v-for="dn in user.ext.openids" :key="index">
+                                <b-button class="float-right" v-if="user.ext.openids" @click="disconnect('oidc',dn)">Disconnect</b-button>
+                                <p style="margin: 0 0 10.5px;">
                                     {{dn}}
                                      <span class="text-muted"> | Last Login: 
-                                        <span ng-if="!user.times['oidc_login:'+user.profile.sub]">Never</span> 
-                                        <time>{{user.times['oidc_login:'+user.profile.sub] | date:'medium'}}</time>
+                                        <span v-if="!user.times['oidc_login:'+user.profile.sub]">Never</span> 
+                                        <time>{{user.times['oidc_login:'+user.profile.sub]}}</time>
                                     </span> 
                                 </p>
-                            </li>
-                        </ul> -->
-                    <h4><img src="../images/cilogon.png" width="24" height="24"> OpenID Connect</h4>
+                            </b-list-group-item>
+                        </b-list-group>
                 </div>
                 Please visit the legacy <a href="/auth/#!/settings/account" target="_blank">Account Settings</a> page for more account settings.
             </div>
