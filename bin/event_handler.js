@@ -26,7 +26,8 @@ db.init(err=>{
     });
 
     rcon = common.connectRedis();
-    setInterval(emit_counts, 1000*config.metrics.counts.interval); 
+    setInterval(emit_counts, 1000*config.metrics.counts.interval);  //usually 24 hours?
+    setInterval(health_check, 1000*60);
 });
 
 function subscribe() {
@@ -127,7 +128,6 @@ function isValidationTask(task) {
 }
 
 function emit_counts() {
-    health_check();
 
     //emit graphite metrics
     let out = "";
@@ -155,7 +155,8 @@ function health_check() {
         report.status = "failed";
         report.messages.push("task event counts is low");
     }
-
+    console.log("---------- reporting health check --------------")
+    console.dir(report);
     rcon.set("health.warehouse.event."+process.env.HOSTNAME+"-"+process.pid, JSON.stringify(report));
 }
 

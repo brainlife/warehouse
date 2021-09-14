@@ -1,5 +1,4 @@
 
-//const amqp = require("amqp");
 const mongoose = require("mongoose");
 
 const config = require("./config");
@@ -10,10 +9,10 @@ mongoose.set("debug", config.mongoose_debug);
 exports.init = (cb)=>{
     mongoose.connect(config.mongodb, {
         readPreference: 'nearest',
+        readConcern: 'majority',//prevents read to grab stale data from secondary
         writeConcern: {
             w: 'majority', //isn't this the default?
         },
-        readConcernLevel: 'majority',//prevents read to grab stale data from secondary
         useNewUrlParser: true,
         useUnifiedTopology: true,
     }, err=>{
