@@ -279,17 +279,6 @@
                     <h4><icon name="brands/orcid" size="2.4"></icon> ORCID</h4>
                 </div>
                 <div class="well">
-                    <b-button class="float-right" v-if="user.ext.facebook" @click="disconnect('facebook')">Disconnect</b-button>
-                    <b-button class="float-right" v-if="!user.ext.facebook" @click="connect('facebook')">Connect</b-button>
-                    <p class="float-right text-muted" style="margin: 11px;">
-                        <span v-if="user.ext.facebook"><b>{{user.ext.facebook}}</b> |</span>
-                        Last Login: 
-                        <span v-if="!user.times.facebook">Never</span>
-                        <time v-if="user.times.facebook_login">{{user.times.facebook}}</time>
-                    </p>
-                    <h4><icon name="brands/facebook" size="2.4"></icon> Facebook</h4>
-                </div>
-                <div class="well">
                     <h4><img src="../images/cilogon.png" width="24" height="24"> OpenID Connect <span><b-button class="float-right" @click="connect('oidc')">Connect</b-button></span></h4>
                         <b-list-group v-if="user.ext.openids.length" style="margin:20px">
                             <b-list-group-item v-for="dn in user.ext.openids" :key="index">
