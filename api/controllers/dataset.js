@@ -1646,6 +1646,8 @@ router.post('/copy', common.jwt({secret: config.express.pubkey}), (req, res, nex
  * @apiParam {String} [subdir]  (optional) Sub directory where the data is uploaded to 
  * @apiParam {String} datatype  Datatype ID of the new object
  * @apiParam {String} desc      Description for the new object
+ * @apiParam {String[]} fileids List of file IDs to be validated that are uploaded 
+                                (not all files in dt are required)
  * @apiParam {String[]} datatype_tags  
  *                              Datatype tags to add
  * @apiParam {String[]} tags
@@ -1774,7 +1776,7 @@ router.post('/finalize-upload', common.jwt({secret: config.express.pubkey}), (re
                 //construct config
                 let _config = {}
                 datatype.files.forEach(file => {
-                    //if(!files[file.id]) return; //not set.. probably optional
+                    if(req.body.fileids && !req.body.fileids.includes(file.id)) return; //not uploaded.. 
                     _config[file.id] = "../" + task._id + "/upload/" + (file.filename||file.dirname);
                 });
                 output.subdir = "output"; //validator always output to output directory

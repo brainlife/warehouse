@@ -27,6 +27,7 @@ db.init(err=>{
 
     rcon = common.connectRedis();
     setInterval(emit_counts, 1000*config.metrics.counts.interval);  //usually 24 hours?
+    setInterval(emit_health_counts, 1000*config.metrics.health_counts.interval);  //usually 5min
     setInterval(health_check, 1000*60);
 });
 
@@ -128,7 +129,6 @@ function isValidationTask(task) {
 }
 
 function emit_counts() {
-
     //emit graphite metrics
     let out = "";
     for(let key in counts) {
@@ -138,6 +138,26 @@ function emit_counts() {
 
     counts = {}; //reset all counters
 }
+
+const health_counts = {
+    tasks: 0,
+    instanceS: 0,
+}
+function emit_health_counts() {
+    if(!config.metrics.health_counts) return; //in case config is missing..
+
+    //emit graphite metrics
+    const time = new Date().getTime()/1000;
+    let out = `
+${config.metrics.health_counts.prefix}.health.tasks ${health_counts.tasks} ${time}
+${config.metrics.health_counts.prefix}.health.instances ${health_counts.instances} ${time}
+`;
+    fs.writeFileSync(config.metrics.health_counts.path, out);
+
+    health_counts.tasks = 0;
+    health_counts.instances = 0;
+}
+
 
 function health_check() {
     var report = {
@@ -151,11 +171,11 @@ function health_check() {
         maxage: 1000*60*20,  //should be double the check frequency to avoid going stale while development
     }
 
-    if(counts["health.tasks"] == 0) {
+    if(health_counts.tasks == 0) {
         report.status = "failed";
         report.messages.push("task event counts is low");
     }
-    console.log("---------- reporting health check --------------")
+    console.log("---------- reporting health check @ "+new Date().toLocaleString()+" --------------")
     console.dir(report);
     rcon.set("health.warehouse.event."+process.env.HOSTNAME+"-"+process.pid, JSON.stringify(report));
 }
@@ -165,7 +185,7 @@ function handle_task(task, cb) {
 
     console.debug("task", (task._status_changed?"+++":"---"), task._id, task.name, task.service, task.status, task.status_msg);
 
-    inc_count("health.tasks");
+    health_counts.tasks++;
 
     //number of task event for each app
     if(task.config && task.config._app) inc_count("task.app."+task.config._app+"."+task.status); 
@@ -602,7 +622,7 @@ function handle_instance(instance, cb) {
     if(!instance) return cb("null instance..");
     
     console.debug("instance ---", instance._id, instance.status);
-    inc_count("health.instances");
+    health_counts.instances++;
     
     //if(instance._status_changed) {
         //number of instance events for each user

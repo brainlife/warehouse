@@ -107,6 +107,11 @@ exports.metrics = {
         prefix: "dev.warehouse", 
         interval: 3600*24, 
     },
+    health_counts: {
+        path: "/usr/local/graphite.5min/warehouse.counts", 
+        prefix: "dev.warehouse", 
+        interval: 60*5, 
+    },
 
     service_prefix: "dev.amaretti.service",
     

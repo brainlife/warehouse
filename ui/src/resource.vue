@@ -55,7 +55,7 @@
                                 <icon name="play" style="opacity: 0.4;"/>&nbsp;&nbsp;&nbsp;{{tasksRunning.length}}&nbsp;&nbsp;<small>Running / {{resource.config.maxtask}} max</small>
                             </b-badge>
                         </p>
-                        <p>{{resource.config.desc||'no description'}}</p>
+                        <p style="line-height: 180%">{{resource.config.desc||'no description'}}</p>
                         <p style="margin-bottom: 0;">
                             <statustag :status="resource.status" style="font-size: 150%"/>
                             <span style="padding-left: 15px; opacity: 0.7;">
