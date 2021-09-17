@@ -53,7 +53,8 @@
                                     <small v-for="(tag,idx) in input.tags" :key="idx"> | {{tag}} </small>
                                     <icon style="margin: 0 5px" name="arrow-left" scale="0.8"/> 
                                     <b>{{find_real_task(input.task_id).config._tid}}</b>
-                                    <statusicon v-if="find_task(input.task_id).status != 'finished'" :status="find_task(input.task_id).status"/>
+                                    <statustag v-if="find_task(input.task_id).status != 'finished'" :status="find_task(input.task_id).status"/>
+                                    
                                     {{find_task(input.task_id).name}}
                                 </span>
                             </div>
@@ -124,11 +125,14 @@
                             <mute>
                                 <small v-for="(tag,idx) in output.tags" :key="idx"> | {{tag}}</small>
                             </mute>
+
+                            <div style="display: inline-block;" v-if="datatypes[output.datatype].validator" :title="datatypes[output.datatype].validator">
+                                <small style="opacity: 0.5"><icon name="arrow-right" scale="0.8" style="position: relative; top: -2px;"/> Validate</small>
+                            </div>
+
                             <div v-if="output.archive" style="display: inline-block;">
-                                <small style="opacity: 0.5"><icon name="arrow-right" scale="0.8" style="position: relative; top: -2px;"/> will archive</small>
-                                <!--<icon style="opacity: 0.5; margin-left: 3px;" name="shield-alt" scale="1.0"/>-->
+                                <small style="opacity: 0.5"><icon name="arrow-right" scale="0.8" style="position: relative; top: -2px;"/> Archive</small>
                                 <small v-if="project._id != output.archive.project">{{projectname(output.archive.project)}}</small>
-                                <!--<small v-else style="opacity: 0.6">This Project</small>-->
                             </div>
 
                             <!--foreign project-->
@@ -919,25 +923,6 @@ top: 175px;
 overflow-y: auto;
 overflow-x: hidden;
 }
-/*
-.sidebar {
-background-color: #ddd;
-position: fixed;
-top: 110px;
-bottom: 0px;
-width: 300px;
-overflow: auto;
-padding-bottom: 50px; 
-}
-*/
-/*
-.sidebar h6 {
-font-weight: bold;
-color: #999;
-padding: 10px;
-margin: 0px;
-}
-*/
 .task {
 box-shadow: 1px 1px 5px #ccc;
 }
@@ -948,14 +933,6 @@ border-left: 5px solid #ccc;
 padding-left: 10px;
 font-style: italic;
 }
-/*
-.sidebar .dataset {
-border-bottom: 1px solid #d5d5d5; 
-padding: 3px;
-padding-left: 7px;
-font-size: 85%;
-}
-*/
 .dataset.clickable:hover {
 background-color: #eee;
 }
@@ -964,14 +941,6 @@ white-space: nowrap;
 overflow: hidden;
 text-overflow: ellipsis; 
 }
-/*
-.subinfo {
-border-left: 3px solid #ddd;
-padding-left: 8px;
-margin: 3px;
-margin-top: 8px;
-}
-*/
 .subtitle {
 color: #aaa;
 font-weight: bold;

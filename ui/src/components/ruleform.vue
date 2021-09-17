@@ -92,7 +92,7 @@
                                     </b-input-group>
 
                                     <p>
-                                        <small class="text-muted">Instead of using datasets from the same subject/session, you can look for datasets from different project, or different subject/session.</small>
+                                        <small class="text-muted">Instead of using data from the same subject/session, you can look for data from different project, or different subject/session.</small>
                                     </p>
                                 </b-col>
                             </b-row> 
@@ -101,12 +101,12 @@
                                 <b-col :cols="9">
                                     <p>
                                         <tageditor v-model="rule.input_tags[input.id]" placeholder="(any tags)" :options="input_dataset_tags[input.id]"/>
-                                        <small class="text-muted">Look for datasets with specific dataset tags (<b>not datatype tag!</b>)</small>
+                                        <small class="text-muted">Look for data with specific object tags (<b>not datatype tag!</b>)</small>
                                     </p>
-                                    <small v-if="rule.input_tags_count[input.id]">{{rule.input_tags_count[input.id]}} datasets matches this criteria (may belong to the same subject)</small>
+                                    <small v-if="rule.input_tags_count[input.id]">{{rule.input_tags_count[input.id]}} data matches this criteria (may belong to the same subject)</small>
                                 </b-col>
                             </b-row> 
-                            <p v-if="rule.input_tags_count[input.id] === null">Counting matching datasets..</p>
+                            <p v-if="rule.input_tags_count[input.id] === null">Counting matching data objects..</p>
                             <b-alert v-else :show="rule.input_tags_count[input.id] == 0" variant="warning">There are no input data-objects that match the specified criteria.</b-alert>
                         </div>
                     </b-card>
@@ -123,7 +123,7 @@
                             <p v-if="output.desc" style="margin-bottom: 0px;"><small>{{output.desc}}</small></p>
                         </div>
                         <p>
-                            <b-form-checkbox v-model="rule.archive[output.id].do">Submit the App if this output dataset does not exist (and archive the output).</b-form-checkbox>
+                            <b-form-checkbox v-model="rule.archive[output.id].do">Submit the App if this output data does not exist (and archive the output).</b-form-checkbox>
                         </p>
                         <div v-if="rule.archive[output.id].do">
                             <b-row v-if="rule.archive[output.id].do">
@@ -131,14 +131,14 @@
                                 <b-col :cols="9">
                                     <p>
                                         <tageditor v-model="rule.output_tags[output.id]" placeholder="(any tags)" :options="output_dataset_tags[output.id]"/>
-                                        <small class="text-muted">Tags to add to the archived dataset. Tags are important as they allow you to specify input datasets on subsequent rules.</small>
+                                        <small class="text-muted">Tags to add to the archived data. Tags are important as they allow you to specify input data on subsequent rules.</small>
                                     </p>
                                 </b-col>
                             </b-row>
                             <b-row>
                                 <b-col>Description</b-col>
                                 <b-col :cols="9">
-                                    <b-form-textarea :rows="2" v-model="rule.archive[output.id].desc" placeholder="Description for archived dataset"/>
+                                    <b-form-textarea :rows="2" v-model="rule.archive[output.id].desc" placeholder="Description for archived data object"/>
                                 </b-col>
                             </b-row>
                         </div>
