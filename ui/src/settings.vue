@@ -243,59 +243,61 @@
                     </b-form>
                 </b-container>
                 <br>
-                <h5>Connected Accounts</h5>
-                <hr>
-                <div class="well">
-                    <div v-if="!user.ext.googleid">
-                        <b-button class="float-right" @v-click="connect('google')">Connect</b-button>
+                <div v-if="user">
+                    <h5>Connected Accounts</h5>
+                    {{user}}
+                    <div class="well">
+                        <div v-if="!user.ext.googleid">
+                            <b-button class="float-right" @click="connect('google')">Connect</b-button>
+                        </div>
+                        <div v-else>
+                            <b-button class="float-right" @click="disconnect('google')">Disconnect</b-button>
+                            <p class="float-right text-muted" style="margin: 11px;"><b>{{user.ext.googleid}}</b> |</p>
+                        </div>
+                        <p class="float-right text-muted" style="margin: 11px;">
+                                Last Login: 
+                                <span v-if="!user.times.google_login">Never</span>
+                                <span v-else>{{user.times.google_login}}</span>
+                        </p>
+                        <h4><icon name="brands/google" size="2.4"></icon> Google</h4>
                     </div>
-                    <div v-else>
-                        <b-button class="float-right" @v-click="disconnect('google')">Disconnect</b-button>
-                        <p class="float-right text-muted" style="margin: 11px;"><b>{{user.ext.googleid}}</b> |</p>
-                    </div>
-                    <p class="float-right text-muted" style="margin: 11px;">
+                    <div class="well">
+                        <b-button class="float-right" v-if="user.ext.github" @click="disconnect('github')">Disconnect</b-button>
+                        <b-button class="float-right" v-else @click="connect('github')">Connect</b-button>
+                        <p class="float-right text-muted" style="margin: 11px;">
+                            <span v-if="user.ext.github"><b>{{user.ext.github}}</b> |</span>
                             Last Login: 
-                            <span v-if="!user.times.google_login">Never</span>
-                            <span v-else>{{user.times.google_login}}</span>
-                    </p>
-                    <h4><icon name="brands/google" size="2.4"></icon> Google</h4>
-                </div>
-                <div class="well">
-                    <b-button class="float-right" v-if="user.ext.github" @click="disconnect('github')">Disconnect</b-button>
-                    <b-button class="float-right" v-else @click="connect('github')">Connect</b-button>
-                    <p class="float-right text-muted" style="margin: 11px;">
-                        <span v-if="user.ext.github"><b>{{user.ext.github}}</b> |</span>
-                        Last Login: 
-                        <span v-if="!user.times.github">Never</span>
-                        <span v-else>{{user.times.github_login}}</span>
-                    </p>
-                    <h4><icon name="brands/github" size="2.4"></icon> Github</h4>
-                </div>
-                <div class="well">
-                    <b-button class="float-right" v-if="user.ext.orcid" @v-click="disconnect('orcid')">Disconnect</b-button>
-                    <b-button class="float-right" v-else @v-click="connect('oricd')">Connect</b-button>
-                    <p class="float-right text-muted" style="margin: 11px;">
-                        <span v-if="user.ext.orcid"><b>{{user.ext.orcid}}</b> |</span>
-                        Last Login: 
-                        <span v-if="!user.times.orcid">Never</span>
-                        <time v-if="user.times.orcid_login">{{user.times.orcid_login}}</time>
-                    </p>
-                    <h4><icon name="brands/orcid" size="2.4"></icon> ORCID</h4>
-                </div>
-                <div class="well">
-                    <h4><img src="../images/cilogon.png" width="24" height="24"> OpenID Connect <span><b-button class="float-right" @click="connect('oidc')">Connect</b-button></span></h4>
-                        <b-list-group v-if="user.ext.openids.length" style="margin:20px">
-                            <b-list-group-item v-for="dn in user.ext.openids" :key="index">
-                                <b-button class="float-right" v-if="user.ext.openids" @click="disconnect('oidc',dn)">Disconnect</b-button>
-                                <p style="margin: 0 0 10.5px;">
-                                    {{dn}}
-                                     <span class="text-muted"> | Last Login: 
-                                        <span v-if="!user.times['oidc_login:'+user.profile.sub]">Never</span> 
-                                        <time>{{user.times['oidc_login:'+user.profile.sub]}}</time>
-                                    </span> 
-                                </p>
-                            </b-list-group-item>
-                        </b-list-group>
+                            <span v-if="!user.times.github">Never</span>
+                            <span v-else>{{user.times.github_login}}</span>
+                        </p>
+                        <h4><icon name="brands/github" size="2.4"></icon> Github</h4>
+                    </div>
+                    <div class="well">
+                        <b-button class="float-right" v-if="user.ext.orcid" @v-click="disconnect('orcid')">Disconnect</b-button>
+                        <b-button class="float-right" v-else @v-click="connect('oricd')">Connect</b-button>
+                        <p class="float-right text-muted" style="margin: 11px;">
+                            <span v-if="user.ext.orcid"><b>{{user.ext.orcid}}</b> |</span>
+                            Last Login: 
+                            <span v-if="!user.times.orcid">Never</span>
+                            <time v-if="user.times.orcid_login">{{user.times.orcid_login}}</time>
+                        </p>
+                        <h4><icon name="brands/orcid" size="2.4"></icon> ORCID</h4>
+                    </div>
+                    <div class="well">
+                        <h4><img src="../images/cilogon.png" width="24" height="24"> OpenID Connect <span><b-button class="float-right" @click="connect('oidc')">Connect</b-button></span></h4>
+                            <b-list-group v-if="user.ext.openids" style="margin:20px">
+                                <b-list-group-item v-for="dn in user.ext.openids" :key="index">
+                                    <b-button class="float-right" v-if="user.ext.openids" @click="disconnect('oidc',dn)">Disconnect</b-button>
+                                    <p style="margin: 0 0 10.5px;">
+                                        {{dn}}
+                                        <span class="text-muted"> | Last Login: 
+                                            <span v-if="!user.times['oidc_login:'+user.profile.sub]">Never</span> 
+                                            <time>{{user.times['oidc_login:'+user.profile.sub]}}</time>
+                                        </span> 
+                                    </p>
+                                </b-list-group-item>
+                            </b-list-group>
+                    </div>
                 </div>
                 Please visit the legacy <a href="/auth/#!/settings/account" target="_blank">Account Settings</a> page for more account settings.
             </div>
@@ -368,7 +370,15 @@ export default {
             tab: 0,
 
             ready: false,
-            user: null,
+            user: {
+                ext: {
+                    googleid: '',
+                    github: '',
+                    opendis : [],
+                    orcid: ''
+                },
+                times: {}
+            },
             debug: null,
             jwt: null,
 
@@ -428,14 +438,10 @@ export default {
             this.ready = true;
             const jwt = localStorage.getItem("jwt");
             if(jwt) {
-                this.user = JSON.parse(atob(jwt.split('.')[1]));
                 this.debug = {jwt : this.user};
                 this.jwt = jwt;
                 console.log(this.jwt);
             }
-        });
-        this.$http.get(Vue.config.auth_api+"/me").then(res=>{
-            this.user = res.data;
         });
     },
     
@@ -487,6 +493,16 @@ export default {
             if(!this.form.repeatPassword || !this.form.newPassword) return;
             return this.form.repeatPassword == this.form.newPassword;
         },
+    },
+
+    watch : {
+        tab : function() {
+            if(this.tab == 1) {
+               this.$http.get(Vue.config.auth_api+"/me").then(res=>{
+                    this.user = res.data;
+                });
+            }
+        }
     }
 }
 </script>
