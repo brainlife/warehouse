@@ -28,7 +28,7 @@ db.init(err=>{
     rcon = common.connectRedis();
     setInterval(emit_counts, 1000*config.metrics.counts.interval);  //usually 24 hours?
     setInterval(emit_health_counts, 1000*config.metrics.health_counts.interval);  //usually 5min
-    setInterval(health_check, 1000*60);
+    //setInterval(health_check, 1000*60);
 });
 
 function subscribe() {
@@ -144,7 +144,23 @@ const health_counts = {
     instanceS: 0,
 }
 function emit_health_counts() {
-    if(!config.metrics.health_counts) return; //in case config is missing..
+    var report = {
+        status: "ok",
+        messages: [],
+        date: new Date(),
+        counts: health_counts,
+        maxage: 1000*60*20,  //should be double the check frequency to avoid going stale while development
+    }
+
+    /* TODO - now that we have a separate health check, the count becomes 0 too often
+    if(health_counts.tasks == 0) {
+        report.status = "failed";
+        report.messages.push("task event counts is low");
+    }
+    */
+    console.log("---------- reporting health check @ "+new Date().toLocaleString()+" --------------")
+    console.dir(report);
+    rcon.set("health.warehouse.event."+process.env.HOSTNAME+"-"+process.pid, JSON.stringify(report));
 
     //emit graphite metrics
     const time = new Date().getTime()/1000;
@@ -156,28 +172,6 @@ ${config.metrics.health_counts.prefix}.health.instances ${health_counts.instance
 
     health_counts.tasks = 0;
     health_counts.instances = 0;
-}
-
-
-function health_check() {
-    var report = {
-        status: "ok",
-        messages: [],
-        date: new Date(),
-        counts: {
-            tasks: counts["health.tasks"],
-            instances: counts["health.instances"],
-        },
-        maxage: 1000*60*20,  //should be double the check frequency to avoid going stale while development
-    }
-
-    if(health_counts.tasks == 0) {
-        report.status = "failed";
-        report.messages.push("task event counts is low");
-    }
-    console.log("---------- reporting health check @ "+new Date().toLocaleString()+" --------------")
-    console.dir(report);
-    rcon.set("health.warehouse.event."+process.env.HOSTNAME+"-"+process.pid, JSON.stringify(report));
 }
 
 function handle_task(task, cb) {
