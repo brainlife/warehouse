@@ -419,7 +419,17 @@ export default {
 
     data () {
         return {
+            
+            tabs: [
+                {id: "profile", label: "Profile"},
+                {id: "account", label: "Account"},
+                {id: "notification", label: "Notification"},
+                {id: "users", label: "Users"},
+                {id: "groups", label: "Groups"},
+            ],
+
             tab: 0,
+
             users: [],
             queryUser: "", 
             queryGroup: "",
@@ -490,10 +500,27 @@ export default {
             this.fullname = res.data.fullname;
             if(res.data.profile) lib.mergeDeep(this.profile, res.data.profile);
             this.ready = true;
-        })
+
+            //this.tab = won't work unless it's next tick from mounted()
+            this.handleRouteParams();
+        });
     },
     
     methods: {
+
+        handleRouteParams() {
+            var tab_id = this.$route.params.tab;
+            if(tab_id) {
+                //lookup tab index from the tab_id
+                this.tab = this.tabs.findIndex(tab=>tab.id == tab_id);  
+                console.log("tab is now", this.tab);
+            } else {
+                //console.log("tab is not set.. switching to detail tab");
+                //this.$router.replace("/project/"+this.selected._id+"/detail");
+                //this.tab = "detail"; //should fire tab watcher
+            }
+        },
+
         avatar_url: lib.avatar_url,
         submit_profile(e) {
             e.preventDefault()
@@ -667,6 +694,10 @@ export default {
         tab : function() {
             if(this.tab == 3) this.loadUsers();
             if(this.tab == 4) this.loadGroups();
+
+            if(this.$route.params.tab != this.tabs[this.tab].id) {
+                this.$router.replace("/settings/"+this.tabs[this.tab].id);
+            }
         },
         queryUser : function() {
             this.applyFilterUser();

@@ -183,7 +183,7 @@ export default new Router({
             sidemenu: "pub",
         }},
 
-        {path: '/settings', component: settings, meta: {
+        {path: '/settings/:tab?', component: settings, meta: {
             sidemenu: "setting",       
         }},
 
