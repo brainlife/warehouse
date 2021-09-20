@@ -246,30 +246,34 @@
                 <h5>Connected Accounts</h5>
                 <hr>
                 <div class="well">
-                    <b-button class="float-right" v-if="user.ext.googleid" @v-click="disconnect('google')">Disconnect</b-button>
-                    <b-button class="float-right" v-if="!user.ext.googleid" @v-click="connect('google')">Connect</b-button>
+                    <div v-if="!user.ext.googleid">
+                        <b-button class="float-right" @v-click="connect('google')">Connect</b-button>
+                    </div>
+                    <div v-else>
+                        <b-button class="float-right" @v-click="disconnect('google')">Disconnect</b-button>
+                        <p class="float-right text-muted" style="margin: 11px;"><b>{{user.ext.googleid}}</b> |</p>
+                    </div>
                     <p class="float-right text-muted" style="margin: 11px;">
-                        <span v-if="user.ext.googleid"><b>{{user.ext.googleid}}</b> |</span>
-                        Last Login: 
-                        <span v-if="!user.times.google_login">Never</span>
-                        <time v-if="user.times.google_login">{{user.times.google_login}}</time>
+                            Last Login: 
+                            <span v-if="!user.times.google_login">Never</span>
+                            <span v-else>{{user.times.google_login}}</span>
                     </p>
                     <h4><icon name="brands/google" size="2.4"></icon> Google</h4>
                 </div>
                 <div class="well">
                     <b-button class="float-right" v-if="user.ext.github" @click="disconnect('github')">Disconnect</b-button>
-                    <b-button class="float-right" v-if="!user.ext.github" @click="connect('github')">Connect</b-button>
+                    <b-button class="float-right" v-else @click="connect('github')">Connect</b-button>
                     <p class="float-right text-muted" style="margin: 11px;">
                         <span v-if="user.ext.github"><b>{{user.ext.github}}</b> |</span>
                         Last Login: 
                         <span v-if="!user.times.github">Never</span>
-                        <time v-if="user.times.github_login">{{user.times.github_login}}</time>
+                        <span v-else>{{user.times.github_login}}</span>
                     </p>
                     <h4><icon name="brands/github" size="2.4"></icon> Github</h4>
                 </div>
                 <div class="well">
                     <b-button class="float-right" v-if="user.ext.orcid" @v-click="disconnect('orcid')">Disconnect</b-button>
-                    <b-button class="float-right" v-if="!user.ext.orcid" @v-click="connect('oricd')">Connect</b-button>
+                    <b-button class="float-right" v-else @v-click="connect('oricd')">Connect</b-button>
                     <p class="float-right text-muted" style="margin: 11px;">
                         <span v-if="user.ext.orcid"><b>{{user.ext.orcid}}</b> |</span>
                         Last Login: 
