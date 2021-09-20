@@ -16,7 +16,7 @@
         <b-container v-if="ready">
 
             <!--profile-->
-            <div v-if="tab == 0">
+            <div v-if="tabs[tab].id == 'profile'">
                 <b-alert :show="!profile.private.aup" variant="danger" style="margin-bottom: 20px">
                     <icon name="exclamation-circle"/> Please agree to the brainlife.io acceptable use policy listed below.
                 </b-alert>
@@ -218,7 +218,7 @@
             </div>
 
             <!--account-->
-            <div v-if="tab == 1">
+            <div v-if="tabs[tab].id == 'account'">
                 <b-container>
                     <h5>Change Password</h5>     
                     <hr>           
@@ -245,7 +245,6 @@
                 <br>
                 <div v-if="user">
                     <h5>Connected Accounts</h5>
-                    {{user}}
                     <div class="well">
                         <div v-if="!user.ext.googleid">
                             <b-button class="float-right" @click="connect('google')">Connect</b-button>
@@ -273,8 +272,8 @@
                         <h4><icon name="brands/github" size="2.4"></icon> Github</h4>
                     </div>
                     <div class="well">
-                        <b-button class="float-right" v-if="user.ext.orcid" @v-click="disconnect('orcid')">Disconnect</b-button>
-                        <b-button class="float-right" v-else @v-click="connect('oricd')">Connect</b-button>
+                        <b-button class="float-right" v-if="user.ext.orcid" @click="disconnect('orcid')">Disconnect</b-button>
+                        <b-button class="float-right" v-else @click="connect('orcid')">Connect</b-button>
                         <p class="float-right text-muted" style="margin: 11px;">
                             <span v-if="user.ext.orcid"><b>{{user.ext.orcid}}</b> |</span>
                             Last Login: 
@@ -302,7 +301,7 @@
                 Please visit the legacy <a href="/auth/#!/settings/account" target="_blank">Account Settings</a> page for more account settings.
             </div>
             <!--notification-->
-            <div v-if="tab == 3">
+            <div v-if="tabs[tab].id == 'notification'">
                 <b-form @submit="submit_profile">
                     <h5>Sounds</h5>
                     <b-row>
@@ -390,6 +389,11 @@ export default {
             },
             passwordSuggestions: [],
             passwordWarning: [],
+            tabs: [
+                {id: 'profile', label: "Profile"},
+                {id: 'account', label: "Account"},
+                {id: 'notification', label: "Notification"}
+            ],
             
             profile: {
                 public: {
@@ -432,6 +436,7 @@ export default {
     },
 
     mounted() {
+        this.handleRouteParams();
         this.$http.get(Vue.config.auth_api+"/profile").then(res=>{
             this.fullname = res.data.fullname;
             if(res.data.profile) lib.mergeDeep(this.profile, res.data.profile);
@@ -481,10 +486,24 @@ export default {
         disconnect(type, data) {
             this.$http.put(Vue.config.auth_api+'/'+type+'/disconnect',data).then(res=>{
                 this.$notify({type: "success", text:res.data.message});
+                Object.assign(user.ext,res.data.ext);
             }).catch(err=>{
                 console.error(err);
                 this.$notify({type: "error", text: response.data.message});
             })
+        },
+        handleRouteParams() {
+            console.log("handleRouteParams", this.$route.params);
+            var tab_id = this.$route.params.tab;
+            if(tab_id) {
+                //lookup tab index from the tab_id
+                this.tab = this.tabs.findIndex(tab=>tab.id == tab_id);
+
+            } else {
+                //console.log("tab is not set.. switching to detail tab");
+                //this.$router.replace("/project/"+this.selected._id+"/detail");
+                //this.tab = "detail"; //should fire tab watcher
+            }
         },
     },
 
@@ -496,8 +515,15 @@ export default {
     },
 
     watch : {
+        '$route': function() {
+            this.handleRouteParams();
+        },
         tab : function() {
-            if(this.tab == 1) {
+            if(this.$route.params.tab != this.tabs[this.tab].id) {
+                console.log("switching to different tab............");
+                 this.$router.replace("/settings/"+this.tabs[this.tab].id);
+            }
+            if(this.tabs[this.tab].id == 'account') {
                this.$http.get(Vue.config.auth_api+"/me").then(res=>{
                     this.user = res.data;
                 });
