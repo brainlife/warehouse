@@ -392,7 +392,9 @@ export default {
             tabs: [
                 {id: 'profile', label: "Profile"},
                 {id: 'account', label: "Account"},
-                {id: 'notification', label: "Notification"}
+                {id: 'notification', label: "Notification"},
+                {id: "users", label: "Users"},
+                {id: "groups", label: "Groups"},
             ],
             
             profile: {
@@ -436,7 +438,6 @@ export default {
     },
 
     mounted() {
-        this.handleRouteParams();
         this.$http.get(Vue.config.auth_api+"/profile").then(res=>{
             this.fullname = res.data.fullname;
             if(res.data.profile) lib.mergeDeep(this.profile, res.data.profile);
@@ -447,6 +448,7 @@ export default {
                 this.jwt = jwt;
                 console.log(this.jwt);
             }
+            this.handleRouteParams();
         });
     },
     
@@ -494,16 +496,8 @@ export default {
         },
         handleRouteParams() {
             console.log("handleRouteParams", this.$route.params);
-            var tab_id = this.$route.params.tab;
-            if(tab_id) {
-                //lookup tab index from the tab_id
-                this.tab = this.tabs.findIndex(tab=>tab.id == tab_id);
-
-            } else {
-                //console.log("tab is not set.. switching to detail tab");
-                //this.$router.replace("/project/"+this.selected._id+"/detail");
-                //this.tab = "detail"; //should fire tab watcher
-            }
+            const tab_id = this.$route.params.tab;
+            if(tab_id) this.tab = this.tabs.findIndex(tab=>tab.id == tab_id); 
         },
     },
 
@@ -519,9 +513,8 @@ export default {
             this.handleRouteParams();
         },
         tab : function() {
-            if(this.$route.params.tab != this.tabs[this.tab].id) {
-                console.log("switching to different tab............");
-                 this.$router.replace("/settings/"+this.tabs[this.tab].id);
+             if(this.$route.params.tab != this.tabs[this.tab].id) {
+                this.$router.replace("/settings/"+this.tabs[this.tab].id);
             }
             if(this.tabs[this.tab].id == 'account') {
                this.$http.get(Vue.config.auth_api+"/me").then(res=>{
