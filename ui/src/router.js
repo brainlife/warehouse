@@ -182,6 +182,10 @@ export default new Router({
             public: true,
             sidemenu: "pub",
         }},
+        
+        {path: '/settings/:tab?', component: settings, meta: {
+            sidemenu: "setting",       
+        }},
 
         {path: '/settings/:tab?', component: settings, meta: {
             sidemenu: "setting",       
@@ -191,7 +195,6 @@ export default new Router({
         {path: '/test', component: test, meta: {
             sidemenu: null,
         }},
-
 
         {path: '/404', component: missing, meta: {
             public: true,

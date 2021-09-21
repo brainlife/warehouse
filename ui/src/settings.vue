@@ -18,7 +18,7 @@
         <b-container v-if="ready">
 
             <!--profile-->
-            <div v-if="tab == 0">
+            <div v-if="tabs[tab].id == 'profile'">
                 <b-alert :show="!profile.private.aup" variant="danger" style="margin-bottom: 20px">
                     <icon name="exclamation-circle"/> Please agree to the brainlife.io acceptable use policy listed below.
                 </b-alert>
@@ -220,7 +220,7 @@
             </div>
 
             <!--account-->
-            <div v-if="tab == 1">
+            <div v-if="tabs[tab].id == 'account'">
                 <b-container>
                     <h5>Change Password</h5>     
                     <hr>           
@@ -245,6 +245,61 @@
                     </b-form>
                 </b-container>
                 <br>
+                <div v-if="user">
+                    <h5>Connected Accounts</h5>
+                    <div class="well">
+                        <div v-if="!user.ext.googleid">
+                            <b-button class="float-right" @click="connect('google')">Connect</b-button>
+                        </div>
+                        <div v-else>
+                            <b-button class="float-right" @click="disconnect('google')">Disconnect</b-button>
+                            <p class="float-right text-muted" style="margin: 11px;"><b>{{user.ext.googleid}}</b> |</p>
+                        </div>
+                        <p class="float-right text-muted" style="margin: 11px;">
+                                Last Login: 
+                                <span v-if="!user.times.google_login">Never</span>
+                                <span v-else>{{user.times.google_login}}</span>
+                        </p>
+                        <h4><icon name="brands/google" size="2.4"></icon> Google</h4>
+                    </div>
+                    <div class="well">
+                        <b-button class="float-right" v-if="user.ext.github" @click="disconnect('github')">Disconnect</b-button>
+                        <b-button class="float-right" v-else @click="connect('github')">Connect</b-button>
+                        <p class="float-right text-muted" style="margin: 11px;">
+                            <span v-if="user.ext.github"><b>{{user.ext.github}}</b> |</span>
+                            Last Login: 
+                            <span v-if="!user.times.github">Never</span>
+                            <span v-else>{{user.times.github_login}}</span>
+                        </p>
+                        <h4><icon name="brands/github" size="2.4"></icon> Github</h4>
+                    </div>
+                    <div class="well">
+                        <b-button class="float-right" v-if="user.ext.orcid" @click="disconnect('orcid')">Disconnect</b-button>
+                        <b-button class="float-right" v-else @click="connect('orcid')">Connect</b-button>
+                        <p class="float-right text-muted" style="margin: 11px;">
+                            <span v-if="user.ext.orcid"><b>{{user.ext.orcid}}</b> |</span>
+                            Last Login: 
+                            <span v-if="!user.times.orcid">Never</span>
+                            <time v-if="user.times.orcid_login">{{user.times.orcid_login}}</time>
+                        </p>
+                        <h4><icon name="brands/orcid" size="2.4"></icon> ORCID</h4>
+                    </div>
+                    <div class="well">
+                        <h4><img src="../images/cilogon.png" width="24" height="24"> OpenID Connect <span><b-button class="float-right" @click="connect('oidc')">Connect</b-button></span></h4>
+                            <b-list-group v-if="user.ext.openids" style="margin:20px">
+                                <b-list-group-item v-for="dn in user.ext.openids" :key="index">
+                                    <b-button class="float-right" v-if="user.ext.openids" @click="disconnect('oidc',dn)">Disconnect</b-button>
+                                    <p style="margin: 0 0 10.5px;">
+                                        {{dn}}
+                                        <span class="text-muted"> | Last Login: 
+                                            <span v-if="!user.times['oidc_login:'+user.profile.sub]">Never</span> 
+                                            <time>{{user.times['oidc_login:'+user.profile.sub]}}</time>
+                                        </span> 
+                                    </p>
+                                </b-list-group-item>
+                            </b-list-group>
+                    </div>
+                </div>
                 Please visit the legacy <a href="/auth/#!/settings/account" target="_blank">Account Settings</a> page for more account settings.
             </div>
 
@@ -443,6 +498,18 @@ export default {
             groupEdit: null,
             currentPage: 1,
             ready: false,
+            user: {
+                ext: {
+                    googleid: '',
+                    github: '',
+                    opendis : [],
+                    orcid: ''
+                },
+                times: {}
+            },
+            debug: null,
+            jwt: null,
+
             fullname: "",
             profile: null,
             scopes: null,
@@ -454,6 +521,13 @@ export default {
             },
             passwordSuggestions: [],
             passwordWarning: "" ,
+            tabs: [
+                {id: 'profile', label: "Profile"},
+                {id: 'account', label: "Account"},
+                {id: 'notification', label: "Notification"},
+                {id: "users", label: "Users"},
+                {id: "groups", label: "Groups"},
+            ],
             
             profile: {
                 public: {
@@ -500,8 +574,12 @@ export default {
             this.fullname = res.data.fullname;
             if(res.data.profile) lib.mergeDeep(this.profile, res.data.profile);
             this.ready = true;
-
-            //this.tab = won't work unless it's next tick from mounted()
+            const jwt = localStorage.getItem("jwt");
+            if(jwt) {
+                this.debug = {jwt : this.user};
+                this.jwt = jwt;
+                console.log(this.jwt);
+            }
             this.handleRouteParams();
         });
     },
@@ -509,16 +587,9 @@ export default {
     methods: {
 
         handleRouteParams() {
-            var tab_id = this.$route.params.tab;
-            if(tab_id) {
-                //lookup tab index from the tab_id
-                this.tab = this.tabs.findIndex(tab=>tab.id == tab_id);  
-                console.log("tab is now", this.tab);
-            } else {
-                //console.log("tab is not set.. switching to detail tab");
-                //this.$router.replace("/project/"+this.selected._id+"/detail");
-                //this.tab = "detail"; //should fire tab watcher
-            }
+            let tab_id = this.$route.params.tab;
+            if(tab_id) this.tab = this.tabs.findIndex(tab=>tab.id == tab_id);  
+            console.log("tab is now", this.tab);
         },
 
         avatar_url: lib.avatar_url,
@@ -674,7 +745,24 @@ export default {
                 members : [],
                 admins : [],
             }
-        }
+        },
+        connect(type) {
+            window.location = "api/auth/"+type+"/associate/"+this.jwt;
+        },
+        disconnect(type, data) {
+            this.$http.put(Vue.config.auth_api+'/'+type+'/disconnect',data).then(res=>{
+                this.$notify({type: "success", text:res.data.message});
+                Object.assign(user.ext,res.data.ext);
+            }).catch(err=>{
+                console.error(err);
+                this.$notify({type: "error", text: response.data.message});
+            })
+        },
+        handleRouteParams() {
+            console.log("handleRouteParams", this.$route.params);
+            const tab_id = this.$route.params.tab;
+            if(tab_id) this.tab = this.tabs.findIndex(tab=>tab.id == tab_id); 
+        },
     },
 
     computed : {
@@ -691,6 +779,9 @@ export default {
     },
 
     watch: {
+        '$route': function() {
+            this.handleRouteParams();
+        },
         tab : function() {
             if(this.tab == 3) this.loadUsers();
             if(this.tab == 4) this.loadGroups();
@@ -698,15 +789,19 @@ export default {
             if(this.$route.params.tab != this.tabs[this.tab].id) {
                 this.$router.replace("/settings/"+this.tabs[this.tab].id);
             }
+            if(this.tabs[this.tab].id == 'account') {
+               this.$http.get(Vue.config.auth_api+"/me").then(res=>{
+                    this.user = res.data;
+                });
+            }
         },
         queryUser : function() {
             this.applyFilterUser();
         },
         queryGroup: function() {
             this.applyFilterGroup();
-        }
-    }
-
+        },
+    },
 }
 </script>
 
@@ -730,6 +825,15 @@ export default {
 h5 {
     margin-bottom: 20px;
     opacity: 0.7;
+}
+.well{
+    min-height: 20px;
+    padding: 19px;
+    margin-bottom: 20px;
+    background-color: #fafafa;
+    border: 1px solid #e8e8e8;
+    border-radius: 0;
+    box-shadow: inset 0 1px 1px rgb(0 0 0 / 5%)
 }
 </style>
 
