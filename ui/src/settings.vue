@@ -18,7 +18,7 @@
         <b-container v-if="ready">
 
             <!--profile-->
-            <div v-if="tabs[tab].id == 'profile'">
+            <div v-if="tabID == 'profile'">
                 <b-alert :show="!profile.private.aup" variant="danger" style="margin-bottom: 20px">
                     <icon name="exclamation-circle"/> Please agree to the brainlife.io acceptable use policy listed below.
                 </b-alert>
@@ -220,7 +220,7 @@
             </div>
 
             <!--account-->
-            <div v-if="tabs[tab].id == 'account'">
+            <div v-if="tabID == 'account'">
                 <b-container>
                     <h5>Change Password</h5>     
                     <hr>           
@@ -304,7 +304,7 @@
             </div>
 
             <!--notification-->
-            <div v-if="tab == 2">
+            <div v-if="tabID == 'notification'">
                 <b-form @submit="submit_profile">
                     <h5>Sounds</h5>
                     <b-row>
@@ -347,7 +347,7 @@
                 </b-form>
             </div>
 
-            <div v-if="tab == 3">
+            <div v-if="tabID == 'users'">
                     <b-container>
                         <b-row>
                             <b-col>
@@ -412,7 +412,7 @@
                         </b-row>
                     </b-container>
             </div>
-            <div v-if="tab == 4">
+            <div v-if="tabID == 'groups'">
                 <b-container>
                     <b-row>
                         <b-col>
@@ -574,7 +574,7 @@ export default {
             this.fullname = res.data.fullname;
             if(res.data.profile) lib.mergeDeep(this.profile, res.data.profile);
             this.ready = true;
-            const jwt = localStorage.getItem("jwt");
+            const jwt = Vue.config.jwt;
             if(jwt) {
                 this.debug = {jwt : this.user};
                 this.jwt = jwt;
@@ -775,6 +775,9 @@ export default {
         },
         rowGroups() {
             return this.groups.length;
+        },
+        tabID() {
+            return this.tabs[this.tab].id; 
         }
     },
 
@@ -826,7 +829,7 @@ h5 {
     margin-bottom: 20px;
     opacity: 0.7;
 }
-.well{
+.well {
     min-height: 20px;
     padding: 19px;
     margin-bottom: 20px;
