@@ -285,7 +285,7 @@
                         <h4><icon name="brands/orcid" size="2.4"></icon> ORCID</h4>
                     </div>
                     <div class="well">
-                        <h4><img src="../images/cilogon.png" width="24" height="24"> OpenID Connect <span><b-button class="float-right" @click="connect('oidc')">Connect</b-button></span></h4>
+                        <h4><img src="@/assets/images/cilogon.png" width="24" height="24"> OpenID Connect <span><b-button class="float-right" @click="connect('oidc')">Connect</b-button></span></h4>
                             <b-list-group v-if="user.ext.openids" style="margin:20px">
                                 <b-list-group-item v-for="dn in user.ext.openids" :key="index">
                                     <b-button class="float-right" v-if="user.ext.openids" @click="disconnect('oidc',dn)">Disconnect</b-button>
