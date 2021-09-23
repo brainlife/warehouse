@@ -33,9 +33,6 @@ exports.connectRedis = function() {
 
 //TODO - should be called something like "get_project_accessiblity"?
 exports.getprojects = function(user, cb) {
-    //let's allow access to public project from un-authenticated user so that they can browser public projects on brainlife
-    //if(user === undefined) return cb(null, [], []);
-    
     //string has sub() so I can't just do if(user.sub)
     if(typeof user == 'object') user = user.sub.toString();
     

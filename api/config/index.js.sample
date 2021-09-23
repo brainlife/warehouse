@@ -16,6 +16,8 @@ const request = require('request'); //deprecate!
 const zlib = require('zlib');
 const async = require('async');
 
+const AWS = require('aws-sdk');
+
 exports.mongodb = "mongodb://localhost/warehouse";
 exports.mongoose_debug = true;
 
@@ -173,7 +175,8 @@ exports.storage_systems = {};
 
 exports.archive = {
     //storage_default: "wrangler",  
-    storage_default: "osiris",  
+    //storage_default: "osiris",  
+    storage_default: "osn",  
     storage_config: {
         //resource_id: "59ea931df82bb308c0197c3d", //"Archiver" (set to "Stager" on production!)
     },
@@ -306,6 +309,69 @@ function connect_wrangler(cb) {
         //keepaliveCountMax: 30, //default 3 (https://github.com/mscdex/ssh2/issues/367)
     });
 }
+
+
+const osn = {
+    s3: new AWS.S3({
+        endpoint: 'https://renc.osn.xsede.org',
+        accessKeyId: 'LR9FQG7WZWJ2C19KFY6Q',
+        secretAccessKey: 'zuVg0bA4jRRCmQ0aUTmfcCApQ8NFA1',
+    }),
+    bucket: "dbs170009francopestilli",
+}
+function getOSNPath(dataset) {
+    let _path = "dev/"; //not the same as secondary
+    if(!dataset) return _path;
+    _path += dataset.project+"/";
+    _path += dataset._id+".tar";
+    return _path;
+}
+
+exports.storage_systems.osn = {
+    need_backup: true, 
+    test: cb=>{
+        //test uploading something..
+        osn.s3.upload({Bucket: osn.bucket, Key: 'deleteme/test.txt', Body: 'test'}, err=>{
+            if(err) return cb(err);
+            //TODO what else?
+            cb();
+        });
+    }, 
+
+    stat: (dataset, cb)=>{
+        const path = getOSNPath(dataset);
+        osn.s3.headObject({Bucket: osn.bucket, Key: path}, (err, metadata)=>{
+            if(err) return cb(err);
+            /*
+            {
+              AcceptRanges: 'bytes',
+              LastModified: 2021-09-22T22:25:39.000Z,
+              ContentLength: 6,
+              ETag: '"b1946ac92492d2347c6235b4d2611184"',
+              ContentType: 'application/octet-stream',
+              Metadata: {}
+            }
+            */
+            const stats = {
+                size: metadata.ContentLength,
+            }
+            cb(null, stats);
+        });
+    },
+
+    download: (dataset, cb)=>{
+        const path = getOSNPath(dataset);
+        const filename = path.split("/").pop();
+        const stream = osn.s3.getObject({Bucket: osn.bucket, Key: path}).createReadStream();
+        cb(null, stream, filename);
+    },
+
+    remove: (dataset, cb)=>{
+        cb("todo");
+    }
+} 
+
+
 
 //TODO - I should try connection queue agagin
 function connect_osiris(cb) {

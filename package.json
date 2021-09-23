@@ -24,6 +24,7 @@
     "amqp": "^0.2.7",
     "archiver": "^3.0.0",
     "async": "^3.2.1",
+    "aws-sdk": "^2.993.0",
     "axios": "^0.21.4",
     "body-parser": "^1.18.3",
     "brainlife": "^1.5.29",

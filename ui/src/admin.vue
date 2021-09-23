@@ -79,6 +79,36 @@
                 </b-table>
             </div>
         </b-tab>
+
+        <b-tab title="Projects">
+            <b-table :small="true" :items="projectRecords" :fields="projectFields" selectable @row-selected="projectSelected">
+                <template #cell(admins)="data">
+                    {{data.item.admins.join(",")}}
+                </template>
+                <template #cell(members)="data">
+                    {{data.item.members.join(",")}}
+                </template>
+                <template #cell(name)="data">
+                    {{data.item.name}}
+                    <projectaccess access="data.item.access"/>
+                </template>
+                <template #cell(create_date)="data">
+                    {{data.item.create_date.toLocaleDateString()}}
+                </template>
+                <template #cell(update_date)="data">
+                    {{data.item.update_date.toLocaleDateString()}}
+                </template>
+                <template #cell(subjects)="data">
+                    {{data.item.subjects|formatNumber}}
+                </template>
+                <template #cell(objects)="data">
+                    {{data.item.objects|formatNumber}}
+                </template>
+                <template #cell(size)="data">
+                    <span v-if="data.item.size">{{data.item.size|filesize}}</span>
+                </template>
+            </b-table>
+        </b-tab>
     </b-tabs>
 </div>
 </template>
@@ -86,6 +116,7 @@
 <script>
 import Vue from 'vue'
 import task from '@/components/task'
+import projectaccess from '@/components/projectaccess'
 import ReconnectingWebSocket from 'reconnectingwebsocket'
 
 const numeral = require('numeral');
@@ -93,7 +124,8 @@ const numeral = require('numeral');
 export default {
     components: { 
         task,
-        ExportablePlotly: ()=>import('@/components/ExportablePlotly')
+        projectaccess,
+        ExportablePlotly: ()=>import('@/components/ExportablePlotly'),
     },
     data () {
         return {
@@ -125,6 +157,21 @@ export default {
                 { key: "users", label: "Users", sortable: true },
                 { key: "resourcesCount", label: "Resources", sortable: true },
             ],
+
+            projectRecords: [],
+            projectFields: [
+                //{ key: "_id", label: "ID", sortable: true },
+                { key: "group_id", label: "GID", sortable: true },
+                { key: "name", label: "Project Name", sortable: true },
+                { key: "admins", label: "Admins"},
+                { key: "members", label: "Members"},
+                { key: "create_date", label: "Create Date", sortable: true },
+                { key: "update_date", label: "Update Date", sortable: true },
+                { key: "publications", label: "Publications", sortable: true },
+                { key: "subjects", label: "Subjects", sortable: true },
+                { key: "objects", label: "Objects", sortable: true },
+                { key: "size", label: "size", sortable: true },
+            ],
         }
     },
 
@@ -133,20 +180,23 @@ export default {
 
     watch: {
         tab(v) {
-            //analytics tab
-            if(v == 2) { 
-                if(!this.posCountData) this.loadAnalytics();
-            }
+            if(v == 2) this.loadAnalytics();
+            if(v == 3) this.loadProjects();
         }
     },
 
     methods: {
         appSelected(items) {
-            const appId = items[0]._id;
-            this.$router.push('/app/'+appId);
+            const id = items[0]._id;
+            this.$router.push('/app/'+id);
+        },
+        projectSelected(items) {
+            const id = items[0]._id;
+            this.$router.push('/project/'+id);
         },
 
         loadAnalytics() {
+            if(this.posCountData) return; //already loaded
             console.log("loading analytics info");
 
             this.$http.get(Vue.config.auth_api+'/profile/poscount').then(res=>{
@@ -181,6 +231,49 @@ export default {
                        successRate: numeral(app.stats.success_rate).format('00.0'),
                        users: app.stats.users,
                        resourcesCount: app.stats.resources.length,
+                    });
+                });
+            });
+        },
+
+        loadProjects() {
+            if(this.projects) return; //already loaded
+            console.log("loading project info");
+            this.$http.get('/project', {
+                params: {
+                    select: 'name admins members access stats.datasets.subject_count stats.datasets.count stats.datasets.size stats.publications create_date update_date group_id',
+                    admin: true,
+                    find: JSON.stringify({removed: false}), //should I show removed ones as well?
+                    limit: 10000, // :(
+                }
+            }).then(res=>{
+                this.projectRecords = [];
+                res.data.projects.forEach(project=>{
+                    this.projectRecords.push({
+                        _id: project._id,
+                        group_id: project.group_id,
+                        name: project.name,
+                        admins: project.admins,
+                        members: project.members,
+                        access: project.access,
+                       //removed: app.removed,
+                        create_date: new Date(project.create_date),
+                        update_date: new Date(project.update_date),
+                        publications: project.stats.publications,
+                        subjects: project.stats.datasets.subject_count,
+                        objects: project.stats.datasets.count,
+                        size: project.stats.datasets.size,
+                        /*
+                       deprecated: !!app.deprecated_by,
+                       github: app.github,
+                       private: !!app.projects.length,
+                       doi: app.doi,
+                       requested: app.stats.requested,
+                       runtimeMean: numeral(app.stats.runtime_mean/(1000*60)).format('0,0'),
+                       successRate: numeral(app.stats.success_rate).format('00.0'),
+                       users: app.stats.users,
+                       resourcesCount: app.stats.resources.length,
+                        */
                     });
                 });
             });
