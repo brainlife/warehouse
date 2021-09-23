@@ -141,7 +141,7 @@ var projectSchema = mongoose.Schema({
         },
     },
 
-    quota: {type: Number, default: 1000000000000}, //maximum archive size (1TB by default)
+    //quota: {type: Number, default: 1000000000000}, //maximum archive size (1TB by default)
 
     relatedPapers: [{  
         publicationDate : Date, 
@@ -181,7 +181,6 @@ var projectSchema = mongoose.Schema({
     storage: String,  //default to warehouse config.archive.storage_default
     storage_config: mongoose.Schema.Types.Mixed, 
     
-
     //experimental
     xnat: {
         enabled: { type: Boolean, default: false },

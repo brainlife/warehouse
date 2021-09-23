@@ -22,13 +22,13 @@ const common = require('../common');
  * @apiParam {String} [populate] Relational fields to populate
  * @apiParam {Number} [limit]   Optional Maximum number of records to return - defaults to 0(no limit)
  * @apiParam {Number} [skip]    Optional Record offset for pagination
+ * @apiParam {Boolean} [admin]  Return all project (admin only)
  *
  * @apiHeader {String} authorization 
  *                              A valid JWT token "Bearer: xxxxx"
  * @apiSuccess {Object}         List of projects (maybe limited / skipped) and total count
  */
 router.get('/', common.jwt({credentialsRequired: false}), (req, res, next)=>{
-    console.log(new Date(), "top of project");
     var find = {};
     if(req.query.find) find = JSON.parse(req.query.find);
 
@@ -42,7 +42,7 @@ router.get('/', common.jwt({credentialsRequired: false}), (req, res, next)=>{
         req.user.scopes.warehouse && 
         ~req.user.scopes.warehouse.indexOf('admin') && 
         req.query.admin) {
-        //admin requested admin priviledge return all
+        //admin can request all project by setting "admin" query
     } else if(req.user) {
         //only allow querying for public, or private project that user owns
         //user can see all public, private-listed or any project that they are member of
@@ -58,10 +58,6 @@ router.get('/', common.jwt({credentialsRequired: false}), (req, res, next)=>{
         find.access = "public"; //guest can only see public projects
     }
 
-    console.log("querying project-------------------------------------");
-    console.dir(find);
-
-    console.log(new Date());
     db.Projects.find(find)
     .select(select)
     .skip(+skip)
@@ -71,10 +67,8 @@ router.get('/', common.jwt({credentialsRequired: false}), (req, res, next)=>{
     .lean()
     .exec((err, recs)=>{
         if(err) return next(err);
-        console.log(new Date(), "done query.. now counting");
         db.Projects.countDocuments(find).exec((err, count)=>{
             if(err) return next(err);
-            console.log(new Date(), "done counting .. now sending data");
             res.json({
                 projects: recs, 
                 count
@@ -259,7 +253,7 @@ router.put('/:id', common.jwt(), (req, res, next)=>{
 
 /**
  * @apiGroup Project
- * @api {delete} /project/:id   Hide project
+ * @api {delete} /project/:id   Remove project
  * @apiDescription              Logically remove project by setting "removed" to true
  *
  * @apiHeader {String} authorization 
