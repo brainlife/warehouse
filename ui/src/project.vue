@@ -531,14 +531,7 @@ export default {
 
         handleRouteParams() {
             var tab_id = this.$route.params.tab;
-            if(tab_id) {
-                //lookup tab index from the tab_id
-                this.tab = this.tabs.findIndex(tab=>tab.id == tab_id);
-            } else {
-                //console.log("tab is not set.. switching to detail tab");
-                //this.$router.replace("/project/"+this.selected._id+"/detail");
-                //this.tab = "detail"; //should fire tab watcher
-            }
+            if(tab_id) this.tab = this.tabs.findIndex(tab=>tab.id == tab_id);
         },
 
         edit() {

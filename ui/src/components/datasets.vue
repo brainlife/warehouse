@@ -267,37 +267,12 @@ export default {
             this.reload();
         });
 
-        /*
-        //loading the entire datatype...
-        this.$http.get('datatype')
-        .then(res=>{
-            this.datatypes = {};
-            res.data.datatypes.forEach((d)=>{
-                this.datatypes[d._id] = d;
-            });
-            this.reload();
-        }).catch(err=>{
-            console.error(err);
-        });
-        */
-
-        //console.log("handling dataset route params");
-        //console.dir(this.$route);
         let subid = this.$route.params.subid;
         if(subid) {
             this.$root.$emit('dataset.view', {id: subid, back: './'});
         }
 
-        if(this.participants) {
-            if(Array.isArray(this.participants)) {
-                this.participants.forEach(rec=>{
-                    this.participantsObj[rec.subject] = rec;
-                });
-            } else {
-                //deprecated format.. 
-                this.participantsObj = this.participants;
-            }
-        }
+        this.applyParticipants();
     },
 
     destroyed() {
@@ -323,9 +298,26 @@ export default {
                 this.$root.$emit('dataset.view', {id: subid, back: './'});
             }
         },
+
+        participants() {
+            this.applyParticipants();
+        },
     },
 
 	methods: {
+        applyParticipants() {
+            if(this.participants) {
+                if(Array.isArray(this.participants)) {
+                    this.participants.forEach(rec=>{
+                        this.participantsObj[rec.subject] = rec;
+                    });
+                } else {
+                    //deprecated format.. 
+                    this.participantsObj = this.participants;
+                }
+            }
+        },
+
         isadmin() {
             if(!this.project) return false;
             if(!Vue.config.user) return false;
