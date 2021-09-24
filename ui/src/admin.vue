@@ -69,7 +69,9 @@
             <div style="margin: 0 15px" v-if="appItems">
                 <span class="form-header">App Stats</span>
                 <small>{{appItems.length}} apps</small>
-                <b-table :small="true" :items="appItems" :fields="appFields" selectable @row-selected="appSelected">
+                <b-table 
+                    :sticky-header="stickyHeader"
+                    :small="true" :items="appItems" :fields="appFields" selectable @row-selected="appSelected">
                     <template #cell(name)="data">
                         {{data.item.name}}
                         <b-badge v-if="data.item.removed" variant="danger">Removed</b-badge>
@@ -81,16 +83,27 @@
         </b-tab>
 
         <b-tab title="Projects">
-            <b-table :small="true" :items="projectRecords" :fields="projectFields" selectable @row-selected="projectSelected">
+            <div style="background-color: #f8f8f8; padding: 10px">
+                <div style="width: 400px">
+                    <b-input-group>
+                        <b-input-group-prepend is-text>Minimum Project Size</b-input-group-prepend>
+                        <b-form-input id="minProjectSize" v-model="minProjectSize" debounce="500">Minimum Project Size (GB)</b-form-input>
+                        <b-input-group-append is-text>GB</b-input-group-append>
+                    </b-input-group>
+                </div>
+            </div>
+            <b-table 
+                sort-by="size" sort-desc="Descending"
+                :small="true" :items="projectRecords" :fields="projectFields" selectable @row-selected="projectSelected">
                 <template #cell(admins)="data">
-                    {{data.item.admins.join(",")}}
+                    <contact v-for="c in data.item.admins" size="small" :key="c._id" :id="c"/>
                 </template>
                 <template #cell(members)="data">
-                    {{data.item.members.join(",")}}
+                    <contact v-for="c in data.item.members" size="small" :key="c._id" :id="c"/>
                 </template>
                 <template #cell(name)="data">
+                    <projectaccess :access="data.item.access"/>
                     {{data.item.name}}
-                    <projectaccess access="data.item.access"/>
                 </template>
                 <template #cell(create_date)="data">
                     {{data.item.create_date.toLocaleDateString()}}
@@ -117,6 +130,8 @@
 import Vue from 'vue'
 import task from '@/components/task'
 import projectaccess from '@/components/projectaccess'
+import contact from '@/components/contact'
+
 import ReconnectingWebSocket from 'reconnectingwebsocket'
 
 const numeral = require('numeral');
@@ -125,6 +140,7 @@ export default {
     components: { 
         task,
         projectaccess,
+        contact,
         ExportablePlotly: ()=>import('@/components/ExportablePlotly'),
     },
     data () {
@@ -162,7 +178,8 @@ export default {
             projectFields: [
                 //{ key: "_id", label: "ID", sortable: true },
                 { key: "group_id", label: "GID", sortable: true },
-                { key: "name", label: "Project Name", sortable: true },
+                { key: "name", label: "Name", sortable: true },
+                { key: "size", label: "size", sortable: true },
                 { key: "admins", label: "Admins"},
                 { key: "members", label: "Members"},
                 { key: "create_date", label: "Create Date", sortable: true },
@@ -170,8 +187,8 @@ export default {
                 { key: "publications", label: "Publications", sortable: true },
                 { key: "subjects", label: "Subjects", sortable: true },
                 { key: "objects", label: "Objects", sortable: true },
-                { key: "size", label: "size", sortable: true },
             ],
+            minProjectSize: 500,
         }
     },
 
@@ -182,7 +199,10 @@ export default {
         tab(v) {
             if(v == 2) this.loadAnalytics();
             if(v == 3) this.loadProjects();
-        }
+        },
+        minProjectSize(v) {
+            this.loadProjects();
+        },
     },
 
     methods: {
@@ -237,13 +257,15 @@ export default {
         },
 
         loadProjects() {
-            if(this.projects) return; //already loaded
-            console.log("loading project info");
+            console.log("loading project info", this.minProjectSize);
             this.$http.get('/project', {
                 params: {
                     select: 'name admins members access stats.datasets.subject_count stats.datasets.count stats.datasets.size stats.publications create_date update_date group_id',
                     admin: true,
-                    find: JSON.stringify({removed: false}), //should I show removed ones as well?
+                    find: JSON.stringify({
+                        removed: false,
+                        "stats.datasets.size": {$gt: this.minProjectSize*1024*1024*1024},
+                    }),
                     limit: 10000, // :(
                 }
             }).then(res=>{
