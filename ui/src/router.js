@@ -144,6 +144,11 @@ export default new Router({
             sidemenu: "datatype",
         }},
 
+        {path: '/datatype/:id/:tab?', component: datatype, meta: {
+            public: true,
+            sidemenu: "datatype",
+        }},
+
         {path: '/datatype/:id/edit', component: datatypeedit, meta: {
             sidemenu: "datatype",     
         }},
