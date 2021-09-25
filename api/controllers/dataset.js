@@ -779,11 +779,11 @@ function generate_prov(origin_dataset_id, cb) {
             if(!input.task_id) return next_dep(); //old task didn't have this set?
             load_task(input.task_id, (err, dep_task)=>{
                 if(err) return next_dep(err);
-
                 //process uses app-stage to load input datasets
                 //instead of showing that, let's *skip* this node back to datasets that it loaded
                 //and load their tasks
                 if( dep_task.service == "soichih/sca-product-raw" ||  //for prevenance
+                    dep_task.service.startsWith("brainlife/validator") || 
                     dep_task.service == "brainlife/app-stage" ) { 
                     let input_name = null;
                     if(task.config._inputs.length > 1) input_name = input.id;

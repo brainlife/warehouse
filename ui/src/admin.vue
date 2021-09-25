@@ -355,7 +355,7 @@ export default {
                     this.$http.get(Vue.config.amaretti_api+'/task', { params: {
                         find: JSON.stringify({
                             //follow_task_id: this.task_id
-                            "_id": {$in: [depIds]},
+                            "_id": {$in: depIds},
                         }),
                     }}).then(res=>{
                         this.depTasks = res.data.tasks;

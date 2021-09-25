@@ -587,6 +587,7 @@ datasetSchema.index({project: 1, removed: 1, "meta.subject": 1, datatype: 1, siz
 datasetSchema.index({removed: 1, project: 1, publications: 1, size: 1});
 datasetSchema.index({publications: 1, "meta.subject": 1, datatype: 1, size: 1});
 datasetSchema.index({"prov.task._id": 1, "prov.output_id": 1, removed: 1, status: 1}); //event handler -archiver
+datasetSchema.index({"storage_config.dataset_id":1, removed:1, storage:1}); //look for dataset that's copied from another
 
 exports.Datasets = mongoose.model('Datasets', datasetSchema);
 

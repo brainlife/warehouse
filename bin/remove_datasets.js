@@ -48,7 +48,7 @@ function remove_from_removed_projects(cb) {
             db.Datasets.find({
                 removed: false,
                 project,
-                update_date: {$lt: month_ago }, //only remove if it's old enough
+                create_date: {$lt: month_ago }, //only remove if it's old enough
             })
             .select('_id')
             .sort('create_date') //oldest first
@@ -58,7 +58,7 @@ function remove_from_removed_projects(cb) {
                 if(!datasets) return next_project(); //no datasets to clean up
                 //console.debug("orphaned datasets needs removed "+datasets.length);
                 async.eachSeries(datasets, (dataset, next_dataset)=>{
-                    console.debug("removing orphaned dataset %s"+dataset._id.toString());
+                    console.debug("removing orphaned dataset "+dataset._id.toString());
                     dataset.remove_date = new Date();
                     dataset.removed = true;
                     dataset.save(next_dataset);
