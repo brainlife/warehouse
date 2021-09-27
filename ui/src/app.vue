@@ -69,7 +69,7 @@
         </div><!--header-->
 
         <!-- detail -->
-        <div v-if="tab == 0" class="tab-content">
+        <div v-if="tabID == 'detail'" class="tab-content">
             <b-container>
                 <appavatar :app="app" style="float: right; position: relative; top: -15px; margin-left: 15px;" :width="150" :height="150"/>
 
@@ -300,7 +300,7 @@
             </b-container>
         </div><!--tab0-->
 
-        <div v-if="tab == 1" class="tab-content">
+        <div v-if="tabID == 'readme'" class="tab-content">
             <b-container>
                 <br>
                 <div v-if="readme">
@@ -312,7 +312,7 @@
             </b-container>
         </div>
 
-        <div v-if="tab == 2" class="tab-content">
+        <div v-if="tabID == 'recentJobs'" class="tab-content">
             <b-container>
                 <br>
                 <div v-if="tasks.length > 0">
@@ -371,7 +371,7 @@
             </b-container>
         </div>
 
-        <div v-if="tab == 3" class="tab-content">
+        <div v-if="tabID == 'disqus'" class="tab-content">
             <b-container>
                 <br>
                 <vue-disqus shortname="brain-life" :identifier="app._id"/>
@@ -442,6 +442,12 @@ export default {
             selfurl: document.location.href,
 
             tab: 0,
+            tabs: [
+                {id: "detail", label: "Detail"},
+                {id: "readme", label: "README"},
+                {id: "recentJobs", label: "Recent Jobs"},
+                {id: "disqus", label: "Disqus"},
+            ],
 
             tasks: [], //recent tasks submitted
             serviceinfo: null,
@@ -455,11 +461,20 @@ export default {
             var app_id = this.$route.params.id;
             if(app_id && this.app && app_id != this.app._id) {
                 this.open_app();
+            } else {
+                this.handleRouteParams();
+            }
+        },
+        tab: function() {
+            console.log(this.$route.params.tab,this.tabs[this.tab].id);
+            if(this.$route.params.tab != this.tabs[this.tab].id) {
+                this.$router.replace("/app/"+this.app._id+"/"+this.tabs[this.tab].id);
             }
         },
     },
 
     mounted: function() {
+        this.handleRouteParams();
         this.open_app();
     },
 
@@ -476,6 +491,9 @@ export default {
             }
             return configs;
         },
+        tabID() {
+            return this.tabs[this.tab].id;
+        }
     },
 
     methods: {
@@ -516,7 +534,6 @@ export default {
                 this.app = res.data.apps[0];
                 //if(this.cofig.debug) this.app.doi = "10.25663/brainlife.app.188"; //didn't work
                 if(this.config.user) this.find_resources(this.app.github);
-
                 Vue.nextTick(()=>{
                     //re-initialize altmetric badge - now that we have badge <div> placed
                     _altmetric_embed_init(this.$el);
@@ -566,6 +583,13 @@ export default {
             }).catch(err=>{
                 console.error(err);
             });
+        },
+
+        handleRouteParams() {
+            console.log("handleRouteParams", this.$route.params);
+            let tab_id = this.$route.params.tab;
+            console.log("tab is now", this.tab);
+            if(tab_id) this.tab = this.tabs.findIndex(tab=>tab.id == tab_id);
         },
 
         copy() {

@@ -77,6 +77,11 @@ export default new Router({
             sidemenu: "app",
         }},
 
+        {path: '/app/:id/:tab?', component: app, meta: {
+            public: true, 
+            sidemenu: "app",
+        }},
+
         //to-be-deprecated by /view?config= (still used by viewer selecter?)
         {path: '/view/:taskid/:type/:datatype64/:subdir?', component: view, props: true, meta: {
             noRightView: true,
