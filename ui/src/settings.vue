@@ -18,7 +18,7 @@
         <b-container v-if="ready">
 
             <!--profile-->
-            <div v-if="tabs[tab].id == 'profile'">
+            <div v-if="tabID == 'profile'">
                 <b-alert :show="!profile.private.aup" variant="danger" style="margin-bottom: 20px">
                     <icon name="exclamation-circle"/> Please agree to the brainlife.io acceptable use policy listed below.
                 </b-alert>
@@ -220,7 +220,7 @@
             </div>
 
             <!--account-->
-            <div v-if="tabs[tab].id == 'account'">
+            <div v-if="tabID == 'account'">
                 <b-container>
                     <h5>Change Password</h5>     
                     <hr>           
@@ -285,9 +285,9 @@
                         <h4><icon name="brands/orcid" size="2.4"></icon> ORCID</h4>
                     </div>
                     <div class="well">
-                        <h4><img src="../images/cilogon.png" width="24" height="24"> OpenID Connect <span><b-button class="float-right" @click="connect('oidc')">Connect</b-button></span></h4>
+                        <h4><img src="@/assets/images/cilogon.png" width="24" height="24"> OpenID Connect <span><b-button class="float-right" @click="connect('oidc')">Connect</b-button></span></h4>
                             <b-list-group v-if="user.ext.openids" style="margin:20px">
-                                <b-list-group-item v-for="dn in user.ext.openids" :key="index">
+                                <b-list-group-item v-for="dn in user.ext.openids" :key="dn">
                                     <b-button class="float-right" v-if="user.ext.openids" @click="disconnect('oidc',dn)">Disconnect</b-button>
                                     <p style="margin: 0 0 10.5px;">
                                         {{dn}}
@@ -304,7 +304,7 @@
             </div>
 
             <!--notification-->
-            <div v-if="tab == 2">
+            <div v-if="tabID == 'notification'">
                 <b-form @submit="submit_profile">
                     <h5>Sounds</h5>
                     <b-row>
@@ -347,7 +347,7 @@
                 </b-form>
             </div>
 
-            <div v-if="tab == 3">
+            <div v-if="tabID == 'users'">
                     <b-container>
                         <b-row>
                             <b-col>
@@ -412,7 +412,7 @@
                         </b-row>
                     </b-container>
             </div>
-            <div v-if="tab == 4">
+            <div v-if="tabID == 'groups'">
                 <b-container>
                     <b-row>
                         <b-col>
@@ -574,7 +574,7 @@ export default {
             this.fullname = res.data.fullname;
             if(res.data.profile) lib.mergeDeep(this.profile, res.data.profile);
             this.ready = true;
-            const jwt = localStorage.getItem("jwt");
+            const jwt = Vue.config.jwt;
             if(jwt) {
                 this.debug = {jwt : this.user};
                 this.jwt = jwt;
@@ -747,15 +747,15 @@ export default {
             }
         },
         connect(type) {
-            window.location = "api/auth/"+type+"/associate/"+this.jwt;
+            window.location = Vue.config.auth_api+'/'+type+"/associate/"+this.jwt;
         },
         disconnect(type, data) {
             this.$http.put(Vue.config.auth_api+'/'+type+'/disconnect',data).then(res=>{
                 this.$notify({type: "success", text:res.data.message});
-                Object.assign(user.ext,res.data.ext);
+                Object.assign(this.user.ext,res.data.ext);
             }).catch(err=>{
                 console.error(err);
-                this.$notify({type: "error", text: response.data.message});
+                this.$notify({type: "error", text: res.data.message});
             })
         },
         handleRouteParams() {
@@ -775,6 +775,9 @@ export default {
         },
         rowGroups() {
             return this.groups.length;
+        },
+        tabID() {
+            return this.tabs[this.tab].id; 
         }
     },
 
@@ -826,7 +829,7 @@ h5 {
     margin-bottom: 20px;
     opacity: 0.7;
 }
-.well{
+.well {
     min-height: 20px;
     padding: 19px;
     margin-bottom: 20px;
@@ -836,5 +839,4 @@ h5 {
     box-shadow: inset 0 1px 1px rgb(0 0 0 / 5%)
 }
 </style>
-
 
