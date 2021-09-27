@@ -288,7 +288,7 @@
                         <h4><img src="@/assets/images/cilogon.png" width="24" height="24"> OpenID Connect <span><b-button class="float-right" @click="connect('oidc')">Connect</b-button></span></h4>
                             <b-list-group v-if="user.ext.openids" style="margin:20px">
                                 <b-list-group-item v-for="dn in user.ext.openids" :key="dn">
-                                    <b-button class="float-right" v-if="user.ext.openids" @click="disconnect('oidc',dn)">Disconnect</b-button>
+                                    <b-button class="float-right" v-if="user.ext.openids" @click="disconnect('oidc',{dn})">Disconnect</b-button>
                                     <p style="margin: 0 0 10.5px;">
                                         {{dn}}
                                         <span class="text-muted"> | Last Login: 
@@ -752,7 +752,10 @@ export default {
         disconnect(type, data) {
             this.$http.put(Vue.config.auth_api+'/'+type+'/disconnect',data).then(res=>{
                 this.$notify({type: "success", text:res.data.message});
-                Object.assign(this.user.ext,res.data.ext);
+                console.log("res.data", res.data);
+                console.log(this.user);
+                Object.assign(this.user.ext, res.data.user.ext);
+                console.log(this.user);
             }).catch(err=>{
                 console.error(err);
                 this.$notify({type: "error", text: res.data.message});

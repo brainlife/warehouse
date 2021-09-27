@@ -227,13 +227,7 @@ projectSchema.pre('save', function(next) {
     this.update_date = new Date;
     next();
 });
-console.log("creting.....................");
-projectSchema.index({ 
-    "removed": 1, 
-    "openneuro": 1,
-    "stats.datasets.datatypes_detail.type": 1,
-    /*"members": 1, "admins": 1, "guests": 1*/
-});
+projectSchema.index({ "removed": 1, "openneuro": 1, "stats.datasets.datatypes_detail.type": 1, });
 exports.Projects = mongoose.model("Projects", projectSchema);
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
