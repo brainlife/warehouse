@@ -38,33 +38,38 @@ function remove_from_removed_projects(cb) {
     //TODO mark already handled project so that I don't have to keep querying them?
     db.Projects.find({
         removed: true,
-    }).exec((err, projects)=>{
+    }).select('_id').lean().exec((err, projects)=>{
         if(err) return cb(err);
         if(!projects) return cb(); // no project removed?
-        console.debug("removed projects "+projects.length);
-        
-        //now query datasets that are not removed on removed projects
-        db.Datasets.find({
-            removed: false,
-            project: {$in: projects}, //TODO could be huuuge..
-            update_date: {$lt: month_ago }, //only remove if it's old enough
-        })
-        .sort('create_date') //oldest first
-        .limit(limit) 
-        .exec((err,datasets)=>{
-            if(err) return cb(err);
-            if(!datasets) return cb(); //no datasets to clean up
-            console.debug("orphaned datasets needs removed: %d", datasets.length);
-            let count = 0;
-            async.eachSeries(datasets, (dataset, next_dataset)=>{
-                count++;
-                console.debug("removing orphaned dataset %d %s", count, dataset._id.toString());
-                dataset.remove_date = new Date();
-                dataset.removed = true;
-                dataset.save(next_dataset);
-            }, cb);
-        });
 
+        async.eachSeries(projects, (project, next_project)=>{
+            //now query datasets that are not removed on removed projects
+            console.log(".... querying for old data not removed in removed project", project._id);
+            db.Datasets.find({
+                removed: false,
+                project,
+                create_date: {$lt: month_ago }, //only remove if it's old enough
+            })
+            .select('_id')
+            .sort('create_date') //oldest first
+            .limit(limit) 
+            .exec((err,datasets)=>{
+                if(err) return next_project(err);
+                if(!datasets) return next_project(); //no datasets to clean up
+                //console.debug("orphaned datasets needs removed "+datasets.length);
+                async.eachSeries(datasets, (dataset, next_dataset)=>{
+                    console.debug("removing orphaned dataset "+dataset._id.toString());
+                    dataset.remove_date = new Date();
+                    dataset.removed = true;
+                    dataset.save(next_dataset);
+                }, next_project);
+            });
+            
+        }, err=>{
+            if(err) return cb(err);
+            console.log("done processing removed projects");
+            cb();
+        });
     });
 }
 
@@ -105,15 +110,22 @@ function free_storage(cb) {
         let count = 0;
         async.eachSeries(datasets, (dataset, next_dataset)=>{
             count++;
+
             //don't remove if it's used by copied datasets
+            //TODO - I think we are lucking index for this query..
+            console.log("checking", dataset._id);
             db.Datasets.findOne({storage: "copy", "storage_config.dataset_id": dataset._id, removed: false}).exec((err, copy)=>{
-                if(err) return cb(err);
-                if(copy) return cb(); //has copy.. we can't remove this
+                if(err) return next_dataset(err);
+                if(copy) {
+                    console.debug("has a copied dataset. we can't remove this");
+                    return next_dataset(); 
+                }
 
                 console.debug("freeing storage for dataset %d %s", count, dataset._id.toString(), dataset.storage);
                 var system = config.storage_systems[dataset.storage];
                 system.remove(dataset, err=>{
                     if(err) return next_dataset(err);
+                    console.debug("physically removed..");
                     dataset.status = "removed"; // I wish I chose "freed"
                     dataset.save(next_dataset);
                 });
