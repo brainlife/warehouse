@@ -153,6 +153,11 @@ export default new Router({
             sidemenu: "datatype",     
         }},
 
+        {path: '/datatype/:id/:tab?', component: datatype, meta: {
+            public: true,
+            sidemenu: "datatype",
+        }},
+
         //aka.. datalad search
         {path: '/datasets', component: datasets, meta: {
             public: true,
