@@ -588,7 +588,6 @@ export default {
         handleRouteParams() {
             console.log("handleRouteParams", this.$route.params);
             let tab_id = this.$route.params.tab;
-            console.log("tab is now", this.tab);
             if(tab_id) this.tab = this.tabs.findIndex(tab=>tab.id == tab_id);
         },
 
