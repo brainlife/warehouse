@@ -57,7 +57,7 @@
             <span style="float: right">
                 <doibadge :doi="pub.doi"/>
                 <b-badge pill class="bigpill" title="Registration Date">
-                    <icon name="calendar" style="opacity: 0.4;"/>&nbsp;&nbsp;&nbsp;<small>Registerd</small>&nbsp;&nbsp;{{new Date(pub.create_date).toLocaleDateString()}}
+                    <icon name="calendar" style="opacity: 0.4;"/>&nbsp;&nbsp;&nbsp;<small>Registered</small>&nbsp;&nbsp;{{new Date(pub.create_date).toLocaleDateString()}}
                 </b-badge>
             </span>
             <br clear="both">

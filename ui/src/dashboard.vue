@@ -78,7 +78,7 @@
                         <div slot="footer" v-if="user._profile && user._profile.bio">
                             <small style="opacity: 0.8">{{user._profile.bio}}</small>
                             <b-badge pill class="bigpill">
-                                <icon name="calendar" style="opacity: 0.4;"/>&nbsp;&nbsp;&nbsp;<small>Registerd</small>&nbsp;&nbsp;{{new Date(user.times.register).toLocaleDateString()}}
+                                <icon name="calendar" style="opacity: 0.4;"/>&nbsp;&nbsp;&nbsp;<small>Registered</small>&nbsp;&nbsp;{{new Date(user.times.register).toLocaleDateString()}}
                             </b-badge>
                         </div>
                     </b-card>
