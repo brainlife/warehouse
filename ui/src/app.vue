@@ -78,7 +78,7 @@
                     <doibadge :doi="app.doi" v-if="app.doi"/>
 
                     <b-badge pill v-if="app.create_date" class="bigpill" title="Registration Date">
-                        <icon name="calendar" style="opacity: 0.4;"/>&nbsp;&nbsp;&nbsp;<small>Registerd</small>&nbsp;&nbsp;{{new Date(app.create_date).toLocaleDateString()}}
+                        <icon name="calendar" style="opacity: 0.4;"/>&nbsp;&nbsp;&nbsp;<small>Registered</small>&nbsp;&nbsp;{{new Date(app.create_date).toLocaleDateString()}}
                     </b-badge>
 
                     <b-badge pill class="bigpill" v-if="app.stats && app.stats.users" title="Users who executed this App">
