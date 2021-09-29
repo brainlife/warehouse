@@ -140,32 +140,29 @@
 
                         <b-row>
                             <b-col lg>
-                                <span class="form-header">Admins</span>
+                                <span class="form-header" title="Admins can update project details, share processes, and create pipeline rules / publications.">
+                                    Admins</span>
                                 <p class="text-muted" v-if="selected.admins.length == 0"><small>No Admins</small></p><!--only happens on dev?-->
                                 <p v-else>
                                     <contact v-for="c in selected.admins" :key="c._id" :id="c" size="small" style="line-height: 150%;"/>
                                 </p>
-                                <small class="text-muted">Admins can update project details, share processes, and create pipeline rules / publications.</small>
-                                <br>
+                      
                             </b-col>
 
                             <b-col lg>
-                                <span class="form-header">Members</span>
+                                <span class="form-header" title="Members have read/write access to archived data, processes, and create pipeline rules / publications.">
+                                    Members</span>
                                 <p class="text-muted" v-if="selected.members.length == 0"><small>No Members</small></p>
                                 <p v-else>
                                     <contact v-for="c in selected.members" :key="c._id" :id="c" size="small" style="line-height: 150%;"/>
                                 </p>
-                                <small class="text-muted">Members have read/write access to archived data, processes, and create pipeline rules / publications.</small>
-                                <br>
+                         
                             </b-col>
 
                             <b-col lg v-if="config.user && selected.access == 'private' && selected.guests && selected.guests.length > 0">
-                                <span class="form-header">Guests</span>
-                                <p style="height: 50px; margin-bottom: 3px;">
-                                    <small class="text-muted">has read access to data.</small>
-                                </p>
+                                <span class="form-header" title="has read access to data.">Guests</span>
                                 <contact v-for="c in selected.guests" :key="c._id" :id="c" size="small" style="line-height: 150%;"/>
-                                <br>
+                   
                             </b-col>
                         </b-row>
                         <br>

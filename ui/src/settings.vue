@@ -260,7 +260,7 @@
                                 <span v-if="!user.times.google_login">Never</span>
                                 <span v-else>{{user.times.google_login}}</span>
                         </p>
-                        <h4><icon name="brands/google" size="2.4"></icon> Google</h4>
+                        <h5><icon name="brands/google" size="2.4"></icon> Google</h5>
                     </div>
                     <div class="well">
                         <b-button class="float-right" v-if="user.ext.github" @click="disconnect('github')">Disconnect</b-button>
@@ -271,7 +271,7 @@
                             <span v-if="!user.times.github">Never</span>
                             <span v-else>{{user.times.github_login}}</span>
                         </p>
-                        <h4><icon name="brands/github" size="2.4"></icon> Github</h4>
+                        <h5><icon name="brands/github" size="2.4"></icon> Github</h5>
                     </div>
                     <div class="well">
                         <b-button class="float-right" v-if="user.ext.orcid" @click="disconnect('orcid')">Disconnect</b-button>
@@ -282,22 +282,26 @@
                             <span v-if="!user.times.orcid">Never</span>
                             <time v-if="user.times.orcid_login">{{user.times.orcid_login}}</time>
                         </p>
-                        <h4><icon name="brands/orcid" size="2.4"></icon> ORCID</h4>
+                        <h5><icon name="brands/orcid" size="2.4"></icon> ORCID</h5>
                     </div>
                     <div class="well">
-                        <h4><img src="@/assets/images/cilogon.png" width="24" height="24"> OpenID Connect <span><b-button class="float-right" @click="connect('oidc')">Connect</b-button></span></h4>
-                            <b-list-group v-if="user.ext.openids" style="margin:20px">
-                                <b-list-group-item v-for="dn in user.ext.openids" :key="dn">
-                                    <b-button class="float-right" v-if="user.ext.openids" @click="disconnect('oidc',{dn})">Disconnect</b-button>
-                                    <p style="margin: 0 0 10.5px;">
-                                        {{dn}}
-                                        <span class="text-muted"> | Last Login: 
-                                            <span v-if="!user.times['oidc_login:'+user.profile.sub]">Never</span> 
-                                            <time>{{user.times['oidc_login:'+user.profile.sub]}}</time>
-                                        </span> 
-                                    </p>
-                                </b-list-group-item>
-                            </b-list-group>
+                        <b-button class="float-right" @click="connect('oidc')">Connect</b-button>
+                        <h5>
+                            <img src="@/assets/images/cilogon.png" width="24" height="24"> 
+                            OpenID Connect
+                        </h5>
+                        <b-list-group v-if="user.ext.openids">
+                            <b-list-group-item v-for="dn in user.ext.openids" :key="dn">
+                                <b-button class="float-right" v-if="user.ext.openids" @click="disconnect('oidc',{dn})">Disconnect</b-button>
+                                <p style="margin: 0 0 10.5px;">
+                                    {{dn}}
+                                    <span class="text-muted"> | Last Login: 
+                                        <span v-if="!user.times['oidc_login:'+user.profile.sub]">Never</span> 
+                                        <time>{{user.times['oidc_login:'+user.profile.sub]}}</time>
+                                    </span> 
+                                </p>
+                            </b-list-group-item>
+                        </b-list-group>
                     </div>
                 </div>
                 Please visit the legacy <a href="/auth/#!/settings/account" target="_blank">Account Settings</a> page for more account settings.
@@ -602,6 +606,9 @@ export default {
                 Vue.config.profile = this.profile;
                 this.$notify("Successfully updated profile");
                 this.$router.push("/projects");
+            }).catch(err=>{
+                console.error(err.response);
+                this.$notify({type: "error", text: err.response.data.message});
             });            
         },
         changePassword(e) {
@@ -833,13 +840,11 @@ h5 {
     opacity: 0.7;
 }
 .well {
-    min-height: 20px;
-    padding: 19px;
-    margin-bottom: 20px;
-    background-color: #fafafa;
-    border: 1px solid #e8e8e8;
-    border-radius: 0;
-    box-shadow: inset 0 1px 1px rgb(0 0 0 / 5%)
+    padding: 10px;
+    margin-bottom: 10px;
+    background-color: #fff;
+    display: block;
+    clear: both;
 }
 </style>
 

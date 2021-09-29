@@ -10,12 +10,12 @@
         </div>
     </div>
 
-    <b-popover :target="uuid" :title="null" triggers="click">
+    <b-popover :target="uuid" :title="null" triggers="hover" placement="top">
         <img v-lazy="avatar_url(user, 60)" style="float: left">
         <div style="margin-left: 70px; min-height: 60px;">
             <b>{{user.fullname}}</b> <small style="opacity: 0.5">{{user.username}}</small>
             <div v-if="user.profile && user.profile.public && user.profile.public.bio">
-                <p style="margin-top: 5px; opacity: 0.8; margin-bottom: 0px;">{{user.profile.public.bio}}</p>
+                <p style="margin-top: 5px; opacity: 0.8; margin-bottom: 0px;">{{trimBio(user.profile.public.bio, 300)}}</p>
                 <small style="opacity: 0.5;" v-if="user.profile.public.institution">
                     <icon name="university"/> {{user.profile.public.institution}}
                 </small>
@@ -29,7 +29,6 @@
 </template>
 
 <script>
-import Vue from 'vue'
 
 import authprofilecache from '@/mixins/authprofilecache'
 
@@ -100,6 +99,11 @@ export default {
 
         click() {
             if(this.user.email) document.location = 'mailto:'+this.user.email;
+        },
+
+        trimBio(bio, max) {
+            if(bio.length > max) return bio.substring(0, max) + "...";
+            return bio;
         },
     },
 }
