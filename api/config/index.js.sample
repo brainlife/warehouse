@@ -7,7 +7,6 @@ const { combine, timestamp, label, prettyPrint } = format;
 const child_process = require('child_process');
 
 const mkdirp = require('mkdirp'); //for dc2
-//const pkgcloud = require('pkgcloud');
 const path = require('path');
 const archiver = require('archiver');
 const ssh2 = require('ssh2');

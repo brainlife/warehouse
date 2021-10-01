@@ -22,7 +22,8 @@ router.get('/list/:projectid', async (req, res, next)=>{
     try {
         let project = await db.Projects.findById(req.params.projectid);
         if(!project) return res.status(404).end();
-        console.log("loading task from project group", project.group_id);
+
+        console.log("loading all secondary archive task from project group", project.group_id);
         const _res = await axios.get(config.amaretti.api+'/task', {
             params: {
                 select: 'config.requests instance_id',
@@ -40,11 +41,9 @@ router.get('/list/:projectid', async (req, res, next)=>{
         let objects = [];
         
         //merge all output requests into a single list
-        console.log("iterating tasks", _res.data.tasks.length);
+        console.log("iterating secondary archive tasks", _res.data.tasks.length);
         _res.data.tasks.forEach(task=>{
             if(!task.config.requests) return; //old format?
-
-
             task.config.requests.forEach(request=>{
                 
                 //filter out some extra metadata that's too big to store..
@@ -75,7 +74,15 @@ router.get('/list/:projectid', async (req, res, next)=>{
 
                     //these might not exist on old objects during development
                     app: request.app||{},
+
+                    //BUG... tags/desc/dtag/meta/etc.. might be changed by the user on the archived dataset
+                    //but, we are looking up the "provenance" of the task.. so it might contain old data
+                    //(this was the case for guio when she set the tags after the data was archived..)
+                    //we need to lookup the *current* datasets but that's really expensive..
+                    //we might want to set a flag on the dataset object to indicate that the output is stored in the
+                    //secondary so we can just query against that? 
                     output: request.output||{},
+
                     finish_date: new Date(request.finish_date),
                 };
                 objects.push(o);

@@ -530,15 +530,18 @@ export default {
                 if(this.meta[id] !== "") clean_meta[id] = this.meta[id];
             }
 
+            const fileids = this.files.filter(f=>f.uploaded).map(f=>f.id);
+
             this.$http.post(Vue.config.api+"/dataset/finalize-upload", {
                 task: this.tasks.upload._id,
-                datatype: this.datatype._id,
                 subdir: "upload",
+                datatype: this.datatype._id,
+                desc: this.desc, //what is this for?
+                fileids,
 
                 datatype_tags: this.datatype_tags,
                 meta: clean_meta,
                 tags: this.tags,
-                desc: this.desc, //what is this for?
             }).then(res=>{
                 this.tasks.validation = res.data.validator_task;
             }).catch(err=>{

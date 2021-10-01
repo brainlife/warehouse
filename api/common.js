@@ -4,7 +4,6 @@ const request = require('request');
 const rp = require('request-promise-native');
 const keywordEx = require("keyword-extractor");
 const tmp = require('tmp');
-const mkdirp = require('mkdirp');
 const path = require('path');
 const child_process = require('child_process');
 const fs = require('fs');

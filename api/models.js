@@ -9,7 +9,9 @@ mongoose.set("debug", config.mongoose_debug);
 exports.init = (cb)=>{
     mongoose.connect(config.mongodb, {
         readPreference: 'nearest',
-        readConcern: 'majority',//prevents read to grab stale data from secondary
+        readConcern: {
+            level: 'majority',//prevents read to grab stale data from secondary
+        },
         writeConcern: {
             w: 'majority', //isn't this the default?
         },
