@@ -73,8 +73,13 @@ export default new Router({
             sidemenu: "app",
         }},
 
-        {path: '/app/:id/:mode', component: appedit, meta: {
+        {path: '/app/:id/edit', component: appedit, meta: {
             sidemenu: "app",
+            mode: "edit",
+        }},
+        {path: '/app/:id/copy', component: appedit, meta: {
+            sidemenu: "app",
+            mode: "copy",
         }},
 
         {path: '/app/:id/:tab?', component: app, meta: {

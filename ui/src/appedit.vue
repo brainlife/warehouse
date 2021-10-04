@@ -587,7 +587,7 @@ export default {
                     this.app = res.data;
                     this.convert_config_to_ui();
 
-                    if(this.$route.params.mode == 'copy') {
+                    if(this.$route.meta.mode == 'copy') {
                         this.app.name += " - copy";
                         delete this.app._id;
                         delete this.app.doi;
