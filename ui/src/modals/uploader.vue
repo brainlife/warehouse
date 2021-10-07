@@ -272,6 +272,9 @@ export default {
                 "5c390505f9109beac42b00df", //fmap
                 "604976b3ebfe45c4633ae3d2", //microperimetry
                 "599f305ad1f46fec1759f363", //tractmeasures
+
+                "5ed0352de3f453b13b267dae", //generic/network
+                "604a4553ebfe4559de3af944", //generic/timeseries
             ]},
         }, err=>{
             if(err) console.error(err);

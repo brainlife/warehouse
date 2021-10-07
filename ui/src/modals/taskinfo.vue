@@ -516,7 +516,7 @@ export default {
                             overlaying: 'y',
                             side: 'right',
                             //position: 0.90,
-                            range: [0, 100],
+                            range: [0, 105],
                         },
                     });
                     //add another axis
@@ -527,7 +527,7 @@ export default {
                             overlaying: 'y',
                             side: 'right',
                             //position: 0.90,
-                            range: [0, 100],
+                            range: [0, 105],
                         },
                     });
                 }
