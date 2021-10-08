@@ -10,14 +10,16 @@
 
                     <span style="opacity: 0.2;">|</span>
 
-                    {{project.stats.datasets.count}} <span style="opacity: 0.5;">objs</span>
+                    {{project.stats.datasets.count}} <span style="opacity: 0.5;">obj</span>
                     <div v-if="project.stats.datasets.size" style="display: inline-block; opacity: 0.5;">
                         <span>
                             ({{project.stats.datasets.size | filesize}})
                         </span>
                     </div>
+                    <!--
                     <span style="opacity: 0.2;">|</span>
-                    <icon name="id-badge" scale="0.7" style="opacity: 0.6"/> {{project.group_id}}
+                    <icon name="id-badge" scale="0.7" style="opacity: 0.6" title="group id"/> {{project.group_id}}
+                    -->
                 </div>
                 <span class="title">
                     {{project.name}} <b-badge class="list-badge" variant="primary" v-if="project.new">New</b-badge> 
@@ -31,13 +33,11 @@
             </div>
         </b-col>
         <b-col md="1">
-            <b-badge pill class="bigpill" :title="'Project Create Date '+project.create_date">
-                <icon name="calendar" style="opacity: 0.4;"/>&nbsp;&nbsp;&nbsp;{{new Date(project.create_date).toLocaleDateString()}}
-            </b-badge>
+            <span style="font-size: 90%">{{new Date(project.create_date).toLocaleDateString()}}</span>
         </b-col>
-        <b-col md="1" style="font-size: 85%; margin-top: 2px;">
+        <b-col md="1">
             <stateprogress v-if="project.stats && project.stats.instances && !project.openneuro" 
-                :states="project.stats.instances" height="15px"/>
+                :states="project.stats.instances" height="26px"/>
         </b-col>
         <b-col md="1" v-if="config.user">
             <div class="contacts">

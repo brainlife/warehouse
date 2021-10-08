@@ -73,6 +73,14 @@
                     <div class="side" v-if="selected.stats">
                         <projectavatar :project="selected" :height="140" :width="140" style="float: right; margin: -20px 100px 30px 30px;"/>
 
+                        <p>
+                            <b-badge pill class="bigpill" title="Group ID used by amaretti">
+                                <icon name="id-badge" style="opacity: 0.4;"/>&nbsp;&nbsp;{{selected.group_id}}
+                                <small>Group ID</small>
+                            </b-badge>
+                        </p>
+                        
+
                         <div v-if="selected.importedDLDatasets && selected.importedDLDatasets.length">
                             <span class="form-header">Data Source</span>
                             <p style="margin-bottom: 5px;"><small>This project contains data imported from the following sources.</small></p>
@@ -119,10 +127,6 @@
                             <b-badge pill class="bigpill" title="Total CPU hours consumed by this project">
                                 <icon name="server" style="opacity: 0.4;"/>&nbsp;&nbsp;{{(total_walltime/(3600*1000))|formatNumber}}
                                 <small>CPU Hours</small>
-                            </b-badge>
-                            <b-badge pill class="bigpill" title="Group ID used by amaretti">
-                                <icon name="id-badge" style="opacity: 0.4;"/>&nbsp;&nbsp;{{selected.group_id}}
-                                <small>Group ID</small>
                             </b-badge>
                         </p>
 
