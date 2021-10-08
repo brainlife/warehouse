@@ -304,7 +304,7 @@ export default {
         },
     },
 
-	methods: {
+    methods: {
         applyParticipants() {
             if(this.participants) {
                 if(Array.isArray(this.participants)) {
@@ -399,7 +399,7 @@ export default {
             }
         },
         
-		page_scrolled() {
+        page_scrolled() {
             let e = this.$refs["scrolled-area"];
             var scroll_top = e.scrollTop;
             var client_height = e.clientHeight;
@@ -450,7 +450,7 @@ export default {
         },
 
         get_mongo_query() {
-			var finds = {
+            var finds = {
                 removed: false,
                 project: this.project._id,
             };
@@ -472,8 +472,16 @@ export default {
                     }
 
                     function compose_ors(q) {
+                        if(q.startsWith("session:")) {
+                            return [{"meta.session": q.substring(8)}];
+                        } 
+                        if(q.startsWith("subject:")) {
+                            return [{"meta.subject": q.substring(8)}];
+                        } 
+                        
                         return [
                             {"meta.subject": {$regex: q, $options: 'i'}},
+                            {"meta.session": {$regex: q, $options: 'i'}},
                             {"desc": {$regex: q, $options: 'i'}},
                             {"tags": {$regex: q, $options: 'i'}},
                             {"datatype_tags": {$regex: q, $options: 'i'}},
@@ -489,6 +497,8 @@ export default {
                 });
                 finds["$and"] = ands;
             }
+            console.log("using query");
+            console.dir(finds);
             return finds;
         },
 
