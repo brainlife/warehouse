@@ -46,13 +46,13 @@
                         <small style="float: right">
                             {{new Date(release.create_date).toLocaleDateString()}}
                         </small>
-                        <span @click="jump('release.'+release.name)">{{release.name}}</span>
+                        <b-badge @click="jump('release.'+release.name)">{{release.name}}</b-badge>
                         <p>
                             <small v-if="release.desc">{{release.desc}}</small>
                         </p>
                         <small class="clickable" @click="jump('release.'+release.name+'.data')" v-if="release.sets && release.sets.length">Data ({{release.sets.length}} subjects)</small>
                         <br>
-                        <small class="clickable" @click="jump('release.'+release.name+'.apps')" v-if="release.apps && release.apps.length">Apps ({{release.apps.length}})</small>
+                        <small class="clickable" @click="jump('release.'+release.name+'.preprocessing')" v-if="release.apps && release.apps.length">Preprocessing ({{release.apps.length}} apps)</small>
                         <br>
                         <small class="clickable" @click="jump('release.'+release.name+'.analysis')" v-if="release.gaarchives && release.gaarchives.length">Analysis ({{release.gaarchives.length}} notebooks)</small>
                     </div>
