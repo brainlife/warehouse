@@ -14,8 +14,9 @@
     </a>
 
     <p v-if="release.desc" style="margin-bottom: 0px;"><small>{{release.desc}}</small></p>
+    <a :name="'release.'+release.name+'.data'" class="anchor"></a>
     <div v-if="release.sets && release.sets.length">
-            <a :name="'release.'+release.name+'.data'"><span class="subheader">Data</span></a>
+        <span class="subheader">Data</span>
         <b-badge pill class="bigpill clickable" @click="downloadDataset(release.set)" style="float: right; background-color: #2693ff;  color: white;">
             <icon name="download" style="opacity: 0.4;"/>&nbsp;&nbsp;&nbsp;<small>Dowload</small>
         </b-badge>
@@ -34,8 +35,9 @@
         <br>
     </div>
 
+    <a :name="'release.'+release.name+'.preprocessing'" class="anchor"></a>
     <div v-if="release.apps && release.apps.length">
-        <a :name="'release.'+release.name+'.apps'"><span class="subheader">Preprocessing</span></a>
+        <span class="subheader">Preprocessing</span>
         <small>The following Apps were used to generate the data in this release.</small>
         <div v-for="rec in release.apps" :key="rec._id" style="margin-top: 10px; border-left: 3px solid #f0f0f0; border-bottom: 1px solid #eee;">
             <app :appid="rec.app" :branch="rec.task.service_branch" :compact="true" :showDoi="true">
@@ -44,9 +46,10 @@
         </div>
         <br>
     </div>
-
+    
+    <a :name="'release.'+release.name+'.analysis'" class="anchor"></a>
     <div v-if="release.gaarchives && release.gaarchives.length > 0">
-        <a :name="'release.'+release.name+'.analysis'"><span class="subheader">Analysis</span></a>
+        <span class="subheader">Analysis</span>
         <small>The following jupyter notebook implements the post-processing and analysis step.</small>
         <div v-for="ga in release.gaarchives" :key="ga._id">
             <gaarchive :gaarchive="ga" style="margin: 5px 0;"/>
@@ -146,5 +149,9 @@ export default {
     line-height: 100%;
     color: #2693ff;
     border-bottom: 2px solid #2693ff66;
+}
+.anchor { 
+    position:relative;
+    top:-80px;
 }
 </style>
