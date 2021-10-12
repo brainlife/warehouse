@@ -42,12 +42,19 @@
                 <div v-if="pub.releases.length" class="releases">
                     <!--<div class="content-header">Contents</div>-->
                     <div class="content-subheader border-bottom">Releases</div>
-                    <div v-for="release in pub.releases" :key="release._id" class="content-item clickable" @click="jump('release.'+release._id)">
+                    <div v-for="release in pub.releases" :key="release._id" class="content-item">
                         <small style="float: right">
                             {{new Date(release.create_date).toLocaleDateString()}}
                         </small>
-                        <span>{{release.name}}</span>
-                        <p v-if="release.desc"><small>{{release.desc}}</small></p>
+                        <span @click="jump('release.'+release.name)">{{release.name}}</span>
+                        <p>
+                            <small v-if="release.desc">{{release.desc}}</small>
+                        </p>
+                        <small class="clickable" @click="jump('release.'+release.name+'.data')" v-if="release.sets && release.sets.length">Data ({{release.sets.length}} subjects)</small>
+                        <br>
+                        <small class="clickable" @click="jump('release.'+release.name+'.apps')" v-if="release.apps && release.apps.length">Apps ({{release.apps.length}})</small>
+                        <br>
+                        <small class="clickable" @click="jump('release.'+release.name+'.analysis')" v-if="release.gaarchives && release.gaarchives.length">Analysis ({{release.gaarchives.length}} notebooks)</small>
                     </div>
                 </div>
                 <br>
