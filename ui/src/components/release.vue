@@ -1,6 +1,6 @@
 <template>
 <div>
-    <a :name="'release.'+release._id">
+    <a :name="'release.'+release.name">
         <div class="header">
             <span style="float: right; opacity: 0.8; font-size: 90%; padding-top: 4px;">
                 {{new Date(release.create_date).toLocaleDateString()}}
@@ -15,7 +15,7 @@
 
     <p v-if="release.desc" style="margin-bottom: 0px;"><small>{{release.desc}}</small></p>
     <div v-if="release.sets && release.sets.length">
-        <span class="subheader">Data</span>
+            <a :name="'release.'+release.name+'.data'"><span class="subheader">Data</span></a>
         <b-badge pill class="bigpill clickable" @click="downloadDataset(release.set)" style="float: right; background-color: #2693ff;  color: white;">
             <icon name="download" style="opacity: 0.4;"/>&nbsp;&nbsp;&nbsp;<small>Dowload</small>
         </b-badge>
@@ -35,7 +35,7 @@
     </div>
 
     <div v-if="release.apps && release.apps.length">
-        <span class="subheader">Preprocessing</span>
+        <a :name="'release.'+release.name+'.apps'"><span class="subheader">Preprocessing</span></a>
         <small>The following Apps were used to generate the data in this release.</small>
         <div v-for="rec in release.apps" :key="rec._id" style="margin-top: 10px; border-left: 3px solid #f0f0f0; border-bottom: 1px solid #eee;">
             <app :appid="rec.app" :branch="rec.task.service_branch" :compact="true" :showDoi="true">
@@ -46,7 +46,7 @@
     </div>
 
     <div v-if="release.gaarchives && release.gaarchives.length > 0">
-        <span class="subheader">Analysis</span>
+        <a :name="'release.'+release.name+'.analysis'"><span class="subheader">Analysis</span></a>
         <small>The following jupyter notebook implements the post-processing and analysis step.</small>
         <div v-for="ga in release.gaarchives" :key="ga._id">
             <gaarchive :gaarchive="ga" style="margin: 5px 0;"/>
