@@ -115,6 +115,7 @@ router.get('/query',common.jwt({credentialsRequired: false}), (req, res, next)=>
         const queryTokens = req.query.q.toLowerCase().split(" ");
 
         projects.forEach(project=>{
+console.dir(project);
             let tokens = [
                 project.name,
                 project.desc,
