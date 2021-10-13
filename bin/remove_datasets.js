@@ -102,7 +102,7 @@ function free_storage(cb) {
             ]},
         ]
     })
-    .sort('create_date') //oldest first (give published datasets precedencde)
+    //.sort('create_date') //oldest first (give published datasets precedencde) - runs out of memory
     .limit(limit) 
     .exec((err,datasets)=>{
         if(err) return cb(err);

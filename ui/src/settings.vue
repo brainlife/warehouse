@@ -18,7 +18,7 @@
         <b-container v-if="ready">
 
             <!--profile-->
-            <div v-if="tabs[tab].id == 'profile'">
+            <div v-if="tabID == 'profile'">
                 <b-alert :show="!profile.private.aup" variant="danger" style="margin-bottom: 20px">
                     <icon name="exclamation-circle"/> Please agree to the brainlife.io acceptable use policy listed below.
                 </b-alert>
@@ -220,7 +220,7 @@
             </div>
 
             <!--account-->
-            <div v-if="tabs[tab].id == 'account'">
+            <div v-if="tabID == 'account'">
                 <b-container>
                     <h5>Change Password</h5>     
                     <hr>           
@@ -260,7 +260,7 @@
                                 <span v-if="!user.times.google_login">Never</span>
                                 <span v-else>{{user.times.google_login}}</span>
                         </p>
-                        <h4><icon name="brands/google" size="2.4"></icon> Google</h4>
+                        <h5><icon name="brands/google" size="2.4"></icon> Google</h5>
                     </div>
                     <div class="well">
                         <b-button class="float-right" v-if="user.ext.github" @click="disconnect('github')">Disconnect</b-button>
@@ -271,7 +271,7 @@
                             <span v-if="!user.times.github">Never</span>
                             <span v-else>{{user.times.github_login}}</span>
                         </p>
-                        <h4><icon name="brands/github" size="2.4"></icon> Github</h4>
+                        <h5><icon name="brands/github" size="2.4"></icon> Github</h5>
                     </div>
                     <div class="well">
                         <b-button class="float-right" v-if="user.ext.orcid" @click="disconnect('orcid')">Disconnect</b-button>
@@ -282,29 +282,33 @@
                             <span v-if="!user.times.orcid">Never</span>
                             <time v-if="user.times.orcid_login">{{user.times.orcid_login}}</time>
                         </p>
-                        <h4><icon name="brands/orcid" size="2.4"></icon> ORCID</h4>
+                        <h5><icon name="brands/orcid" size="2.4"></icon> ORCID</h5>
                     </div>
                     <div class="well">
-                        <h4><img src="../images/cilogon.png" width="24" height="24"> OpenID Connect <span><b-button class="float-right" @click="connect('oidc')">Connect</b-button></span></h4>
-                            <b-list-group v-if="user.ext.openids" style="margin:20px">
-                                <b-list-group-item v-for="dn in user.ext.openids" :key="index">
-                                    <b-button class="float-right" v-if="user.ext.openids" @click="disconnect('oidc',dn)">Disconnect</b-button>
-                                    <p style="margin: 0 0 10.5px;">
-                                        {{dn}}
-                                        <span class="text-muted"> | Last Login: 
-                                            <span v-if="!user.times['oidc_login:'+user.profile.sub]">Never</span> 
-                                            <time>{{user.times['oidc_login:'+user.profile.sub]}}</time>
-                                        </span> 
-                                    </p>
-                                </b-list-group-item>
-                            </b-list-group>
+                        <b-button class="float-right" @click="connect('oidc')">Connect</b-button>
+                        <h5>
+                            <img src="@/assets/images/cilogon.png" width="24" height="24"> 
+                            OpenID Connect
+                        </h5>
+                        <b-list-group v-if="user.ext.openids">
+                            <b-list-group-item v-for="dn in user.ext.openids" :key="dn">
+                                <b-button class="float-right" v-if="user.ext.openids" @click="disconnect('oidc',{dn})">Disconnect</b-button>
+                                <p style="margin: 0 0 10.5px;">
+                                    {{dn}}
+                                    <span class="text-muted"> | Last Login: 
+                                        <span v-if="!user.times['oidc_login:'+user.profile.sub]">Never</span> 
+                                        <time>{{user.times['oidc_login:'+user.profile.sub]}}</time>
+                                    </span> 
+                                </p>
+                            </b-list-group-item>
+                        </b-list-group>
                     </div>
                 </div>
                 Please visit the legacy <a href="/auth/#!/settings/account" target="_blank">Account Settings</a> page for more account settings.
             </div>
 
             <!--notification-->
-            <div v-if="tab == 2">
+            <div v-if="tabID == 'notification'">
                 <b-form @submit="submit_profile">
                     <h5>Sounds</h5>
                     <b-row>
@@ -347,7 +351,7 @@
                 </b-form>
             </div>
 
-            <div v-if="tab == 3">
+            <div v-if="tabID == 'users'">
                     <b-container>
                         <b-row>
                             <b-col>
@@ -412,7 +416,7 @@
                         </b-row>
                     </b-container>
             </div>
-            <div v-if="tab == 4">
+            <div v-if="tabID == 'groups'">
                 <b-container>
                     <b-row>
                         <b-col>
@@ -574,7 +578,7 @@ export default {
             this.fullname = res.data.fullname;
             if(res.data.profile) lib.mergeDeep(this.profile, res.data.profile);
             this.ready = true;
-            const jwt = localStorage.getItem("jwt");
+            const jwt = Vue.config.jwt;
             if(jwt) {
                 this.debug = {jwt : this.user};
                 this.jwt = jwt;
@@ -602,6 +606,9 @@ export default {
                 Vue.config.profile = this.profile;
                 this.$notify("Successfully updated profile");
                 this.$router.push("/projects");
+            }).catch(err=>{
+                console.error(err.response);
+                this.$notify({type: "error", text: err.response.data.message});
             });            
         },
         changePassword(e) {
@@ -747,15 +754,18 @@ export default {
             }
         },
         connect(type) {
-            window.location = "api/auth/"+type+"/associate/"+this.jwt;
+            window.location = Vue.config.auth_api+'/'+type+"/associate/"+this.jwt;
         },
         disconnect(type, data) {
             this.$http.put(Vue.config.auth_api+'/'+type+'/disconnect',data).then(res=>{
                 this.$notify({type: "success", text:res.data.message});
-                Object.assign(user.ext,res.data.ext);
+                console.log("res.data", res.data);
+                console.log(this.user);
+                Object.assign(this.user.ext, res.data.user.ext);
+                console.log(this.user);
             }).catch(err=>{
                 console.error(err);
-                this.$notify({type: "error", text: response.data.message});
+                this.$notify({type: "error", text: res.data.message});
             })
         },
         handleRouteParams() {
@@ -775,6 +785,9 @@ export default {
         },
         rowGroups() {
             return this.groups.length;
+        },
+        tabID() {
+            return this.tabs[this.tab].id; 
         }
     },
 
@@ -826,14 +839,12 @@ h5 {
     margin-bottom: 20px;
     opacity: 0.7;
 }
-.well{
-    min-height: 20px;
-    padding: 19px;
-    margin-bottom: 20px;
-    background-color: #fafafa;
-    border: 1px solid #e8e8e8;
-    border-radius: 0;
-    box-shadow: inset 0 1px 1px rgb(0 0 0 / 5%)
+.well {
+    padding: 10px;
+    margin-bottom: 10px;
+    background-color: #fff;
+    display: block;
+    clear: both;
 }
 </style>
 

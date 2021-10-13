@@ -5,8 +5,6 @@ const async = require('async');
 const request = require('request');
 const fs = require('fs');
 const jsonwebtoken = require('jsonwebtoken');
-const mkdirp = require('mkdirp');
-//const xml2js = require('xml2js');
 
 const config = require('../api/config');
 const logger = winston.createLogger(config.logger.winston);

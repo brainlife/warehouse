@@ -1,6 +1,6 @@
 <template>
 <div>
-    <a :name="'release.'+release._id">
+    <a :name="'release.'+release.name">
         <div class="header">
             <span style="float: right; opacity: 0.8; font-size: 90%; padding-top: 4px;">
                 {{new Date(release.create_date).toLocaleDateString()}}
@@ -14,6 +14,7 @@
     </a>
 
     <p v-if="release.desc" style="margin-bottom: 0px;"><small>{{release.desc}}</small></p>
+    <a :name="'release.'+release.name+'.data'" class="anchor"></a>
     <div v-if="release.sets && release.sets.length">
         <span class="subheader">Data</span>
         <b-badge pill class="bigpill clickable" @click="downloadDataset(release.set)" style="float: right; background-color: #2693ff;  color: white;">
@@ -34,6 +35,7 @@
         <br>
     </div>
 
+    <a :name="'release.'+release.name+'.preprocessing'" class="anchor"></a>
     <div v-if="release.apps && release.apps.length">
         <span class="subheader">Preprocessing</span>
         <small>The following Apps were used to generate the data in this release.</small>
@@ -44,7 +46,8 @@
         </div>
         <br>
     </div>
-
+    
+    <a :name="'release.'+release.name+'.analysis'" class="anchor"></a>
     <div v-if="release.gaarchives && release.gaarchives.length > 0">
         <span class="subheader">Analysis</span>
         <small>The following jupyter notebook implements the post-processing and analysis step.</small>
@@ -146,5 +149,9 @@ export default {
     line-height: 100%;
     color: #2693ff;
     border-bottom: 2px solid #2693ff66;
+}
+.anchor { 
+    position:relative;
+    top:-80px;
 }
 </style>

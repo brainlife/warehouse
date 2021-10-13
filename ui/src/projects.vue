@@ -158,7 +158,7 @@ export default {
             this.loading = true;
             this.$http.get('project/query', {params: {
                 q: this.query,
-                select: 'name desc stats.datasets create_date admins members guests access',
+                select: 'name desc group_id stats.datasets stats.instances create_date admins members guests access',
             }}).then(res=>{
                 this.projects = res.data;
 

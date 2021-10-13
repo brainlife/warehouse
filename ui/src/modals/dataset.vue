@@ -221,7 +221,7 @@
                                             <b-badge variant="success"><icon name="archive" scale="0.7"/> SDA Backup</b-badge>
                                         </span>
 
-                                        <span v-if="dataset.archive_task_id"><small>{{dataset.archive_task_id}}</small></span>
+                                        <p v-if="dataset.archive_task_id"><small>{{dataset.archive_task_id}}</small></p>
                                     </p>
                                 </b-col>
                             </b-row>
@@ -815,19 +815,22 @@ export default {
 
             const datasetRes = await this.$http.get('dataset', {params: {
                 find: JSON.stringify({_id: id}),
-                populate: JSON.stringify({
-                    path: "project datatype prov.deps.dataset",
+                populate: JSON.stringify([{
+                    path: "datatype", // prov.deps.dataset",
                     populate: {
                         path: "uis",
                         model: "UIs",
                     }
-                }),
+                }, {
+                    path: "project"
+                }]),
             }});
 
             if(datasetRes.data.count == 0) {
                 throw new Error("can't find dataset id:"+id);
             }
             this.dataset = datasetRes.data.datasets[0];
+            console.log(JSON.parse(JSON.stringify(this.dataset)));
             if(this.dataset.status == "storing") {
                 this.tm_load_status = setTimeout(()=>{ this.load_status(id); }, 5000);
             }
@@ -855,7 +858,7 @@ export default {
             /////////////////////////////////////////////////////////////////////////////
 
             // load follow_task if set
-            if(this.dataset.prov.task.follow_task_id) {
+            if(this.dataset.prov.task && this.dataset.prov.task.follow_task_id) {
                 console.log("loading follow_task");
                 const taskRes = await this.$http.get(Vue.config.amaretti_api+'/task', {params: {
                     find: JSON.stringify({ 
@@ -887,14 +890,6 @@ export default {
             }});
             if(!this.dataset) return; //modal closed while we are loading (TODO can I cancel?)
             this.$set(this.dataset, '_pubs', pubRes.data.pubs);
-
-            /*
-            }).catch(err=>{
-                console.error(err);
-                //not all user have access to all data.. so let's ignore if that's the case
-                //this.$notify({type: 'error', text: err});
-            });
-            */
         },
 
         load_resource() {

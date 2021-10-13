@@ -39,12 +39,12 @@
                 </b-container>
             </div><!--header-->
 
-            <div v-if="tab == 0">
+            <div v-if="tabID == 'detail'">
                 <div style="background-color: white; padding-top: 15px; border-bottom: 1px solid #ddd;">
                     <b-container>
                         <p style="line-height: 250%;">
                             <b-badge pill v-if="datatype.create_date" class="bigpill" title="Registration Date">
-                                <icon name="calendar" style="opacity: 0.4;"/>&nbsp;&nbsp;&nbsp;<small>Registerd</small>&nbsp;&nbsp;{{new Date(datatype.create_date).toLocaleDateString()}}
+                                <icon name="calendar" style="opacity: 0.4;"/>&nbsp;&nbsp;&nbsp;<small>Registered</small>&nbsp;&nbsp;{{new Date(datatype.create_date).toLocaleDateString()}}
                             </b-badge>
                             <b-badge pill v-if="datatype.groupAnalysis" class="bigpill" style="background-color: #666; color: white;" title="The output data will be made available for jupyter notebook under Analysis tab.">
                                 <icon name="dot-circle"/>&nbsp;&nbsp;&nbsp;Analysis
@@ -218,7 +218,7 @@
                 </b-container>
             </div>
 
-            <div v-if="tab == 2">
+            <div v-if="tabID == 'samples'">
                 <b-container>
                     <br>
                     <div v-if="sample_datasets.length > 0" class="box">
@@ -239,7 +239,7 @@
                 </b-container>
             </div>
 
-            <div v-if="tab == 3">
+            <div v-if="tabID == 'apps'">
                 <b-container>
                     <br>
 
@@ -302,6 +302,12 @@ export default {
             config: Vue.config,
 
             tab: 0,
+            tabs: [
+                {id: "detail", label: "Detail"},
+                {id: "readme", label: "Readme"},
+                {id: "samples", label: "Samples"},
+                {id: "apps", label: "Apps"}
+            ],
         }
     },
 
@@ -321,10 +327,14 @@ export default {
         canedit() {
             if(!Vue.config.user) return false;
             return ~this.datatype.admins.indexOf(Vue.config.user.sub);
+        },
+        tabID() {
+            return this.tabs[this.tab].id; 
         }
     },
 
     mounted() {
+        this.handleRouteParams();
         this.load();
     },
 
@@ -414,6 +424,11 @@ export default {
             //this.editing = true;
             this.$router.push('/datatype/'+this.datatype._id+'/edit');
         },
+        handleRouteParams() {
+            console.log("handleRouteParams", this.$route.params);
+            const tab_id = this.$route.params.tab;
+            if(tab_id) this.tab = this.tabs.findIndex(tab=>tab.id == tab_id); 
+        },
     },
 
     destroyed() {
@@ -421,8 +436,14 @@ export default {
   
     watch: {
         '$route': function() {
+            this.handleRouteParams();
             this.load();
         },
+        tab: function() {
+            if(this.$route.params.tab != this.tabs[this.tab].id) {
+                this.$router.replace("/datatype/"+this.datatype._id+"/"+this.tabs[this.tab].id);
+            }
+        }
     }
 }
 </script>

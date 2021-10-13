@@ -587,7 +587,7 @@ export default {
                     this.app = res.data;
                     this.convert_config_to_ui();
 
-                    if(this.$route.params.mode == 'copy') {
+                    if(this.$route.meta.mode == 'copy') {
                         this.app.name += " - copy";
                         delete this.app._id;
                         delete this.app.doi;
@@ -710,6 +710,7 @@ export default {
                 if (!input.id) return cb("Not all input ids are non-null");
                 if (inputTable[input.id]) return cb("Duplicate ID '" + input.id + "' found in list of inputs");
                 if (!input.datatype) return cb("No datatype given for input '" + input.id + "'");
+                if(!input.id.match(/^[0-9a-zA-Z_]+$/)) return cb("Please use only alpha numeric characters for input id: "+input.id);
                 
                 let datatype = this.datatypes[input.datatype];
                 if (datatype.name == "raw" && input.datatype_tags.length == 0) {
@@ -740,16 +741,11 @@ export default {
             }
             
             for (let output of this.output_datasets) {
-                if (!output.id) {
-                    return cb("Output directory name is empty");
-                }
-                if (outputTable[output.id]) {
-                    return cb("Duplicate ID '" + output.id + "' found in list of outputs");
-                }
-                if (!output.datatype) {
-                    return cb("No datatype given for output '" + input.id + "'");
-                }
-                
+                if (!output.id) return cb("Output directory name is empty");
+                if (outputTable[output.id]) return cb("Duplicate ID '" + output.id + "' found in list of outputs");
+                if (!output.datatype) return cb("No datatype given for output '" + output.id + "'");
+                if(!output.id.match(/^[0-9a-zA-Z_]+$/)) return cb("Please use only alpha numeric characters for output id: "+output.id);
+
                 let datatype = this.datatypes[output.datatype];
                 
                 if (datatype.name == "raw" && output.datatype_tags.length == 0) {

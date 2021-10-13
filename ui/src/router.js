@@ -73,7 +73,17 @@ export default new Router({
             sidemenu: "app",
         }},
 
-        {path: '/app/:id/:mode', component: appedit, meta: {
+        {path: '/app/:id/edit', component: appedit, meta: {
+            sidemenu: "app",
+            mode: "edit",
+        }},
+        {path: '/app/:id/copy', component: appedit, meta: {
+            sidemenu: "app",
+            mode: "copy",
+        }},
+
+        {path: '/app/:id/:tab?', component: app, meta: {
+            public: true, 
             sidemenu: "app",
         }},
 
@@ -146,6 +156,11 @@ export default new Router({
 
         {path: '/datatype/:id/edit', component: datatypeedit, meta: {
             sidemenu: "datatype",     
+        }},
+
+        {path: '/datatype/:id/:tab?', component: datatype, meta: {
+            public: true,
+            sidemenu: "datatype",
         }},
 
         //aka.. datalad search

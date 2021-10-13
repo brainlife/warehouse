@@ -675,7 +675,6 @@ function generate_prov(origin_dataset_id, cb) {
 
         //skip validation task by starting at follow_task_id if it's set
         let task_id = dataset.prov.task.follow_task_id || dataset.prov.task._id;
-        console.log("load_dataset_prov", dataset.prov.task.follow_task_id, dataset.prov.task._id)
         load_task(task_id, (err, task)=>{
             if(err) return cb(err);
             if(!task.service) task.service = "unknown"; //only happens for dev/test? (TODO.. maybe I should cb()?)
@@ -694,8 +693,7 @@ function generate_prov(origin_dataset_id, cb) {
                     label: compose_label(task),
                 }, taskInfo(task)));
 
-
-                let edge_label = datatypes_cache[dataset.datatype].name+" "+dataset.datatype_tags.join(",");
+                let edge_label = datatypes_cache[dataset.datatype].name+" ["+dataset.datatype_tags.join(",")+"]";
                 let archived_dataset_id = null;
                 if(defer) {
                     let label_parts = defer.node.label.split("\n");
@@ -728,7 +726,7 @@ function generate_prov(origin_dataset_id, cb) {
 
         db.Datasets
         .findById(dataset_id)
-        .populate('prov.app project')
+        .populate('project')
         .exec((err, dataset)=>{
             if(err) return cb(err);
             if(!dataset) {
@@ -743,7 +741,7 @@ function generate_prov(origin_dataset_id, cb) {
             //dataset to dataset links are formed when user *copy* dataset to another project
             let label = "";
             //if(to.indexOf("dataset.") === 0) label += "copy"; //I don't think we need to show "copy".. it's obvsious?
-            if(input_name) label += " ("+input_name+")";
+            if(input_name) label += input_name+": ";
 
             let defer = {
                 node: {
@@ -769,8 +767,6 @@ function generate_prov(origin_dataset_id, cb) {
         if(~tasks_analyzed.indexOf(task._id)) return cb();
         tasks_analyzed.push(task._id);
 
-        //console.debug("load_task_prov", task._id);
-
         //if(!task.deps_config) return cb(); //just in case?
         if(!task.config) return cb(); 
 
@@ -782,12 +778,21 @@ function generate_prov(origin_dataset_id, cb) {
                 //process uses app-stage to load input datasets
                 //instead of showing that, let's *skip* this node back to datasets that it loaded
                 //and load their tasks
-                if( dep_task.service == "soichih/sca-product-raw" ||  //for prevenance
-                    dep_task.service.startsWith("brainlife/validator") || 
-                    dep_task.service == "brainlife/app-stage" ) { 
+                if( dep_task.service == "soichih/sca-product-raw" || dep_task.service == "brainlife/app-stage" ) { 
                     let input_name = null;
-                    if(task.config._inputs.length > 1) input_name = input.id;
+                    if(task.config._inputs.length > 1) input_name = input.id; //what is this?
                     load_stage("task."+task._id, input_name, input.dataset_id||input._id||input.subdir, next_dep);
+                } else if(dep_task.service.startsWith("brainlife/validator")) {
+                    const validator_input = dep_task.config._inputs[0];
+                    let datatype = datatypes_cache[input.datatype];
+                    if(!datatype) datatype = {name: "unknown "+input.datatype};
+                    edges.push({
+                        to: "task."+task._id,
+                        from: "task."+validator_input.task_id,
+                        arrows: "to",
+                        label: input.id+": "+datatype.name+" ["+input.datatype_tags.join(",")+"]",
+                    });
+                    load_task_prov(dep_task, next_dep); //recurse to its deps
                 } else {
                     //task2task
                     let datatype = datatypes_cache[input.datatype];
@@ -800,7 +805,7 @@ function generate_prov(origin_dataset_id, cb) {
                         from: "task."+input.task_id,
                         to: "task."+task._id,
                         arrows: "to",
-                        label: input.id+": "+datatype.name+" "+input.datatype_tags.join(","),
+                        label: input.id+": "+datatype.name+" ["+input.datatype_tags.join(",")+"]",
                     });
                     load_task_prov(dep_task, next_dep); //recurse to its deps
                 }
@@ -816,7 +821,7 @@ function generate_prov(origin_dataset_id, cb) {
     //start by loading *this dataset*
     db.Datasets
     .findOne({ _id: origin_dataset_id })
-    .populate('prov.app')
+    //.populate('prov.app')
     .exec((err, dataset)=>{
         if(err) return cb(err);
         if(!dataset) return cb("no such dataset");
