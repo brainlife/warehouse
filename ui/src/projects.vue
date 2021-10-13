@@ -159,6 +159,7 @@ export default {
             this.$http.get('project/query', {params: {
                 q: this.query,
                 select: 'name desc group_id stats.datasets stats.instances create_date admins members guests access',
+                deref_contacts: true,
             }}).then(res=>{
                 this.projects = res.data;
 
