@@ -115,11 +115,22 @@ router.get('/query',common.jwt({credentialsRequired: false}), (req, res, next)=>
         const queryTokens = req.query.q.toLowerCase().split(" ");
 
         projects.forEach(project=>{
-console.dir(project);
             let tokens = [
                 project.name,
                 project.desc,
             ];
+
+            function addContactTokens(c) {
+                if(!c) return;
+                tokens.push(c.fullname);
+                tokens.push(c.username);
+                tokens.push(c.email);
+            }
+            
+            if(project.admins) project.admins.map(common.deref_contact).forEach(addContactTokens);
+            if(project.members) project.members.map(common.deref_contact).forEach(addContactTokens);
+            if(project.guests) project.guests.map(common.deref_contact).forEach(addContactTokens);
+
             if(project.stats && project.stats.datasets && project.stats.datasets.datatypes_detail) {
                 project.stats.datasets.datatypes_detail.forEach(datatype=>{
                     tokens = [...tokens, datatype.type.name];
