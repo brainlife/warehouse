@@ -39,7 +39,7 @@ export default {
         },
         down(e) {
             const x = e.clientX || e.touches[0].clientX;
-            console.log('down', x);
+            // console.log('down', x);
             this.dragging = true;
             this.offset_x = e.offsetX;
             this.start_x = x - this.splitter_pos;
@@ -49,7 +49,6 @@ export default {
             });
         },
         up(event) {
-            console.log('up');
             if(!this.dragging) return;
             this.dragging = false;
             let pageContent = document.querySelectorAll(".page-content");
@@ -58,7 +57,6 @@ export default {
             });
         },
         move(e) {
-            console.log('moving');
             const x = e.clientX || e.touches[0].clientX;
             if(!this.dragging) return;
             let new_x = x + this.start_x - this.offset_x*2;
