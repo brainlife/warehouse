@@ -32,10 +32,11 @@ export default {
             window.addEventListener("pointerup", this.up);
             window.addEventListener("dragend", this.up);
             window.addEventListener("mousemove", this.move);
+            splitter.addEventListener('touchstart', this.move, {passive: true});
             //  only works on mobile
-            splitter.addEventListener("touchend", this.up);
+            splitter.addEventListener("touchend", this.up, { passive: true});
             //  only works on mobile
-            splitter.addEventListener("touchmove", this.move);
+            splitter.addEventListener("touchmove", this.move, { passive: true});
         },
         down(e) {
             const x = e.clientX || e.touches[0].clientX;
