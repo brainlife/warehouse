@@ -115,6 +115,7 @@ router.get('/query',common.jwt({credentialsRequired: false}),(req, res, next)=> 
             const queryTokens = req.query.q.toLowerCase().split(" ");
             
             pubs.forEach(pub => {
+
                 let tokens = [
                     pub.name,
                     pub.desc,
@@ -123,16 +124,22 @@ router.get('/query',common.jwt({credentialsRequired: false}),(req, res, next)=> 
                     ...pub.tags,
                 ];
                 
-                if(pub.authors) pub.authors.map(common.deref_contact).forEach(addContactTokens);
-                if(pub.contributors) pub.contributors.map(common.deref_contact).forEach(addContactTokens);
-            
                 function addContactTokens(c) {
                     if(!c) return;
                     tokens.push(c.fullname);
                     tokens.push(c.username);
                     tokens.push(c.email);
                 }
-                tokens = tokens.filter(thing=>!!thing).join(" ").toLowerCase();
+                if(pub.authors) pub.authors.map(common.deref_contact).forEach(addContactTokens);
+                if(pub.contributors) pub.contributors.map(common.deref_contact).forEach(addContactTokens);
+                if(pub.fundings) {
+                    // should I add mongoID too? 
+                    pub.fundings.forEach(funding=>{
+                        tokens.push(funding.id);
+                        tokens.push(funding.funder);
+                    })
+                }
+                tokens = tokens.filter(thing=>!!thing).map(token=>token.toLowerCase());
                 pub._tokens = tokens.join(" ");
             });
 
@@ -144,8 +151,9 @@ router.get('/query',common.jwt({credentialsRequired: false}),(req, res, next)=> 
                 });
                 return match;
             });
+            console.log(filtered);
             //remove _tokens from the pubs to reduce returning weight a bit
-            filtered.forEach(pub=>{ delete pubs._tokens; });
+            filtered.forEach(pub=>{ delete pub._tokens; });
             res.json({filtered, "count" : filtered.length});
 
             //dereference user ID to name/email
