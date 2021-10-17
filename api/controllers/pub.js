@@ -75,6 +75,97 @@ router.get('/', (req, res, next)=>{
 });
 
 /**
+ * @apiGroup Publication
+ * @api {get} /pub/query
+ * @apiDescription                 Query publications based on search query (public)
+ * 
+ * @apiParam {String} q            Query used to search for publications
+ * @apiParam {String} [select]     Fields to load - multiple fields can be entered with %20 as delimiter
+ *
+ * @apiHeader {String} [authorization]  
+ *                                 A valid JWT token "Bearer : xxxxx"
+ * 
+ * @apiSuccess {Object}            Project record registered 
+ */
+
+router.get('/query',common.jwt({credentialsRequired: false}),(req, res, next)=> {
+    let find = {};
+    let skip = req.query.skip || 0;
+    let limit = req.query.limit || 100;
+    if(req.query.find) {
+        find = JSON.parse(req.query.find);
+    }
+    let select = "";
+    if(req.query.select) select = req.query.select;
+
+    select += "name desc releases -readme";
+    db.Publications.find(find)
+    .populate(req.query.populate || '') //all by default
+    .select(req.query.select)
+    .limit(+limit)
+    .skip(+skip)
+    .sort(req.query.sort || '_id')
+    .lean()
+    .exec((err, pubs)=> {
+        if(err) return next(err);
+        db.Publications.countDocuments(find).exec((err, count)=>{
+            if(err) return next(err);
+
+            if(!req.query.q) return res.json({pubs, count});
+            const queryTokens = req.query.q.toLowerCase().split(" ");
+            
+            pubs.forEach(pub => {
+                let tokens = [
+                    pub.name,
+                    pub.desc,
+                    pub.doi,
+                    pub.license,
+                    ...pub.tags,
+                ];
+                
+                if(pub.authors) pub.authors.map(common.deref_contact).forEach(addContactTokens);
+                if(pub.contributors) pub.contributors.map(common.deref_contact).forEach(addContactTokens);
+            
+                function addContactTokens(c) {
+                    if(!c) return;
+                    tokens.push(c.fullname);
+                    tokens.push(c.username);
+                    tokens.push(c.email);
+                }
+                tokens = tokens.filter(thing=>!!thing).join(" ").toLowerCase();
+                pub._tokens = tokens.join(" ");
+            });
+
+            const filtered = pubs.filter(pub=>{
+                let match = true;
+                queryTokens.forEach(token=>{
+                    if(!match) return;
+                    if(!pub._tokens.includes(token)) match = false;
+                });
+                return match;
+            });
+            //remove _tokens from the pubs to reduce returning weight a bit
+            filtered.forEach(pub=>{ delete pubs._tokens; });
+            res.json({filtered, "count" : filtered.length});
+
+            //dereference user ID to name/email
+            // if(req.query.deref_contacts) pubs.forEach(pub=>{
+            //     pub.authors = pub.authors.map(common.deref_contact).filter(c=>!!c);
+            //     pub.contributors = pub.contributors.map(common.deref_contact).filter(c=>!!c);
+            // });
+
+
+            /*
+            if(req.user) pubs.forEach(pub=>{
+                pub._canedit = ..
+            });
+            */
+            // res.json({pubs, count});
+        });
+    });
+});
+
+/**
  * @apiGroup Publications
  * @api {get} /pub/datasets/:releaseid  
  *                              Query published datasets
