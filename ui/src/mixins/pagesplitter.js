@@ -62,14 +62,6 @@ export default {
             let new_x = x + this.start_x - this.offset_x*2;
             if(new_x < 400) new_x = 400;
             this.splitter_pos = new_x;
-            this.splitter_pos = new_x;  
-            this.splitter_pos = new_x;
-            this.splitter_pos = new_x;  
-            this.splitter_pos = new_x;
-            this.splitter_pos = new_x;  
-            this.splitter_pos = new_x;
-            this.splitter_pos = new_x;  
-            this.splitter_pos = new_x;
         },
     }
 }
