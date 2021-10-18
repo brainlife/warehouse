@@ -653,5 +653,9 @@ z-index: 1;
 left: 12px;
 }
 
+.disableText {
+    user-select: none;
+}
+
 </style>
 
