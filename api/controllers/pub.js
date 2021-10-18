@@ -89,12 +89,9 @@ router.get('/', (req, res, next)=>{
  */
 
 router.get('/query',common.jwt({credentialsRequired: false}),(req, res, next)=> {
-    let find = {};
+    let find = {removed : false};
     let skip = req.query.skip || 0;
     let limit = req.query.limit || 100;
-    if(req.query.find) {
-        find = JSON.parse(req.query.find);
-    }
     let select = "";
     if(req.query.select) select = req.query.select;
 
@@ -151,24 +148,9 @@ router.get('/query',common.jwt({credentialsRequired: false}),(req, res, next)=> 
                 });
                 return match;
             });
-            console.log(filtered);
             //remove _tokens from the pubs to reduce returning weight a bit
             filtered.forEach(pub=>{ delete pub._tokens; });
-            res.json({filtered, "count" : filtered.length});
-
-            //dereference user ID to name/email
-            // if(req.query.deref_contacts) pubs.forEach(pub=>{
-            //     pub.authors = pub.authors.map(common.deref_contact).filter(c=>!!c);
-            //     pub.contributors = pub.contributors.map(common.deref_contact).filter(c=>!!c);
-            // });
-
-
-            /*
-            if(req.user) pubs.forEach(pub=>{
-                pub._canedit = ..
-            });
-            */
-            // res.json({pubs, count});
+            res.json({"pubs" : filtered, "count" : filtered.length});
         });
     });
 });
