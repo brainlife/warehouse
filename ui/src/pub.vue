@@ -399,7 +399,7 @@ export default {
         //load publication detail
         const res = await this.$http.get('pub', {params: {
             find: JSON.stringify({_id: this.$route.params.id}),
-            populate: 'project release',
+            populate: 'project releases',
             deref_contacts: true,
         }});
 

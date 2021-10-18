@@ -93,12 +93,10 @@ router.get('/query',common.jwt({credentialsRequired: false}),(req, res, next)=> 
     let skip = req.query.skip || 0;
     let limit = req.query.limit || 100;
     let select = "";
-    if(req.query.select) select = req.query.select;
 
-    select += "name desc releases -readme";
     db.Publications.find(find)
-    .populate(req.query.populate || '') //all by default
-    .select(req.query.select)
+    .populate('project', 'avatar')
+    .select(req.query.select || 'name desc') //only select name desc by default
     .limit(+limit)
     .skip(+skip)
     .sort(req.query.sort || '_id')
@@ -108,49 +106,56 @@ router.get('/query',common.jwt({credentialsRequired: false}),(req, res, next)=> 
         db.Publications.countDocuments(find).exec((err, count)=>{
             if(err) return next(err);
 
-            if(!req.query.q) return res.json({pubs, count});
-            const queryTokens = req.query.q.toLowerCase().split(" ");
-            
-            pubs.forEach(pub => {
-
-                let tokens = [
-                    pub.name,
-                    pub.desc,
-                    pub.doi,
-                    pub.license,
-                    ...pub.tags,
-                ];
+            // if(!req.query.q) return res.json({pubs, count});
+            let retPubs = pubs;
+            if(req.query.q) {
+                const queryTokens = req.query.q.toLowerCase().split(" ");
+                pubs.forEach(pub => {
+                    let tokens = [
+                        pub.name,
+                        pub.desc,
+                        pub.doi,
+                        pub.license,
+                        ...pub.tags,
+                    ];
                 
-                function addContactTokens(c) {
-                    if(!c) return;
-                    tokens.push(c.fullname);
-                    tokens.push(c.username);
-                    tokens.push(c.email);
-                }
-                if(pub.authors) pub.authors.map(common.deref_contact).forEach(addContactTokens);
-                if(pub.contributors) pub.contributors.map(common.deref_contact).forEach(addContactTokens);
-                if(pub.fundings) {
-                    // should I add mongoID too? 
-                    pub.fundings.forEach(funding=>{
-                        tokens.push(funding.id);
-                        tokens.push(funding.funder);
-                    })
-                }
-                tokens = tokens.filter(thing=>!!thing).map(token=>token.toLowerCase());
-                pub._tokens = tokens.join(" ");
-            });
-
-            const filtered = pubs.filter(pub=>{
-                let match = true;
-                queryTokens.forEach(token=>{
-                    if(!match) return;
-                    if(!pub._tokens.includes(token)) match = false;
+                    function addContactTokens(c) {
+                        if(!c) return;
+                        tokens.push(c.fullname);
+                        tokens.push(c.username);
+                        tokens.push(c.email);
+                    }
+                    if(pub.authors) pub.authors.map(common.deref_contact).forEach(addContactTokens);
+                    if(pub.contributors) pub.contributors.map(common.deref_contact).forEach(addContactTokens);
+                    if(pub.fundings) {
+                        // should I add mongoID too? 
+                        pub.fundings.forEach(funding=>{
+                            tokens.push(funding.id);
+                            tokens.push(funding.funder);
+                        })
+                    }
+                    tokens = tokens.filter(thing=>!!thing).map(token=>token.toLowerCase());
+                    pub._tokens = tokens.join(" ");
                 });
-                return match;
+
+            
+                retPubs = pubs.filter(pub=>{
+                    let match = true;
+                    queryTokens.forEach(token=>{
+                        if(!match) return;
+                        if(!pub._tokens.includes(token)) match = false;
+                    });
+                    return match;
+                });
+                retPubs.forEach(pub=>{ delete pub._tokens; });
+            }
+            //dereference contacts
+            retPubs.forEach(pub=>{
+                pub.authors = pub.authors.map(common.deref_contact).filter(c=>!!c);
+                pub.contributors = pub.contributors.map(common.deref_contact).filter(c=>!!c);
+                console.dir(pub.authors);
             });
-            //remove _tokens from the pubs to reduce returning weight a bit
-            filtered.forEach(pub=>{ delete pub._tokens; });
-            res.json({"pubs" : filtered, "count" : filtered.length});
+            res.json({"pubs" : retPubs, "count" : count});
         });
     });
 });
