@@ -43,18 +43,12 @@ export default {
             this.dragging = true;
             this.offset_x = e.offsetX;
             this.start_x = x - this.splitter_pos;
-            let pageContent = document.querySelectorAll(".page-content");
-            pageContent.forEach(element=>{
-                element.classList.add("disableText");
-            });
+            document.body.classList.add("dragging");
         },
         up(event) {
             if(!this.dragging) return;
             this.dragging = false;
-            let pageContent = document.querySelectorAll(".page-content");
-            pageContent.forEach(element=>{
-                element.classList.remove("disableText");
-            });
+            document.body.classList.remove("dragging");
         },
         move(e) {
             const x = e.clientX || e.touches[0].clientX;
