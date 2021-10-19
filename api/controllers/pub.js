@@ -92,7 +92,6 @@ router.get('/query',common.jwt({credentialsRequired: false}),(req, res, next)=> 
     let find = {removed : false};
     let skip = req.query.skip || 0;
     let limit = req.query.limit || 100;
-    let select = "";
 
     db.Publications.find(find)
     .populate('project', 'avatar')
