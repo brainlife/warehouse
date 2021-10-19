@@ -95,7 +95,7 @@ router.get('/query',common.jwt({credentialsRequired: false}),(req, res, next)=> 
 
     db.Publications.find(find)
     .populate('project', 'avatar')
-    .select(req.query.select || 'name desc') //only select name desc by default
+    .select(req.query.select || 'name desc authors contributors fundings') //only select name desccontrib fundings by default
     .limit(+limit)
     .skip(+skip)
     .sort(req.query.sort || '_id')
