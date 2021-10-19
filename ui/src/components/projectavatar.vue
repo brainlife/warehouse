@@ -1,5 +1,4 @@
 <template>
-<!--<img :style="imgstyle" v-lazy="project.avatar || 'https://api.adorable.io/avatars/'+width+'/'+project._id+'.png'" :width="width" :height="height">-->
 <img :style="imgstyle" v-lazy="project.avatar || 'https://avatars.dicebear.com/api/gridy/'+project._id+'.svg'" :width="width" :height="height"/>
 </template>
 
