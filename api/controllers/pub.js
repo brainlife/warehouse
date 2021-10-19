@@ -153,7 +153,6 @@ router.get('/query',common.jwt({credentialsRequired: false}),(req, res, next)=> 
             retPubs.forEach(pub=>{
                 pub.authors = pub.authors.map(common.deref_contact).filter(c=>!!c);
                 pub.contributors = pub.contributors.map(common.deref_contact).filter(c=>!!c);
-                console.dir(pub.authors);
             });
             res.json({"pubs" : retPubs, "count" : count});
         });
