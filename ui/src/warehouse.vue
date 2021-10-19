@@ -65,7 +65,9 @@ export default {
     color: #444;
     font-size: 14px;
 }
-
+body.dragging {
+    user-select: none;
+}
 .select2-container, 
 .form-control,
 .custom-select {
