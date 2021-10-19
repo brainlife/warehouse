@@ -6,6 +6,9 @@ export default {
     data() {
         return {
             splitter_pos: parseInt(window.localStorage.getItem("splitter_pos"))||600,
+            draggins: false,
+            start_x: 0,
+            offset_x: 0,
         }
     },
     methods: {
@@ -17,26 +20,46 @@ export default {
                 return;
             }
 
-            let start_x;
-            let new_x;
-            let offset_x;
+            //disables context menu for mobile
+            splitter.addEventListener("contextmenu", function(event) {
+                event.preventDefault();
+                event.stopPropagation(); // not necessary in my case, could leave in case stopImmediateProp isn't available? 
+                event.stopImmediatePropagation();
+                return false;
+            });
 
-            splitter.onpointerdown = e=>{
-                splitter.onpointermove = e=>{
-                    new_x = e.clientX + start_x - offset_x*2;
-                    if(new_x < 400) new_x = 400;
-                    this.splitter_pos = new_x;  
-                };
-                splitter.setPointerCapture(e.pointerId);    
-                offset_x = e.offsetX;
-                start_x = e.clientX - this.splitter_pos;
-            };
+            //works on all devices
+            splitter.addEventListener("pointerdown", this.down);
+            //only works on browser
+            window.addEventListener("pointerup", this.up); 
+            window.addEventListener("dragend", this.up); 
+            window.addEventListener("mousemove", this.move); 
 
-            splitter.onpointerup = e=>{
-                window.localStorage.setItem("splitter_pos", this.splitter_pos);
-                splitter.onpointermove = null;
-                splitter.releasePointerCapture(e.pointerId);
-            };
+            //only works on mobile
+            splitter.addEventListener("touchend", this.up); 
+            //only works on mobile
+            splitter.addEventListener("touchmove", this.move); 
+        },
+        
+        down(e) {
+            const x = e.clientX || e.touches[0].clientX;
+            console.log('down', x);
+            this.dragging = true;
+            this.offset_x = e.offsetX;
+            this.start_x = x - this.splitter_pos;
+        },
+
+        up(event) {
+            if(!this.dragging) return;
+            this.dragging = false;
+        },
+
+        move(e) {
+            const x = e.clientX || e.touches[0].clientX;
+            if(!this.dragging) return;
+            let new_x = x + this.start_x - this.offset_x*2;
+            if(new_x < 400) new_x = 400;
+            this.splitter_pos = new_x;  
         },
     }
 }

@@ -329,39 +329,6 @@
                             </tr>
                         </thead>
                         <taskRecord :tasks="tasks" :cols="['branch', 'project', 'status', 'resource', 'submitter', 'dates']"/>
-                        <!--
-                        <tr v-for="task in tasks" :key="task._id">
-                            <td>
-                                <b-badge variant="light">{{task.service_branch}}</b-badge>
-                            </td>
-                            <td style="word-break: break-all;">
-                                <span class="status-color" :class="task.status" style="padding: 3px" :title="task.status">
-                                    <statusicon :status="task.status" /> 
-                                </span>
-                                <small>{{task.status_msg}}</small>
-                                <small style="font-size: 70%">{{task._id}}</small>
-                            </td>
-                            <td>
-                                <span v-if="task._project">{{task._project.name}}</span>
-                                <span v-else style="opacity: 0.7;">(Private)
-                                    <small><icon name="id-badge"/> {{task._group_id}}</small>
-                                </span>
-                            </td>
-                            <td>
-                                <span v-if="task._resource">{{task._resource.name}}</span>
-                                <span v-else style="opacity: 0.7;">(Private)</span>
-                            </td>
-                            <td>
-                                <contact :id="task.user_id" size="small"/>
-                            </td>
-                            <td>
-                                <small v-if="task.status == 'requested'"><time>Requested <timeago :datetime="task.request_date" :auto-update="1"/></time></small>
-                                <small v-else-if="task.status == 'running'"><time>Started <timeago :datetime="task.start_date" :auto-update="1"/></time></small>
-                                <small v-else-if="task.status == 'finished'"><time>Finished <timeago :datetime="task.finish_date" :auto-update="1"/></time></small>
-                                <small v-else-if="task.status == 'failed'"><time>Failed <timeago :datetime="task.fail_date" :auto-update="1"/></time></small>
-                            </td>
-                        </tr>
-                        -->
                     </table>
                 </div>
                 <div v-else style="opacity: 0.7;">
@@ -548,25 +515,7 @@ export default {
                         if(task.resource_id) this.resource_cache(task.resource_id, (err, resource)=>{
                             task._resource = resource;
                         });
-                    });
-
-                    /*
-                    //resolve project names
-                    let gids = this.tasks.map(task=>task._group_id);
-                    let project_find = JSON.stringify({
-                        group_id: {$in: gids},
-                    });
-                    this.$http.get("/project", {params: {find: project_find, select: 'name group_id'}}).then(res=>{
-                        let projects = {};
-                        res.data.projects.forEach(project=>{
-                            projects[project.group_id] = project;
-                        });
-                        this.tasks.forEach(task=>{
-                            task._project = projects[task._group_id];
-                        });
-                    });
-                    */
-                    
+                    });                   
                 }).catch(console.error);
 
                 this.$http.get(Vue.config.amaretti_api+'/service/info', {params: {service: this.app.github}}).then(res=>{

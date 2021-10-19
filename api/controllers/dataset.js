@@ -1262,6 +1262,7 @@ router.get('/download/:id', common.jwt({
             res.status(404).json({message: "couldn't find the dataset specified"});
             return;
         }
+        if(dataset.status != "stored") return next("status it not stored:"+dataset.status);
         if(!dataset.storage) return next("dataset:"+dataset._id+" doesn't have storage field set");
 
         //app-stage can access any dataset

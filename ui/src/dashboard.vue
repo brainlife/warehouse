@@ -17,6 +17,7 @@
                             <th>Service/branch</th>
                             <th>Status</th>
                             <th>Submitter</th>
+                            <th>Resource</th>
                             <th width="150px">Date</th>
                         </tr>
                     </thead>
@@ -44,6 +45,9 @@
                         </td>
                         <td>
                             <contact :id="task.user_id" size="small"/>
+                        </td>
+                        <td>
+                            <span v-if="task._resource">{{task._resource.name}}</span>
                         </td>
                         <td>
                             <small v-if="task.status == 'requested'"><time>Requested <timeago :datetime="task.request_date" :auto-update="1"/></time></small>
@@ -96,6 +100,7 @@ import statusicon from '@/components/statusicon'
 import contact from '@/components/contact'
 
 import authprofilecache from '@/mixins/authprofilecache'
+import resource_cache from '@/mixins/resource_cache'
 
 /*
 import vis from 'vis/dist/vis.min.js'
@@ -105,7 +110,7 @@ import 'vis/dist/vis.min.css'
 const lib = require('@/lib'); //for avatar_url
 
 export default {
-    mixins: [authprofilecache],
+    mixins: [authprofilecache, resource_cache],
     components: { 
         pageheader, 
         statusicon,
@@ -211,7 +216,7 @@ export default {
                 service: {$nin: ["brainlife/app-stage"]},
                 "config._tid": {$exists: true},
             });
-            let select = "user_id status status_msg _group_id service service_branch instance_id start_date finish_date fail_date update_date request_date remove_date config._tid";
+            let select = "user_id status status_msg _group_id service service_branch instance_id start_date finish_date fail_date update_date request_date remove_date config._tid resource_id";
             this.$http.get(Vue.config.amaretti_api+"/task", {params: {find, select, limit: 25, sort: '-create_date'}}).then(res=>{
                 let recent_tasks = res.data.tasks;
 
@@ -227,6 +232,14 @@ export default {
                     });
                     this.recent_tasks = recent_tasks;
                 });
+
+                //lookup resource name
+                recent_tasks.forEach(task=>{
+                    task._resource = {name: "N/A"};
+                    if(task.resource_id) this.resource_cache(task.resource_id, (err, resource)=>{
+                        task._resource = resource;
+                    });
+                });    
             });
         },
     },

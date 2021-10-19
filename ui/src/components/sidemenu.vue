@@ -78,7 +78,7 @@
     <ul class="items items-bottom">
         <li v-if="config.user" id="user-popover">
             <img :src="avatar_url(config.user.profile, 22)" width="18px" class="avatar"/>
-            <h5>{{config.user.profile.fullname}} abrah cadabra hoge</h5>
+            <h5>{{config.user.profile.fullname}}</h5>
             <b-popover target="user-popover" triggers="hover" placement="top">
                  <template v-slot:title>
                     {{config.user.profile.username}}&nbsp;

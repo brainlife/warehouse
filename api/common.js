@@ -1445,7 +1445,7 @@ exports.enumXnatObjects = async (project)=>{
                         datatype: mapping.datatype,
                         datatype_tags: mapping.datatype_tags,
 
-                        desc: (oScan.note||oScan.series_description),
+                        desc: oScan.URI+" "+(oScan.note||oScan.series_description),
                         tags: [oScan.type], //has to exist for ui
 
                         storage: "xnat",
@@ -1649,6 +1649,7 @@ exports.enumXnatObjects = async (project)=>{
 exports.updateXNATObjects = async (objects)=>{
     for(let object of objects) {
         console.log(JSON.stringify(object, null, 4));
+        //TODO - this wipes out any updates made by user for existing object.. maybe I should upsert a bit more manually?
         let res = await db.Datasets.findOneAndUpdate({
             "storage": "xnat",
             "storage_config.url": object.storage_config.url,
