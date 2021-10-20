@@ -336,8 +336,9 @@ if (!Vue.config.debug) {
         //pageTrackerExcludedRotues: ['route_path_value', 'route_name_value'],
         config: { id: process.env.GTAG }
     }, router)
+    console.log("VueGtag", process.env.GTAG);
 } else {
-    console.log("it's running on debug.. skipping using gtag", process.env.GTAG);
+    console.log("it's running on debug.. skipping using gtag");
 }
 
 const soundHost = "https://raw.githubusercontent.com/brainlife/warehouse/master/ui/sounds/";
