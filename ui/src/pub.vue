@@ -40,29 +40,35 @@
                 </div>
 
                 <div v-if="pub.releases.length" class="releases">
-                    <!--<div class="content-header">Contents</div>-->
+                    <!--
                     <div class="content-subheader border-bottom">Releases</div>
+                    -->
                     <div v-for="release in pub.releases" :key="release._id" class="content-item">
                         <small style="float: right">
                             {{new Date(release.create_date).toLocaleDateString()}}
                         </small>
-                        <b-badge @click="jump('release.'+release.name)">{{release.name}}</b-badge>
-                        <p>
-                            <small v-if="release.desc">{{release.desc}}</small>
+                        <div @click="jump('release.'+release.name)" class="clickable border-bottom">Release <b>{{release.name}}</b></div>
+                        <p v-if="release.desc">
+                            <small>{{release.desc}}</small>
                         </p>
-                        <small class="clickable" @click="jump('release.'+release.name+'.data')" v-if="release.sets && release.sets.length">Data ({{release.sets.length}} subjects)</small>
-                        <br>
-                        <small class="clickable" @click="jump('release.'+release.name+'.preprocessing')" v-if="release.apps && release.apps.length">Preprocessing ({{release.apps.length}} apps)</small>
-                        <br>
-                        <small class="clickable" @click="jump('release.'+release.name+'.analysis')" v-if="release.gaarchives && release.gaarchives.length">Analysis ({{release.gaarchives.length}} notebooks)</small>
+                        <div v-if="release.sets && release.sets.length">
+                            <small class="clickable" @click="jump('release.'+release.name+'.data')">
+                                Data ({{release.sets.length}} subjects)
+                            </small>
+                        </div>
+                        <div v-if="release.apps && release.apps.length">
+                            <small class="clickable" @click="jump('release.'+release.name+'.preprocessing')">
+                                Preprocessing ({{release.apps.length}} apps)
+                            </small>
+                        </div>
+                        <div v-if="release.gaarchives && release.gaarchives.length">
+                            <small class="clickable" @click="jump('release.'+release.name+'.analysis')">
+                                Analysis ({{release.gaarchives.length}} notebooks)
+                            </small>
+                        </div>
                     </div>
                 </div>
                 <br>
-
-                <!--
-                <div class="content-subheader">Citation</div>
-                <br>
-                -->
 
                 <div v-if="pub.contributors.length" class="clickable" @click="jump('contributors')">
                     <div class="content-subheader border-bottom">Contributors</div>
