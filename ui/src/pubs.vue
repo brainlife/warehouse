@@ -75,7 +75,6 @@ export default {
                 q: this.query,
             }}).then(res=>{
                 this.pubs = res.data.pubs;
-                console.dir(this.pubs);
                 Vue.nextTick(()=>{
                     console.log("initializing altmetric embed")
                     _altmetric_embed_init(this.$el);

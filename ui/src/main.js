@@ -331,15 +331,15 @@ router.beforeEach(function (to, from, next) {
     next();
 });
 
-if (!Vue.config.debug) {
-    Vue.use(VueGtag, { 
-        //pageTrackerExcludedRotues: ['route_path_value', 'route_name_value'],
-        config: { id: process.env.GTAG }
-    }, router)
-    console.log("VueGtag", process.env.GTAG);
-} else {
-    console.log("it's running on debug.. skipping using gtag");
-}
+Vue.use(VueGtag, { 
+    //pageTrackerExcludedRotues: ['route_path_value', 'route_name_value'],
+    appName: "brainlife.io",
+    config: { 
+        id: process.env.GTAG,
+        //send_page_view: true,
+     }
+}, router)
+console.log(process.env.GTAG);
 
 const soundHost = "https://raw.githubusercontent.com/brainlife/warehouse/master/ui/sounds/";
 
