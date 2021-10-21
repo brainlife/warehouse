@@ -534,7 +534,9 @@ var datasetSchema = mongoose.Schema({
     create_date: { type: Date, default: Date.now }, //date when this dataset was registered
     backup_date: Date, //date when this dataset was copied to the SDA (not set if it's not yet backed up)
     remove_date: Date, //date when this dataset was removed
-    update_date: { type: Date }, //date which this document was last updated (used by rule handler, and to see when this dataset was last downloaded / used /touched, etc..)
+
+    //date which this document was last updated (used by rule handler, and to see when this dataset was last downloaded / used /touched, etc..)
+    update_date: { type: Date, default: Date.now }, 
 
     removed: { type: Boolean, default: false },
 
@@ -551,14 +553,6 @@ datasetSchema.post('validate', function() {
     }
 });
 
-//TODO - I think it's better to have each model handle this as it's not transparent when/which middleware hooks gets called
-/*
-datasetSchema.post('save', exports.dataset_event);
-datasetSchema.post('updateOne', exports.dataset_event);
-datasetSchema.post('findOneAndUpdate', exports.dataset_event);
-datasetSchema.post('findOneAndRemove', exports.dataset_event);
-datasetSchema.post('remove', exports.dataset_event);
-*/
 datasetSchema.pre('save', function(next) {
     console.log("updating dataset....................................", this._id);
     this.update_date = new Date;
