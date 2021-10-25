@@ -8,6 +8,7 @@ mongoose.set("debug", config.mongoose_debug);
 
 exports.init = (cb)=>{
     mongoose.connect(config.mongodb, {
+        //TODO - move to config
         readPreference: 'nearest',
         readConcern: {
             level: 'majority',//prevents read to grab stale data from secondary

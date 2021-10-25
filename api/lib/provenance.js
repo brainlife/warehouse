@@ -141,6 +141,8 @@ exports.traverseProvenance = async (startTaskId) => {
                 if(dep.subdirs) dep.subdirs.forEach(subdir=>{
                     node.inputs.push({task: dep.task, subdir: subdir});
                 });
+                //if deps_config doesn't specify any subdir, let's add task input with the whole root directory
+                if(node.inputs.length == 0) node.inputs.push({task: dep.task});
             });            
         }
 
