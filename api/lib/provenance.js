@@ -61,6 +61,12 @@ exports.traverseProvenance = async (startTaskId) => {
         if(res.status != "200") throw "failed to query task:"+taskId;
         if(res.data.tasks.length != 1) throw "couldn't find exactly 1 task. len="+res.data.tasks.length;
         const task = res.data.tasks[0];
+
+        if(task.service == "brainlife/app-noop") {
+            //noop doesn't have config.. let's fake it so we can go ahead and register it
+            task.config = {};
+        }
+
         if(!task.config) {
             console.error("task", taskId, "doesn't have config");
             return;
@@ -149,7 +155,7 @@ exports.traverseProvenance = async (startTaskId) => {
             });            
         }
 
-        if(task.config && task.config._inputs) task.config._inputs.forEach(input=>{
+        if(task.config._inputs) task.config._inputs.forEach(input=>{
             node.inputs.push({
                 task: input.task_id,
                 subdir: input.subdir,
@@ -158,7 +164,7 @@ exports.traverseProvenance = async (startTaskId) => {
         });
 
         //staging and nornmal task should have config._outputs
-        if(task.config && task.config._outputs) task.config._outputs.forEach(output=>{
+        if(task.config._outputs) task.config._outputs.forEach(output=>{
             const outputNodeIdx = nodes.length;
             nodes.push({
                 idx: outputNodeIdx,
