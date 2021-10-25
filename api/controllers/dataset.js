@@ -783,16 +783,19 @@ function generate_prov(origin_dataset_id, cb) {
                     if(task.config._inputs.length > 1) input_name = input.id; //what is this?
                     load_stage("task."+task._id, input_name, input.dataset_id||input._id||input.subdir, next_dep);
                 } else if(dep_task.service.startsWith("brainlife/validator-")) {
-                    //const validator_input = dep_task.config._inputs[0];
-                    const validator_input = dep_task.deps_config[0].subdir[0];
-                    let datatype = datatypes_cache[input.datatype];
-                    if(!datatype) datatype = {name: "unknown "+input.datatype};
-                    edges.push({
-                        to: "task."+task._id,
-                        from: "task."+validator_input.task_id,
-                        arrows: "to",
-                        label: input.id+": "+datatype.name+" ["+input.datatype_tags.join(",")+"]",
-                    });
+                    let inputTaskId;
+                    if(dep_task.config._inputs) inputTaskId = dep_task.config._inputs[0].task_id;
+                    else if(dep_task.deps_config) inputTaskId = dep_task.deps_config[0].task;
+                    if(inputTaskId) {
+                        let datatype = datatypes_cache[input.datatype];
+                        if(!datatype) datatype = {name: "unknown "+input.datatype};
+                        edges.push({
+                            to: "task."+task._id,
+                            from: "task."+inputTaskId,
+                            arrows: "to",
+                            label: input.id+": "+datatype.name+" ["+input.datatype_tags.join(",")+"]",
+                        });
+                    }
                     load_task_prov(dep_task, next_dep); //recurse to its deps
                 } else {
                     //task2task
