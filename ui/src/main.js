@@ -142,7 +142,7 @@ import VueTimeago from 'vue-timeago'
 import SocialSharing from 'vue-social-sharing';
 
 //import VueAnalytics from 'vue-analytics'
-import VueGtag from 'vue-tag'
+import VueGtag from 'vue-gtag'
 
 import axios from 'axios'
 import VueAxios from 'vue-axios'
