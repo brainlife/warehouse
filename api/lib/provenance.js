@@ -68,8 +68,8 @@ exports.traverseProvenance = async (startTaskId) => {
                 _outputs: [{
                     id: "noop",
                     //datatype: "59c3eae633fc1cf9ead71679", //raw..
-                    datatype_tags: [],
-                    tags: [],
+                    //datatype_tags: [],
+                    //tags: [],
                 }],
             };
         }
@@ -104,7 +104,7 @@ exports.traverseProvenance = async (startTaskId) => {
         if(task.service == "brainlife/app-archive") {
             for await (const datasetConfig of task.config.datasets) {
                 //figure out input task/subdir (../60874c557f09362173e40866/bold_mask)
-                const id = datasetConfig.dataset_id;
+                let id = datasetConfig.dataset_id;
 
                 //we used to store the whole dataset object instead of dataset_id
                 if(!id && datasetConfig.dataset) id = datasetConfig.dataset._id;
