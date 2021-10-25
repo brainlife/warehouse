@@ -64,7 +64,14 @@ exports.traverseProvenance = async (startTaskId) => {
 
         if(task.service == "brainlife/app-noop") {
             //noop doesn't have config.. let's fake it so we can go ahead and register it
-            task.config = {};
+            task.config = {
+                _outputs: [{
+                    id: "noop",
+                    //datatype: "59c3eae633fc1cf9ead71679", //raw..
+                    datatype_tags: [],
+                    tags: [],
+                }],
+            };
         }
 
         if(!task.config) {
@@ -97,8 +104,13 @@ exports.traverseProvenance = async (startTaskId) => {
         if(task.service == "brainlife/app-archive") {
             for await (const datasetConfig of task.config.datasets) {
                 //figure out input task/subdir (../60874c557f09362173e40866/bold_mask)
-                const dataset = await db.Datasets.findById(datasetConfig.dataset_id).lean();
-                if(!dataset) continue;
+                const id = datasetConfig.dataset_id;
+
+                //we used to store the whole dataset object instead of dataset_id
+                if(!id && datasetConfig.dataset) id = datasetConfig.dataset._id;
+
+                const dataset = await db.Datasets.findById(id).lean();
+                //if(!dataset) continue;
                 const datasetNodeIdx = registerDataset(dataset);
                 edges.push({
                     from: nodeIdx, 
@@ -113,7 +125,7 @@ exports.traverseProvenance = async (startTaskId) => {
             for await (const datasetConfig of task.config.datasets) {
                 //look for archived task that archived the data object
                 const dataset = await db.Datasets.findById(datasetConfig.id).lean();
-                if(!dataset) continue;
+                //if(!dataset) continue;
                 if(dataset.archive_task_id) {
                     tasks.push(dataset.archive_task_id);
                 }
@@ -129,7 +141,7 @@ exports.traverseProvenance = async (startTaskId) => {
         if(task.service == "soichih/sca-product-raw") {
             for await (const datasetConfig of task.config.download) {
                 const dataset = await db.Datasets.findById(datasetConfig.dir).lean();
-                if(!dataset) continue;
+                //if(!dataset) continue;
                 //TODO - old dataset (like dev:5a2199f06fb74f6eefd5ad5c) didn't have archive_task_id
                 //do I need to find the archive task? or should I skip archive task and directly go
                 //for prov task?
