@@ -853,19 +853,22 @@ export default {
                     this.load_resource();
                     this.load_secondary();
                 }
-            }
+            } 
 
             /////////////////////////////////////////////////////////////////////////////
 
             // load follow_task if set
-            if(this.dataset.prov.task && this.dataset.prov.task.follow_task_id) {
-                console.log("loading follow_task");
-                const taskRes = await this.$http.get(Vue.config.amaretti_api+'/task', {params: {
-                    find: JSON.stringify({ 
-                        _id: this.dataset.prov.task.follow_task_id,
-                    }),
-                }});
-                this.followTask = taskRes.data.tasks[0];
+            if(this.dataset.prov) { 
+                //TODO - for old task, prov.task is loaded asynchronously above.. so I should wait to do this?
+                if(this.dataset.prov.task && this.dataset.prov.task.follow_task_id) {
+                    console.log("loading follow_task");
+                    const taskRes = await this.$http.get(Vue.config.amaretti_api+'/task', {params: {
+                        find: JSON.stringify({ 
+                            _id: this.dataset.prov.task.follow_task_id,
+                        }),
+                    }});
+                    this.followTask = taskRes.data.tasks[0];
+                }
             }
 
             /////////////////////////////////////////////////////////////////////////////

@@ -1,6 +1,5 @@
 
-//TODO switch to axios!
-const request = require('request');
+const request = require('request'); //TODO switch to axios!
 const rp = require('request-promise-native');
 const keywordEx = require("keyword-extractor");
 const tmp = require('tmp');
@@ -18,11 +17,6 @@ const config = require('./config');
 const db = require('./models');
 const mongoose = require('mongoose');
 
-
-
-//TODO - user needs to call redis.quit() to quit?
-//exports.redis = redis.createClient(config.redis.port, config.redis.server);
-//exports.redis.on('error', err=>{throw err});
 exports.connectRedis = function() {
     const con = redis.createClient(config.redis.port, config.redis.server);
     con.on('error', console.error);
@@ -117,9 +111,7 @@ function register_dataset(task, output, product, cb) {
         datatype: output.datatype,
         datatype_tags: product.datatype_tags,
 
-        //status: "waiting",
         status_msg: "Waiting for the archiver ..",
-        //product: escape_dot(product),
 
         prov: {
             //only store the most important things
@@ -473,7 +465,6 @@ exports.updateRelatedPaperMag = function(rec,cb) {
     let keywords = keywordEx.extract(str,{
         language:"english",
         remove_digits: true,
-        //return_changed_case: true,
         return_chaned_words: true,
         remove_duplicates: true,
     });

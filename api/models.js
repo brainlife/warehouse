@@ -554,7 +554,6 @@ datasetSchema.post('validate', function() {
 });
 
 datasetSchema.pre('save', function(next) {
-    console.log("updating dataset....................................", this._id);
     this.update_date = new Date;
     next();
 });
@@ -816,9 +815,7 @@ ruleSchema.post('findOneAndRemove', exports.rule_event);
 ruleSchema.post('remove', exports.rule_event);
 */
 
-//TODO not tested
 ruleSchema.pre('save', function(next) {
-    //console.log("updating rule....................................", this._id);
     this.update_date = new Date;
     next();
 });

@@ -782,8 +782,9 @@ function generate_prov(origin_dataset_id, cb) {
                     let input_name = null;
                     if(task.config._inputs.length > 1) input_name = input.id; //what is this?
                     load_stage("task."+task._id, input_name, input.dataset_id||input._id||input.subdir, next_dep);
-                } else if(dep_task.service.startsWith("brainlife/validator")) {
-                    const validator_input = dep_task.config._inputs[0];
+                } else if(dep_task.service.startsWith("brainlife/validator-")) {
+                    //const validator_input = dep_task.config._inputs[0];
+                    const validator_input = dep_task.deps_config[0].subdir[0];
                     let datatype = datatypes_cache[input.datatype];
                     if(!datatype) datatype = {name: "unknown "+input.datatype};
                     edges.push({

@@ -339,7 +339,6 @@ Vue.use(VueGtag, {
         //send_page_view: true,
      }
 }, router)
-console.log(process.env.GTAG);
 
 const soundHost = "https://raw.githubusercontent.com/brainlife/warehouse/master/ui/sounds/";
 
