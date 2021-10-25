@@ -693,7 +693,8 @@ function generate_prov(origin_dataset_id, cb) {
                     label: compose_label(task),
                 }, taskInfo(task)));
 
-                let edge_label = datatypes_cache[dataset.datatype].name+" ["+dataset.datatype_tags.join(",")+"]";
+                let edge_label = datatypes_cache[dataset.datatype].name;
+                edge_label +=" "+dataset.datatype_tags.map(dt=>"<"+dt+">").join(" ");
                 let archived_dataset_id = null;
                 if(defer) {
                     let label_parts = defer.node.label.split("\n");

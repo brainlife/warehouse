@@ -34,21 +34,30 @@
                             </tr>
                             <tr>
                                 <th>Created</th>
-                                <td>{{new Date(this.task.create_date).toLocaleString()}}</td>
+                                <td>{{new Date(task.create_date).toLocaleString()}}</td>
                             </tr>
                             <tr v-if="task.start_date">
                                 <th>Started</th>
-                                <td>{{new Date(this.task.start_date).toLocaleString()}}</td>
+                                <td>
+                                    {{new Date(task.start_date).toLocaleString()}}
+                                    (<timeago :datetime="task.start_date" :auto-update="1"/>)
+                                </td>
                             </tr>
                             <tr v-if="task.finish_date">
                                 <th>Finished</th>
-                                <td>{{new Date(this.task.finish_date).toLocaleString()}} 
-                                    <span class="text-muted"> (runtime {{getruntime}})</span>
+                                <td>
+                                    {{new Date(task.finish_date).toLocaleString()}}
                                 </td>
+                            </tr>
+                            <tr v-if="task.finish_date">
+                                <th>Runtime</th>
+                                <td>
+                                    {{getruntime}}
+                                </td>   
                             </tr>
                             <tr v-if="task.fail_date">
                                 <th>Failed</th>
-                                <td>{{new Date(this.task.fail_date).toLocaleString()}}</td>
+                                <td>{{new Date(task.fail_date).toLocaleString()}}</td>
                             </tr>
                             <tr v-if="task.nice">
                                 <th>Nice</th>
@@ -553,7 +562,7 @@ export default {
             }
         },
         */
-       getruntime() {
+        getruntime() {
             let diff = new Date(new Date(this.task.finish_date) - new Date(this.task.start_date));
             return diff.toISOString().substr(11, 8);
        }
