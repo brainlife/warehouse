@@ -92,6 +92,7 @@ exports.traverseProvenance = async (startTaskId) => {
             for await (const datasetConfig of task.config.datasets) {
                 //figure out input task/subdir (../60874c557f09362173e40866/bold_mask)
                 const dataset = await db.Datasets.findById(datasetConfig.dataset_id).lean();
+                if(!dataset) continue;
                 const datasetNodeIdx = registerDataset(dataset);
                 edges.push({
                     from: nodeIdx, 
@@ -106,6 +107,7 @@ exports.traverseProvenance = async (startTaskId) => {
             for await (const datasetConfig of task.config.datasets) {
                 //look for archived task that archived the data object
                 const dataset = await db.Datasets.findById(datasetConfig.id).lean();
+                if(!dataset) continue;
                 if(dataset.archive_task_id) {
                     tasks.push(dataset.archive_task_id);
                 }
@@ -121,6 +123,7 @@ exports.traverseProvenance = async (startTaskId) => {
         if(task.service == "soichih/sca-product-raw") {
             for await (const datasetConfig of task.config.download) {
                 const dataset = await db.Datasets.findById(datasetConfig.dir).lean();
+                if(!dataset) continue;
                 //TODO - old dataset (like dev:5a2199f06fb74f6eefd5ad5c) didn't have archive_task_id
                 //do I need to find the archive task? or should I skip archive task and directly go
                 //for prov task?
@@ -228,11 +231,16 @@ exports.findTerminalTasks = async (appId)=>{
     if(res.status != "200") throw "failed to query task:"+taskId;
 
     const provs = [];
+    /*
     for await (const group of res.data) {
         console.log("group_id", group._id);
         for await (const taskId of group.taskIds) {
             provs.push(await exports.traverseProvenance(taskId));
         }
+    }
+    */
+    for await (const sample of res.data) {
+        provs.push(await exports.traverseProvenance(sample._id));
     }
     return provs;
 }
