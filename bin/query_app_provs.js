@@ -12,14 +12,29 @@ db.init(async function(err) {
 });
 
 async function run() {
+
+    const old = new Date();
+    old.setDate(-10);
+
     const apps = db.Apps.find({removed: false}).lean();
     for await (const app of apps) {
-        console.log(app._id, app.name, "---------------------------");
+        const filename = outputDir+"/app-"+app._id+".provs.json";
+        console.log(app._id.toString(), app.name, filename, "---------------------------");
+        try {
+            const stat = fs.statSync(filename);
+            console.log("mtime", stat.mtime);
+            if(new Date(stat.mtime) > old) {
+                console.log("recently processed prov file exists.. skipping");
+                continue;
+            }
+        } catch (err) {
+            //maybe not yet generated.. no worry..
+        }
+
         const provs = await provenance.findTerminalTasks(app._id);
         if(!provs.length) {
             console.log("no prov.. skipping saving");
         }
-        const filename = outputDir+"/app-"+app._id+".provs.json";
         console.log("saving ",provs.length,"provs",filename);
         fs.writeFileSync(filename, JSON.stringify(provs, null, 4));
     }
