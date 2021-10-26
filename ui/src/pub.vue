@@ -275,10 +275,12 @@
                         </b-col>
                         <b-col>
                             <div v-for="funding in pub.fundings" :key="funding._id" class="funder">
+                                <a :href="redirect(funding)">
                                 <div v-if="funding.funder == 'NSF'" class="funder-label bg-success">NSF</div>
                                 <div v-else-if="funding.funder == 'NIH'" class="funder-label bg-info">NIH</div>
                                 <div v-else class="funder-label bg-warning">{{funding.funder}}</div>
                                 {{funding.id}}
+                                </a>
                             </div>
                             <br>
                             <br>
@@ -360,7 +362,7 @@ export default {
     computed: {
         sortedPapers : function() {
             return this.pub.relatedPapers.sort((a,b)=> b.citationCount - a.citationCount );
-        }
+        },
     },
 
     //https://help.altmetric.com/support/solutions/articles/6000141419-what-metadata-is-required-to-track-our-content-
@@ -463,6 +465,11 @@ export default {
 
         openproject(project_id) {
             this.$router.push('/project/'+project_id);
+        },
+
+        redirect(funding) {
+            if(funding.funder =='NSF') return "https://www.nsf.gov/awardsearch/showAward?AWD_ID="+funding.id.slice(funding.id.lastIndexOf('-') +1);
+            if(funding.funder =='NIH') return "https://reporter.nih.gov/project-details/"+funding.id.slice(funding.id.lastIndexOf('U'));
         },
 
         /*
