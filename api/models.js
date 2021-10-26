@@ -524,7 +524,8 @@ var datasetSchema = mongoose.Schema({
     status: { type: String, default: "storing" },
     status_msg: String,
 
-    archive_task_id: String, //amaretti task that was used to archive the data
+    //amaretti task that was used to archive the data
+    archive_task_id: {type: String, index: true}, 
 
     //TODO..
     //validator_task_id: String, //task id for dtv used to validate the output

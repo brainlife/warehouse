@@ -109,8 +109,18 @@ exports.traverseProvenance = async (startTaskId) => {
                 //we used to store the whole dataset object instead of dataset_id
                 if(!id && datasetConfig.dataset) id = datasetConfig.dataset._id;
 
-                const dataset = await db.Datasets.findById(id).lean();
-                //if(!dataset) continue;
+                let dataset;
+                if(id) dataset = await db.Datasets.findById(id).lean();
+
+                //really old app-archive didn't store dataset_id in datasetConfig.. 
+                //but if there is only 1 we can look up dataset's archive_task_id
+                if(!id && task.config.datasets.length == 1) {
+                    dataset = await db.Datasets.findOne({archive_task_id: task._id}).lean();
+                }
+                if(!dataset) {
+                    console.error("couldn't find dataset in task:", task._id, datasetConfig);
+                    continue;
+                }
                 const datasetNodeIdx = registerDataset(dataset);
                 edges.push({
                     from: nodeIdx, 
@@ -126,7 +136,7 @@ exports.traverseProvenance = async (startTaskId) => {
                 //look for archived task that archived the data object
                 const dataset = await db.Datasets.findById(datasetConfig.id).lean();
                 if(!dataset) {
-                    console.error("couldn't find", datasetConfig.id, "in task", task._id);
+                    console.error("couldn't find", datasetConfig.id, "in task:", task._id, datasetConfig);
                     continue;
                 }
                 if(dataset.archive_task_id) {

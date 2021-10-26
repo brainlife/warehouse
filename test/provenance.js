@@ -47,6 +47,7 @@ describe('query provenance', ()=>{
         //http://localhost:8080/app/5e18caba6db0cc04b44c60d5 (fmriprep)
         //5e88c72d952fefe0a07abfb6 (generate images of t1)
         provenance.findTerminalTasks("5e88c72d952fefe0a07abfb6").then(provs=>{
+            console.dir(provs[0]);
             done();
         }); 
     });
