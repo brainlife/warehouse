@@ -125,7 +125,10 @@ exports.traverseProvenance = async (startTaskId) => {
             for await (const datasetConfig of task.config.datasets) {
                 //look for archived task that archived the data object
                 const dataset = await db.Datasets.findById(datasetConfig.id).lean();
-                //if(!dataset) continue;
+                if(!dataset) {
+                    console.error("couldn't find", datasetConfig.id, "in task", task._id);
+                    continue;
+                }
                 if(dataset.archive_task_id) {
                     tasks.push(dataset.archive_task_id);
                 }
@@ -242,9 +245,7 @@ exports.findTerminalTasks = async (appId)=>{
     });
     */
     const res = await axios.get(config.amaretti.api+'/task/samples/'+appId, {
-        params: {
-            appId,
-        }
+        headers: { authorization: "Bearer "+config.warehouse.jwt },
     });
     if(res.status != "200") throw "failed to query task:"+taskId;
 

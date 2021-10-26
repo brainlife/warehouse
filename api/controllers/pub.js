@@ -239,8 +239,10 @@ router.post('/', common.jwt(), (req, res, next)=>{
         //mint new doi - get next doi id - use number of publication record with doi (brittle?)
         db.Publications.countDocuments({doi: {$exists: true}}).exec((err, count)=>{
             if(err) return next(err);
-            let doi = config.datacite.prefix+"pub."+count; //TODO - should make the "shoulder" configurable?
-            pub.doi = doi;
+            if(config.datacite) {
+                let doi = config.datacite.prefix+"pub."+count; //TODO - should make the "shoulder" configurable?
+                pub.doi = doi;
+            }
             pub.save(err=>{
                 if(err) return next(err);
                 //return to the caller already
@@ -248,7 +250,7 @@ router.post('/', common.jwt(), (req, res, next)=>{
 
                 //post metadata to datacite and set url
                 let metadata = common.compose_pub_datacite_metadata(pub);
-                common.doi_post_metadata(metadata, err=>{
+                if(config.datacite) common.doi_post_metadata(metadata, err=>{
                     if(err) return next(err);
                     //then attach url to it (to "mint" it!)
                     let url = config.warehouse.url+"/pub/"+pub._id;  //TODO make it configurable?
