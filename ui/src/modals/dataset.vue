@@ -2,7 +2,7 @@
 <transition name="fade">
 <div v-if="dataset" class="brainlife-modal-overlay">
     <b-container class="brainlife-modal">
-        <div class="brainlife-modal-header">
+        <div class="brainlife-modal-header" v-if="!dataset.removed">
             <div class="brainlife-modal-header-buttons" style="margin-left: 10px;">
                 <b-dropdown text="Download" v-if="dataset.storage" variant="outline-secondary" size="sm">
                     <b-dropdown-item @click="download">This Data-Object <small v-if="dataset.size">({{dataset.size|filesize}})</small></b-dropdown-item>
@@ -15,7 +15,7 @@
                     </b-dropdown-item>
                     <b-dropdown-item v-if="dataset.prov" @click="download_boutique">Boutique descriptor (experimental)</b-dropdown-item>
                 </b-dropdown>
-                <div class="button" @click="remove" v-if="dataset._canedit && !dataset.removed" title="Remove Data-object">
+                <div class="button" @click="remove" v-if="dataset._canedit" title="Remove Data-object">
                     <icon name="trash" scale="1.1"/>
                 </div>
                 <div class="button" @click="copy" v-if="dataset.storage" title="Copy">

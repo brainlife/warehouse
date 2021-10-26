@@ -157,7 +157,10 @@ exports.traverseProvenance = async (startTaskId) => {
         if(task.service == "soichih/sca-product-raw") {
             for await (const datasetConfig of task.config.download) {
                 const dataset = await db.Datasets.findById(datasetConfig.dir).lean();
-                //if(!dataset) continue;
+                if(!dataset) {
+                    console.error("couldn't find sca-product-raw dataset:", datasetConfig.dir, "in task:", task._id);
+                    continue;
+                }
                 //TODO - old dataset (like dev:5a2199f06fb74f6eefd5ad5c) didn't have archive_task_id
                 //do I need to find the archive task? or should I skip archive task and directly go
                 //for prov task?
@@ -257,20 +260,14 @@ exports.findTerminalTasks = async (appId)=>{
         headers: { authorization: "Bearer "+config.warehouse.jwt },
     });
     */
+    console.debug("querying sample tasks")
     const res = await axios.get(config.amaretti.api+'/task/samples/'+appId, {
         headers: { authorization: "Bearer "+config.warehouse.jwt },
     });
     if(res.status != "200") throw "failed to query task:"+taskId;
+    console.debug("got", res.data.lengthm,"samples");
 
     const provs = [];
-    /*
-    for await (const group of res.data) {
-        console.log("group_id", group._id);
-        for await (const taskId of group.taskIds) {
-            provs.push(await exports.traverseProvenance(taskId));
-        }
-    }
-    */
     for await (const sample of res.data) {
         provs.push(await exports.traverseProvenance(sample._id));
     }
