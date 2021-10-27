@@ -9,6 +9,7 @@ mongoose.set("debug", config.mongoose_debug);
 exports.init = (cb)=>{
     mongoose.connect(config.mongodb, {
         //TODO - move to config
+        /*
         readPreference: 'nearest',
         readConcern: {
             level: 'majority',//prevents read to grab stale data from secondary
@@ -16,6 +17,7 @@ exports.init = (cb)=>{
         writeConcern: {
             w: 'majority', //isn't this the default?
         },
+        */
         useNewUrlParser: true,
         useUnifiedTopology: true,
     }, err=>{

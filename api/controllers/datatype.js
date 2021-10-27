@@ -31,10 +31,9 @@ const common = require('../common');
  */
 router.get('/', common.jwt({credentialsRequired: false}), (req, res, next)=>{
     var find = {};
-    var skip = req.query.skip || 0;
-    var limit = req.query.limit || 100;
+	var skip = req.query.skip || 0;
+	var limit = req.query.limit || 100;
     if(req.query.find) find = JSON.parse(req.query.find);
-    console.log("using query", find);
     db.Datatypes.find(find)
     .select(req.query.select)
     .populate('uis') //why?
