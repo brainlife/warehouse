@@ -59,7 +59,10 @@ exports.traverseProvenance = async (startTaskId) => {
             headers: { authorization: "Bearer "+config.warehouse.jwt },
         });
         if(res.status != "200") throw "failed to query task:"+taskId;
-        if(res.data.tasks.length != 1) throw "couldn't find exactly 1 task. len="+res.data.tasks.length;
+        if(res.data.tasks.length != 1) {
+            console.log("couldn't find task", taskId);
+            return;
+        }
         const task = res.data.tasks[0];
 
         if(task.service == "brainlife/app-noop") {
@@ -103,34 +106,48 @@ exports.traverseProvenance = async (startTaskId) => {
        
         if(task.service == "brainlife/app-archive") {
             for await (const datasetConfig of task.config.datasets) {
+
+                const dirTokens = datasetConfig.dir.split("/");
+                const sourceTask = dirTokens[1];
+                const subdir = dirTokens[2];
+
                 //figure out input task/subdir (../60874c557f09362173e40866/bold_mask)
                 let id = datasetConfig.dataset_id;
 
                 //we used to store the whole dataset object instead of dataset_id
                 if(!id && datasetConfig.dataset) id = datasetConfig.dataset._id;
 
+                //if we have the id, we can look up the dataset now
                 let dataset;
-                if(id) {
-                    dataset = await db.Datasets.findById(id).lean();
+                if(id) dataset = await db.Datasets.findById(id).lean();
+
+                //but.. really old app-archive didn't store dataset_id in datasetConfig.. 
+                //so we need to look up dataset using archive_task_id
+                if(!id) {
+                    dataset = await db.Datasets.findOne({
+                        archive_task_id: task._id,
+                        //there might be more than 1 so look for the right one
+                        "prov.task.subdir": subdir, 
+                    }).lean();
+                    id = dataset._id;
                 }
 
-                //really old app-archive didn't store dataset_id in datasetConfig.. 
-                //but if there is only 1 we can look up dataset's archive_task_id
-                if(!id && task.config.datasets.length == 1) {
-                    dataset = await db.Datasets.findOne({archive_task_id: task._id}).lean();
+                if(!id) {
+                    console.error("couldn't find dataset id for app-archive's datasetConfig", task._id, datasetConfig);
+                    continue;
                 }
 
                 if(!dataset) {
                     console.error("couldn't find dataset(removed?) in task:", task._id, datasetConfig, "faking");
                     dataset = {_id: id, missing: true};
                 }
+
                 const datasetNodeIdx = registerDataset(dataset);
                 edges.push({
                     from: nodeIdx, 
                     to: datasetNodeIdx, 
                 });
-                const tokens = datasetConfig.dir.split("/");
-                node.inputs.push({task: tokens[1], subdir: tokens[2]});
+                node.inputs.push({task: sourceTask, subdir});
             }
         }
 
@@ -244,22 +261,7 @@ exports.traverseProvenance = async (startTaskId) => {
 }
     
 //find app tasks that has no following tasks (end of the workflow)
-exports.findTerminalTasks = async (appId)=>{
-    /*  
-    const res = await axios.get(config.amaretti.api+'/task', {
-        params: {
-            find: JSON.stringify({
-                finish_date: {$exists: true},              
-                //"config._app": {$exists: true},
-                "config._app": appId,
-            }),
-            limit: 100,
-            sort: '-finish_date',
-            select: '_id service finish_date _group_id',
-        },
-        headers: { authorization: "Bearer "+config.warehouse.jwt },
-    });
-    */
+exports.sampleTerminalTasks = async (appId)=>{
     console.debug("querying sample tasks")
     const res = await axios.get(config.amaretti.api+'/task/samples/'+appId, {
         headers: { authorization: "Bearer "+config.warehouse.jwt },

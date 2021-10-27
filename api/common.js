@@ -1308,6 +1308,7 @@ exports.list_users = async ()=>{
     return lists;
 }
 
+//https://github.com/brainlife/brainlife/issues/96
 exports.aggregateDatasetsByApps = query=>{
     return new Promise((resolve, reject)=>{
         query["prov.task.config._app"] = {$exists: true};
