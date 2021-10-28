@@ -66,16 +66,15 @@ exports.traverseProvenance = async (startTaskId) => {
         const task = res.data.tasks[0];
 
         if(task.service == "brainlife/app-noop") {
-            //old noop doesn't have config.. let's fake it so we can go ahead and register it
-            if(!task.config) {
-                task.config = {
-                    _outputs: [{
-                        id: "noop",
-                        //datatype: "59c3eae633fc1cf9ead71679", //raw..
-                        //datatype_tags: [],
-                        //tags: [],
-                    }],
-                };
+            if(!task.config) task.config = {};
+            if(!task.config._outputs) {
+                console.log("noop task", task._id, "doesn't have config set.. faking");
+                task.config._outputs = [{
+                    id: "noop",
+                    datatype: "59c3eae633fc1cf9ead71679", //raw?
+                    datatype_tags: [],
+                    tags: [],
+                }];
             }
         }
 
@@ -273,6 +272,8 @@ exports.traverseProvenance = async (startTaskId) => {
         });
     });
 
+    console.debug("  nodes:", nodes.length," edges:", edges.length);
+
     return {nodes, edges}
 }
     
@@ -311,7 +312,7 @@ exports.simplifyProvenance = (prov, opts)=>{
         return prov.edges.filter(edge=>(edge.from == nodeIdx)).map(edge=>edge.to);
     } 
     function findEdge(from, to) {
-            return prov.edges.findIndex(edge=>(edge.from == from && edge.to == to));
+        return prov.edges.findIndex(edge=>(edge.from == from && edge.to == to));
     }
 
     if(opts.validator) {
