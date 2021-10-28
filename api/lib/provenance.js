@@ -66,15 +66,17 @@ exports.traverseProvenance = async (startTaskId) => {
         const task = res.data.tasks[0];
 
         if(task.service == "brainlife/app-noop") {
-            //noop doesn't have config.. let's fake it so we can go ahead and register it
-            task.config = {
-                _outputs: [{
-                    id: "noop",
-                    //datatype: "59c3eae633fc1cf9ead71679", //raw..
-                    //datatype_tags: [],
-                    //tags: [],
-                }],
-            };
+            //old noop doesn't have config.. let's fake it so we can go ahead and register it
+            if(!task.config) {
+                task.config = {
+                    _outputs: [{
+                        id: "noop",
+                        //datatype: "59c3eae633fc1cf9ead71679", //raw..
+                        //datatype_tags: [],
+                        //tags: [],
+                    }],
+                };
+            }
         }
 
         if(!task.config) {
