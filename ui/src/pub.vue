@@ -275,7 +275,7 @@
                         </b-col>
                         <b-col>
                             <div v-for="funding in pub.fundings" :key="funding._id" class="funder">
-                                <a :href="redirect(funding)">
+                                <a :href="redirect(funding)" class="fundingLabel">
                                 <div v-if="funding.funder == 'NSF'" class="funder-label bg-success">NSF</div>
                                 <div v-else-if="funding.funder == 'NIH'" class="funder-label bg-info">NIH</div>
                                 <div v-else class="funder-label bg-warning">{{funding.funder}}</div>
@@ -528,6 +528,9 @@ transition: 0.5s color;
 }
 .social-buttons span[data-link]:hover svg {
 color: white;
+}
+.fundingLabel:hover,active,visited{
+    text-decoration-line:none;
 }
 </style>
 
