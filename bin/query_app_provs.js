@@ -31,10 +31,18 @@ async function run() {
             //maybe not yet generated.. no worry..
         }
 
-        const provs = await provenance.findTerminalTasks(app._id);
+        const provs = await provenance.sampleTerminalTasks(app._id);
         if(!provs.length) {
             console.log("no prov.. skipping saving");
         }
+
+        //set shortcuts
+        provs.map(prov=>provenance.simplifyProvenance(prov, {
+            validator: true,
+            archivehop: true,
+            output: true,
+        }));
+
         console.log("saving ",provs.length,"provs",filename);
         fs.writeFileSync(filename, JSON.stringify(provs, null, 4));
     }

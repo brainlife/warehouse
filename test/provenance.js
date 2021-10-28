@@ -13,7 +13,7 @@ it('initializing model', function(done) {
 });
 
 describe('query provenance', ()=>{
-    it('up', function(done) {
+    it.skip('up', function(done) {
         this.timeout(5*1000);
         /*
         let task = {
@@ -41,6 +41,7 @@ describe('query provenance', ()=>{
         });
     });
 
+    let sample;
     it('find terminal', function(done) {
         this.timeout(10*1000);
         //http://localhost:8080/app/5a9568777f1aef3091b13f13 (tract analysis profile)
@@ -48,8 +49,15 @@ describe('query provenance', ()=>{
         //5e88c72d952fefe0a07abfb6 (generate images of t1)
         provenance.sampleTerminalTasks("5e88c72d952fefe0a07abfb6").then(provs=>{
             console.dir(provs[0]);
+            sample = provs[0];
             done();
         }); 
+    });
+
+    it('simplify', function(done) {
+        provenance.simplifyProvenance(sample, {validator: true, archivehop: true, output: true}); 
+        console.log(JSON.stringify(sample, null, 4));
+        done();
     });
 });
 
