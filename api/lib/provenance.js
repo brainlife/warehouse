@@ -314,6 +314,24 @@ exports.simplifyProvenance = (prov, opts)=>{
     function findEdge(from, to) {
         return prov.edges.findIndex(edge=>(edge.from == from && edge.to == to));
     }
+    function registerShortcutEdge(from, to, shortcut) {
+        //if it already exists, just merge shortcut
+        const existingIdx = findEdge(from, to);
+        if(~existingIdx) {
+            const existing = prov.edges[existingIdx];
+            existing._shortcutEdges = [...existing._shortcutEdges,  ...shortcut];
+            return existing;
+        }
+        //create new edge
+        const edge = {
+            idx: prov.edges.length,
+            from,
+            to,
+            _shortcutEdges: shortcut,
+        }
+        prov.edges.push(edge);
+        return edge;
+    }
 
     if(opts.validator) {
         prov.nodes.filter(node=>node.validator).forEach(node=>{
@@ -335,13 +353,8 @@ exports.simplifyProvenance = (prov, opts)=>{
             });
 
             //create new link from validator source directly to validator output
-            const shortCutIdx = prov.edges.length;
-            prov.edges.push({
-                idx: prov.edges.length,
-                from: validatorSourceIdx, 
-                to: validatorOutputIdx, 
-                _shortcutEdges: shortcut
-            });
+            //const shortCutIdx = prov.edges.length;
+            registerShortcutEdge(validatorSourceIdx, validatorOutputIdx, shortcut);
 
             //mark simplified nodes/edges with the new shortCutEdges
             node._simplified = true;
@@ -389,13 +402,8 @@ exports.simplifyProvenance = (prov, opts)=>{
 
                                         //now that we've established all the nodes/paths that I need to eliminate
                                         //it's just a matter of marking everything accordingly
-                                        const shortCutIdx = prov.edges.length;
-                                        prov.edges.push({
-                                            idx: prov.edges.length,
-                                            from: parentOutput.idx, 
-                                            to: task.idx, 
-                                            _shortcutEdges: shortcut,
-                                        });
+                                        //const shortCutIdx = prov.edges.length;
+                                        registerShortcutEdge(parentOutput.idx, task.idx, shortcut);
                                         archiveNode._simplified = true;
                                         dataset._simplified = true;
                                         stageTask._simplified = true;
@@ -427,18 +435,13 @@ exports.simplifyProvenance = (prov, opts)=>{
                     if(childTask._simplified) return;
                     
                     //found taskP > output > taskC link between 2 tasks
-                    const shortCutIdx = prov.edges.length;
+                    //const shortCutIdx = prov.edges.length;
                     const shortcut = [
                         findEdge(parentTaskIdx, output.idx),
                         findEdge(output.idx, childTaskIdx),
                     ];
-                    prov.edges.push({
-                        idx: prov.edges.length,
-                        from: parentTask.idx, 
-                        to: childTask.idx, 
-                        _shortcutEdges: shortcut, 
-                        _output: output.idx
-                    });
+                    const edge = registerShortcutEdge(parentTask.idx, childTask.idx, shortcut);
+                    edge._output = output.idx; //TODO if it already exists, it could wipe?
                     output._simplified = true;
                     shortcut.forEach(s=>{
                         prov.edges[s]._simplified = true;
