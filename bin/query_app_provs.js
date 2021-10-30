@@ -37,7 +37,7 @@ async function run() {
         }
 
         //set shortcuts
-        provs.map(prov=>provenance.simplifyProvenance(prov, {
+        provs.map(prov=>provenance.setupShortcuts(prov, {
             validator: true,
             archivehop: true,
             output: true,

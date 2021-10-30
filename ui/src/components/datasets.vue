@@ -497,8 +497,6 @@ export default {
                 });
                 finds["$and"] = ands;
             }
-            console.log("using query");
-            console.dir(finds);
             return finds;
         },
 

@@ -55,7 +55,7 @@ describe('query provenance', ()=>{
     });
 
     it('simplify', function(done) {
-        provenance.simplifyProvenance(sample, {validator: true, archivehop: true, output: true}); 
+        provenance.setupShortcuts(sample);
         console.log(JSON.stringify(sample, null, 4));
         done();
     });
