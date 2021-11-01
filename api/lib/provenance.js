@@ -12,9 +12,11 @@ exports.traverseProvenance = async (startTaskId) => {
     const edges = [];
 
     const tasks = [startTaskId];
+    const taskCache = {}; //provides "guess" in case task can't be resolved
     while(tasks.length) {
         await handleTask(tasks.shift()); 
     }
+    
         
     //pick things we want to store in nodes.config
     /*
@@ -82,22 +84,60 @@ exports.traverseProvenance = async (startTaskId) => {
         return datasetNodeIdx;
     }
 
+    function registerFakeArchive(dataset) {
+
+        //old validator didn't have subdir set, but it should be set to "output" for linking to work properly
+        if(dataset.prov.task.service.startsWith("brain-life/validator-") && !dataset.prov.subdir) {
+            dataset.prov.subdir = "output";
+        }
+
+        let dir = "../"+dataset.prov.task._id;
+        if(dataset.prov.subdir) dir += "/"+dataset.prov.subdir;
+
+        const guess = {
+            _id: "fake.archive.ds-"+dataset._id,
+            service: "brainlife/app-archive",
+            user_id: dataset.user_id,
+            name: "guess archive",
+            finish_date: dataset.create_date,
+            config: {
+                datasets: [{
+                    project: dataset.project,
+                    dir,
+                    dataset_id: dataset._id,
+                    storage: dataset.storage,
+                    storage_config: dataset.storage_config, //is this right?
+                }]
+            },
+            deps_config: [{
+                task: dataset.prov.task._id,
+                subdirs: [dataset.prov.output_id],
+            }],
+        }
+        taskCache[guess._id] = guess;
+        tasks.push(guess._id);
+    }
+
     async function handleTask(taskId) {
 
         //see if we already handled this task
         let existing = nodes.find(node=>(node.type == "task" && node.taskId == taskId));
         if(existing) return;
 
-        const res = await axios.get(config.amaretti.api+'/task', {params: {
-            find: JSON.stringify({_id: taskId})},
-            headers: { authorization: "Bearer "+config.warehouse.jwt },
-        });
-        if(res.status != "200") throw "failed to query task:"+taskId;
-        if(res.data.tasks.length != 1) {
-            console.log("couldn't find task", taskId);
-            return;
+        let task = taskCache[taskId];
+        if(!task) {
+            const res = await axios.get(config.amaretti.api+'/task', {params: {
+                find: JSON.stringify({_id: taskId})},
+                headers: { authorization: "Bearer "+config.warehouse.jwt },
+            });
+            if(res.status != "200") throw "failed to query task:"+taskId;
+            if(res.data.tasks.length != 1) {
+                console.log("couldn't find task", taskId);
+                return;
+            }
+            task = res.data.tasks[0];
         }
-        const task = res.data.tasks[0];
+        if(!task) return console.error("failed to load task", taskId);
 
         if(task.service == "brainlife/app-noop") {
             if(!task.config) task.config = {};
@@ -120,7 +160,7 @@ exports.traverseProvenance = async (startTaskId) => {
         //register new task node
         const nodeIdx = nodes.length;
         const node = {
-            idx: nodes.length, 
+            idx: nodeIdx,
             type: "task",
             taskId: task._id,
             service: task.service, 
@@ -199,24 +239,42 @@ exports.traverseProvenance = async (startTaskId) => {
 
         if(task.service == "brainlife/app-stage") {
             for await (const datasetConfig of task.config.datasets) {
+        
+                let datasetId = datasetConfig.id;
+                if(datasetConfig.outdir) {
+                    //for copied dataset, id will be set to the real(source) dataset.
+                    //outdir will be set to indicate the actual(copy) dataset id which we want
+                    datasetId = datasetConfig.outdir;
+                }
+
                 //look for archived task that archived the data object
-                const dataset = await db.Datasets.findById(datasetConfig.id).lean();
+                const dataset = await db.Datasets.findById(datasetId).lean();
                 if(!dataset) {
-                    console.error("couldn't find staging dataset:", datasetConfig.id, "in task:", task._id, datasetConfig);
+                    console.error("couldn't find staging dataset:", datasetId, "in task:", task._id, datasetConfig);
                     continue;
                 }
                 if(dataset.archive_task_id) {
                     tasks.push(dataset.archive_task_id);
+                } else {
+                    registerFakeArchive(dataset);
                 }
+
                 const datasetNodeIdx = registerDataset(dataset);
                 edges.push({
                     idx: edges.length,
                     from: datasetNodeIdx, 
                     to: nodeIdx, 
+<<<<<<< HEAD
                     inputId: datasetConfig.id,
                 });
                 node.inputs.push({
                     inputId: datasetConfig.id,
+=======
+                    inputId: datasetId,
+                });
+                node.inputs.push({
+                    inputId: datasetId,
+>>>>>>> 01767f5c40e3143bd537ec9d56218a790921bda7
                     //no task/subdir for staging job as are the one producing them
                 })
             }
@@ -234,18 +292,34 @@ exports.traverseProvenance = async (startTaskId) => {
                         console.error("couldn't find sca-product-raw dataset:", datasetConfig.dir, "in task:", task._id);
                         continue;
                     }
+<<<<<<< HEAD
                     //TODO - old dataset (like dev:5a2199f06fb74f6eefd5ad5c) didn't have archive_task_id
                     //do I need to find the archive task? or should I skip archive task and directly go
                     //for prov task?
                     if(dataset.archive_task_id) {
                         tasks.push(dataset.archive_task_id);
                     }
+=======
+                    if(dataset.archive_task_id) {
+                        tasks.push(dataset.archive_task_id);
+                    } else {
+                        //old dataset (like dev:5a2199f06fb74f6eefd5ad5c or test:5afedfdb251f5200274d9ca8) 
+                        //didn't have archive_task_id (because there was no archive service back then?)
+                        //let's fake it by creating a guess in our cache
+                        registerFakeArchive(dataset);
+                    }
+
+>>>>>>> 01767f5c40e3143bd537ec9d56218a790921bda7
                     const datasetNodeIdx = registerDataset(dataset);
                     edges.push({
                         idx: edges.length,
                         from: datasetNodeIdx, 
                         to: nodeIdx, 
+<<<<<<< HEAD
                         inputId: dataset._ld, //is this right?
+=======
+                        inputId: dataset._id, //is this right?
+>>>>>>> 01767f5c40e3143bd537ec9d56218a790921bda7
                     });
                 }
             }
@@ -280,6 +354,20 @@ exports.traverseProvenance = async (startTaskId) => {
             if(!task.deps_config && task.deps) task.deps.forEach(task=>{
                 node.inputs.push({task})
             });
+<<<<<<< HEAD
+=======
+        }
+
+        //old validator didn't have _outputs.. let's guess the output
+        if(node.validator && !task.config._outputs) {
+            console.log("validator is missing missing output .. faking");
+            console.dir(node);
+            task.config._outputs = [{
+                id: "output",
+                datatype: "whatever",
+                subdir: "output",
+            }];
+>>>>>>> 01767f5c40e3143bd537ec9d56218a790921bda7
         }
 
         if(task.config._inputs) task.config._inputs.forEach(input=>{
@@ -305,6 +393,10 @@ exports.traverseProvenance = async (startTaskId) => {
                 datatypeTags: output.datatype_tags,
                 tags: output.tags,
             }
+
+            //fake archiver expect subdir to be set to output_id but old task didn't do this sometimes
+            //if(!outputNode.subdir) outputNode.subdir = output.id;
+
             /*
             if(task.service == "brainlife/app-stage") {
                 outputNode._datasetId = output.dataset_id;
@@ -489,20 +581,32 @@ exports.setupShortcuts = (prov)=>{
     });
 
     //////////////////////////////////////////////////////////////////
+<<<<<<< HEAD
     //short cut dataset > stage > task
+=======
+    //short cut dataset > stage > task to just dataset > task
+>>>>>>> 01767f5c40e3143bd537ec9d56218a790921bda7
     prov.nodes.filter(node=>node.type == "dataset").forEach(node=>{
         const stageTaskEdges = prov.edges.filter(e=>e.from == node.idx);
         stageTaskEdges.forEach(stageTaskEdge=>{
             const stageTask = prov.nodes[stageTaskEdge.to];
+<<<<<<< HEAD
             if(stageTask.service != "brainlife/app-stage") return;
+=======
+            if(stageTask.service != "brainlife/app-stage" && stageTask.service != "soichih/sca-product-raw") return;
+>>>>>>> 01767f5c40e3143bd537ec9d56218a790921bda7
             prov.edges.filter(edge=>(edge.from == stageTask.idx && !edge._simplified)).forEach(edge=>{
                 if(!edge._output) return;
                 const output = prov.nodes[edge._output];
                 if(output.outputId == node.datasetId) {
                     const task = prov.nodes[edge.to];
+<<<<<<< HEAD
                     //console.log("shorcutting", node.datasetId, stageTask.idx, output.idx, edge.to);
                     const shortcut = [
                         //findEdgeIdx(node.idx, stageTaskIdx), 
+=======
+                    const shortcut = [
+>>>>>>> 01767f5c40e3143bd537ec9d56218a790921bda7
                         stageTaskEdge.idx,
                         edge.idx,
                     ];
@@ -529,7 +633,11 @@ exports.setupShortcuts = (prov)=>{
             if(!taskOutputEdge._output) return;
             const output = prov.nodes[taskOutputEdge._output];
             const archiveTask = prov.nodes[taskOutputEdge.to];
+<<<<<<< HEAD
             if(archiveTask.service != "brainlife/app-archive") return;
+=======
+            if(archiveTask.service != "brainlife/app-archive" && archiveTask.service != "soichih/sca-product-raw") return;
+>>>>>>> 01767f5c40e3143bd537ec9d56218a790921bda7
             const archiveOutputEdges = prov.edges.filter(e=>(!e._simplified && e.from == archiveTask.idx)); 
             archiveOutputEdges.forEach(archiveOutputEdge=>{
                 const dataset = prov.nodes[archiveOutputEdge.to];
