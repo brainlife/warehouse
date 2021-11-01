@@ -272,6 +272,27 @@
                         </div>
                     </div>
                 </b-tab>
+                <b-tab title="Provenance2">
+                    <div class="dataset-provenance">
+                        <!--
+                        <div v-if="prov.edges.length == 0">
+                            <b-alert show variant="secondary">This data-object was uploaded by the user, and therefore has no provenance information.</b-alert>
+                        </div>
+                        -->
+                        <div style="height: 100%">
+                            <div style="position: absolute; right: 10px; top: 10px; z-index: 1;">
+                                <span style="opacity: 0.6; margin-right: 10px;">Double click to open items</span>
+                            </div>
+                            <div v-if="!showFull" style="position: absolute; left: 10px; bottom: 10px; z-index: 1;">
+                                <span style="opacity: 0.6; margin-right: 10px; cursor: pointer; text-decoration: underline;" @click="setShowFull(true)">Show Full Provenance</span>
+                            </div>
+                            <div v-if="showFull" style="position: absolute; left: 10px; bottom: 10px; z-index: 1;">
+                                <span style="opacity: 0.6; margin-right: 10px; cursor: pointer; text-decoration: underline;" @click="setShowFull(false)">Show Simple Provenance</span>
+                            </div>
+                            <div ref="prov" style="height: 100%;"/>
+                        </div>
+                    </div>
+                </b-tab>
                 <b-tab title="Metadata/Sidecar">
                     <div class="dataset-meta">
                         <div>
@@ -286,21 +307,7 @@
                         </div>
                     </div>
                 </b-tab>
-                <!-- not useful?
-                <b-tab title="Apps">
-                    <div class="dataset-apps" v-if="apps">
-                        <p v-if="apps.length > 0" class="text-muted">The following apps can be submitted with this data-object.</p>
-                        <b-alert :show="apps.length == 0" variant="secondary" style="margin: -20px;">There are currently no applications that use the datatype from this data-object.</b-alert>
-                        <div v-for="app in apps" :key="app._id" style="width: 33%; float: left;">
-                            <div style="margin-right: 10px; margin-bottom: 10px;" @click="openapp(app._id)" class="clickable">
-                                <app :app="app" height="270px" :clickable="false"></app>
-                            </div>
-                        </div>
-                    </div>
-                </b-tab>
-                -->
             </b-tabs>
-
     </b-container>
 </div>
 </transition>
@@ -380,6 +387,8 @@ export default {
             tm_load_archive_task: null,
             tm_load_status: null,
 
+            showFull: false,
+
             config: Vue.config,
         } 
     },
@@ -407,6 +416,7 @@ export default {
             if(this.tab_index == 1 && this.prov == null) {
                 this.load_prov();
             }
+            if(this.tab_index == 2) this.load_prov2();
         },
         '$route': function() {
             if (this.dataset) {
@@ -418,6 +428,10 @@ export default {
     },
 
     methods: {
+        setShowFull(v) {
+            this.showFull = v;
+            this.load_prov2();
+        },
    
         //same code in api/controllers/dataset.js
         isimporttask(task) {
@@ -466,8 +480,6 @@ export default {
                         node.margin = 10;
                         node.font = {color: "#fff"};
                     }
-                    //node.title = node.id;
-                    //node.title = JSON.stringify(node._app_config, null, 4);
 
                     //construct tooltip
                     let tooltip = "";
@@ -494,7 +506,7 @@ export default {
                             tooltip += "</table>";
                         }
                     }
-                    node.title = tooltip+"<small>"+node.id+"</small>";
+                    node.title = tooltip+"\n<small>"+node.id+"</small>";
                 });
                 
                 this.prov.edges.forEach(edge=>{
@@ -509,7 +521,6 @@ export default {
                         size: 10,
                         color: '#000a',
                     }
-                
                 })
                 
                 if(this.prov.edges.length) {
@@ -567,6 +578,368 @@ export default {
                                         }
                                     });
                                 }
+                            });
+
+                            gph.on("showPopup", e=>{
+                                //console.log("popup!", e);
+                            });
+                            gph.on("hoverNode", e=>{
+                                //console.log("hovernode!", e);
+                            });
+                        });
+                    });
+                }
+            });
+        },
+
+        load_prov2() {
+            //load provenance
+            this.$http.get('dataset/prov2/'+this.dataset._id).then(res=>{
+
+                //for debugging
+                console.dir(res.data);
+
+                //only show shortcuts by default
+                let hideSimplified = true;
+                let hideShortcut = false;
+                if(this.showFull) {
+                    hideSimplified = false;
+                    //hideShortcut = true;
+                }
+
+                //hide dangling output except for "this"
+                res.data.edges.forEach(edge=>{
+                    const node = res.data.nodes[edge.to];
+                    if(node._taskId == this.dataset.prov.task_id &&
+                        node.subdir == this.dataset.prov.subdir) {
+                        //keep the "this data-object"
+                    } else {
+                        //hide if there are no children
+                        const next = res.data.edges.find(next=>(edge.to == next.from));
+                        if(!next && hideSimplified) {
+                            edge._hide = true;
+                            node._hide = true;
+                        }
+                    }
+                });
+
+                if(hideSimplified) {
+                    //hide simplifiedNodes / edges
+                    res.data.edges.filter(edge=>edge._simplified).forEach(edge=>{
+                        edge._hide = true;
+                    });
+                    res.data.nodes.filter(node=>node._simplified).forEach(node=>{
+                        node._hide = true;
+                    });
+                } 
+                if(hideShortcut) {
+                    res.data.edges.filter(edge=>edge._shortcutEdges).forEach(edge=>{
+                        edge._hide = true;
+                    });
+                }
+
+                //apply styles
+                const graphNodes = [];
+                const graphEdges = [];
+                res.data.nodes.forEach(node=>{
+                    if(node._hide) return;
+                    const graphNode = {
+                        shape: "box",
+                        id: node.idx,
+                        font: {
+                           size: 12,
+                           color: "#333",
+                        },
+                        color: "#fff",
+                    }
+                    switch(node.type) {
+                    case "task":
+                        //node.mass = 1+0.2*node.label.trim().split("\n").length;
+                        graphNode.labelHighlightBold = false;
+                        graphNode.label = node.name+"\n"+node.service;
+                        if(node.serviceBranch) graphNode.label += ":"+node.serviceBranch;
+                        graphNode.label += "\n";
+                        break;
+                    case "dataset":
+                        graphNode.color = "#159957";
+                        graphNode.font.color = "#fff";
+                        graphNode.label = node.project.name+"\nsub-"+node.meta.subject;
+                        if(node.meta.session) graphNode.label += " ses-"+node.meta.session;
+                        if(node.meta.run) graphNode.label += " run-"+node.meta.run;
+                        break;
+                    case "output":
+                        graphNode.color = "#ff9957";
+                        graphNode.font = {size: 12, color: "#fff"};
+                        graphNode.label = "dt:"+node.datatype.name+"\nsubdir:"+node.subdir; //dangling output
+                        if(node._taskId == this.dataset.prov.task_id && node.outputId == this.dataset.prov.output_id) {
+                            graphNode.label = "This Data-Object";
+                            graphNode.color = "#2693ff";
+                            graphNode.y = 2000;
+                            graphNode.margin = 10;
+                            graphNode.font.color = "#fff";
+                        }
+                        /*
+                    default:
+                        graphNode.color = "#159957";
+                        graphNode.font = {size: 12, color: "#fff"};
+                        graphNode.lable = node.type;
+                        */
+                    }
+
+                    if(node._simplified) {
+                        graphNode.font.size -= 7;
+                    }
+                    //graphNode.label += "\nidx:"+node.idx;
+
+                    //construct tooltip
+                    let tooltip = "";
+                    if(node._config) {
+                        node.label += "\n";
+                        let recs = [];
+                        for(let key in node._config) {
+                            let conf = node._config[key];
+                            if(typeof conf.v == "string" && conf.v.startsWith("../")) continue;
+                            let rec = "";
+                            rec += "<tr><td><pre>"+key+"</pre></td>";
+                            if(conf.default !== undefined && conf.default == conf.v) {
+                                rec+= "<td>"+conf.v+"</td>"
+                            } else {
+                                rec+= "<td><b>"+conf.v+"</b> (default: "+conf.default+")</td>"
+                                node.label += key+":"+conf.v+"\n";
+                            }
+                            rec += "</tr>";
+                            recs.push(rec);
+                        }
+                        if(recs.length > 0) {
+                            tooltip += "<table class='table table-sm'>";
+                            tooltip += recs.join("\n");
+                            tooltip += "</table>";
+                        }
+                    }
+                    if(node.desc) tooltip += "<p>"+node.desc+"</p>";
+                    if(node.datasetId) tooltip += "<p>datasetId:"+node.datasetId+"</p>";
+                    if(node.userId) tooltip += "<p>userId:"+node.userId+"</p>";
+                    graphNode.title = "<div>"+tooltip+"</div><small>idx:"+node.idx+"</small>";
+                    graphNodes.push(graphNode);
+                });
+                
+                res.data.edges.forEach(edge=>{
+                    if(edge._hide) return;
+
+                    const nodeFrom = res.data.nodes[edge.from];
+                    const nodeTo = res.data.nodes[edge.to];
+
+                    let label = "";
+                    let tooltip = ""; 
+                    
+                    switch(nodeTo.type) {
+                    case "output":
+                        if(hideSimplified) {
+                            label += nodeTo.datatype.name;
+                            label += " "+nodeTo.datatypeTags.map(t=>"<"+t+">").join(" ");
+                            if(nodeTo.tags) label += " "+nodeTo.tags.join(",")+"\n";
+                        }
+                    default:
+                        //if it's not leading to output node, then I need to figure out myself
+                        if(edge._dataset) {
+                            const dataset = res.data.nodes[edge._dataset];
+                            label += "🟢 "+dataset.datatype.name;
+                            label += " "+dataset.datatypeTags.map(t=>"<"+t+">").join(" ");
+                            label += " "+dataset.tags.join()+"\n";
+                            tooltip += "archived dataset:"+dataset.datasetId+"\n";
+                        } else if(edge._output) {
+                            const output = res.data.nodes[edge._output];
+                            //label += "outid:"+output.outputId+"\n";
+                            label += output.datatype.name;
+                            if(output.datatypeTags) label += " "+output.datatypeTags.map(t=>"<"+t+"> ").join(" ");
+                            if(output.tags) label += " "+output.tags.join();
+                            label+="\n";
+                        }
+                        break;
+                    }
+
+                    //put from/to ids
+                    label += "(";
+                    if(edge.outputId) label += "from "+edge.outputId;
+                    if(edge.inputId) {
+                        if(edge.outputId) label += " ";
+                        label += "to "+edge.inputId;
+                    }
+                    label += ")";
+
+                    tooltip += "<br>edgeIdx:"+edge.idx+" from:"+edge.from+" to "+edge.to;
+
+                    const graphEdge = {
+                        label,
+                        font: {
+                            size: 10,
+                            color: '#000a',
+                        },
+                        arrows: "to",
+                        to: edge.to,
+                        from: edge.from,
+                        color: '#f00',
+                        edgeIdx: edge.idx,
+                        title: tooltip,
+                    }
+                    if(edge._simplified) {
+                        graphEdge.font.size -= 7;
+                    } else if(!hideSimplified) {
+                        //use dash for the "shortcut" edges
+                        graphEdge.dashes = true;
+                        graphEdge.length = 200;
+                    }
+                    graphEdges.push(graphEdge);
+                })
+
+                //modify provenance for UI purpose
+                //handle terminal tasks differently
+                graphNodes.forEach(gnode=>{
+                    const node = res.data.nodes[gnode.id];
+                    
+                    //for terminal dataset, attach storage source as new node
+                    const iedge = graphEdges.find(e=>e.to == node.idx);
+                    if(!iedge && node.type == "dataset") {
+                        graphNodes.push({
+                            shape: "box",
+                            id: gnode.id+".source",
+                            font: {
+                               size: 10,
+                               color: "#fff",
+                            },
+                            color: "#666",
+                            label: node.storage,
+                            title: node.storageLocation,
+                            y: -2000,
+                        })
+                        graphEdges.push({
+                            arrows: "to", 
+                            from: gnode.id+".source",
+                            to: gnode.id, 
+                            label: "Import",
+                            font: { size: 10, color: '#000a'}
+                        });
+                    }
+
+                    //turn the app-noop into "dataset", basically
+                    if(node.service == "brainlife/app-noop") {
+                        const outputEdges = graphEdges.filter(e=>e.from == gnode.id);
+                        gnode.color = "#159957";
+                        gnode.font.color = "#fff";
+
+                        outputEdges.forEach(outputEdge=>{
+                            const edge = res.data.edges[outputEdge.edgeIdx];
+                            if(!edge._dataset) {
+                                console.log("app-noop(idx:"+node.idx+") output doesn't have _dataset set.. odd?");
+                                console.dir(outputEdge);
+                                return;
+                            }
+                            const dataset = res.data.nodes[edge._dataset];
+                            //console.dir(dataset);
+                            const output = res.data.nodes[edge._output];
+                            //console.dir(output);
+
+                            gnode.label = dataset.project.name;
+                            if(dataset.meta.subject) gnode.label += `\nsub-${dataset.meta.subject}`;
+                            if(dataset.meta.session) gnode.label += ` / ses-${dataset.meta.session}`;
+                            if(dataset.meta.run) gnode.label += ` / run-${dataset.meta.session}`;
+                            gnode.title = "id:"+dataset.datasetId+"\n"+gnode.title;
+
+                            if(dataset.desc) gnode.title = "desc:"+dataset.desc.substring(0, 30)+gnode.title;
+
+                            /*
+                            gnode.label += dataset.datatype.name;
+                            if(dataset.datatypeTags) gnode.label += " "+dataset.datatypeTags.map(t=>"<"+t+">").join(" ");
+                            if(dataset.tags) gnode.label += " "+dataset.tags.join()+"\n";
+                            */
+                
+                            //outputEdge.label = "to "+edge.inputId;
+                        });
+                        
+                        
+                        //add user node
+                        const userNode = {
+                            shape: "circle",
+                            id: gnode.id+".user",
+                            font: {
+                               size: 10,
+                               color: "#fff",
+                            },
+                            color: "#999",
+                            label: "user:"+node.userId,
+                            y: -2000,
+                        }
+                        graphNodes.push(userNode);
+                        graphEdges.push({
+                            arrows: "to", 
+                            from: userNode.id, 
+                            to: gnode.id, 
+                            label: "Upload\n("+node.name+")",
+                            font: { size: 10, color: '#000a'}
+                        })
+                    } 
+                });
+ 
+                if(res.data.edges.length) {
+                    Vue.nextTick(()=>{
+                        getVis().then(vis=>{
+                            var gph = new vis.Network(this.$refs.prov, {
+                                nodes: graphNodes,
+                                edges: graphEdges,
+                            }, {
+                                layout: {
+                                    randomSeed: 0,
+                                },
+                                physics:{
+                                    //enabled: true, //default true
+                                    barnesHut:{
+                                        //springConstant: 0.20,
+                                        //springLength: 100,
+                                        //avoidOverlap: 0.2,
+                                        //damping: 0.3,
+                                        gravitationalConstant: -3000,
+                                    }
+                                },
+                                nodes: {
+                                    shadow: {
+                                        enabled: true,
+                                        //make it less pronounced than default
+                                        size: 3,
+                                        x: 1,
+                                        y: 1 ,
+                                        color: 'rgba(0,0,0,0.2)',
+                                    },
+                                    borderWidth: 0,
+                                },
+                            });
+                            gph.on("doubleClick", e=>{
+                                /*e.edges, e.event, e.nodes. e.pointer*/
+                                //TODO
+                                /*
+                                e.nodes.forEach(node=>{
+                                    if(node.startsWith("dataset.")) {
+                                        let dataset_id = node.substring(8);
+                                        //for archive/datasets page
+                                        if(this.$route.path.includes(this.dataset._id)) {
+                                            //this should trigger reload
+                                            this.$router.replace(this.$route.path.replace(this.dataset._id, dataset_id));
+                                        } else {
+                                            this.$root.$emit('dataset.view', {id: dataset_id});
+                                        }
+                                    }
+                                    if(node.startsWith("task.")) {
+                                        let fullnode = res.data.nodes.find(n=>n.id == node);
+                                        if(fullnode._app) this.$router.replace("/app/"+fullnode._app);
+                                    }
+                                });
+                                e.edges.forEach(edge_id=>{
+                                    let edge = res.dat.edges.find(e=>e.id == edge_id);
+                                    if(edge._archived_dataset_id) {
+                                        this.$router.replace(this.$route.path.replace(this.dataset._id, edge._archived_dataset_id)); 
+                                    }
+                                });
+                                */
+                            
                             });
 
                             gph.on("showPopup", e=>{

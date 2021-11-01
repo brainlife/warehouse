@@ -17,15 +17,30 @@ exports.traverseProvenance = async (startTaskId) => {
     }
         
     //pick things we want to store in nodes.config
-    function filterConfig(config) {
+    /*
+    function filterConfig(task) {
         const filteredConfig = {};
-        for(const key in config) {
-            const v = config[key];
+        for(const key in task.config) {
+            const v = task.config[key];
             if(key[0] == "_") continue;
             if(typeof v == "string" && v.startsWith("../")) continue;
             filteredConfig[key] = v;
         }
         return filteredConfig;
+    }
+    */
+    function filterConfig(config, appConfig) {
+        let _config = {};
+        for(let key in config) {
+            const v = config[key];
+            if(key.startsWith("_")) continue;
+            if(typeof v == "string" && v.startsWith("../")) continue;
+            const spec = appConfig[key];
+            let def;
+            if(spec) def = spec.default;
+            _config[key] = {v: config[key], default: def}
+        }
+        return _config;
     }
 
     function registerDataset(dataset) {
@@ -36,15 +51,34 @@ exports.traverseProvenance = async (startTaskId) => {
 
         //register new
         const datasetNodeIdx = nodes.length;
-        nodes.push({
+        const node = {
             idx: datasetNodeIdx,
             type: "dataset",
             datasetId: dataset._id,
             datatype: dataset.datatype, 
             datatypeTags: dataset.datatype_tags, 
             tags: dataset.tags,
+            desc: dataset.desc,
             createDate: dataset.create_date,
-        });
+            storage: dataset.storage,
+            project: dataset.project,
+            meta: {
+                subject: dataset.meta.subject,
+                session: dataset.meta.session,
+                run: dataset.meta.run,
+            }
+        };
+        switch(dataset.storage){
+        case "xnat":
+            //XNAT dataset contains auth object with user/pass. watch out!
+            node.storageLocation = dataset.storage_config.url;
+            break;
+        case "datalad":
+            //storage_config.files[].src contain full path.. but maybe too verbose
+            node.storageLocation = dataset.storage_config.path;
+            break;
+        }
+        nodes.push(node);
         return datasetNodeIdx;
     }
 
@@ -72,7 +106,7 @@ exports.traverseProvenance = async (startTaskId) => {
                 task.config._outputs = [{
                     id: "noop",
                     datatype: "59c3eae633fc1cf9ead71679", //raw?
-                    datatype_tags: [],
+                    datatypeTags: [],
                     tags: [],
                 }];
             }
@@ -93,6 +127,7 @@ exports.traverseProvenance = async (startTaskId) => {
             serviceBranch: task.service_branch, 
             userId:task.user_id, 
             instanceId: task.instance_id, 
+            groupId: task._group_id,
             name: task.name, 
             resourceId: task.resource_id, 
             finishDate: task.finish_date,
@@ -100,10 +135,12 @@ exports.traverseProvenance = async (startTaskId) => {
             inputs: [],
         };
         if(task.config._app) {
-            node.config = filterConfig(task.config);
+            const app = await db.Apps.findById(task.config._app).select({config: 1}).lean();
+            node._config = filterConfig(task.config, app.config);
             node.appId = task.config._app;
         }
-        if(task.service.startsWith("brainlife/validator-")) node.validator = true;
+        if(task.service.startsWith("brainlife/validator-") ||
+           task.service.startsWith("brain-life/validator-")) node.validator = true;
 
         nodes.push(node);
        
@@ -150,8 +187,13 @@ exports.traverseProvenance = async (startTaskId) => {
                     idx: edges.length,
                     from: nodeIdx, 
                     to: datasetNodeIdx, 
+                    inputId: id, //dataset id
                 });
-                node.inputs.push({task: sourceTask, subdir, datasetId: id});
+                node.inputs.push({
+                    inputId: id,  //dataset id
+                    task: sourceTask, 
+                    subdir, 
+                });
             }
         }
 
@@ -171,47 +213,78 @@ exports.traverseProvenance = async (startTaskId) => {
                     idx: edges.length,
                     from: datasetNodeIdx, 
                     to: nodeIdx, 
+                    inputId: datasetConfig.id,
                 });
-                node.inputs.push({datasetId: datasetConfig.id})
+                node.inputs.push({
+                    inputId: datasetConfig.id,
+                    //no task/subdir for staging job as are the one producing them
+                })
             }
         }
 
         //deprecated staging job
         if(task.service == "soichih/sca-product-raw") {
-            for await (const datasetConfig of task.config.download) {
-                const dataset = await db.Datasets.findById(datasetConfig.dir).lean();
-                if(!dataset) {
-                    console.error("couldn't find sca-product-raw dataset:", datasetConfig.dir, "in task:", task._id);
-                    continue;
+            //TODO - not always download, right?
+            if(!task.config.download) {
+                console.error("only handling download request for sca-product-raw.. but it's not set on ", task._id);
+            } else {
+                for await (const datasetConfig of task.config.download) {
+                    const dataset = await db.Datasets.findById(datasetConfig.dir).lean();
+                    if(!dataset) {
+                        console.error("couldn't find sca-product-raw dataset:", datasetConfig.dir, "in task:", task._id);
+                        continue;
+                    }
+                    //TODO - old dataset (like dev:5a2199f06fb74f6eefd5ad5c) didn't have archive_task_id
+                    //do I need to find the archive task? or should I skip archive task and directly go
+                    //for prov task?
+                    if(dataset.archive_task_id) {
+                        tasks.push(dataset.archive_task_id);
+                    }
+                    const datasetNodeIdx = registerDataset(dataset);
+                    edges.push({
+                        idx: edges.length,
+                        from: datasetNodeIdx, 
+                        to: nodeIdx, 
+                        inputId: dataset._ld, //is this right?
+                    });
                 }
-                //TODO - old dataset (like dev:5a2199f06fb74f6eefd5ad5c) didn't have archive_task_id
-                //do I need to find the archive task? or should I skip archive task and directly go
-                //for prov task?
-                if(dataset.archive_task_id) {
-                    tasks.push(dataset.archive_task_id);
-                }
-                const datasetNodeIdx = registerDataset(dataset);
-                edges.push({
-                    idx: edges.length,
-                    from: datasetNodeIdx, 
-                    to: nodeIdx, 
-                });
             }
         }   
 
         //old validator didn't have _inputs.. let's use deps_config
         if(node.validator && !task.config._inputs) {
-            task.deps_config.forEach(dep=>{
-                if(dep.subdirs) dep.subdirs.forEach(subdir=>{
-                    node.inputs.push({task: dep.task, subdir: subdir});
+            if(task.deps_config) task.deps_config.forEach(dep=>{
+                if(dep.subdirs) {
+                    //there should be multiple subdirectories specified (for subsetting case?)
+                    //but they all should have common parent. let's grab the first one and use the parent
+                    //TODO - I am not too confident about this
+                    let subdir;
+                    if(dep.subdirs.length) {
+                        const subdirFullpath = dep.subdirs[0];
+                        subdir = subdirFullpath.split("/")[0]; 
+                    }
+                    node.inputs.push({
+                        //validator only has 1 input for inputID shouldn't matter
+                        task: dep.task, 
+                        subdir,
+                    });
+                }
+                //if deps_config doesn't specify any subdir, maybe it's the old rootdir app.
+                //let's add task input with the whole root directory
+                if(node.inputs.length == 0) node.inputs.push({
+                    //again, input id doesn't matter for validator
+                    task: dep.task
                 });
-                //if deps_config doesn't specify any subdir, let's add task input with the whole root directory
-                if(node.inputs.length == 0) node.inputs.push({task: dep.task});
-            });            
+            });         
+            //really old ones used deps instead of deps_config
+            if(!task.deps_config && task.deps) task.deps.forEach(task=>{
+                node.inputs.push({task})
+            });
         }
 
         if(task.config._inputs) task.config._inputs.forEach(input=>{
             node.inputs.push({
+                inputId: input.id,
                 task: input.task_id,
                 subdir: input.subdir,
                 //datatype: input.datatype,
@@ -221,6 +294,7 @@ exports.traverseProvenance = async (startTaskId) => {
         //staging and nornmal task should have config._outputs
         if(task.config._outputs) task.config._outputs.forEach(output=>{
             const outputNodeIdx = nodes.length;
+            if(outputNodeIdx == 16) console.dir(output);
             const outputNode = {
                 idx: outputNodeIdx,
                 type: "output", 
@@ -228,7 +302,7 @@ exports.traverseProvenance = async (startTaskId) => {
                 outputId: output.id, 
                 subdir: output.subdir, //subdir of the task output for this output
                 datatype: output.datatype,
-                datatype_tags: output.datatype_tags,
+                datatypeTags: output.datatype_tags,
                 tags: output.tags,
             }
             /*
@@ -242,6 +316,7 @@ exports.traverseProvenance = async (startTaskId) => {
                 from: nodeIdx, 
                 to: outputNodeIdx, 
                 //datatype: output.datatype 
+                outputId: output.id,
             })
         });
 
@@ -257,9 +332,8 @@ exports.traverseProvenance = async (startTaskId) => {
         }
     }
 
-    //create archive links (output > dataset)
+    //find source output for archived dataset and link it
     nodes.forEach(node=>{
-        //find source output for archived dataset and link it
         if(node.inputs) node.inputs.forEach(input=>{
             const outputs = nodes.filter(n=>(n.type == "output" && n._taskId == input.task && n.subdir == input.subdir));
             outputs.forEach(output=>{
@@ -267,6 +341,8 @@ exports.traverseProvenance = async (startTaskId) => {
                     idx: edges.length,
                     from: output.idx, 
                     to: node.idx, 
+                    inputId: input.inputId,
+                    outputId: output.outputId,
                 });
             });
         });
@@ -303,7 +379,7 @@ exports.sampleTerminalTasks = async (appId)=>{
 //      output1>archive>dataset>stage>output2>task into just output1>task
 // output
 //      task1>output>task2 into task1>task2
-exports.simplifyProvenance = (prov, opts)=>{
+exports.setupShortcuts = (prov)=>{
 
     function getParentIndices(nodeIdx) {
         return prov.edges.filter(edge=>(edge.to == nodeIdx)).map(edge=>edge.from);
@@ -311,17 +387,23 @@ exports.simplifyProvenance = (prov, opts)=>{
     function getChildIndices(nodeIdx) {
         return prov.edges.filter(edge=>(edge.from == nodeIdx)).map(edge=>edge.to);
     } 
-    function findEdge(from, to) {
+
+    //TODO
+    //I think this is dangerous.. there could be multpile edges with the same from/to
+    //I think it's safer to just return the edge itself, and let caller specifically use that edge.idx
+    //for shortcut array 
+    function findEdgeIdx(from, to) {
         return prov.edges.findIndex(edge=>(edge.from == from && edge.to == to));
     }
+    /*
+    function findNonsimplifiedEdge(from, to) {
+        return prov.edges.findIndex(edge=>(edge.from == from && edge.to == to && !edge._smplified));
+    }
+    */
+
+    //TODO get rid of this function
     function registerShortcutEdge(from, to, shortcut) {
         //if it already exists, just merge shortcut
-        const existingIdx = findEdge(from, to);
-        if(~existingIdx) {
-            const existing = prov.edges[existingIdx];
-            existing._shortcutEdges = [...existing._shortcutEdges,  ...shortcut];
-            return existing;
-        }
         //create new edge
         const edge = {
             idx: prov.edges.length,
@@ -333,124 +415,167 @@ exports.simplifyProvenance = (prov, opts)=>{
         return edge;
     }
 
-    if(opts.validator) {
-        prov.nodes.filter(node=>node.validator).forEach(node=>{
-            //validator should only have 1 input / output
-            const validatorInputIdx = getParentIndices(node.idx)[0];
-            const validatorSourceIdx = getParentIndices(validatorInputIdx)[0];
-            const validatorOutputIdx = getChildIndices(node.idx)[0];
-            const validatorOutput = prov.nodes[validatorOutputIdx];
+    //////////////////////////////////////////////////////////////////
+    // validator shortcuts
+    // source > validator > output
+    //  to
+    // source > output
+    prov.nodes.filter(node=>node.validator).forEach(node=>{
+        //validator should only have 1 input / output
+        const validatorInputIdx = getParentIndices(node.idx)[0];
+        const validatorSourceIdx = getParentIndices(validatorInputIdx)[0];
+        const validatorOutputIdx = getChildIndices(node.idx)[0];
+        const validatorOutput = prov.nodes[validatorOutputIdx];
 
-            validatorOutput._validatorIdx = node.idx;
+        validatorOutput._validatorIdx = node.idx;
 
-            const shortcut = [
-                findEdge(validatorSourceIdx, validatorInputIdx),
-                findEdge(validatorInputIdx, node.idx),
-                findEdge(node.idx, validatorOutputIdx),
-            ];
-            shortcut.forEach(idx=>{
-                prov.edges[idx]._simplified = true;
-            });
+        const sourceEdgeIdx = findEdgeIdx(validatorSourceIdx, validatorInputIdx);
+        const sourceEdge = prov.edges[sourceEdgeIdx];
 
-            //create new link from validator source directly to validator output
-            //const shortCutIdx = prov.edges.length;
-            registerShortcutEdge(validatorSourceIdx, validatorOutputIdx, shortcut);
-
-            //mark simplified nodes/edges with the new shortCutEdges
-            node._simplified = true;
+        const shortcut = [
+            //should be safe to use findEdge because there is only 1 in/out of each validator?
+            sourceEdgeIdx,
+            findEdgeIdx(validatorInputIdx, node.idx),
+            findEdgeIdx(node.idx, validatorOutputIdx),
+        ];
+        shortcut.forEach(idx=>{
+            prov.edges[idx]._simplified = true;
         });
-    } 
 
-    if(opts.archivehop) {
-        prov.nodes.filter(node=>node.service == "brainlife/app-archive").forEach(archiveNode=>{
-            //find the parent output for this archiveNode
-            archiveNode.inputs.forEach(input=>{
-                const taskId = input.task;
-                const subdir = input.subdir;
+        //create new link from validator source directly to validator output
+        const newedge = registerShortcutEdge(validatorSourceIdx, validatorOutputIdx, shortcut);
+        newedge.outputId = sourceEdge.outputId;
 
-                //find the parent output that produced the archive-input
-                const parentOutputIndices = getParentIndices(archiveNode.idx);
-                parentOutputIndices.forEach(parentOutputIdx=>{
-                    const parentOutput = prov.nodes[parentOutputIdx];
-                    //look for archive > dataset > stage > output chain
-                    const childDatasets = getChildIndices(archiveNode.idx);
-                    childDatasets.forEach(datasetIdx=>{
-                        const dataset = prov.nodes[datasetIdx];
-                        //look for staging jobs
-                        const stageTaskIndices = getChildIndices(datasetIdx);
-                        stageTaskIndices.forEach(stageTaskIdx=>{
-                            //look for stage output that matches the datasetid
-                            const stageTask = prov.nodes[stageTaskIdx];
-                            const stageOutputIndices = getChildIndices(stageTaskIdx); 
-                            stageOutputIndices.forEach(stageOutputIdx=>{
-                                const stageOutput = prov.nodes[stageOutputIdx]; 
-                                if(dataset.datasetId == stageOutput.outputId) {
-                                    const taskIndices = getChildIndices(stageOutput.idx);
-                                    taskIndices.forEach(taskIdx=>{
-                                        const task = prov.nodes[taskIdx];
-                                        
-                                        const shortcut = [
-                                            findEdge(parentOutputIdx, archiveNode.idx),
-                                            findEdge(archiveNode.idx, datasetIdx),
-                                            findEdge(datasetIdx, stageTaskIdx),
-                                            findEdge(stageTaskIdx, stageOutputIdx),
-                                            findEdge(stageOutputIdx, taskIdx),
-                                        ];
-                                        shortcut.forEach(s=>{
-                                            prov.edges[s]._simplified = true;
-                                        });
+        //mark simplified nodes/edges with the new shortCutEdges
+        node._simplified = true;
+    });
 
-                                        //now that we've established all the nodes/paths that I need to eliminate
-                                        //it's just a matter of marking everything accordingly
-                                        //const shortCutIdx = prov.edges.length;
-                                        registerShortcutEdge(parentOutput.idx, task.idx, shortcut);
-                                        archiveNode._simplified = true;
-                                        dataset._simplified = true;
-                                        stageTask._simplified = true;
-                                        stageOutput._simplified = true;
-
-                                        parentOutput._datasetArchiveIdx = archiveNode.idx;
-                                        parentOutput._datasetId = dataset.datasetId;
-                                    });
-                                }
-                            });
-                        });
-                    });
+    //////////////////////////////////////////////////////////////////
+    // output shortcuts
+    // taskP > output > taskC 
+    // to
+    // taskP > taskC
+    prov.nodes.filter(node=>node.type == "output").forEach(output=>{
+        const parentTaskEdges = prov.edges.filter(e=>e.to == output.idx);
+        parentTaskEdges.forEach(parentTaskEdge=>{
+            const parentTask = prov.nodes[parentTaskEdge.from];
+            if(parentTask.type != "task") return;
+            //if(parentTask._simplified) return;
+            //const childTaskIndices = getChildIndices(output.idx);
+            const childTaskEdges = prov.edges.filter(e=>e.from == output.idx);
+            childTaskEdges.forEach(childTaskEdge=>{
+                const childTask = prov.nodes[childTaskEdge.to];
+                if(childTask.type != "task") return;
+                //if(childTask._simplified) return;
+                
+                //found taskP > output > taskC chain
+                const shortcut = [
+                    //findEdgeIdx(parentTaskIdx, output.idx), //there should be only 1 link between parent and output
+                    parentTaskEdge.idx,
+                    //findEdgeIdx(output.idx, childTaskIdx),
+                    childTaskEdge.idx,
+                ];
+                const edge = registerShortcutEdge(parentTask.idx, childTask.idx, shortcut);
+                edge._output = output.idx; //TODO if it already exists, it could wipe?
+                edge.outputId = parentTaskEdge.outputId;
+                edge.inputId = childTaskEdge.inputId;
+                output._simplified = true;
+                
+                shortcut.forEach(s=>{
+                    prov.edges[s]._simplified = true;
                 });
             });
         });
-    }
+    });
 
-    if(opts.output) {
-        prov.nodes.filter(node=>node.type == "output").forEach(output=>{
-            const parentTaskIndices = getParentIndices(output.idx);
-            parentTaskIndices.forEach(parentTaskIdx=>{
-                const parentTask = prov.nodes[parentTaskIdx];
-                if(parentTask.type != "task") return;
-                if(parentTask._simplified) return;
-                const childTaskIndices = getChildIndices(output.idx);
-                childTaskIndices.forEach(childTaskIdx=>{
-                    const childTask = prov.nodes[childTaskIdx];
-                    if(childTask.type != "task") return;
-                    if(childTask._simplified) return;
-                    
-                    //found taskP > output > taskC link between 2 tasks
-                    //const shortCutIdx = prov.edges.length;
+    //////////////////////////////////////////////////////////////////
+    //short cut dataset > stage > task
+    prov.nodes.filter(node=>node.type == "dataset").forEach(node=>{
+        const stageTaskEdges = prov.edges.filter(e=>e.from == node.idx);
+        stageTaskEdges.forEach(stageTaskEdge=>{
+            const stageTask = prov.nodes[stageTaskEdge.to];
+            if(stageTask.service != "brainlife/app-stage") return;
+            prov.edges.filter(edge=>(edge.from == stageTask.idx && !edge._simplified)).forEach(edge=>{
+                if(!edge._output) return;
+                const output = prov.nodes[edge._output];
+                if(output.outputId == node.datasetId) {
+                    const task = prov.nodes[edge.to];
+                    //console.log("shorcutting", node.datasetId, stageTask.idx, output.idx, edge.to);
                     const shortcut = [
-                        findEdge(parentTaskIdx, output.idx),
-                        findEdge(output.idx, childTaskIdx),
+                        //findEdgeIdx(node.idx, stageTaskIdx), 
+                        stageTaskEdge.idx,
+                        edge.idx,
                     ];
-                    const edge = registerShortcutEdge(parentTask.idx, childTask.idx, shortcut);
-                    edge._output = output.idx; //TODO if it already exists, it could wipe?
-                    output._simplified = true;
+                    const newedge = registerShortcutEdge(node.idx, edge.to, shortcut);
+                    newedge._output = edge._output;
+                    newedge.inputId = edge.inputId; //not yet tested
                     shortcut.forEach(s=>{
                         prov.edges[s]._simplified = true;
                     });
+                    stageTask._simplified = true;
+                }
+            });
+        });
+    });
+
+    //short cut taskP > archive > dataset > taskC
+    //make sure I follow the correct output - 
+    //sample http://localhost:8080/project/5f9b09d26ce09b45b9f97170/process/617b5134e0fff00913eeaa5f
+    //record archived dataset
+    prov.nodes.filter(node=>node.type == "task").forEach(parentTask=>{
+        if(parentTask._simplified) return;
+        const taskOutputEdges = prov.edges.filter(e=>(!e._simplified && e.from == parentTask.idx));
+        taskOutputEdges.forEach(taskOutputEdge=>{
+            if(!taskOutputEdge._output) return;
+            const output = prov.nodes[taskOutputEdge._output];
+            const archiveTask = prov.nodes[taskOutputEdge.to];
+            if(archiveTask.service != "brainlife/app-archive") return;
+            const archiveOutputEdges = prov.edges.filter(e=>(!e._simplified && e.from == archiveTask.idx)); 
+            archiveOutputEdges.forEach(archiveOutputEdge=>{
+                const dataset = prov.nodes[archiveOutputEdge.to];
+                const childTaskEdges = prov.edges.filter(e=>(!e._simplified && e.from == dataset.idx));
+                childTaskEdges.forEach(childTaskEdge=>{
+                    const childTask = prov.nodes[childTaskEdge.to];
+
+                    //make sure we came from the right path
+                    const archiveInput = archiveTask.inputs.find(i=>i.inputId == dataset.datasetId);
+                    if(archiveInput.subdir == output.subdir) {
+                        //console.log(parentTask.idx, taskOutputEdge.to, dataset.idx, childTask.idx, dataset.datasetId, archiveInput);
+                        //we are done!
+                        const shortcut = [
+                            taskOutputEdge.idx, 
+                            archiveOutputEdge.idx,
+                            childTaskEdge.idx,         
+                        ];
+                        const newedge = registerShortcutEdge(parentTask.idx, childTask.idx, shortcut);
+                        newedge._output = output.idx;
+                        newedge._dataset = dataset.idx;
+                        newedge.outputId = taskOutputEdge.outputId;
+                        newedge.inputId = childTaskEdge.inputId;
+                        shortcut.forEach(s=>{
+                            prov.edges[s]._simplified = true;
+                        });
+                        archiveTask._simplified = true;
+                        dataset._simplified = true;
+                    }
                 });
             });
         });
-    }
-}
+
+        /*
+        archiveTaskIndices.forEach(archiveTaskIdx=>{
+            const archiveTask = prov.nodes[archiveTaskIdx];
+            if(archiveTask.service != "brainlife/app-archive") return;
+            const datasetIndices = prov.edges.filter(e=>(!e._simplified && e.from == archiveTask.idx)).map(e=>e.to);
+            datasetIndices.forEach(datasetIdx=>{
+                const dataset = prov.nodes[datasetIdx];
+                if(dataset.type != "dataset") return;
+                
+            }); 
+        });
+        */
+    });
+ }
 
 
 

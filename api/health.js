@@ -64,7 +64,7 @@ setInterval(exports.health_check, 1000*60*5); //post health status every minutes
 exports.get_reports = function(cb) {
     r.keys("health.warehouse.*", (err, keys)=>{
         if(err) return cb(err);
-        if(keys.length == 0) return cb(null, {});
+        if(!keys.length) return cb(null, {});
         r.mget(keys, (err, _reports)=>{
             if(err) return cb(err);
             var reports = {};

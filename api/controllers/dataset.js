@@ -1,5 +1,4 @@
 
-//contrib
 const express = require('express');
 const router = express.Router();
 const winston = require('winston');
@@ -11,10 +10,10 @@ const meter = require('stream-meter');
 const mongoose = require('mongoose');
 const archiver = require('archiver');
 
-//mine
 const config = require('../config');
 const db = require('../models');
 const common = require('../common');
+const provenance = require('../lib/provenance');
 
 function canedit(user, rec, canwrite_project_ids) {
     if(!rec.user_id) return false;  //TODO - can this really happen?
@@ -235,6 +234,39 @@ router.get('/prov/:id', (req, res, next)=>{
 
 /**
  * @apiGroup Dataset
+ * @api {get} /dataset/prov2/:id    Get provenance (edges/nodes)
+ * @apiDescription                  Get provenance graph info (Public API)
+ *
+ */
+router.get('/prov2/:id', async (req, res, next)=>{
+    const dataset = await db.Datasets.findById(req.params.id).lean();
+    if(!dataset) return next("can't find such data object");
+    const prov = await provenance.traverseProvenance(dataset.prov.task_id);
+    provenance.setupShortcuts(prov);
+
+    //populate datatype info
+    prov.nodes.filter(n=>!!n.datatype).forEach(node=>{
+        if(node.datatype) {
+            const datatype = datatypes_cache[node.datatype];
+            if(datatype) node.datatype = {
+                id: node.datatype, 
+                name: datatype.name
+            };
+            else {
+                console.error("unknown datatype queried", node.datatype);
+                node.datatype = {
+                    id: node.datatype, 
+                    name: "unknown-"+node.datatype,
+                };
+            }
+        }    
+    });
+
+    res.json(prov);
+});
+
+/**
+ * @apiGroup Dataset
  * @api {get} /dataset/product/:id  Download dataobject product
  *
  */
@@ -259,6 +291,7 @@ router.get('/product/:id', common.jwt({secret: config.express.pubkey}),  (req, r
 });
 
 
+//TODO - update to use lib/provenance
 /**
  * @apiGroup Dataset
  * @api {get} /dataset/provscript/:id     Get provenance (.tar.gz)
@@ -341,6 +374,7 @@ ${run}
     });
 });
 
+//update to use lib/provenance
 /**
  * @apiGroup Dataset
  * @api {get} /dataset/boutique/:id Generate boutique package
@@ -557,6 +591,7 @@ This boutique descriptor that can be used to run the workflow used to generate t
     });
 });
 
+//used by prov/prov2
 let datatypes_cache = {};
 mongoose.connection.once('open', ()=>{
     //TODO - invalidate eventually? or listen to update events?
@@ -569,8 +604,7 @@ mongoose.connection.once('open', ()=>{
     });
 });
 
-//TODO - I should split the algorithms to 2 parts 
-//DEPRECATE by api.provGraph?
+//DEPRECATED by lib/provenance
 //first part to generate a full provenance graph which might be too verbose 
 //  - noisy but a complete picture (no defer)
 //second part to simplify the graph so that users can make sense of it 
