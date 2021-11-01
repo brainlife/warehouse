@@ -84,6 +84,40 @@ exports.traverseProvenance = async (startTaskId) => {
         return datasetNodeIdx;
     }
 
+    function registerFakeArchive(dataset) {
+
+        //old validator didn't have subdir set, but it should be set to "output" for linking to work properly
+        if(dataset.prov.task.service.startsWith("brain-life/validator-") && !dataset.prov.subdir) {
+            dataset.prov.subdir = "output";
+        }
+
+        let dir = "../"+dataset.prov.task._id;
+        if(dataset.prov.subdir) dir += "/"+dataset.prov.subdir;
+
+        const guess = {
+            _id: "fake.archive.ds-"+dataset._id,
+            service: "brainlife/app-archive",
+            user_id: dataset.user_id,
+            name: "guess archive",
+            finish_date: dataset.create_date,
+            config: {
+                datasets: [{
+                    project: dataset.project,
+                    dir,
+                    dataset_id: dataset._id,
+                    storage: dataset.storage,
+                    storage_config: dataset.storage_config, //is this right?
+                }]
+            },
+            deps_config: [{
+                task: dataset.prov.task._id,
+                subdirs: [dataset.prov.output_id],
+            }],
+        }
+        taskCache[guess._id] = guess;
+        tasks.push(guess._id);
+    }
+
     async function handleTask(taskId) {
 
         //see if we already handled this task
@@ -222,9 +256,7 @@ exports.traverseProvenance = async (startTaskId) => {
                 if(dataset.archive_task_id) {
                     tasks.push(dataset.archive_task_id);
                 } else {
-                    //old dataset didn't have archive_task_id.. let's try loading from the prov.task_id
-                    //copy dataset doesn't have prov
-                    if(dataset.prov) tasks.push(dataset.prov.task_id);
+                    registerFakeArchive(dataset);
                 }
 
                 const datasetNodeIdx = registerDataset(dataset);
@@ -259,28 +291,7 @@ exports.traverseProvenance = async (startTaskId) => {
                         //old dataset (like dev:5a2199f06fb74f6eefd5ad5c or test:5afedfdb251f5200274d9ca8) 
                         //didn't have archive_task_id (because there was no archive service back then?)
                         //let's fake it by creating a guess in our cache
-                        const guess = {
-                            _id: "fake.archive.ds-"+dataset._id,
-                            service: "brainlife/app-archive",
-                            user_id: dataset.user_id,
-                            name: "guess archive",
-                            finish_date: dataset.create_date,
-                            config: {
-                                datasets: [{
-                                    project: dataset.project,
-                                    dir: "../"+dataset.prov.task._id+"/"+dataset.prov.output_id,
-                                    dataset_id: dataset._id,
-                                    storage: dataset.storage,
-                                    storage_config: dataset.storage_config, //is this right?
-                                }]
-                            },
-                            deps_config: [{
-                                task: dataset.prov.task._id,
-                                subdirs: [dataset.prov.output_id],
-                            }],
-                        }
-                        taskCache[guess._id] = guess;
-                        tasks.push(fakeId);
+                        registerFakeArchive(dataset);
                     }
 
                     const datasetNodeIdx = registerDataset(dataset);
@@ -324,9 +335,16 @@ exports.traverseProvenance = async (startTaskId) => {
                 node.inputs.push({task})
             });
         }
+
+        //old validator didn't have _outputs.. let's guess the output
         if(node.validator && !task.config._outputs) {
-            //TODO
-            console.error("validator idx:"+node.idx+" doesn't have _outputs. simplifier might fail");
+            console.log("validator is missing missing output .. faking");
+            console.dir(node);
+            task.config._outputs = [{
+                id: "output",
+                datatype: "whatever",
+                subdir: "output",
+            }];
         }
 
         if(task.config._inputs) task.config._inputs.forEach(input=>{
@@ -351,6 +369,10 @@ exports.traverseProvenance = async (startTaskId) => {
                 datatypeTags: output.datatype_tags,
                 tags: output.tags,
             }
+
+            //fake archiver expect subdir to be set to output_id but old task didn't do this sometimes
+            //if(!outputNode.subdir) outputNode.subdir = output.id;
+
             /*
             if(task.service == "brainlife/app-stage") {
                 outputNode._datasetId = output.dataset_id;
@@ -540,7 +562,7 @@ exports.setupShortcuts = (prov)=>{
         const stageTaskEdges = prov.edges.filter(e=>e.from == node.idx);
         stageTaskEdges.forEach(stageTaskEdge=>{
             const stageTask = prov.nodes[stageTaskEdge.to];
-            if(stageTask.service != "brainlife/app-stage") return;
+            if(stageTask.service != "brainlife/app-stage" && stageTask.service != "soichih/sca-product-raw") return;
             prov.edges.filter(edge=>(edge.from == stageTask.idx && !edge._simplified)).forEach(edge=>{
                 if(!edge._output) return;
                 const output = prov.nodes[edge._output];
