@@ -645,7 +645,7 @@ exports.setupShortcuts = (prov)=>{
         });
         */
     });
- }
+}
 
 
 
