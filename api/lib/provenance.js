@@ -85,13 +85,18 @@ exports.traverseProvenance = async (startTaskId) => {
     }
 
     function registerFakeArchive(dataset) {
+        if(!dataset.prov.task && !dataset.prov.task_id) {
+            console.error("can't register fake app-archive without prov.task or prov.task_id");
+            console.dir(dataset);
+            return;
+        }  
 
         //old validator didn't have subdir set, but it should be set to "output" for linking to work properly
-        if(dataset.prov.task.service.startsWith("brain-life/validator-") && !dataset.prov.subdir) {
+        if(dataset.prov.task && dataset.prov.task.service.startsWith("brain-life/validator-") && !dataset.prov.subdir) {
             dataset.prov.subdir = "output";
         }
 
-        let dir = "../"+dataset.prov.task._id;
+        let dir = "../"+dataset.prov.task_id || dataset.prov.task._id;
         if(dataset.prov.subdir) dir += "/"+dataset.prov.subdir;
 
         const guess = {
@@ -110,7 +115,7 @@ exports.traverseProvenance = async (startTaskId) => {
                 }]
             },
             deps_config: [{
-                task: dataset.prov.task._id,
+                task: dataset.prov.task_id || dataset.prov.task._id,
                 subdirs: [dataset.prov.output_id],
             }],
         }
@@ -131,11 +136,10 @@ exports.traverseProvenance = async (startTaskId) => {
                 headers: { authorization: "Bearer "+config.warehouse.jwt },
             });
             if(res.status != "200") throw "failed to query task:"+taskId;
-            if(res.data.tasks.length != 1) {
+            if(!res.data.tasks.length) {
                 console.log("couldn't find task", taskId);
-                return;
-            }
-            task = res.data.tasks[0];
+                task = { _id: taskId, service: "brainlife/app-noop", name: "fake for missing" }
+            } else task = res.data.tasks[0];
         }
         if(!task) return console.error("failed to load task", taskId);
 
