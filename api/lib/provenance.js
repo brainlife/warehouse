@@ -86,8 +86,8 @@ exports.traverseProvenance = async (startTaskId) => {
 
     function registerFakeArchive(dataset) {
         if(!dataset.prov || (!dataset.prov.task && !dataset.prov.task_id)) {
-            console.error("can't register fake app-archive without prov.task or prov.task_id");
-            console.dir(dataset);
+            //datalad dataset doesn't have any prov but that's ok.. it's terminal there
+            console.error("can't register fake app-archive without prov.task or prov.task_id", dataset.storage);
             return;
         }  
 
@@ -287,6 +287,7 @@ exports.traverseProvenance = async (startTaskId) => {
                     const dataset = await db.Datasets.findById(datasetConfig.dir).lean();
                     if(!dataset) {
                         console.error("couldn't find sca-product-raw dataset:", datasetConfig.dir, "in task:", task._id);
+                        //TODO - register a fake dataset?
                         continue;
                     }
                     if(dataset.archive_task_id) {
@@ -510,6 +511,10 @@ exports.setupShortcuts = (prov)=>{
             findEdgeIdx(validatorInputIdx, node.idx),
             findEdgeIdx(node.idx, validatorOutputIdx),
         ];
+        if(shortcut.includes(-1)) {
+            console.error("validator didn't have input/output?", node, shortcut);
+            return;
+        }
         shortcut.forEach(idx=>{
             prov.edges[idx]._simplified = true;
         });
@@ -521,8 +526,6 @@ exports.setupShortcuts = (prov)=>{
         //mark simplified nodes/edges with the new shortCutEdges
         node._simplified = true;
     });
-
-
 
     //////////////////////////////////////////////////////////////////
     // output shortcuts

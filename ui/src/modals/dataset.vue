@@ -667,19 +667,13 @@ export default {
                         if(node.meta.session) graphNode.label += " / ses-"+node.meta.session;
                         if(node.meta.run) graphNode.label += " / run-"+node.meta.run;
                         graphNode.label += "\n";
-
-                        //sub:${node.meta.subject} ses:${node.meta.session} run:${node.meta.run}
-                        //dsid:${node.datasetId}
-                        //🟢 ${node.datatype.name} ${node.datatypeTags.map(t=>"["+t+"]")}
-                        //tags:${node.tags.join(",")}
-                        //storage:${node.storage} / ${node.storageLocation}
                         break;
                     case "output":
                         graphNode.color = "#ff9957";
                         graphNode.font = {size: 10, color: "#fff"};
                         graphNode.label = node.outputId+"\n";
                         graphNode.label += node.datatype.name; //+"\nsubdir:"+node.subdir; //dangling output
-                        if(node.datatypeTags) graphNode.label += " "+node.datatypeTags.map(t=>"<"+t+">").join(" ");
+                        if(node.datatypeTags) graphNode.label += " "+node.datatypeTags.map(t=>"<"+t+">").join(" ")+"\n";
                         if(node.tags) graphNode.label += " "+node.tags.join()+"\n";
                         if(node._taskId == this.dataset.prov.task_id && node.outputId == this.dataset.prov.output_id) {
                             graphNode.label = "This Data-Object";
@@ -746,26 +740,26 @@ export default {
                     case "output":
                         if(hideSimplified) {
                             label += nodeTo.datatype.name;
-                            label += " "+nodeTo.datatypeTags.map(t=>"<"+t+">").join(" ");
+                            label += " "+nodeTo.datatypeTags.map(t=>"<"+t+">").join(" ")+"\n";
                             if(nodeTo.tags) label += " "+nodeTo.tags.join(",")+"\n";
                         }
                     default:
                         //if it's not leading to output node, then I need to figure out myself
                         if(edge._dataset) {
                             const dataset = res.data.nodes[edge._dataset];
+                            label += "🟢 ";
                             label += dataset.datatype.name;
-                            label += " "+dataset.datatypeTags.map(t=>"<"+t+">").join(" ");
-                            label += " "+dataset.tags.join()+"\n";
+                            if(dataset.datatypeTags) label += " "+dataset.datatypeTags.map(t=>"<"+t+">").join(" ")+"\n";
+                            if(dataset.tags) label += " "+dataset.tags.join()+"\n";
                         } else if(edge._output) {
                             const output = res.data.nodes[edge._output];
                             label += output.datatype.name;
-                            if(output.datatypeTags) label += " "+output.datatypeTags.map(t=>"<"+t+"> ").join(" ");
+                            if(output.datatypeTags) label += " "+output.datatypeTags.map(t=>"<"+t+"> ").join(" ")+"\n";
                             if(output.tags) label += " "+output.tags.join();
                             label+="\n";
                         }
                         break;
                     }
-
 
                     //put from/to ids
                     label += "(";
@@ -796,7 +790,11 @@ export default {
                     }
                     graphEdge.title = "(eidx:"+edge.idx+" "+edge.from+"-"+edge.to+")";
                     if(edge._simplified) graphEdge.title += "(simplified)\n";
-                    if(edge._shortcutEdges) graphEdge.title += "shortcuting:"+edge._shortcutEdges.join()+"\n";
+                    if(edge._shortcutEdges) graphEdge.title += "\nshortcut:"+edge._shortcutEdges.join()+"\n";
+                    if(edge._dataset) {
+                        const dataset = res.data.nodes[edge._dataset];
+                        graphEdge.title += "archived as datasetid:"+dataset.datasetId+"\n";
+                    }
                     graphEdges.push(graphEdge);
                 })
 
