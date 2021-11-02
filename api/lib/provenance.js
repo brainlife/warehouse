@@ -85,7 +85,7 @@ exports.traverseProvenance = async (startTaskId) => {
     }
 
     function registerFakeArchive(dataset) {
-        if(!dataset.prov.task && !dataset.prov.task_id) {
+        if(!dataset.prov || (!dataset.prov.task && !dataset.prov.task_id)) {
             console.error("can't register fake app-archive without prov.task or prov.task_id");
             console.dir(dataset);
             return;
@@ -96,7 +96,7 @@ exports.traverseProvenance = async (startTaskId) => {
             dataset.prov.subdir = "output";
         }
 
-        let dir = "../"+dataset.prov.task_id || dataset.prov.task._id;
+        let dir = "../"+(dataset.prov.task_id || dataset.prov.task._id);
         if(dataset.prov.subdir) dir += "/"+dataset.prov.subdir;
 
         const guess = {
@@ -115,7 +115,7 @@ exports.traverseProvenance = async (startTaskId) => {
                 }]
             },
             deps_config: [{
-                task: dataset.prov.task_id || dataset.prov.task._id,
+                task: (dataset.prov.task_id || dataset.prov.task._id),
                 subdirs: [dataset.prov.output_id],
             }],
         }
@@ -522,6 +522,8 @@ exports.setupShortcuts = (prov)=>{
         node._simplified = true;
     });
 
+
+
     //////////////////////////////////////////////////////////////////
     // output shortcuts
     // taskP > output > taskC 
@@ -608,7 +610,7 @@ exports.setupShortcuts = (prov)=>{
                     const childTask = prov.nodes[childTaskEdge.to];
 
                     //make sure we came from the right path
-                    const archiveInput = archiveTask.inputs.find(i=>i.inputId == dataset.datasetId);
+                    const archiveInput = archiveTask.inputs.find(i=>i.inputId.toString() == dataset.datasetId.toString());
                     if(archiveInput.subdir == output.subdir) {
                         //console.log(parentTask.idx, taskOutputEdge.to, dataset.idx, childTask.idx, dataset.datasetId, archiveInput);
                         //we are done!

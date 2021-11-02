@@ -23,10 +23,7 @@ exports.mongoose_debug = true;
 exports.debug = true; 
 
 //used to post/poll health status from various services
-exports.redis = {
-    server: "localhost",
-    //port: 6379,
-}
+exports.redis = { server: "localhost", }
 
 exports.github = {
     access_token: fs.readFileSync(__dirname+"/github.access_token", "ascii").trim(),
