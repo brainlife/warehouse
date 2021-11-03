@@ -20,6 +20,7 @@ exports.init = (cb)=>{
         */
         useNewUrlParser: true,
         useUnifiedTopology: true,
+        //useCreateIndex: true,
     }, err=>{
         if(err) return cb(err);
         cb();

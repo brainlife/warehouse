@@ -3,6 +3,7 @@
 const axios = require('axios');
 const config = require('../config');
 const db = require('../models');
+const mongoose = require('mongoose');
 
 exports.traverseProvenance = async (startTaskId) => {
 
@@ -17,7 +18,6 @@ exports.traverseProvenance = async (startTaskId) => {
         await handleTask(tasks.shift()); 
     }
     
-        
     //pick things we want to store in nodes.config
     /*
     function filterConfig(task) {
@@ -85,9 +85,13 @@ exports.traverseProvenance = async (startTaskId) => {
     }
 
     function registerFakeArchive(dataset) {
+
+        //we didn't archive on some storage
+        if(dataset.storage == "datalad") return;
+
         if(!dataset.prov || (!dataset.prov.task && !dataset.prov.task_id)) {
             //datalad dataset doesn't have any prov but that's ok.. it's terminal there
-            console.error("can't register fake app-archive without prov.task or prov.task_id", dataset.storage);
+            console.error("can't register fake app-archive for dataset:"+dataset._id+" without prov.task or prov.task_id. storage:", dataset.storage);
             return;
         }  
 
@@ -143,7 +147,7 @@ exports.traverseProvenance = async (startTaskId) => {
         }
         if(!task) return console.error("failed to load task", taskId);
 
-        if(task.service == "brainlife/app-noop") {
+        if(task.service == "brainlife/app-noop" || task.service == "soichih/sca-service-noop") {
             if(!task.config) task.config = {};
             if(!task.config._outputs) {
                 console.log("noop task", task._id, "doesn't have config set.. faking");
@@ -179,7 +183,7 @@ exports.traverseProvenance = async (startTaskId) => {
             inputs: [],
         };
         if(task.config._app) {
-            const app = await db.Apps.findById(task.config._app).select({config: 1}).lean();
+            const app = await db.Apps.findById(task.config._app).select({config: 1}).exec();//.lean();
             node._config = filterConfig(task.config, app.config);
             node.appId = task.config._app;
         }
@@ -405,6 +409,7 @@ exports.traverseProvenance = async (startTaskId) => {
         }
     }
 
+
     //find source output for archived dataset and link it
     nodes.forEach(node=>{
         if(node.inputs) node.inputs.forEach(input=>{
@@ -453,6 +458,7 @@ exports.sampleTerminalTasks = async (appId)=>{
 // output
 //      task1>output>task2 into task1>task2
 exports.setupShortcuts = (prov)=>{
+    //console.debug("setting up shortcuts");
 
     function getParentIndices(nodeIdx) {
         return prov.edges.filter(edge=>(edge.to == nodeIdx)).map(edge=>edge.from);
@@ -496,7 +502,8 @@ exports.setupShortcuts = (prov)=>{
     prov.nodes.filter(node=>node.validator).forEach(node=>{
         //validator should only have 1 input / output
         const validatorInputIdx = getParentIndices(node.idx)[0];
-        const validatorSourceIdx = getParentIndices(validatorInputIdx)[0];
+        const validatorSourceIdx = getParentIndices(validatorInputIdx)[0]; 
+        //const validatorInput = prov.nodes[validatorInputIdx];
         const validatorOutputIdx = getChildIndices(node.idx)[0];
         const validatorOutput = prov.nodes[validatorOutputIdx];
 
@@ -536,12 +543,14 @@ exports.setupShortcuts = (prov)=>{
         const parentTaskEdges = prov.edges.filter(e=>e.to == output.idx);
         parentTaskEdges.forEach(parentTaskEdge=>{
             const parentTask = prov.nodes[parentTaskEdge.from];
+            //if(parentTask._simplified) return;
             if(parentTask.type != "task") return;
             //if(parentTask._simplified) return;
             //const childTaskIndices = getChildIndices(output.idx);
             const childTaskEdges = prov.edges.filter(e=>e.from == output.idx);
             childTaskEdges.forEach(childTaskEdge=>{
                 const childTask = prov.nodes[childTaskEdge.to];
+                //if(childTask._simplified) return;
                 if(childTask.type != "task") return;
                 //if(childTask._simplified) return;
                 
@@ -556,6 +565,10 @@ exports.setupShortcuts = (prov)=>{
                 edge._output = output.idx; //TODO if it already exists, it could wipe?
                 edge.outputId = parentTaskEdge.outputId;
                 edge.inputId = childTaskEdge.inputId;
+
+                //if either parent or child node is simplified, mark this one simplified also.
+                if(parentTask._simplified || childTask._simplified) edge._simplified = true;
+
                 output._simplified = true;
                 
                 shortcut.forEach(s=>{
@@ -584,6 +597,10 @@ exports.setupShortcuts = (prov)=>{
                     const newedge = registerShortcutEdge(node.idx, edge.to, shortcut);
                     newedge._output = edge._output;
                     newedge.inputId = edge.inputId; //not yet tested
+
+                    //but probably needed... but not 100% sure..
+                    //if(node._simplified || stageTask._simplified || output._simplified) newedge._simplified = true;
+
                     shortcut.forEach(s=>{
                         prov.edges[s]._simplified = true;
                     });
@@ -627,6 +644,10 @@ exports.setupShortcuts = (prov)=>{
                         newedge._dataset = dataset.idx;
                         newedge.outputId = taskOutputEdge.outputId;
                         newedge.inputId = childTaskEdge.inputId;
+
+                        //but probably needed... but not 100% sure..
+                        //if(archiveTask._simplified || dataset._simplified || childTask._simplified) newedge._simplified = true;
+                        
                         shortcut.forEach(s=>{
                             prov.edges[s]._simplified = true;
                         });
@@ -651,6 +672,170 @@ exports.setupShortcuts = (prov)=>{
         */
     });
 }
+//from array of provenances, construct a single tree with counts indicating number of paths for each branch
+exports.countProvenances = (provs)=>{
+    console.debug("counting provenances");
 
+    function countApps(prov, pnode, cnode, pidx) {
+
+        //find all input edges
+        prov.edges.filter(e=>(e.to == pnode.idx && !e._simplified)).forEach(edge=>{
+
+            const output = prov.nodes[edge._output];
+            const input = prov.nodes[edge.from];
+            const info = pullnodeinfo(input);
+
+            let datatype = null;
+            if(output) datatype = output.datatype;
+            const iid = datatype+":"+edge.inputId;
+
+            if(!cnode.inputs[iid]) cnode.inputs[iid] = [];
+
+            let c = cnode.inputs[iid].find(a=>a.id == info.id);
+            if(!c) {
+                c = info;
+                info.outputId = edge.outputId;
+
+                //these will be just sample from the first task that matches the id
+                if(output && output.datatypeTags) {
+                    info.datatypeTags = {};
+                    output.datatypeTags.forEach(tag=>{
+                        info.datatypeTags[tag] = 1;
+                    });
+                }
+                info.config = {};
+
+                //convert all v into count of 1
+                for(const key in input._config) {
+                    let v = input._config[key].v;
+                    //if(v === undefined) v = "__undefined__"; 
+                    if(!info.config[key]) {
+                        info.config[key] = Object.assign({}, input._config[key]);
+                        info.config[key].vcounts = {};
+                    }
+                    //if(v === '') v = "__emptystring__";
+                    info.config[key].vcounts = {[v]: 1};
+                    delete info.config[key].v;
+                }
+
+                //add new app
+                cnode.inputs[iid].push(info);
+            } else {
+                //merge datatype tags
+                if(output && output.datatypeTags) {
+                    if(!c.datatypeTags) c.datatypeTags = {};
+                    output.datatypeTags.forEach(tag=>{
+                        if(!c.datatypeTags[tag]) c.datatypeTags[tag] = 0;
+                        c.datatypeTags[tag]++;
+                    });
+                } 
+
+                //merge new config values
+                if(!c.config) c.config = {};
+                for(const key in input._config) {
+                    let v = input._config[key].v;
+                    if(!c.config[key]) {
+                        c.config[key] = Object.assign({}, input._config[key]);
+                        c.config[key].vcounts = {};
+                    } 
+                    if(!c.config[key].vcounts[v]) c.config[key].vcounts[v] = 0;
+                    if(c.config[key]) c.config[key].vcounts[v]++;
+                    delete c.config[key].v;
+                }
+            }
+            //c.count++;
+            c.provs.push(pidx);
+
+            //recurse into parent
+            countApps(prov, input, c, pidx);
+        });
+    }
+
+    function pullnodeinfo(pnode) {
+        let id = pnode.type;
+        switch(pnode.type) {
+        case "task":
+            id+=":"+pnode.service;
+            if(pnode.serviceBranch) id+=":"+pnode.serviceBranch;
+            break
+        case "dataset":
+            id+=":"+pnode.datasetId;
+        default:
+            //??
+        }
+        return {
+            id,
+            appId: pnode.appId, 
+            //_taskId: pnode.taskId, //first one seen
+            //count: 0,
+            //service: pnode.service, 
+            //serviceBranch: pnode.serviceBranch, 
+            inputs: {},
+            provs: [],  //provIndices
+            storage: pnode.storage, //for dataset
+            storageLocation: pnode.storageLocation, //for dataset
+        }
+    }
+
+    //create the root of count node
+    const cnodes = [];
+    provs.forEach((prov, pidx)=>{
+        const pnode = provs[0].nodes[0];
+        const info = pullnodeinfo(pnode);
+
+        //see if we already have the app listed
+        let c = cnodes.find(a=>a.id == info.id);
+        if(!c) {
+            c = info;
+            cnodes.push(c);
+        }
+        //c.count++;
+        c.provs.push(pidx);
+
+        countApps(prov, pnode, c, pidx);
+    });
+    return cnodes;
+}
+
+//from the output of countProvenances, pick ones with highest counts
+exports.computeProbabilities = (cnodes)=>{
+    console.debug("picking common provenances");
+    //console.dir(cnodes);
+
+    //multiple provenance graph could end up in the same terminal nodes
+    //to prevent picking similar(same) provenances with the same highest probs,
+    //let's preserve the prob grouping so client can pick 1 from each groups
+    const probs = []; //{prob: <conditional probability>: provs: [ <indicies for the provs> ]}
+
+    //compute the conditional probability of each provenance
+    function walk(nodes, prob = 1.0, denominator) {
+        nodes.forEach(node=>{
+            const nodeProvs = node.provs.length;
+            let condprob = prob;
+            if(denominator) condprob *= nodeProvs/denominator;
+            //console.log("walking inputs", prob, node.id, nodeProvs, denominator, node.provs);
+            if(Object.keys(node.inputs).length) for(const inputId in node.inputs) {
+                const inputs = node.inputs[inputId];
+                if(inputs.length) {
+                    walk(inputs, condprob, nodeProvs);
+                }
+            } else {
+                //reached the terminal node.. save the probability for each provIndices
+                console.log("reached terminal", condprob, node.provs);
+                probs.push({prob: condprob, provs: node.provs})
+            }
+        });
+    }
+    walk(cnodes);
+
+    //sort the probs
+    probs.sort((a,b)=>{
+        if(a.prob < b.prob) return 1;
+        if(a.prob > b.prob) return -1;
+        return 0;
+    });
+
+    return probs; 
+}
 
 

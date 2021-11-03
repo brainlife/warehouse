@@ -13,7 +13,7 @@ it('initializing model', function(done) {
 });
 
 describe('query provenance', ()=>{
-    it.skip('up', function(done) {
+    it('up', function(done) {
         this.timeout(5*1000);
         /*
         let task = {
@@ -34,7 +34,9 @@ describe('query provenance', ()=>{
             });
         });
         */
-        provenance.traverseProvenance("60876cc37f09362173e4095a").then(res=>{
+        //provenance.traverseProvenance("60876cc37f09362173e4095a").then(res=>{
+        provenance.traverseProvenance("5fda612b0d4b105d2b903a67").then(res=>{
+            provenance.setupShortcuts(res);
             console.log(JSON.stringify(res.nodes, null, 4));
             console.dir(res.edges);
             done();
@@ -42,7 +44,7 @@ describe('query provenance', ()=>{
     });
 
     let sample;
-    it('find terminal', function(done) {
+    it.skip('find terminal', function(done) {
         this.timeout(10*1000);
         //http://localhost:8080/app/5a9568777f1aef3091b13f13 (tract analysis profile)
         //http://localhost:8080/app/5e18caba6db0cc04b44c60d5 (fmriprep)
@@ -54,7 +56,7 @@ describe('query provenance', ()=>{
         }); 
     });
 
-    it('simplify', function(done) {
+    it.skip('simplify', function(done) {
         provenance.setupShortcuts(sample);
         console.log(JSON.stringify(sample, null, 4));
         done();
