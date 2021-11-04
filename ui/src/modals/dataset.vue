@@ -283,7 +283,7 @@
                             <div style="position: absolute; left: 10px; bottom: 10px; z-index: 1;">
                                 <b-button variant="outline-primary" :pressed.sync="showFull" size="sm">Show Full Provenance</b-button>
                             </div>
-                            <div ref="prov" style="height: 100%;"/>
+                            <provgraph v-if="prov2" :prov="prov2" :showFull="showFull" :dataset="dataset" style="height: 100%;"/>
                         </div>
                     </div>
                 </b-tab>
@@ -321,6 +321,7 @@ import tageditor from '@/components/tageditor'
 import taskconfig from '@/components/taskconfig'
 import product from '@/components/product'
 import secondary from '@/components/secondary'
+import provgraph from '@/components/provgraph'
 
 import agreementMixin from '@/mixins/agreement'
 import secondaryWaiter from '@/mixins/secondarywaiter'
@@ -353,6 +354,7 @@ export default {
         taskconfig, 
         product, 
         secondary, 
+        provgraph, 
         task: ()=>import('@/components/task'),
 
         projectcard: ()=>import('@/components/projectcard'),
@@ -364,6 +366,7 @@ export default {
             dataset: null,
             apps: null,
             prov: null, 
+            prov2: null, 
             product: null,
 
             dtv: null,
@@ -406,9 +409,11 @@ export default {
     },
     
     watch: {
+        /*
         showFull: function() {
             this.load_prov2();
         },
+        */
 
         tab_index: function() {
             if(this.tab_index == 1 && this.prov == null) {
@@ -589,342 +594,8 @@ export default {
         load_prov2() {
             //load provenance
             this.$http.get('dataset/prov2/'+this.dataset._id).then(res=>{
-
-                //for debugging
-                console.dir(res.data);
-
-                let hideSimplified = true;
-                let hideShortcut = false;
-                if(this.showFull) {
-                    hideSimplified = false;
-                }
-
-                //hide dangling output except for "this"
-                res.data.edges.forEach(edge=>{
-                    const node = res.data.nodes[edge.to];
-                    if(node._taskId == this.dataset.prov.task_id && node.outputId == this.dataset.prov.output_id) {
-                        //keep the "this data-object"
-                    } else {
-                        //hide if there are no children
-                        const next = res.data.edges.find(next=>(edge.to == next.from));
-                        if(!next && hideSimplified) {
-                            edge._hide = true;
-                            node._hide = true;
-                        }
-                    }
-                });
-
-                if(hideSimplified) {
-                    //hide simplifiedNodes / edges
-                    res.data.edges.filter(edge=>edge._simplified).forEach(edge=>{
-                        edge._hide = true;
-                    });
-                    res.data.nodes.filter(node=>node._simplified).forEach(node=>{
-                        node._hide = true;
-                    });
-                } 
-                if(hideShortcut) {
-                    res.data.edges.filter(edge=>edge._shortcutEdges).forEach(edge=>{
-                        edge._hide = true;
-                    });
-                }
-
-                if(!hideSimplified && !hideShortcut) {
-                    //hide shortcuts that are itself is simplified
-                    res.data.edges.filter(edge=>(edge._shortcutEdges&&edge._simplified)).forEach(edge=>{
-                        edge._hide = true;
-                    });
-                }
-
-                //apply styles
-                const graphNodes = [];
-                const graphEdges = [];
-                res.data.nodes.forEach(node=>{
-                    if(node._hide) return;
-                    const graphNode = {
-                        shape: "box",
-                        id: node.idx,
-                        font: {
-                           size: 12,
-                           color: "#333",
-                        },
-                        color: "#fff",
-                    }
-                    switch(node.type) {
-                    case "task":
-                        //node.mass = 1+0.2*node.label.trim().split("\n").length;
-                        graphNode.labelHighlightBold = false;
-                        graphNode.label = node.name+"\n"+node.service;
-                        if(node.serviceBranch) graphNode.label += ":"+node.serviceBranch;
-                        graphNode.label +="\n";
-                        break;
-                    case "dataset":
-                        graphNode.color = "#159957";
-                        graphNode.font.color = "#fff";
-                        graphNode.label = node.project.name+"\n";
-
-                        if(node.meta.subject) graphNode.label += "sub-"+node.meta.subject;
-                        if(node.meta.session) graphNode.label += " / ses-"+node.meta.session;
-                        if(node.meta.run) graphNode.label += " / run-"+node.meta.run;
-                        graphNode.label += "\n";
-                        break;
-                    case "output":
-                        graphNode.color = "#ff9957";
-                        graphNode.font = {size: 10, color: "#fff"};
-                        graphNode.label = node.outputId+"\n";
-                        graphNode.label += node.datatype.name; //+"\nsubdir:"+node.subdir; //dangling output
-                        if(node.datatypeTags) graphNode.label += " "+node.datatypeTags.map(t=>"<"+t+">").join(" ")+"\n";
-                        if(node.tags) graphNode.label += " "+node.tags.join()+"\n";
-                        if(node._taskId == this.dataset.prov.task_id && node.outputId == this.dataset.prov.output_id) {
-                            graphNode.label = "This Data-Object";
-                            graphNode.color = "#2693ff";
-                            graphNode.y = 2000;
-                            graphNode.margin = 10;
-                            graphNode.font.color = "#fff";
-                        }
-                        /*
-                    default:
-                        graphNode.color = "#159957";
-                        graphNode.font = {size: 12, color: "#fff"};
-                        graphNode.lable = node.type;
-                        */
-                    }
-
-                    if(node._simplified) {
-                        graphNode.font.size -= 5;
-                    }
-                    //graphNode.label += "\nidx:"+node.idx;
-
-                    //construct tooltip
-                    let tooltip = "";
-                    if(node._config) {
-                        node.label += "\n";
-                        let recs = [];
-                        for(let key in node._config) {
-                            let conf = node._config[key];
-                            if(typeof conf.v == "string" && conf.v.startsWith("../")) continue;
-                            let rec = "";
-                            rec += "<tr><td><pre>"+key+"</pre></td>";
-                            if(conf.default !== undefined && conf.default == conf.v) {
-                                rec+= "<td>"+conf.v+"</td>"
-                            } else {
-                                rec+= "<td><b>"+conf.v+"</b> (default: "+conf.default+")</td>"
-                                graphNode.label += key+":"+conf.v+"\n";
-                            }
-                            rec += "</tr>";
-                            recs.push(rec);
-                        }
-                        if(recs.length > 0) {
-                            tooltip += "<table class='table table-sm'>";
-                            tooltip += recs.join("\n");
-                            tooltip += "</table>";
-                        }
-                    }
-                    if(node.desc) tooltip += "<p>desc:"+node.desc+"</p>";
-                    if(node.datasetId) tooltip += "<p>datasetid:"+node.datasetId+"</p>";
-                    if(node.userId) tooltip += "<p>userId:"+node.userId+"</p>";
-                    if(node._taskId) tooltip += "<p>taskId:"+node._taskId+"</p>";
-                    graphNode.title = "<div>"+tooltip+"</div><small>idx:"+node.idx+"</small>";
-                    graphNodes.push(graphNode);
-                });
-                
-                res.data.edges.forEach(edge=>{
-                    if(edge._hide) return;
-
-                    const nodeFrom = res.data.nodes[edge.from];
-                    const nodeTo = res.data.nodes[edge.to];
-
-                    let label = "";
-                    
-                    switch(nodeTo.type) {
-                    case "output":
-                        if(hideSimplified) {
-                            label += nodeTo.datatype.name;
-                            label += " "+nodeTo.datatypeTags.map(t=>"<"+t+">").join(" ")+"\n";
-                            if(nodeTo.tags) label += " "+nodeTo.tags.join(",")+"\n";
-                        }
-                    default:
-                        //if it's not leading to output node, then I need to figure out myself
-                        if(edge._dataset) {
-                            const dataset = res.data.nodes[edge._dataset];
-                            label += "🟢 ";
-                            label += dataset.datatype.name;
-                            if(dataset.datatypeTags) label += " "+dataset.datatypeTags.map(t=>"<"+t+">").join(" ")+"\n";
-                            if(dataset.tags) label += " "+dataset.tags.join()+"\n";
-                        } else if(edge._output) {
-                            const output = res.data.nodes[edge._output];
-                            label += output.datatype.name;
-                            if(output.datatypeTags) label += " "+output.datatypeTags.map(t=>"<"+t+"> ").join(" ")+"\n";
-                            if(output.tags) label += " "+output.tags.join();
-                            label+="\n";
-                        }
-                        break;
-                    }
-
-                    //put from/to ids
-                    label += "(";
-                    if(edge.outputId) label += "from "+edge.outputId;
-                    if(edge.inputId) {
-                        if(edge.outputId) label += " ";
-                        label += "to "+edge.inputId;
-                    }
-                    label += ")";
-
-                    const graphEdge = {
-                        label,
-                        font: {
-                            size: 10,
-                            color: '#000a',
-                        },
-                        arrows: "to",
-                        to: edge.to,
-                        from: edge.from,
-                        color: '#f00',
-                        edgeIdx: edge.idx,
-                    }
-                    if(edge._simplified) {
-                        graphEdge.font.size -= 7;
-                    }
-                    if(edge._shortcutEdges && !hideSimplified) {
-                        graphEdge.dashes = true;
-                    }
-                    graphEdge.title = "(eidx:"+edge.idx+" "+edge.from+"-"+edge.to+")";
-                    if(edge._simplified) graphEdge.title += "(simplified)\n";
-                    if(edge._shortcutEdges) graphEdge.title += "\nshortcut:"+edge._shortcutEdges.join()+"\n";
-                    if(edge._dataset) {
-                        const dataset = res.data.nodes[edge._dataset];
-                        graphEdge.title += "archived as datasetid:"+dataset.datasetId+"\n";
-                    }
-                    graphEdges.push(graphEdge);
-                })
-
-                //modify provenance for UI purpose
-                //handle terminal tasks differently
-                graphNodes.forEach(gnode=>{
-                    const node = res.data.nodes[gnode.id];
-
-                    const outputEdges = graphEdges.filter(e=>e.from == gnode.id);
-                    switch(node.service) {
-                    case "brainlife/app-noop":
-                        //turn the task into "dataset", basically
-                        gnode.color = "#159957";
-                        gnode.font.color = "#fff";
-
-                        outputEdges.splice(0).forEach(outputEdge=>{
-                            const edge = res.data.edges[outputEdge.edgeIdx];
-                            const dataset = res.data.nodes[edge._dataset];
-                            const output = res.data.nodes[edge._output];
-
-                            if(!dataset) return;
-
-                            gnode.label = "";
-                            if(dataset.project) {
-                                gnode.label += dataset.project.name+"\n";
-                            }
-                            if(dataset.meta.subject) gnode.label += `sub-${dataset.meta.subject}`;
-                            if(dataset.meta.session) gnode.label += ` / ses-${dataset.meta.session}`;
-                            if(dataset.meta.run) gnode.label += ` / run-${dataset.meta.run}`;
-                            gnode.label += '\n';
-                            gnode.title += "<p>datasetId:"+dataset.datasetId+"</p>";
-                        });
-                        
-                        
-                        //add user node
-                        const userNode = {
-                            shape: "box",
-                            id: gnode.id+".user",
-                            font: {
-                               size: 10,
-                               color: "#fff",
-                            },
-                            color: "#999",
-                            label: "user:"+node.userId,
-                            y: -2000,
-                        }
-                        graphNodes.push(userNode);
-                        graphEdges.push({
-                            arrows: "to", 
-                            from: userNode.id, 
-                            to: gnode.id, 
-                            label: "Upload\n("+node.name+")",
-                            font: { size: 10, color: '#000a'}
-                        })
-
-                        break;
-                    } 
-                });
- 
-                if(res.data.edges.length) {
-                    Vue.nextTick(()=>{
-                        getVis().then(vis=>{
-                            var gph = new vis.Network(this.$refs.prov, {
-                                nodes: graphNodes,
-                                edges: graphEdges,
-                            }, {
-                                layout: {
-                                    randomSeed: 0,
-                                },
-                                physics:{
-                                    //enabled: true, //default true
-                                    barnesHut:{
-                                        //springConstant: 0.20,
-                                        //springLength: 150,
-                                        //avoidOverlap: 0.2,
-                                        //damping: 0.3,
-                                        gravitationalConstant: -3000,
-                                    }
-                                },
-                                nodes: {
-                                    shadow: {
-                                        enabled: true,
-                                        //make it less pronounced than default
-                                        size: 3,
-                                        x: 1,
-                                        y: 1 ,
-                                        color: 'rgba(0,0,0,0.2)',
-                                    },
-                                    borderWidth: 0,
-                                },
-                            });
-                            gph.on("doubleClick", e=>{
-                                /*e.edges, e.event, e.nodes. e.pointer*/
-                                //TODO
-                                /*
-                                e.nodes.forEach(node=>{
-                                    if(node.startsWith("dataset.")) {
-                                        let dataset_id = node.substring(8);
-                                        //for archive/datasets page
-                                        if(this.$route.path.includes(this.dataset._id)) {
-                                            //this should trigger reload
-                                            this.$router.replace(this.$route.path.replace(this.dataset._id, dataset_id));
-                                        } else {
-                                            this.$root.$emit('dataset.view', {id: dataset_id});
-                                        }
-                                    }
-                                    if(node.startsWith("task.")) {
-                                        let fullnode = res.data.nodes.find(n=>n.id == node);
-                                        if(fullnode._app) this.$router.replace("/app/"+fullnode._app);
-                                    }
-                                });
-                                e.edges.forEach(edge_id=>{
-                                    let edge = res.dat.edges.find(e=>e.id == edge_id);
-                                    if(edge._archived_dataset_id) {
-                                        this.$router.replace(this.$route.path.replace(this.dataset._id, edge._archived_dataset_id)); 
-                                    }
-                                });
-                                */
-                            
-                            });
-
-                            gph.on("showPopup", e=>{
-                                //console.log("popup!", e);
-                            });
-                            gph.on("hoverNode", e=>{
-                                //console.log("hovernode!", e);
-                            });
-                        });
-                    });
-                }
+                console.dir(res.data); //for debugging
+                this.prov2 = res.data;
             });
         },
 

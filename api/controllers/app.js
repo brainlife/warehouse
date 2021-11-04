@@ -6,11 +6,13 @@ const winston = require('winston');
 const async = require('async');
 const request = require('request');
 const axios = require('axios');
+const fs = require('fs');
 
 const config = require('../config');
 const logger = winston.createLogger(config.logger.winston);
 const db = require('../models');
 const common = require('../common');
+const provenance = require('../lib/provenance');
 
 function canedit(user, rec) {
     if(user) {
@@ -155,6 +157,39 @@ router.get('/query', common.jwt({credentialsRequired: false}), (req, res, next)=
 
         res.json(filtered);
     });
+});
+
+//experimental
+router.get('/example/:id', common.jwt(), async (req, res, next)=>{
+    const cachefname = "/tmp/example.app-"+req.params.id+".json";
+    if(fs.existsSync(cachefname)) {
+        const stat = fs.stats(cachefname);
+        const old = new Date();
+        old.setDate(new Date().getDate() - 7); 
+        if(stat.mtime > old) {
+            console.log("using cached output");
+            const cache = fs.readFileSync(cachefname, {encoding: "utf8"});
+            const provs = JSON.parse(cache);
+            return res.json(provs);
+        }
+    } 
+
+    console.log("loading example workflow");
+    const provs = await provenance.sampleTerminalTasks(req.params.id);
+    provs.map(provenance.setupShortcuts);
+    const cnodes = provenance.countProvenances(provs);
+    const probGroups = provenance.computeProbabilities(cnodes);
+    const commonProvs= [];
+    //grab the top 3 groups
+    probGroups.splice(0,3).forEach(probGroup=>{
+        const idx = probGroup.provs[0]; //grab the first one from each group
+        console.log("picking",idx, probGroup.prob);
+        const prov = provs[idx];
+        prov._prob = probGroup.prob;
+        prov._probSiblings = probGroup.provs.length;
+        commonProvs.push(prov);
+    });
+    res.json(commonProvs);
 });
 
 /**
@@ -497,6 +532,7 @@ router.get('/info/:org/:name', common.jwt(), async (req, res, next)=>{
         next("No such repo?");
     }
 });
+
 
 module.exports = router;
 

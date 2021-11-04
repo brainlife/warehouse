@@ -14,30 +14,31 @@ db.init(async function(err) {
     if(err) throw err;
 
     console.log("loading apps");
-    /*
     const apps = db.Apps.find({removed: false}).select({_id:1, name:1, service:1}).lean();
     for await (const app of apps) {
         await run(app._id);
     }
-    */
     //test
-    await run("5fda378756422f36d2f97ac2"); //freesurfer stats
+    //await run("5fda378756422f36d2f97ac2"); //freesurfer stats
 
     console.log("all done");
     db.disconnect();
 });
 
 async function run(appid) {
+    const countfname = "/tmp/count."+appid+".json";
+    const commonfname = "/tmp/common."+appid+".json";
+
+    if(fs.existsSync(commonfname)) return; //skip if already exists
+
     console.log("---------------------------------------------------------------");
     console.log("loadingprovenance for app", appid);
     console.log("---------------------------------------------------------------");
     //const provs = require('/home/hayashis//Documents/testdata/provenances/app-5cc9c6b44b5e4502275edb4b.provs.json');
     const provs = await provenance.sampleTerminalTasks(appid);
     provs.map(provenance.setupShortcuts);
-    //console.dir(provs[1]);
     const cnodes = provenance.countProvenances(provs);
 
-    const countfname = "/tmp/count."+appid+".json";
     console.log("saving counts", countfname);
     fs.writeFileSync(countfname, JSON.stringify(cnodes, null, 4))
     //console.log(JSON.stringify(cnodes, null, 4));
@@ -52,7 +53,6 @@ async function run(appid) {
         prov._probSiblings = probGroup.provs.length;
         commonProvs.push(prov);
     });
-    const commonfname = "/tmp/common."+appid+".json";
     console.log("saving common provs", commonfname);
     fs.writeFileSync(commonfname, JSON.stringify(commonProvs, null, 4))
 }

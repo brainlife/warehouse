@@ -60,8 +60,8 @@
                             <span style="opacity: 0.6; font-size: 80%" v-if="tasks.length > 0">{{tasks.length}}</span>
                         </template>
                     </b-tab>
-                    <b-tab>
-                        <template v-slot:title>Disqus</template>
+                    <b-tab v-if="config.debug">
+                        <template v-slot:title>Example Workflow</template>
                     </b-tab>
                 </b-tabs>
             </b-container>
@@ -338,11 +338,14 @@
             </b-container>
         </div>
 
-        <div v-if="tabID == 'disqus'" class="tab-content">
+        <div v-if="tabID == 'example'" class="tab-content">
             <b-container>
+                <!--
                 <br>
                 <vue-disqus shortname="brain-life" :identifier="app._id"/>
                 <br>
+                -->
+                <exampleworkflow :appid="app._id"/>
             </b-container>
         </div>
         <br>
@@ -371,6 +374,7 @@ import resource from '@/components/resource'
 import statusicon from '@/components/statusicon'
 import taskRecord from '@/components/taskrecord'
 import projectcard from '@/components/projectcard'
+import exampleworkflow from '@/components/exampleworkflow'
 
 import resource_cache from '@/mixins/resource_cache'
 
@@ -393,6 +397,7 @@ export default {
         statusicon,
         taskRecord, 
         projectcard,
+        exampleworkflow,
 
         editor: ()=>import('vue2-ace-editor'),
     },
@@ -410,10 +415,10 @@ export default {
 
             tab: 0,
             tabs: [
-                {id: "detail", label: "Detail"},
-                {id: "readme", label: "README"},
-                {id: "recentJobs", label: "Recent Jobs"},
-                {id: "disqus", label: "Disqus"},
+                {id: "detail"},
+                {id: "readme"},
+                {id: "recentJobs"},
+                {id: "example"},
             ],
 
             tasks: [], //recent tasks submitted

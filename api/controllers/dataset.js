@@ -241,13 +241,12 @@ router.get('/prov/:id', (req, res, next)=>{
 router.get('/prov2/:id', async (req, res, next)=>{
     const dataset = await db.Datasets.findById(req.params.id).lean();
     if(!dataset) return next("can't find such data object");
-    const prov = await provenance.traverseProvenance(dataset.prov.task_id);
+    const prov = await provenance.traverseProvenance(dataset.prov.task_id||dataset.prov.task._id);
     provenance.setupShortcuts(prov);
 
     //lookup and populate project names
     const projectIds = prov.nodes.filter(n=>!!n.project).map(n=>n.project);
     const projects = await db.Projects.find({_id: {$in: projectIds}}, {name: 1}).lean();
-    console.dir(projects);
     prov.nodes.filter(n=>!!n.project).forEach(node=>{
         node.project = projects.find(p=>p._id.toString() == node.project);
     });

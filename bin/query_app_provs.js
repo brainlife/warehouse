@@ -35,13 +35,7 @@ async function run() {
         if(!provs.length) {
             console.log("no prov.. skipping saving");
         }
-
-        //set shortcuts
-        provs.map(prov=>provenance.setupShortcuts(prov, {
-            validator: true,
-            archivehop: true,
-            output: true,
-        }));
+        provs.map(provenance.setupShortcuts);
 
         console.log("saving ",provs.length,"provs",filename);
         fs.writeFileSync(filename, JSON.stringify(provs, null, 4));

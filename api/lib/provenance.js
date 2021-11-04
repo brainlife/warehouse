@@ -340,7 +340,7 @@ exports.traverseProvenance = async (startTaskId) => {
                 });
             });         
             //really old ones used deps instead of deps_config
-            if(!task.deps_config && task.deps) task.deps.forEach(task=>{
+            if((!task.deps_config || !task.deps_config.length) && task.deps) task.deps.forEach(task=>{
                 node.inputs.push({task})
             });
         }
@@ -401,7 +401,7 @@ exports.traverseProvenance = async (startTaskId) => {
         if(task.deps_config) task.deps_config.forEach(dep=>{
             tasks.push(dep.task);
         });
-        if(!task.deps_config && task.deps) {
+        if((!task.deps_config || !task.deps_config.length) && task.deps) {
             //legacy task only had deps
             task.deps.forEach(taskId=>{
                 tasks.push(taskId);
@@ -814,6 +814,23 @@ exports.computeProbabilities = (cnodes)=>{
             let condprob = prob;
             if(denominator) condprob *= nodeProvs/denominator;
             //console.log("walking inputs", prob, node.id, nodeProvs, denominator, node.provs);
+            //TODO - when an app has multiple input, the we end up walking multiple paths and come up with
+            //same or different terimnal probability
+            /*
+            //production
+            saving counts /tmp/count.59fb2f15c996d0002d47ee1d.json
+            picking common provenances
+            reached terminal 0.8571428571428571 [ 0, 1, 2, 3, 4, 5 ]
+            reached terminal 0.14285714285714285 [ 6 ]
+            reached terminal 0.14285714285714285 [ 6 ]
+            reached terminal 0.2857142857142857 [ 0, 5 ]
+            reached terminal 0.5714285714285714 [ 1, 2, 3, 4 ]
+            reached terminal 0.14285714285714285 [ 6 ]
+            (see prov 0,5 has 0.85 or 0.28)
+
+            what should I do in this case? 
+            */
+            
             if(Object.keys(node.inputs).length) for(const inputId in node.inputs) {
                 const inputs = node.inputs[inputId];
                 if(inputs.length) {
