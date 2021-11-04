@@ -468,8 +468,13 @@ export default {
         },
 
         redirect(funding) {
-            if(funding.funder =='NSF') return "https://www.nsf.gov/awardsearch/showAward?AWD_ID="+funding.id.slice(funding.id.lastIndexOf('-') +1);
-            if(funding.funder =='NIH') return "https://reporter.nih.gov/project-details/"+funding.id.slice(funding.id.lastIndexOf('U'));
+            // if funding NSF funding is IIS-1636893 then the numeric part is the id which will help to get the url.
+            const nsf_match = funding.id.match(/([^-]+[0-9])/);
+            // if funding NIH funding is NIH NIMH U01MH097435 then everything after letter U is used in url.
+            const nih_match = funding.id.match(/([^U]*)$/);
+
+            if(funding.funder == 'NSF' && nsf_match[1]) return "https://www.nsf.gov/awardsearch/showAward?AWD_ID="+nsf_match[1];
+            if(funding.funder == 'NIH' && nih_match[1]) return  "https://reporter.nih.gov/project-details/U"+nih_match[1];
         },
 
         /*
