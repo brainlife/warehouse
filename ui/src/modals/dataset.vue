@@ -593,8 +593,8 @@ export default {
 
         load_prov2() {
             //load provenance
+            this.prov2 = null;
             this.$http.get('dataset/prov2/'+this.dataset._id).then(res=>{
-                console.dir(res.data); //for debugging
                 this.prov2 = res.data;
             });
         },

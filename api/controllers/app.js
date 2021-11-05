@@ -161,9 +161,11 @@ router.get('/query', common.jwt({credentialsRequired: false}), (req, res, next)=
 
 //experimental
 router.get('/example/:id', common.jwt(), async (req, res, next)=>{
+
+    //see if we can load it from cache
     const cachefname = "/tmp/example.app-"+req.params.id+".json";
     if(fs.existsSync(cachefname)) {
-        const stat = fs.stats(cachefname);
+        const stat = fs.statSync(cachefname);
         const old = new Date();
         old.setDate(new Date().getDate() - 7); 
         if(stat.mtime > old) {
@@ -189,6 +191,30 @@ router.get('/example/:id', common.jwt(), async (req, res, next)=>{
         prov._probSiblings = probGroup.provs.length;
         commonProvs.push(prov);
     });
+
+    await common.cacheDatatypes();
+    commonProvs.forEach(prov=>{
+        //remove things we don't want to show to the user
+        prov.nodes.forEach(node=>{
+            delete node.project;
+            delete node.desc;
+            delete node.userId;
+            delete node.meta;
+            delete node.datasetId;
+        });
+
+        //populate datatype info
+        prov.nodes.filter(n=>!!n.datatype).forEach(node=>{
+            if(typeof node.datatype == 'object') return; //duplicate prov that's already populated?
+            const id = node.datatype;
+            const datatype = common.datatypeCache[id];
+            let name = "unknown-dt-"+id;
+            if(datatype) name = datatype.name;
+            node.datatype = { id, name, }
+        });
+    });
+
+    fs.writeFileSync(cachefname, JSON.stringify(commonProvs));
     res.json(commonProvs);
 });
 

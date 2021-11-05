@@ -57,7 +57,7 @@ exports.traverseProvenance = async (startTaskId) => {
             idx: datasetNodeIdx,
             type: "dataset",
             datasetId: dataset._id,
-            datatype: dataset.datatype, 
+            datatype: dataset.datatype.toString(), 
             datatypeTags: dataset.datatype_tags, 
             tags: dataset.tags,
             desc: dataset.desc,

@@ -1650,4 +1650,13 @@ exports.updateXNATObjects = async (objects)=>{
     }
 }
 
+exports.datatypeCache = null;
+exports.cacheDatatypes = async ()=>{
+    if(exports.datatypeCache) return; //already cached.. invalidate after a while?
+    const datatypes = await db.Datatypes.find({});
+    exports.datatypeCache = {};
+    datatypes.forEach(datatype=>{
+        exports.datatypeCache[datatype._id.toString()] = datatype;
+    });
+}
 
