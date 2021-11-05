@@ -275,10 +275,12 @@
                         </b-col>
                         <b-col>
                             <div v-for="funding in pub.fundings" :key="funding._id" class="funder">
+                                <a :href="redirect(funding)">
                                 <div v-if="funding.funder == 'NSF'" class="funder-label bg-success">NSF</div>
                                 <div v-else-if="funding.funder == 'NIH'" class="funder-label bg-info">NIH</div>
                                 <div v-else class="funder-label bg-warning">{{funding.funder}}</div>
                                 {{funding.id}}
+                                </a>
                             </div>
                             <br>
                             <br>
@@ -360,7 +362,7 @@ export default {
     computed: {
         sortedPapers : function() {
             return this.pub.relatedPapers.sort((a,b)=> b.citationCount - a.citationCount );
-        }
+        },
     },
 
     //https://help.altmetric.com/support/solutions/articles/6000141419-what-metadata-is-required-to-track-our-content-
@@ -465,6 +467,16 @@ export default {
             this.$router.push('/project/'+project_id);
         },
 
+        redirect(funding) {
+            // if funding NSF funding is IIS-1636893 then the numeric part is the id which will help to get the url.
+            const nsf_match = funding.id.match(/([^-]+[0-9])/);
+            // if funding NIH funding is NIH NIMH U01MH097435 then everything after letter U is used in url.
+            const nih_match = funding.id.match(/([^U]*)$/);
+
+            if(funding.funder == 'NSF' && nsf_match[1]) return "https://www.nsf.gov/awardsearch/showAward?AWD_ID="+nsf_match[1];
+            if(funding.funder == 'NIH' && nih_match[1]) return  "https://reporter.nih.gov/project-details/U"+nih_match[1];
+        },
+
         /*
         toggle(block, subject, datatype, datatype_tags) {
             block.show = !block.show;
@@ -536,7 +548,7 @@ color: white;
     border-radius: 0px;
     margin-right: 4px;
 }
-.funder {
+.funder, a {
     background-color: white;
     margin-bottom: 5px;
     padding-right: 10px;
@@ -547,6 +559,9 @@ color: white;
     color: white;
     display: inline-block;
     padding: 0px 5px;
+}
+.funder, a:hover,active,visited{
+    text-decoration-line:none;
 }
 .datasets {
     margin: 5px 20px;
