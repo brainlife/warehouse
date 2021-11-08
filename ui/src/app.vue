@@ -60,7 +60,7 @@
                             <span style="opacity: 0.6; font-size: 80%" v-if="tasks.length > 0">{{tasks.length}}</span>
                         </template>
                     </b-tab>
-                    <b-tab v-if="config.debug">
+                    <b-tab v-if="config.user.sub == 1">
                         <template v-slot:title>Example Workflow</template>
                     </b-tab>
                 </b-tabs>

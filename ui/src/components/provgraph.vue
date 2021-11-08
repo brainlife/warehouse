@@ -121,6 +121,7 @@ export default {
                     color: "#fff",
                 }
 
+                //put the first node at bottom right
                 if(node.idx == 0) {
                     graphNode.x = 1000;
                     graphNode.y = 2000;
@@ -128,14 +129,17 @@ export default {
 
                 switch(node.type) {
                 case "task":
-                    console.log(node.appId, this.appid);
                     if(this.appid && node.appId == this.appid) {
                         graphNode.label = "This App";
                         graphNode.color = "#2693ff";
                         graphNode.margin = 10;
                         graphNode.font.color = "#fff";
+
+                        delete node._config; //hide config parameter used by "This app"
                     } else {
-                        graphNode.label = node.name+"\n"+node.service;
+                        graphNode.label = "";
+                        if(node.name) graphNode.label += node.name+"\n";
+                        graphNode.lable += node.service;
                         if(node.serviceBranch) graphNode.label += ":"+node.serviceBranch;
                     }
                     graphNode.label +="\n";
@@ -153,8 +157,8 @@ export default {
                     }
 
                     graphNode.label += node.datatype.name; 
-                    if(node.datatypeTags.length) graphNode.label += " "+node.datatypeTags.map(t=>"<"+t+">").join(" ");
-                    if(node.tags.length) graphNode.label += "\n("+node.tags.join()+")";
+                    if(node.datatypeTags && node.datatypeTags.length) graphNode.label += " "+node.datatypeTags.map(t=>"<"+t+">").join(" ");
+                    if(node.tags && node.tags.length) graphNode.label += "\n("+node.tags.join()+")";
                     graphNode.label+="\n";
                     break;
                 case "output":
@@ -165,12 +169,11 @@ export default {
                         graphNode.color = "#2693ff";
                         graphNode.margin = 10;
                         graphNode.font.color = "#fff";
-                        //graphNode.font.size = 12;
                     } else {
                         graphNode.label = node.outputId+"\n";
-                        graphNode.label += node.datatype.name; //+"\nsubdir:"+node.subdir; //dangling output
-                        if(node.datatypeTags.length) graphNode.label += " "+node.datatypeTags.map(t=>"<"+t+">").join(" ");
-                        if(node.tags.length) graphNode.label += "\n("+node.tags.join()+")";
+                        graphNode.label += node.datatype.name;
+                        if(node.datatypeTags && node.datatypeTags.length) graphNode.label += " "+node.datatypeTags.map(t=>"<"+t+">").join(" ");
+                        if(node.tags && node.tags.length) graphNode.label += "\n("+node.tags.join()+")";
                     }
                     graphNode.label += "\n";
                 }
@@ -238,16 +241,16 @@ export default {
                             const dataset = this.prov.nodes[edge._dataset];
                             if(dataset.datasetId) label += "🟢 ";
                             label += dataset.datatype.name;
-                            if(dataset.datatypeTags.length) label += " "+dataset.datatypeTags.map(t=>"<"+t+">").join(" ");
-                            if(dataset.tags.length) label += "\n("+dataset.tags.join()+")";
+                            if(dataset.datatypeTags && dataset.datatypeTags.length) label += " "+dataset.datatypeTags.map(t=>"<"+t+">").join(" ");
+                            if(dataset.tags && dataset.tags.length) label += "\n("+dataset.tags.join()+")";
                             label += "\n";
                         }
                     } else if(edge._output) {
                         if(nodeFrom.type != "dataset") {
                             const output = this.prov.nodes[edge._output];
                             label += output.datatype.name;
-                            if(output.datatypeTags.length) label += " "+output.datatypeTags.map(t=>"<"+t+"> ").join(" ");
-                            if(output.tags.length) label += "\n("+output.tags.join()+")";
+                            if(output.datatypeTags && output.datatypeTags.length) label += " "+output.datatypeTags.map(t=>"<"+t+"> ").join(" ");
+                            if(output.tags && output.tags.length) label += "\n("+output.tags.join()+")";
                             label+="\n";
                         }
                     }
@@ -275,7 +278,6 @@ export default {
                     from: edge.from,
                     color: '#f00',
                     edgeIdx: edge.idx,
-                    //length: 100,
                 }
                 if(edge._simplified && !hideSimplified) {
                     graphEdge.font.size -= 7;
@@ -323,8 +325,8 @@ export default {
                             gnode.label += '\n';
                         }
                         gnode.label += dataset.datatype.name; 
-                        if(dataset.datatypeTags.length) gnode.label += " "+dataset.datatypeTags.map(t=>"<"+t+">").join(" ");
-                        if(dataset.tags.length) gnode.label += "\n("+dataset.tags.join()+")";
+                        if(dataset.datatypeTags && dataset.datatypeTags.length) gnode.label += " "+dataset.datatypeTags.map(t=>"<"+t+">").join(" ");
+                        if(dataset.tags && dataset.tags.length) gnode.label += "\n("+dataset.tags.join()+")";
                         if(dataset.datasetId) gnode.title += "<p>datasetId:"+dataset.datasetId+"</p>";
                         gnode.label += '\n';
                     });
@@ -361,7 +363,6 @@ export default {
                 const inputs = graphEdges.filter(e=>e.from == gedge.from);
                 const outputs = graphEdges.filter(e=>e.to == gedge.to);
                 gedge.length = 25*(inputs.length+outputs.length);
-                console.log(gedge.from, gedge.to, inputs.length, outputs.length);
             })
 
             this.gph = new this.vis.Network(this.$refs.prov, {
@@ -375,9 +376,9 @@ export default {
                     barnesHut:{
                         //springLength: 100,
                         //springConstant: 0.04,
-                        avoidOverlap: 0.1,
-                        damping: 0.5,
-                        //gravitationalConstant: -2000,
+                        //avoidOverlap: 0.1,
+                        //damping: 1.0,
+                        //gravitationalConstant: -3000,
                     }
                 },
                 nodes: {

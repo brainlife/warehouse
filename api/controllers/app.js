@@ -201,6 +201,7 @@ router.get('/example/:id', common.jwt(), async (req, res, next)=>{
             delete node.userId;
             delete node.meta;
             delete node.datasetId;
+            node.tags = [];
         });
 
         //populate datatype info

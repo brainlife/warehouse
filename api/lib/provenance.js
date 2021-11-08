@@ -671,6 +671,31 @@ exports.setupShortcuts = (prov)=>{
         });
         */
     });
+
+    //hide unused dataset staged by app-stage
+    prov.nodes.filter(node=>(
+        node.service == "brainlife/app-stage" ||
+        node.service == "soichih/sca-product-raw"
+    )).forEach(stage=>{
+        //look which data objects are actually used
+        const datasetIdsUsed = [];
+        prov.edges.filter(e=>e.from == stage.idx).forEach(edge=>{
+            const output = prov.nodes.find(n=>n.idx == edge.to);
+            if(output.type != "output") return; //shortcut edge might link to non-ouput
+            const outputParentEdge = prov.edges.find(e=>e.from == output.idx);
+            datasetIdsUsed.push(output.outputId);
+        });
+
+        prov.edges.filter(e=>e.to == stage.idx).forEach(edge=>{
+            //simplify unsed edge / dataset if it's not used
+            if(!datasetIdsUsed.includes(edge.inputId)) {
+                console.log("simplifiying unsed dataset/edge", edge);
+                edge._simplified = true;
+                prov.nodes[edge.from]._simplified = true;
+            }
+        });
+    });
+    
 }
 //from array of provenances, construct a single tree with counts indicating number of paths for each branch
 exports.countProvenances = (provs)=>{
