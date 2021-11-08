@@ -6,6 +6,11 @@
 import Vue from 'vue'
 
 const getVis = ()=>import('vis/dist/vis-network.min')
+import 'vis/dist/vis-network.min.css'
+let vis = null;
+getVis().then(_vis=>{
+    vis = _vis;
+});
 
 export default {
     //components: { provgraph },
@@ -22,30 +27,23 @@ export default {
 
     data() {
         return {
-            vis: null, //getVis()
-            gph: null,
+            //gph: null, //dragging stops working if I store this with vue
         }
     },
 
     watch: {
         showFull() {
-            getVis().then(vis=>{
-                this.load();
-            });
+            this.load();
         },
     },
 
     mounted() {
-        getVis().then(vis=>{
-            this.vis = vis;
-            this.load();
-        });
+        this.load();
     },
 
     methods: {
         load() {
             //if(this.gph) delete this.gph;
-            console.dir(this.prov); //debug
 
             let hideSimplified = true;
             let hideShortcut = false;
@@ -121,12 +119,6 @@ export default {
                     color: "#fff",
                 }
 
-                //put the first node at bottom right
-                if(node.idx == 0) {
-                    graphNode.x = 1000;
-                    graphNode.y = 2000;
-                }
-
                 switch(node.type) {
                 case "task":
                     if(this.appid && node.appId == this.appid) {
@@ -139,7 +131,7 @@ export default {
                     } else {
                         graphNode.label = "";
                         if(node.name) graphNode.label += node.name+"\n";
-                        graphNode.lable += node.service;
+                        graphNode.label += node.service;
                         if(node.serviceBranch) graphNode.label += ":"+node.serviceBranch;
                     }
                     graphNode.label +="\n";
@@ -169,6 +161,9 @@ export default {
                         graphNode.color = "#2693ff";
                         graphNode.margin = 10;
                         graphNode.font.color = "#fff";
+                        graphNode.font.size = 12;
+                        graphNode.x = 2000;
+                        graphNode.y = 3000;
                     } else {
                         graphNode.label = node.outputId+"\n";
                         graphNode.label += node.datatype.name;
@@ -228,8 +223,8 @@ export default {
                 case "output":
                     if(hideSimplified) {
                         label += nodeTo.datatype.name;
-                        label += " "+nodeTo.datatypeTags.map(t=>"<"+t+">").join(" ");
-                        if(nodeTo.tags) label += "\n"+nodeTo.tags.join(",")
+                        if(nodeTo.datatypeTags && nodeTo.datatypeTags.length) label += " "+nodeTo.datatypeTags.map(t=>"<"+t+">").join(" ");
+                        if(nodeTo.tags && nodeTo.tags.length) label += "\n"+nodeTo.tags.join(",")
                         label += "\n";
                     }
                 default:
@@ -258,14 +253,12 @@ export default {
                 }
 
                 //put from/to ids
-                //label += "(";
                 if(edge.outputId == "noop") delete edge.outputId;
                 if(edge.outputId) label += "from "+edge.outputId;
                 if(edge.inputId) {
                     if(edge.outputId) label += " ";
                     label += "to "+edge.inputId;
                 }
-                //label += ")";
 
                 const graphEdge = {
                     label,
@@ -342,8 +335,8 @@ export default {
                             },
                             color: "#999",
                             label: "user:"+node.userId,
-                            y: -2000,
                         }
+                        //userNode.y = -2000;
                         graphNodes.push(userNode);
                         graphEdges.push({
                             arrows: "to", 
@@ -365,7 +358,10 @@ export default {
                 gedge.length = 25*(inputs.length+outputs.length);
             })
 
-            this.gph = new this.vis.Network(this.$refs.prov, {
+            console.log("prov2");
+            console.dir({graphNodes, graphEdges}); //debug
+
+            const gph = new vis.Network(this.$refs.prov, {
                 nodes: graphNodes,
                 edges: graphEdges,
             }, {
@@ -378,7 +374,7 @@ export default {
                         //springConstant: 0.04,
                         //avoidOverlap: 0.1,
                         //damping: 1.0,
-                        //gravitationalConstant: -3000,
+                        gravitationalConstant: -3000,
                     }
                 },
                 nodes: {
@@ -393,10 +389,9 @@ export default {
                     borderWidth: 0,
                 },
             });
-            this.gph.on("doubleClick", e=>{
-                /*e.edges, e.event, e.nodes. e.pointer*/
-                //TODO
-                /*
+
+            /*
+            gph.on("doubleClick", e=>{
                 e.nodes.forEach(node=>{
                     if(node.startsWith("dataset.")) {
                         let dataset_id = node.substring(8);
@@ -419,17 +414,15 @@ export default {
                         this.$router.replace(this.$route.path.replace(this.dataset._id, edge._archived_dataset_id)); 
                     }
                 });
-                */
-            
             });
 
-            this.gph.on("showPopup", e=>{
+            gph.on("showPopup", e=>{
                 //console.log("popup!", e);
             });
-            this.gph.on("hoverNode", e=>{
+            gph.on("hoverNode", e=>{
                 //console.log("hovernode!", e);
             });
-
+            */
 
             //end of load()
         }

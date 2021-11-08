@@ -328,6 +328,10 @@ import secondaryWaiter from '@/mixins/secondarywaiter'
 import resourceCache from '@/mixins/resource_cache'
 
 const getVis = ()=>import('vis/dist/vis-network.min')
+let vis = null;
+getVis().then(_vis=>{
+    vis = _vis;
+});
 import 'vis/dist/vis-network.min.css'
 
 const lib = require('@/lib');
@@ -385,7 +389,7 @@ export default {
             tm_load_status: null,
 
             showFull: false,
-
+            
             config: Vue.config,
         } 
     },
@@ -521,38 +525,41 @@ export default {
                         color: '#000a',
                     }
                 })
+
+                console.log("prov1");
+                console.dir(res.data);
                 
                 if(this.prov.edges.length) {
-                    Vue.nextTick(()=>{
                         getVis().then(vis=>{
-                            var gph = new vis.Network(this.$refs.vis, res.data, {
-                                layout: {
-                                    randomSeed: 0,
-                                },
-                                physics:{
-                                    //enabled: true, //default true
-                                    barnesHut:{
-                                        //springConstant: 0.20,
-                                        //springLength: 150,
-                                        //avoidOverlap: 0.2,
-                                        //damping: 0.3,
-                                        gravitationalConstant: -3000,
-                                    }
-                                },
-                                nodes: {
-                                    shadow: {
-                                        enabled: true,
-                                        //make it less pronounced than default
-                                        size: 3,
-                                        x: 1,
-                                        y: 1 ,
-                                        color: 'rgba(0,0,0,0.2)',
+                            var gph = new vis.Network(this.$refs.vis, res.data, 
+                                {
+                                    layout: {
+                                        randomSeed: 0,
                                     },
-                                    borderWidth: 0,
-                                },
-                            });
+                                    physics:{
+                                        //enabled: true, //default true
+                                        barnesHut:{
+                                            //springConstant: 0.20,
+                                            //springLength: 150,
+                                            //avoidOverlap: 0.2,
+                                            //damping: 0.3,
+                                            gravitationalConstant: -3000,
+                                        }
+                                    },
+                                    nodes: {
+                                        shadow: {
+                                            enabled: true,
+                                            //make it less pronounced than default
+                                            size: 3,
+                                            x: 1,
+                                            y: 1 ,
+                                            color: 'rgba(0,0,0,0.2)',
+                                        },
+                                        borderWidth: 0,
+                                    },
+                                }
+                            );
                             gph.on("doubleClick", e=>{
-                                /*e.edges, e.event, e.nodes. e.pointer*/
                                 e.nodes.forEach(node=>{
                                     if(node.startsWith("dataset.")) {
                                         let dataset_id = node.substring(8);
@@ -585,7 +592,6 @@ export default {
                             gph.on("hoverNode", e=>{
                                 //console.log("hovernode!", e);
                             });
-                        });
                     });
                 }
             });
