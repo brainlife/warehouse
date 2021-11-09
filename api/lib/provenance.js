@@ -494,208 +494,187 @@ exports.setupShortcuts = (prov)=>{
         return edge;
     }
 
-    //////////////////////////////////////////////////////////////////
-    // validator shortcuts
-    // source > validator > output
-    //  to
-    // source > output
-    prov.nodes.filter(node=>node.validator).forEach(node=>{
-        //validator should only have 1 input / output
-        const validatorInputIdx = getParentIndices(node.idx)[0];
-        const validatorSourceIdx = getParentIndices(validatorInputIdx)[0]; 
-        //const validatorInput = prov.nodes[validatorInputIdx];
-        const validatorOutputIdx = getChildIndices(node.idx)[0];
-        const validatorOutput = prov.nodes[validatorOutputIdx];
+    //repeat the whole process until no more shortcuts are added
+    let beforeCount = 0;
+    while(beforeCount != prov.edges.length) {
+        beforeCount = prov.edges.length;
+        //////////////////////////////////////////////////////////////////
+        // validator shortcuts
+        // source > validator > output
+        //  to
+        // source > output
+        prov.nodes.filter(node=>(!node._simplified && node.validator)).forEach(node=>{
+            //validator should only have 1 input / output
+            const validatorInputIdx = getParentIndices(node.idx)[0];
+            const validatorSourceIdx = getParentIndices(validatorInputIdx)[0]; 
+            //const validatorInput = prov.nodes[validatorInputIdx];
+            const validatorOutputIdx = getChildIndices(node.idx)[0];
+            const validatorOutput = prov.nodes[validatorOutputIdx];
 
-        validatorOutput._validatorIdx = node.idx;
+            validatorOutput._validatorIdx = node.idx;
 
-        const sourceEdgeIdx = findEdgeIdx(validatorSourceIdx, validatorInputIdx);
-        const sourceEdge = prov.edges[sourceEdgeIdx];
+            const sourceEdgeIdx = findEdgeIdx(validatorSourceIdx, validatorInputIdx);
+            const sourceEdge = prov.edges[sourceEdgeIdx];
 
-        const shortcut = [
-            //should be safe to use findEdge because there is only 1 in/out of each validator?
-            sourceEdgeIdx,
-            findEdgeIdx(validatorInputIdx, node.idx),
-            findEdgeIdx(node.idx, validatorOutputIdx),
-        ];
-        if(shortcut.includes(-1)) {
-            console.error("validator didn't have input/output?", node, shortcut);
-            return;
-        }
-        shortcut.forEach(idx=>{
-            prov.edges[idx]._simplified = true;
-        });
-
-        //create new link from validator source directly to validator output
-        const newedge = registerShortcutEdge(validatorSourceIdx, validatorOutputIdx, shortcut);
-        newedge.outputId = sourceEdge.outputId;
-
-        //mark simplified nodes/edges with the new shortCutEdges
-        node._simplified = true;
-    });
-
-    //////////////////////////////////////////////////////////////////
-    // output shortcuts
-    // taskP > output > taskC 
-    // to
-    // taskP > taskC
-    prov.nodes.filter(node=>node.type == "output").forEach(output=>{
-        const parentTaskEdges = prov.edges.filter(e=>e.to == output.idx);
-        parentTaskEdges.forEach(parentTaskEdge=>{
-            const parentTask = prov.nodes[parentTaskEdge.from];
-            //if(parentTask._simplified) return;
-            if(parentTask.type != "task") return;
-            //if(parentTask._simplified) return;
-            //const childTaskIndices = getChildIndices(output.idx);
-            const childTaskEdges = prov.edges.filter(e=>e.from == output.idx);
-            childTaskEdges.forEach(childTaskEdge=>{
-                const childTask = prov.nodes[childTaskEdge.to];
-                //if(childTask._simplified) return;
-                if(childTask.type != "task") return;
-                //if(childTask._simplified) return;
-                
-                //found taskP > output > taskC chain
-                const shortcut = [
-                    //findEdgeIdx(parentTaskIdx, output.idx), //there should be only 1 link between parent and output
-                    parentTaskEdge.idx,
-                    //findEdgeIdx(output.idx, childTaskIdx),
-                    childTaskEdge.idx,
-                ];
-                const edge = registerShortcutEdge(parentTask.idx, childTask.idx, shortcut);
-                edge._output = output.idx; //TODO if it already exists, it could wipe?
-                edge.outputId = parentTaskEdge.outputId;
-                edge.inputId = childTaskEdge.inputId;
-
-                //if either parent or child node is simplified, mark this one simplified also.
-                if(parentTask._simplified || childTask._simplified) edge._simplified = true;
-
-                output._simplified = true;
-                
-                shortcut.forEach(s=>{
-                    prov.edges[s]._simplified = true;
-                });
+            const shortcut = [
+                //should be safe to use findEdge because there is only 1 in/out of each validator?
+                sourceEdgeIdx,
+                findEdgeIdx(validatorInputIdx, node.idx),
+                findEdgeIdx(node.idx, validatorOutputIdx),
+            ];
+            if(shortcut.includes(-1)) {
+                console.error("validator didn't have input/output?", node, shortcut);
+                return;
+            }
+            shortcut.forEach(idx=>{
+                prov.edges[idx]._simplified = true;
             });
+
+            //create new link from validator source directly to validator output
+            const newedge = registerShortcutEdge(validatorSourceIdx, validatorOutputIdx, shortcut);
+            newedge.outputId = sourceEdge.outputId;
+
+            //mark simplified nodes/edges with the new shortCutEdges
+            node._simplified = true;
         });
-    });
 
-    //////////////////////////////////////////////////////////////////
-    //short cut dataset > stage > task to just dataset > task
-    prov.nodes.filter(node=>node.type == "dataset").forEach(node=>{
-        const stageTaskEdges = prov.edges.filter(e=>e.from == node.idx);
-        stageTaskEdges.forEach(stageTaskEdge=>{
-            const stageTask = prov.nodes[stageTaskEdge.to];
-            if(stageTask.service != "brainlife/app-stage" && stageTask.service != "soichih/sca-product-raw") return;
-            prov.edges.filter(edge=>(edge.from == stageTask.idx && !edge._simplified)).forEach(edge=>{
-                if(!edge._output) return;
-                const output = prov.nodes[edge._output];
-                if(output.outputId == node.datasetId) {
-                    const task = prov.nodes[edge.to];
+        //////////////////////////////////////////////////////////////////
+        // output shortcuts
+        // taskP > output > taskC 
+        // to
+        // taskP > taskC
+        prov.nodes.filter(node=>(!node._simplified && node.type == "output")).forEach(output=>{
+            prov.edges.filter(e=>e.to == output.idx).forEach(parentTaskEdge=>{
+                const parentTask = prov.nodes[parentTaskEdge.from];
+                if(parentTask.type != "task") return;
+                const childTaskEdges = prov.edges.filter(e=>e.from == output.idx);
+                childTaskEdges.forEach(childTaskEdge=>{
+                    const childTask = prov.nodes[childTaskEdge.to];
+                    if(childTask.type != "task") return;
+                    
+                    //found taskP > output > taskC chain
                     const shortcut = [
-                        stageTaskEdge.idx,
-                        edge.idx,
+                        parentTaskEdge.idx,
+                        childTaskEdge.idx,
                     ];
-                    const newedge = registerShortcutEdge(node.idx, edge.to, shortcut);
-                    newedge._output = edge._output;
-                    newedge.inputId = edge.inputId; //not yet tested
+                    const edge = registerShortcutEdge(parentTask.idx, childTask.idx, shortcut);
+                    edge._output = output.idx; //TODO if it already exists, it could wipe?
+                    edge.outputId = parentTaskEdge.outputId;
+                    edge.inputId = childTaskEdge.inputId;
 
-                    //but probably needed... but not 100% sure..
-                    //if(node._simplified || stageTask._simplified || output._simplified) newedge._simplified = true;
+                    //if either parent or child node is simplified, mark this one simplified also.
+                    if(parentTask._simplified || childTask._simplified) edge._simplified = true;
 
+                    output._simplified = true;
+                    
                     shortcut.forEach(s=>{
                         prov.edges[s]._simplified = true;
                     });
-                    stageTask._simplified = true;
-                }
+                });
             });
         });
-    });
 
-    //short cut taskP > archive > dataset > taskC
-    //make sure I follow the correct output - 
-    //sample http://localhost:8080/project/5f9b09d26ce09b45b9f97170/process/617b5134e0fff00913eeaa5f
-    //record archived dataset
-    prov.nodes.filter(node=>node.type == "task").forEach(parentTask=>{
-        if(parentTask._simplified) return;
-        const taskOutputEdges = prov.edges.filter(e=>(!e._simplified && e.from == parentTask.idx));
-        taskOutputEdges.forEach(taskOutputEdge=>{
-            if(!taskOutputEdge._output) return;
-            const output = prov.nodes[taskOutputEdge._output];
-            const archiveTask = prov.nodes[taskOutputEdge.to];
-            if(archiveTask.service != "brainlife/app-archive" && archiveTask.service != "soichih/sca-product-raw") return;
-            const archiveOutputEdges = prov.edges.filter(e=>(!e._simplified && e.from == archiveTask.idx)); 
-            archiveOutputEdges.forEach(archiveOutputEdge=>{
-                const dataset = prov.nodes[archiveOutputEdge.to];
-                const childTaskEdges = prov.edges.filter(e=>(!e._simplified && e.from == dataset.idx));
-                childTaskEdges.forEach(childTaskEdge=>{
-                    const childTask = prov.nodes[childTaskEdge.to];
-
-                    //make sure we came from the right path
-                    const archiveInput = archiveTask.inputs.find(i=>i.inputId.toString() == dataset.datasetId.toString());
-                    if(archiveInput.subdir == output.subdir) {
-                        //console.log(parentTask.idx, taskOutputEdge.to, dataset.idx, childTask.idx, dataset.datasetId, archiveInput);
-                        //we are done!
+        //////////////////////////////////////////////////////////////////
+        // short cut 
+        // dataset > stage > task 
+        //          to 
+        // dataset > task
+        prov.nodes.filter(node=>(!node._simplified && node.type == "dataset")).forEach(node=>{
+            const stageTaskEdges = prov.edges.filter(e=>e.from == node.idx);
+            stageTaskEdges.forEach(stageTaskEdge=>{
+                const stageTask = prov.nodes[stageTaskEdge.to];
+                if(stageTask.service != "brainlife/app-stage" && stageTask.service != "soichih/sca-product-raw") return;
+                prov.edges.filter(edge=>(edge.from == stageTask.idx && !edge._simplified)).forEach(edge=>{
+                    if(!edge._output) return;
+                    const output = prov.nodes[edge._output];
+                    if(output.outputId == node.datasetId) {
+                        const task = prov.nodes[edge.to];
                         const shortcut = [
-                            taskOutputEdge.idx, 
-                            archiveOutputEdge.idx,
-                            childTaskEdge.idx,         
+                            stageTaskEdge.idx,
+                            edge.idx,
                         ];
-                        const newedge = registerShortcutEdge(parentTask.idx, childTask.idx, shortcut);
-                        newedge._output = output.idx;
-                        newedge._dataset = dataset.idx;
-                        newedge.outputId = taskOutputEdge.outputId;
-                        newedge.inputId = childTaskEdge.inputId;
+                        const newedge = registerShortcutEdge(node.idx, edge.to, shortcut);
+                        newedge._output = edge._output;
+                        newedge.inputId = edge.inputId; //not yet tested
 
                         //but probably needed... but not 100% sure..
-                        //if(archiveTask._simplified || dataset._simplified || childTask._simplified) newedge._simplified = true;
-                        
+                        //if(node._simplified || stageTask._simplified || output._simplified) newedge._simplified = true;
+
                         shortcut.forEach(s=>{
                             prov.edges[s]._simplified = true;
                         });
-                        archiveTask._simplified = true;
-                        dataset._simplified = true;
+                        stageTask._simplified = true;
                     }
                 });
             });
         });
 
-        /*
-        archiveTaskIndices.forEach(archiveTaskIdx=>{
-            const archiveTask = prov.nodes[archiveTaskIdx];
-            if(archiveTask.service != "brainlife/app-archive") return;
-            const datasetIndices = prov.edges.filter(e=>(!e._simplified && e.from == archiveTask.idx)).map(e=>e.to);
-            datasetIndices.forEach(datasetIdx=>{
-                const dataset = prov.nodes[datasetIdx];
-                if(dataset.type != "dataset") return;
-                
-            }); 
-        });
-        */
-    });
+        //short cut taskP > archive > dataset > taskC
+        //make sure I follow the correct output - 
+        //sample http://localhost:8080/project/5f9b09d26ce09b45b9f97170/process/617b5134e0fff00913eeaa5f
+        //record archived dataset
+        prov.nodes.filter(node=>(!node._simplified && node.type == "task")).forEach(parentTask=>{
+            if(parentTask._simplified) return;
+            const taskOutputEdges = prov.edges.filter(e=>(!e._simplified && e.from == parentTask.idx));
+            taskOutputEdges.forEach(taskOutputEdge=>{
+                if(!taskOutputEdge._output) return;
+                const output = prov.nodes[taskOutputEdge._output];
+                const archiveTask = prov.nodes[taskOutputEdge.to];
+                if(archiveTask.service != "brainlife/app-archive" && archiveTask.service != "soichih/sca-product-raw") return;
+                const archiveOutputEdges = prov.edges.filter(e=>(!e._simplified && e.from == archiveTask.idx)); 
+                archiveOutputEdges.forEach(archiveOutputEdge=>{
+                    const dataset = prov.nodes[archiveOutputEdge.to];
+                    const childTaskEdges = prov.edges.filter(e=>(!e._simplified && e.from == dataset.idx));
+                    childTaskEdges.forEach(childTaskEdge=>{
+                        const childTask = prov.nodes[childTaskEdge.to];
 
-    //hide unused dataset staged by app-stage
-    prov.nodes.filter(node=>(
-        node.service == "brainlife/app-stage" ||
-        node.service == "soichih/sca-product-raw"
-    )).forEach(stage=>{
-        //look which data objects are actually used
-        const datasetIdsUsed = [];
-        prov.edges.filter(e=>e.from == stage.idx).forEach(edge=>{
-            const output = prov.nodes.find(n=>n.idx == edge.to);
-            if(output.type != "output") return; //shortcut edge might link to non-ouput
-            const outputParentEdge = prov.edges.find(e=>e.from == output.idx);
-            datasetIdsUsed.push(output.outputId);
+                        //make sure we came from the right path
+                        const archiveInput = archiveTask.inputs.find(i=>i.inputId.toString() == dataset.datasetId.toString());
+                        if(archiveInput.subdir == output.subdir) {
+                            const shortcut = [
+                                taskOutputEdge.idx, 
+                                archiveOutputEdge.idx,
+                                childTaskEdge.idx,         
+                            ];
+                            const newedge = registerShortcutEdge(parentTask.idx, childTask.idx, shortcut);
+                            newedge._output = output.idx;
+                            newedge._dataset = dataset.idx;
+                            newedge.outputId = taskOutputEdge.outputId;
+                            newedge.inputId = childTaskEdge.inputId;
+                            shortcut.forEach(s=>{
+                                prov.edges[s]._simplified = true;
+                            });
+                            archiveTask._simplified = true;
+                            dataset._simplified = true;
+                        }
+                    });
+                });
+            });
         });
 
-        prov.edges.filter(e=>e.to == stage.idx).forEach(edge=>{
-            //simplify unsed edge / dataset if it's not used
-            if(!datasetIdsUsed.includes(edge.inputId)) {
-                console.log("simplifiying unsed dataset/edge", edge);
-                edge._simplified = true;
-                prov.nodes[edge.from]._simplified = true;
-            }
+        //hide unused dataset staged by app-stage
+        prov.nodes.filter(node=>(!node._simplified && 
+            (node.service == "brainlife/app-stage" || node.service == "soichih/sca-product-raw")
+        )).forEach(stage=>{
+            //look which data objects are actually used
+            const datasetIdsUsed = [];
+            prov.edges.filter(e=>e.from == stage.idx).forEach(edge=>{
+                const output = prov.nodes.find(n=>n.idx == edge.to);
+                if(output.type != "output") return; //shortcut edge might link to non-ouput
+                const outputParentEdge = prov.edges.find(e=>e.from == output.idx);
+                datasetIdsUsed.push(output.outputId);
+            });
+
+            prov.edges.filter(e=>e.to == stage.idx).forEach(edge=>{
+                //simplify unsed edge / dataset if it's not used
+                if(!datasetIdsUsed.includes(edge.inputId)) {
+                    console.log("simplifiying unsed dataset/edge", edge);
+                    edge._simplified = true;
+                    prov.nodes[edge.from]._simplified = true;
+                }
+            });
         });
-    });
-    
+    }
 }
 //from array of provenances, construct a single tree with counts indicating number of paths for each branch
 exports.countProvenances = (provs)=>{

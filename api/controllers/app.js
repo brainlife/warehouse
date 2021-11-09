@@ -167,7 +167,7 @@ router.get('/example/:id', common.jwt(), async (req, res, next)=>{
     if(fs.existsSync(cachefname)) {
         const stat = fs.statSync(cachefname);
         const old = new Date();
-        old.setDate(new Date().getDate() - 7); 
+        old.setDate(new Date().getDate() - 7);  //too long?
         if(stat.mtime > old) {
             console.log("using cached output");
             const cache = fs.readFileSync(cachefname, {encoding: "utf8"});

@@ -166,8 +166,10 @@ export default {
                             color: "#fff",
                         },
                         color: "#999",
-                        label: node.storage+"\n"+node.storageLocation,
+                        label: node.storage,
                     }
+                    if(node.storageLocation) storageNode.label += "\n"+node.storageLocation;
+
                     //userNode.y = -2000;
                     graphNodes.push(storageNode);
                     graphEdges.push({
