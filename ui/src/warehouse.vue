@@ -52,6 +52,12 @@ export default {
                     this.$root.ezbidsSession = {sessionId};
                 }
             }
+
+            if(document.location.hash.startsWith("#object")) {
+                const id = document.location.hash.substring(8);
+                console.log("hash changed to opening object", id);
+                this.$root.openDataObject = {id};
+            }
         },
     },
 

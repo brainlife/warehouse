@@ -7,10 +7,6 @@ import Vue from 'vue'
 
 const getVis = ()=>import('vis/dist/vis-network.min')
 import 'vis/dist/vis-network.min.css'
-let vis = null;
-getVis().then(_vis=>{
-    vis = _vis;
-});
 
 export default {
     //components: { provgraph },
@@ -44,6 +40,8 @@ export default {
     methods: {
         load() {
             //if(this.gph) delete this.gph;
+            console.log("prov2");
+            console.dir(this.prov); //debug
 
             let hideSimplified = true;
             let hideShortcut = false;
@@ -53,7 +51,7 @@ export default {
 
             let datasetTaskId = null;
             let datasetOutputId = null;
-            if(this.dataset) {
+            if(this.dataset && this.dataset.prov) {
                 datasetTaskId = this.dataset.prov.task_id || this.dataset.prov.task._id;
                 datasetOutputId = this.dataset.prov.output_id; 
             }
@@ -131,11 +129,17 @@ export default {
                     } else {
                         graphNode.label = "";
                         if(node.name) graphNode.label += node.name+"\n";
-                        graphNode.label += node.service;
-                        if(node.serviceBranch) graphNode.label += ":"+node.serviceBranch;
+                        if(node.service == "brainlife/app-noop") {
+                            //don't show "app-noop" service name..
+                        } else {
+                            graphNode.label += node.service;
+                            if(node.serviceBranch) graphNode.label += ":"+node.serviceBranch;
+                            graphNode.label +="\n";
+                        }
                     }
-                    graphNode.label +="\n";
+                    if(node.runtime) graphNode.label += Math.floor(node.runtime/(1000*60))+" mins\n";
                     break;
+
                 case "dataset":
                     graphNode.color = "#159957";
                     graphNode.font.color = "#fff";
@@ -152,7 +156,30 @@ export default {
                     if(node.datatypeTags && node.datatypeTags.length) graphNode.label += " "+node.datatypeTags.map(t=>"<"+t+">").join(" ");
                     if(node.tags && node.tags.length) graphNode.label += "\n("+node.tags.join()+")";
                     graphNode.label+="\n";
+
+                    //attach source node
+                    const storageNode = {
+                        shape: "box",
+                        id: graphNode.id+".storage",
+                        font: {
+                            size: 10,
+                            color: "#fff",
+                        },
+                        color: "#999",
+                        label: node.storage+"\n"+node.storageLocation,
+                    }
+                    //userNode.y = -2000;
+                    graphNodes.push(storageNode);
+                    graphEdges.push({
+                        arrows: "to", 
+                        from: storageNode.id, 
+                        to: graphNode.id, 
+                        //label: "Upload\n("+node.name+")",
+                        //font: { size: 10, color: '#000a'}
+                    })
+
                     break;
+
                 case "output":
                     graphNode.color = "#ff9957";
                     graphNode.font = {size: 10, color: "#fff"};
@@ -293,7 +320,7 @@ export default {
             //handle terminal tasks differently
             graphNodes.forEach(gnode=>{
                 const node = this.prov.nodes[gnode.id];
-
+                if(!node) return; //maybe user/storage nodes
                 const outputEdges = graphEdges.filter(e=>e.from == gnode.id);
                 switch(node.service) {
                 case "brainlife/app-noop":
@@ -305,7 +332,7 @@ export default {
                     outputEdges.splice(0).forEach(outputEdge=>{
                         const edge = this.prov.edges[outputEdge.edgeIdx];
                         const dataset = this.prov.nodes[edge._dataset];
-                        const output = this.prov.nodes[edge._output];
+                        //const output = this.prov.nodes[edge._output];
 
                         if(!dataset) return;
 
@@ -342,11 +369,11 @@ export default {
                             arrows: "to", 
                             from: userNode.id, 
                             to: gnode.id, 
-                            label: "Upload\n("+node.name+")",
+                            label: node.name,
                             font: { size: 10, color: '#000a'}
                         })
                     }
-
+                    
                     break;
                 } 
 
@@ -358,36 +385,35 @@ export default {
                 gedge.length = 25*(inputs.length+outputs.length);
             })
 
-            console.log("prov2");
-            console.dir({graphNodes, graphEdges}); //debug
-
-            const gph = new vis.Network(this.$refs.prov, {
-                nodes: graphNodes,
-                edges: graphEdges,
-            }, {
-                layout: {
-                    randomSeed: 0,
-                },
-                physics: {
-                    barnesHut:{
-                        //springLength: 100,
-                        //springConstant: 0.04,
-                        //avoidOverlap: 0.1,
-                        //damping: 1.0,
-                        gravitationalConstant: -3000,
-                    }
-                },
-                nodes: {
-                    shadow: {
-                        enabled: true,
-                        //make it less pronounced than default
-                        size: 3,
-                        x: 1,
-                        y: 1 ,
-                        color: 'rgba(0,0,0,0.2)',
+            getVis().then(vis=>{
+                const gph = new vis.Network(this.$refs.prov, {
+                    nodes: graphNodes,
+                    edges: graphEdges,
+                }, {
+                    layout: {
+                        randomSeed: 0,
                     },
-                    borderWidth: 0,
-                },
+                    physics: {
+                        barnesHut:{
+                            //springLength: 100,
+                            //springConstant: 0.04,
+                            //avoidOverlap: 0.1,
+                            //damping: 1.0,
+                            gravitationalConstant: -3000,
+                        }
+                    },
+                    nodes: {
+                        shadow: {
+                            enabled: true,
+                            //make it less pronounced than default
+                            size: 3,
+                            x: 1,
+                            y: 1 ,
+                            color: 'rgba(0,0,0,0.2)',
+                        },
+                        borderWidth: 0,
+                    },
+                });
             });
 
             /*

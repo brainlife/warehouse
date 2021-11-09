@@ -242,7 +242,9 @@ router.get('/prov/:id', async (req, res, next)=>{
  */
 router.get('/prov2/:id', async (req, res, next)=>{
     const dataset = await db.Datasets.findById(req.params.id).lean();
-    if(!dataset) return next("can't find such data object");
+    if(!dataset) return next("can't find such data object:"+req.params.id);
+    if(!dataset.prov) return next("no prov stored for object:"+req.params.id);
+    if(!dataset.prov.task_id && !dataset.prov.task) return next("no task nor task_id is set on object:"+req.params.id);
     const prov = await provenance.traverseProvenance(dataset.prov.task_id||dataset.prov.task._id);
     provenance.setupShortcuts(prov);
 

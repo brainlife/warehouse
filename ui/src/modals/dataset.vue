@@ -273,19 +273,19 @@
                     </div>
                 </b-tab>
                 <b-tab title="Provenance2">
-                    <div class="dataset-provenance">
-                        <!--
-                        <div v-if="prov.edges.length == 0">
-                            <b-alert show variant="secondary">This data-object was uploaded by the user, and therefore has no provenance information.</b-alert>
+                    <span style="padding: 20px" v-if="!prov2">Loading..</span>
+                    <div class="dataset-provenance" v-if="prov2">
+                        <div v-if="!prov2.nodes">
+                            <b-alert show variant="secondary">This data-object has no provenance information.</b-alert>
                         </div>
-                        -->
-                        <div style="height: 100%">
+                        <div v-if="prov2.nodes" style="height: 100%">
                             <div style="position: absolute; left: 10px; bottom: 10px; z-index: 1;">
                                 <b-button variant="outline-primary" :pressed.sync="showFull" size="sm">Show Full Provenance</b-button>
                             </div>
-                            <provgraph v-if="prov2" :prov="prov2" :showFull="showFull" :dataset="dataset" style="height: 100%;"/>
+                            <provgraph :prov="prov2" :showFull="showFull" :dataset="dataset" style="height: 100%;"/>
                         </div>
                     </div>
+                    
                 </b-tab>
                 <b-tab title="Metadata/Sidecar">
                     <div class="dataset-meta">
@@ -394,10 +394,18 @@ export default {
         } 
     },
 
-    created() {
+    mounted() {
+        console.log("registering callback for dataset.view");
         this.$root.$on("dataset.view", opt=>{
+            console.log("opening data object view", opt);
             this.load(opt.id);
         });
+
+        //preopened?
+        if(this.$root.openDataObject) {
+            this.load(this.$root.openDataObject.id);
+            this.$root.openDataObject = null;
+        }
 
         //TODO - call removeEventListener in destroy()? Or I should do this everytime modal is shown/hidden?
         document.addEventListener("keydown", e => {
@@ -600,8 +608,15 @@ export default {
         load_prov2() {
             //load provenance
             this.prov2 = null;
+            if(!this.dataset.prov) {
+                this.prov2 = {};
+                return;
+            }
             this.$http.get('dataset/prov2/'+this.dataset._id).then(res=>{
                 this.prov2 = res.data;
+            }).catch(err=>{
+                console.error(err);
+                this.prov2 = {};
             });
         },
 
