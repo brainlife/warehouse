@@ -547,8 +547,7 @@ exports.setupShortcuts = (prov)=>{
             prov.edges.filter(e=>e.to == output.idx).forEach(parentTaskEdge=>{
                 const parentTask = prov.nodes[parentTaskEdge.from];
                 if(parentTask.type != "task") return;
-                const childTaskEdges = prov.edges.filter(e=>e.from == output.idx);
-                childTaskEdges.forEach(childTaskEdge=>{
+                prov.edges.filter(e=>e.from == output.idx).forEach(childTaskEdge=>{
                     const childTask = prov.nodes[childTaskEdge.to];
                     if(childTask.type != "task") return;
                     
@@ -624,8 +623,7 @@ exports.setupShortcuts = (prov)=>{
                 const archiveOutputEdges = prov.edges.filter(e=>(!e._simplified && e.from == archiveTask.idx)); 
                 archiveOutputEdges.forEach(archiveOutputEdge=>{
                     const dataset = prov.nodes[archiveOutputEdge.to];
-                    const childTaskEdges = prov.edges.filter(e=>(!e._simplified && e.from == dataset.idx));
-                    childTaskEdges.forEach(childTaskEdge=>{
+                    prov.edges.filter(e=>(!e._simplified && e.from == dataset.idx)).forEach(childTaskEdge=>{
                         const childTask = prov.nodes[childTaskEdge.to];
 
                         //make sure we came from the right path
@@ -637,7 +635,12 @@ exports.setupShortcuts = (prov)=>{
                                 childTaskEdge.idx,         
                             ];
                             const newedge = registerShortcutEdge(parentTask.idx, childTask.idx, shortcut);
-                            newedge._output = output.idx;
+
+                            //I could use output on taskOutputEdge._output, or childTaskEdge._output
+                            //but I need to use output that's closer to the childTask so that we can find
+                            //the right path via subdir
+                            newedge._output = childTaskEdge._output; 
+
                             newedge._dataset = dataset.idx;
                             newedge.outputId = taskOutputEdge.outputId;
                             newedge.inputId = childTaskEdge.inputId;
@@ -652,6 +655,7 @@ exports.setupShortcuts = (prov)=>{
             });
         });
 
+        /*
         //hide unused dataset staged by app-stage
         prov.nodes.filter(node=>(!node._simplified && 
             (node.service == "brainlife/app-stage" || node.service == "soichih/sca-product-raw")
@@ -674,7 +678,31 @@ exports.setupShortcuts = (prov)=>{
                 }
             });
         });
+        */
     }
+
+    //mark nodes that are relevant as _visited
+    const root = prov.nodes[0];
+    //mark root's children as visited (to show "This Data-Object")
+    prov.edges.filter(e=>e.from == root.idx).forEach(edge=>{
+        const c = prov.nodes[edge.to];
+        c._important = true;
+    });
+    const nodes = [root];
+    while(nodes.length) {
+        const node = nodes.shift();
+        node._important = true;
+        prov.edges.filter(e=>e.to == node.idx).forEach(edge=>{
+            const p = prov.nodes[edge.from];
+            if(!p._simplified) nodes.push(p);
+        });
+    }
+    /*
+    prov.nodes.forEach(node=>{
+        if(!node._visited) node._simplified = true;
+    });
+    */
+
 }
 //from array of provenances, construct a single tree with counts indicating number of paths for each branch
 exports.countProvenances = (provs)=>{

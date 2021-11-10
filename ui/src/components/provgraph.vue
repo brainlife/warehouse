@@ -88,17 +88,21 @@ export default {
                 this.prov.nodes.filter(node=>node._simplified).forEach(node=>{
                     node._hide = true;
                 });
+                //hide irelevant nodes
+                this.prov.nodes.filter(node=>!node._important).forEach(node=>{
+                    node._hide = true;
+                });
             } 
             if(hideShortcut) {
                 this.prov.edges.filter(edge=>edge._shortcutEdges).forEach(edge=>{
                     edge._hide = true;
                 });
             }
-
             if(!hideSimplified && !hideShortcut) {
                 //hide shortcuts that are itself is simplified
                 this.prov.edges.filter(edge=>(edge._shortcutEdges&&edge._simplified)).forEach(edge=>{
                     edge._hide = true;
+                    //edge.inter = true;
                 });
             }
 
@@ -298,9 +302,10 @@ export default {
                     arrows: "to",
                     to: edge.to,
                     from: edge.from,
-                    color: '#f00',
+                    //color: '#ff0',
                     edgeIdx: edge.idx,
                 }
+    
                 if(edge._simplified && !hideSimplified) {
                     graphEdge.font.size -= 7;
                 }
@@ -314,6 +319,15 @@ export default {
                     const dataset = this.prov.nodes[edge._dataset];
                     if(dataset.datasetId) graphEdge.title += "archived as datasetid:"+dataset.datasetId+"\n";
                 }
+                /*
+                if(edge.inter) {
+                    graphEdge.color = {
+                        inherit: false,
+                        color: '#0001',
+                    }
+                    graphEdge.dashes = false;
+                }
+                */
 
                 graphEdges.push(graphEdge);
             })
