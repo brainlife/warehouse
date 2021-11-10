@@ -31,6 +31,10 @@ export default {
         showFull() {
             this.load();
         },
+        prov() {
+            console.log("prov updated.. reloading");
+            this.load();
+        },
     },
 
     mounted() {
@@ -102,7 +106,6 @@ export default {
                 //hide shortcuts that are itself is simplified
                 this.prov.edges.filter(edge=>(edge._shortcutEdges&&edge._simplified)).forEach(edge=>{
                     edge._hide = true;
-                    //edge.inter = true;
                 });
             }
 
@@ -126,22 +129,26 @@ export default {
                     if(this.appid && node.appId == this.appid) {
                         graphNode.label = "This App";
                         graphNode.color = "#2693ff";
-                        graphNode.margin = 10;
+                        //graphNode.margin = 10;
                         graphNode.font.color = "#fff";
+                        graphNode.x = 2000;
+                        graphNode.y = 3000;
 
                         delete node._config; //hide config parameter used by "This app"
                     } else {
                         graphNode.label = "";
-                        if(node.name) graphNode.label += node.name+"\n";
+                        //if(node.name) graphNode.label += node.name+"\n"; //gets too long
                         if(node.service == "brainlife/app-noop") {
                             //don't show "app-noop" service name..
                         } else {
-                            graphNode.label += node.service;
-                            if(node.serviceBranch) graphNode.label += ":"+node.serviceBranch;
-                            graphNode.label +="\n";
+                            let service = node.service;
+                            if(service.startsWith("brainlife/")) service = service.substring(10);
+                            if(service.startsWith("brain-life/")) service = service.substring(11);
+                            graphNode.label += service;
+                            if(node.serviceBranch && node.serviceBranch != "master") graphNode.label += ":"+node.serviceBranch;
                         }
                     }
-                    if(node.runtime) graphNode.label += Math.floor(node.runtime/(1000*60))+" mins\n";
+                    if(node.runtime) graphNode.label += "\n"+Math.floor(node.runtime/(1000*60))+" mins\n";
                     break;
 
                 case "dataset":
@@ -192,7 +199,7 @@ export default {
                     if(node._taskId == datasetTaskId && node.outputId == datasetOutputId) {
                         graphNode.label = "This Data-Object";
                         graphNode.color = "#2693ff";
-                        graphNode.margin = 10;
+                        //graphNode.margin = 10;
                         graphNode.font.color = "#fff";
                         graphNode.font.size = 12;
                         graphNode.x = 2000;
@@ -213,8 +220,13 @@ export default {
 
                 //construct tooltip
                 let tooltip = "";
+                if(node.name) tooltip += node.name+"<br>";
+                let service = "";
+                if(node.service) service += node.service;
+                if(node.serviceBranch) service += ":"+node.serviceBranch;
+                tooltip += "<pre>"+service+"</pre><br>";
                 if(node._config) {
-                    node.label += "\n";
+                    //node.label += "\n";
                     let recs = [];
                     for(let key in node._config) {
                         let conf = node._config[key];
@@ -225,7 +237,7 @@ export default {
                             rec+= "<td>"+conf.v+"</td>"
                         } else {
                             rec+= "<td><b>"+conf.v+"</b> (default: "+conf.default+")</td>"
-                            graphNode.label += key+":"+conf.v+"\n";
+                            //graphNode.label += key+":"+conf.v+"\n"; //could become too big
                         }
                         rec += "</tr>";
                         recs.push(rec);
@@ -240,7 +252,8 @@ export default {
                 if(node.datasetId) tooltip += "<p>datasetid:"+node.datasetId+"</p>";
                 if(node.userId) tooltip += "<p>userId:"+node.userId+"</p>";
                 if(node._taskId) tooltip += "<p>taskId:"+node._taskId+"</p>";
-                graphNode.title = "<div>"+tooltip+"</div><small>idx:"+node.idx+"</small>";
+                tooltip += "<p>idx:"+node.idx+" "+node.type+"</p>";
+                graphNode.title = "<div>"+tooltip+"</div>";
                 graphNodes.push(graphNode);
             });
             
@@ -398,7 +411,7 @@ export default {
             graphEdges.forEach(gedge=>{
                 const inputs = graphEdges.filter(e=>e.from == gedge.from);
                 const outputs = graphEdges.filter(e=>e.to == gedge.to);
-                gedge.length = 25*(inputs.length+outputs.length);
+                gedge.length = 30*(inputs.length+outputs.length);
             })
 
             getVis().then(vis=>{
@@ -411,11 +424,11 @@ export default {
                     },
                     physics: {
                         barnesHut:{
-                            //springLength: 100,
+                            //springLength: 300,
                             //springConstant: 0.04,
-                            //avoidOverlap: 0.1,
+                            //avoidOverlap: 0.5,
                             //damping: 1.0,
-                            gravitationalConstant: -3000,
+                            gravitationalConstant: -4000,
                         }
                     },
                     nodes: {

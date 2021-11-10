@@ -208,8 +208,12 @@ table.info th {
 table.info td {
     padding: 10px;
 }
-.table-sm th, .table-sm td {
+.table-sm {
     font-size: 90%;
+}
+.table-sm td {
+    padding: 0 3px;
+    line-height: 110%;
 }
 
 #warehouse .table thead th {

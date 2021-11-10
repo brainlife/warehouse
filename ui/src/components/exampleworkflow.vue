@@ -1,10 +1,11 @@
 <template>
-<div class="examplewf">
+<div>
     <b-alert :show="provs && !provs.length" variant="secondary">Sorry, we couldn't find an example workflow.</b-alert>
-    <div v-for="(prov, idx) in provs" :key="idx">
-        <provgraph :prov="prov" :appid="appid" :showFull="false" style="height: 700px; background-color: #eee;"/>
-        <br>
-    </div>
+    <br>
+    <b-nav tabs>
+        <b-nav-item v-for="(prov, idx) in provs" :key="idx" :active="(idx == selected)" @click="selected = idx">{{idx}} ({{(prov._prob*100).toFixed(1)}}%)</b-nav-item>
+    </b-nav>
+    <provgraph :prov="provs[selected]" :appid="appid" :showFull="false" style="height: 700px; background-color: #eee;"/>
 </div>
 </template>
 
@@ -34,6 +35,7 @@ export default {
     data() {
         return {
             provs: null,
+            selected: 0,
         }
     },
 
@@ -41,10 +43,18 @@ export default {
         this.$root.$emit("loading",{message: "Loading Example Workflow"});
         this.$http.get("app/example/"+this.appid).then(res=>{
             this.$root.$emit("loading", {show: false});
-    
-            //let's just show the very first one
-            this.provs = res.data.splice(0,1);
+            this.provs = res.data;
         }).catch(console.error);
+        /*
+        fetch("https://dev1.soichi.us/tmp/prov.json").then(res=>res.json()).then(res=>{
+        //fetch("https://dev1.soichi.us/tmp/app-5ed02bb20a8ed87a11482d81.json").then(res=>res.json()).then(res=>{
+            console.dir(res);
+            this.$root.$emit("loading", {show: false});
+            this.provs = [res];
+            this.appid = "5ed02b780a8ed88a57482c92";
+            //this.appid = "5ed02bb20a8ed87a11482d81";
+        });
+        */
     },
 
     methods: {
@@ -53,6 +63,4 @@ export default {
 </script>
 
 <style scoped>
-.examplewf {
-}
 </style>

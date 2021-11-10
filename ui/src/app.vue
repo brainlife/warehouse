@@ -60,7 +60,7 @@
                             <span style="opacity: 0.6; font-size: 80%" v-if="tasks.length > 0">{{tasks.length}}</span>
                         </template>
                     </b-tab>
-                    <b-tab v-if="config.user.sub == 1">
+                    <b-tab v-if="config.hasRole('tester', 'brainlife')">
                         <template v-slot:title>Example Workflow</template>
                     </b-tab>
                 </b-tabs>
@@ -340,11 +340,6 @@
 
         <div v-if="tabID == 'example'" class="tab-content">
             <b-container>
-                <!--
-                <br>
-                <vue-disqus shortname="brain-life" :identifier="app._id"/>
-                <br>
-                -->
                 <exampleworkflow :appid="app._id"/>
             </b-container>
         </div>

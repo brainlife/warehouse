@@ -8,8 +8,8 @@
                     <b-tab title="Profile"/>
                     <b-tab title="Account"/>
                     <b-tab title="Notification"/>
-                    <b-tab v-if="config.is_admin" title="Users"/>
-                    <b-tab v-if="config.is_admin" title="Groups"/>
+                    <b-tab v-if="config.hasRole('admin')" title="Users"/>
+                    <b-tab v-if="config.hasRole('admin')" title="Groups"/>
                 </b-tabs>
             </b-container>
         </div><!--header-->

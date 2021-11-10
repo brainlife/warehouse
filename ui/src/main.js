@@ -258,7 +258,7 @@ Vue.config.plotly = {
     },
 };
 
-Vue.config.has_role = function(role, service = "warehouse") {
+Vue.config.hasRole = function(role, service = "warehouse") {
     if( Vue.config.user && 
         Vue.config.user.scopes[service] &&
         ~Vue.config.user.scopes[service].indexOf(role)) return true;
@@ -298,8 +298,8 @@ function jwt_decode_brainlife(jwt) {
     axios.defaults.headers.common['Authorization'] = 'Bearer '+Vue.config.jwt;
 
     //deprecated .. use Vue.config.has_role
-    Vue.config.is_admin = Vue.config.has_role("admin"); 
-    if(Vue.config.has_role("admin")) console.log("user is admin!");
+    //Vue.config.is_admin = Vue.config.hasRole("admin"); 
+    //if(Vue.config.has_role("admin")) console.log("user is admin!");
 }
 
 Vue.config.jwt = localStorage.getItem("jwt");//jwt token for user

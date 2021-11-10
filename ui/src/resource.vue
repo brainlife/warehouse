@@ -367,7 +367,7 @@ export default {
                     return 0;
                 });
 
-                if(Vue.config.has_role("admin")) {
+                if(Vue.config.hasRole("admin")) {
                     if(!this.resource.stats.projects) return;
                     let group_ids = this.resource.stats.projects.map(p=>p._id);
                     this.$http.get('/project/', {params: {

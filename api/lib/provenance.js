@@ -586,7 +586,7 @@ exports.setupShortcuts = (prov)=>{
                 prov.edges.filter(edge=>(edge.from == stageTask.idx && !edge._simplified)).forEach(edge=>{
                     if(!edge._output) return;
                     const output = prov.nodes[edge._output];
-                    if(output.outputId == node.datasetId) {
+                    if(output.subdir == node.datasetId) {
                         const task = prov.nodes[edge.to];
                         const shortcut = [
                             stageTaskEdge.idx,
