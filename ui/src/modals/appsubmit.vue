@@ -219,9 +219,13 @@ export default {
                 status: {$in: ["stored", "archived"]},
             };
 
-            if(search) find_raw.$text = {$search: search};
-            
-            console.log("searching for dataset", find_raw);
+            //similar code in modals/datasetselecter
+            if(search) find_raw.$or = [
+                    { 'meta.subject': {$regex: search, $options: 'i' }}, 
+                    { 'meta.session': {$regex: search, $options: 'i' }}, 
+                    { 'tags': {$regex: search, $options: 'i' }}, 
+                    { 'datatype_tags': {$regex: search, $options: 'i' }}, 
+            ];
             this.$http.get('dataset', { params: {
                 find: JSON.stringify(find_raw),
                 sort: "meta.subject meta.session -create_date",

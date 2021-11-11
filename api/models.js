@@ -563,7 +563,7 @@ datasetSchema.pre('save', function(next) {
     next();
 });
 
-datasetSchema.index({'$**': 'text'}) //make all text fields searchable
+//datasetSchema.index({'$**': 'text'}) //make all text fields searchable
 datasetSchema.index({project: 1, 'prov.task.instance_id': 1, removed: 1, 'meta.subject': 1, 'meta.session': 1, create_date: -1}); //is this deprecated by project/remove/subject/session/-create_ate?
 //datasetSchema.index({project: 1, removed: 1, "meta.subject": 1, "meta.session": 1, "create_date": -1}); //for dataset search by the archive view
 datasetSchema.index({project: 1, datatype: 1, removed: 1, status: 1, "meta.subject": 1, "meta.session": 1, create_date: -1});
