@@ -309,7 +309,7 @@ export default {
                 const graphEdge = {
                     label,
                     font: {
-                        size: 10,
+                        size: 8,
                         color: '#000a',
                     },
                     arrows: "to",
@@ -487,6 +487,8 @@ export default {
 </script>
 
 <style scoped>
-.provgraph {
+/deep/ .table-sm td {
+    line-height: 150%;
+    padding: 0 5px;
 }
 </style>

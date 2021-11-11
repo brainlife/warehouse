@@ -112,7 +112,6 @@ export default {
             let diff = false;
             this.datasets.forEach(did=>{
                 let dataset = this.alldatasets[did];
-                console.log(dataset.meta.subject);
                 if(!subject) subject = dataset.meta.subject;
                 else if(subject != dataset.meta.subject) diff = true;
             });
@@ -287,7 +286,6 @@ export default {
                 distinct: 'meta.subject',
             }}).then(res=>{
                 this.subjects = res.data;
-                //console.dir(res.data);
             });
         },
     },

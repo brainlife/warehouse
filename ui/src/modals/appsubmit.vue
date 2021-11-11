@@ -221,6 +221,7 @@ export default {
 
             if(search) find_raw.$text = {$search: search};
             
+            console.log("searching for dataset", find_raw);
             this.$http.get('dataset', { params: {
                 find: JSON.stringify(find_raw),
                 sort: "meta.subject meta.session -create_date",

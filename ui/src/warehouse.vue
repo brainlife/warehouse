@@ -211,10 +211,12 @@ table.info td {
 .table-sm {
     font-size: 90%;
 }
+/*
 .table-sm td {
     padding: 0 3px;
     line-height: 110%;
 }
+*/
 
 #warehouse .table thead th {
     opacity: 0.8;

@@ -224,13 +224,13 @@
                 <b-container>
                     <h5>Change Password</h5>     
                     <hr>           
-                    <b-form @submit="changePassword">
+                    <b-form @submit="changePassword" style="max-width: 300px">
                         <b-form-group label="Current Password">
                             <b-form-input v-model="form.currentPassword" type="password" required/>
                         </b-form-group>
                         <b-form-group label="New Password">
                             <b-form-input v-model="form.newPassword" type="password" required/>
-                            <password v-model="form.newPassword" :strength-meter-only="true" @feedback="updatePasswordFeedback"/>
+                            <password v-if="form.newPassword" v-model="form.newPassword" :strength-meter-only="true" @feedback="updatePasswordFeedback"/>
                             <b-alert v-for="(msg, idx) in passwordSuggestions" variant="secondary" :key="idx">{{msg}}</b-alert>
                             <b-alert :show="!!passwordWarning" variant="danger">{{passwordWarning}}</b-alert>
                         </b-form-group>
@@ -241,24 +241,23 @@
                             Passwords do not match
                         </b-form-invalid-feedback>
                         <br>
-                        <b-button type="submit" variant="primary" v-if="validaterepeatPass">Update</b-button>                           
+                        <b-button type="submit" variant="primary" v-if="validaterepeatPass">Reset Password</b-button>
                     </b-form>
+                    <br>
                 </b-container>
-                <br>
+
+                <b-container>
                 <div v-if="user">
                     <h5>Connected Accounts</h5>
+                    <hr>
                     <div class="well">
-                        <div v-if="!user.ext.googleid">
-                            <b-button class="float-right" @click="connect('google')">Connect</b-button>
-                        </div>
-                        <div v-else>
-                            <b-button class="float-right" @click="disconnect('google')">Disconnect</b-button>
-                            <p class="float-right text-muted" style="margin: 11px;"><b>{{user.ext.googleid}}</b> |</p>
-                        </div>
+                        <b-button class="float-right" v-if="user.ext.googleid" @click="disconnect('google')">Disconnect</b-button>
+                        <b-button class="float-right" v-else @click="connect('google')">Connect</b-button>
                         <p class="float-right text-muted" style="margin: 11px;">
-                                Last Login: 
-                                <span v-if="!user.times.google_login">Never</span>
-                                <span v-else>{{user.times.google_login}}</span>
+                            <span v-if="user.ext.googleid"><b>{{user.ext.googleid}}</b> |</span>
+                            Last Login: 
+                            <span v-if="!user.times.google_login">Never</span>
+                            <span v-else>{{user.times.google_login}}</span>
                         </p>
                         <h5><icon name="brands/google" size="2.4"></icon> Google</h5>
                     </div>
@@ -268,7 +267,7 @@
                         <p class="float-right text-muted" style="margin: 11px;">
                             <span v-if="user.ext.github"><b>{{user.ext.github}}</b> |</span>
                             Last Login: 
-                            <span v-if="!user.times.github">Never</span>
+                            <span v-if="!user.times.github_login">Never</span>
                             <span v-else>{{user.times.github_login}}</span>
                         </p>
                         <h5><icon name="brands/github" size="2.4"></icon> Github</h5>
@@ -279,11 +278,22 @@
                         <p class="float-right text-muted" style="margin: 11px;">
                             <span v-if="user.ext.orcid"><b>{{user.ext.orcid}}</b> |</span>
                             Last Login: 
-                            <span v-if="!user.times.orcid">Never</span>
+                            <span v-if="!user.times.orcid_login">Never</span>
                             <time v-if="user.times.orcid_login">{{user.times.orcid_login}}</time>
                         </p>
                         <h5><icon name="brands/orcid" size="2.4"></icon> ORCID</h5>
                     </div>
+                    <div class="well">
+                        <b-button class="float-right" v-if="user.ext.globus" @click="disconnect('globus')">Disconnect</b-button>
+                        <b-button class="float-right" v-else @click="connect('globus')">Connect</b-button>
+                        <p class="float-right text-muted" style="margin: 11px;">
+                            <span v-if="user.ext.globus"><b>{{user.ext.globus}}</b> |</span>
+                            Last Login: 
+                            <span v-if="!user.times.globus_login">Never</span>
+                            <time v-if="user.times.globus_login">{{user.times.globus_login}}</time>
+                        </p>
+                        <h5><!--<icon name="brands/globus" size="2.4"></icon>-->Globus</h5>
+                    </div>                    
                     <div class="well">
                         <b-button class="float-right" @click="connect('oidc')">Connect</b-button>
                         <h5>
@@ -296,8 +306,8 @@
                                 <p style="margin: 0 0 10.5px;">
                                     {{dn}}
                                     <span class="text-muted"> | Last Login: 
-                                        <span v-if="!user.times['oidc_login:'+user.profile.sub]">Never</span> 
-                                        <time>{{user.times['oidc_login:'+user.profile.sub]}}</time>
+                                        <span v-if="!user.times['oidc_login:'+dn]">Never</span> 
+                                        <time>{{user.times['oidc_login:'+dn]}}</time>
                                     </span> 
                                 </p>
                             </b-list-group-item>
@@ -305,6 +315,7 @@
                     </div>
                 </div>
                 Please visit the legacy <a href="/auth/#!/settings/account" target="_blank">Account Settings</a> page for more account settings.
+                </b-container>
             </div>
 
             <!--notification-->
