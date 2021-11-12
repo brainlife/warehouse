@@ -264,11 +264,13 @@
                     <br>
                 </b-container>
 
-                <b-container>
-                <div v-if="user">
+                <b-container v-if="user">
                     <h5>Account Association</h5>
-                    <small>You can use the following 3rd party identity providers to login to your brainlife account instead of using brainlife's user/password.</small>
                     <hr>
+                    <p>
+                        <small>You can use the following 3rd party identity providers to login to your brainlife account instead of using brainlife's user/password.</small>
+                    </p>
+                    
                     <div class="account" v-for="a in accounts" :key="a.type" :class="{'account-connected': user.ext[a.ext]}">
                         <b-form-checkbox switch :checked="!!user.ext[a.ext]" size="lg" style="float: right" @change="account(a.type, $event)"/>
                         <icon :name="a.icon" size="3" style="float: left; margin-top: 5px;"/> 
@@ -310,9 +312,10 @@
                         <div class="account-time">
                         </div>
                     </div>
-                </div>
-                <br clear="both">
-                Please visit the legacy <a href="/auth/#!/settings/account" target="_blank">Account Settings</a> page for more account settings.
+                    <br clear="both">
+                    <!--
+                    Please visit the legacy <a href="/auth/#!/settings/account" target="_blank">Account Settings</a> page for more account settings.
+                    -->
                 </b-container>
             </div>
 

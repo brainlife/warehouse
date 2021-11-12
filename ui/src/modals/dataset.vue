@@ -194,14 +194,12 @@
                                 <b-col>
                                     <p>
                                         <span v-if="dataset.status == 'stored'">
-                                            <div v-if="dataset.storage == 'copy'">
-                                                <projectcard :project="dataset.project"/>
-                                            </div>
-                                            <b>
-                                                {{dataset.storage}} 
-                                                <span v-if="dataset.storage == 'copy'">({{dataset.storage_config.storage}})</span>
-                                                <span v-if="dataset.storage_config && dataset.storage_config.path" style="opacity: 0.8; font-weight: normal; font-size: 90%">{{dataset.storage_config.path}}</span>
-                                            </b>
+                                            <b>{{dataset.storage}}</b>
+                                            <span v-if="dataset.storage_config && dataset.storage_config.path" style="opacity: 0.8; font-weight: normal; font-size: 90%">{{dataset.storage_config.path}}</span>
+                                            <span v-if="dataset.storage == 'copy'">
+                                                from <b>{{dataset.storage_config.project.name}}</b> project
+                                                stored in ({{dataset.storage_config.storage}})
+                                            </span>
                                             <span class="text-muted" v-if="dataset.size">({{dataset.size | filesize}})</span>
                                             <div v-if="dataset.storage == 'url'">
                                                 <b-row v-for="file in dataset.storage_config.files" :key="file.id">
@@ -259,7 +257,7 @@
                         </div>
                     </div><!--dataset-detail-->
                 </b-tab>
-                <b-tab title="Provenance">
+                <b-tab title="Provenance(old)">
                     <div v-if="prov" class="dataset-provenance">
                         <div v-if="prov.edges.length == 0">
                             <b-alert show variant="secondary">This data-object was uploaded by the user, and therefore has no provenance information.</b-alert>
@@ -272,8 +270,8 @@
                         </div>
                     </div>
                 </b-tab>
-                <b-tab title="Provenance2">
-                    <span style="padding: 20px" v-if="!prov2">Loading..</span>
+                <b-tab title="Provenance">
+                    <h5 style="padding: 20px; opacity: 0.5;" v-if="!prov2">Loading ...</h5>
                     <div class="dataset-provenance" v-if="prov2">
                         <div v-if="!prov2.nodes">
                             <b-alert show variant="secondary">This data-object has no provenance information.</b-alert>
@@ -854,15 +852,23 @@ export default {
 
             const datasetRes = await this.$http.get('dataset', {params: {
                 find: JSON.stringify({_id: id}),
-                populate: JSON.stringify([{
-                    path: "datatype", // prov.deps.dataset",
-                    populate: {
-                        path: "uis",
-                        model: "UIs",
+                populate: JSON.stringify([
+                    {
+                        path: "datatype", // prov.deps.dataset",
+                        populate: {
+                            path: "uis",
+                            model: "UIs",
+                        }
+                    }, 
+                    {
+                        path: "project"
+                    },
+                    {
+                        path: "storage_config.project",
+                        model: "Projects",
+                        select: "name",
                     }
-                }, {
-                    path: "project"
-                }]),
+                ]),
             }});
 
             if(datasetRes.data.count == 0) {

@@ -79,6 +79,10 @@ exports.traverseProvenance = async (startTaskId) => {
             //storage_config.files[].src contain full path.. but maybe too verbose
             node.storageLocation = dataset.storage_config.path;
             break;
+        case "copy":
+            node.sourceDatasetId = dataset.storage_config.dataset_id.toString();
+            node.sourceStorage = dataset.storage_config.storage;
+            break;
         }
         nodes.push(node);
         return datasetNodeIdx;
@@ -288,12 +292,15 @@ exports.traverseProvenance = async (startTaskId) => {
                 console.error("only handling download request for sca-product-raw.. but it's not set on ", task._id);
             } else {
                 for await (const datasetConfig of task.config.download) {
-                    const dataset = await db.Datasets.findById(datasetConfig.dir).lean();
+                    let dataset = await db.Datasets.findById(datasetConfig.dir).lean();
                     if(!dataset) {
-                        console.error("couldn't find sca-product-raw dataset:", datasetConfig.dir, "in task:", task._id);
-                        //TODO - register a fake dataset?
-                        continue;
+                        //console.error("couldn't find sca-product-raw dataset:", datasetConfig.dir, "in task:", task._id);
+                        //let's fake a dataset using information from the output (maybe removed?)
+                        if(task.config._outputs) dataset = task.config._outputs.find(o=>o.subdir == datasetConfig.dir);
                     }
+                    if(!dataset) return;
+                    
+
                     if(dataset.archive_task_id) {
                         tasks.push(dataset.archive_task_id);
                     } else {
@@ -409,7 +416,6 @@ exports.traverseProvenance = async (startTaskId) => {
         }
     }
 
-
     //find source output for archived dataset and link it
     nodes.forEach(node=>{
         if(node.inputs) node.inputs.forEach(input=>{
@@ -423,6 +429,20 @@ exports.traverseProvenance = async (startTaskId) => {
                     outputId: output.outputId,
                 });
             });
+        });
+    });
+
+    //link between copied dataset and source dataset
+    nodes.filter(n=>(n.type == "dataset" && n.sourceDatasetId)).forEach(copy=>{
+        const source = nodes.find(n=>n.datasetId == copy.sourceDatasetId);
+        edges.push({
+            idx: edges.length,
+            from: source.idx, 
+            to: copy.idx, 
+
+            //not sure if we need these or not.. but why not
+            inputId: copy.sourceDatasetId,
+            outputId: copy.datasetId,
         });
     });
 
@@ -654,31 +674,6 @@ exports.setupShortcuts = (prov)=>{
                 });
             });
         });
-
-        /*
-        //hide unused dataset staged by app-stage
-        prov.nodes.filter(node=>(!node._simplified && 
-            (node.service == "brainlife/app-stage" || node.service == "soichih/sca-product-raw")
-        )).forEach(stage=>{
-            //look which data objects are actually used
-            const datasetIdsUsed = [];
-            prov.edges.filter(e=>e.from == stage.idx).forEach(edge=>{
-                const output = prov.nodes.find(n=>n.idx == edge.to);
-                if(output.type != "output") return; //shortcut edge might link to non-ouput
-                const outputParentEdge = prov.edges.find(e=>e.from == output.idx);
-                datasetIdsUsed.push(output.outputId);
-            });
-
-            prov.edges.filter(e=>e.to == stage.idx).forEach(edge=>{
-                //simplify unsed edge / dataset if it's not used
-                if(!datasetIdsUsed.includes(edge.inputId)) {
-                    console.log("simplifiying unsed dataset/edge", edge);
-                    edge._simplified = true;
-                    prov.nodes[edge.from]._simplified = true;
-                }
-            });
-        });
-        */
     }
 
     //mark nodes that are relevant as _visited
@@ -697,12 +692,6 @@ exports.setupShortcuts = (prov)=>{
             if(!p._simplified) nodes.push(p);
         });
     }
-    /*
-    prov.nodes.forEach(node=>{
-        if(!node._visited) node._simplified = true;
-    });
-    */
-
 }
 //from array of provenances, construct a single tree with counts indicating number of paths for each branch
 exports.countProvenances = (provs)=>{
