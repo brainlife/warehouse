@@ -22,7 +22,6 @@ import 'perfect-scrollbar/css/perfect-scrollbar.css'
 //https://www.npmjs.com/package/vue-notification
 import Notifications from 'vue-notification' //override element-ui ugly $notify..
 
-//import 'vue-awesome/icons'
 import 'vue-awesome/icons/robot.js'
 import 'vue-awesome/icons/book.js'
 import 'vue-awesome/icons/paper-plane.js'
