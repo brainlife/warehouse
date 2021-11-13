@@ -168,28 +168,38 @@ export default {
                     if(node.tags && node.tags.length) graphNode.label += "\n("+node.tags.join()+")";
                     graphNode.label+="\n";
 
-                    //attach source node
-                    const storageNode = {
-                        shape: "box",
-                        id: graphNode.id+".storage",
-                        font: {
-                            size: 10,
-                            color: "#fff",
-                        },
-                        color: "#999",
-                        label: node.storage,
-                    }
-                    if(node.storageLocation) storageNode.label += "\n"+node.storageLocation;
+                    if(node.storage == "copy") {
+                        graphNode.label = "(copy) "+graphNode.label;
+                        graphNode.color = {
+                            border: "#159957",
+                            background: "#fff",
+                        }
+                        graphNode.borderWidth = 1;
+                        graphNode.font.color = "#159957";
+                    } else {
+                        //attach source node
+                        const storageNode = {
+                            shape: "box",
+                            id: graphNode.id+".storage",
+                            font: {
+                                size: 10,
+                                color: "#fff",
+                            },
+                            color: "#999",
+                            label: node.storage,
+                        }
+                        if(node.storageLocation) storageNode.label += "\n"+node.storageLocation;
 
-                    //userNode.y = -2000;
-                    graphNodes.push(storageNode);
-                    graphEdges.push({
-                        arrows: "to", 
-                        from: storageNode.id, 
-                        to: graphNode.id, 
-                        //label: "Upload\n("+node.name+")",
-                        //font: { size: 10, color: '#000a'}
-                    })
+                        console.log(node.idx, node.storage);
+                        graphNodes.push(storageNode);
+                        graphEdges.push({
+                            arrows: "to", 
+                            from: storageNode.id, 
+                            to: graphNode.id, 
+                            //label: "Upload\n("+node.name+")",
+                            //font: { size: 10, color: '#000a'}
+                        })
+                    }
 
                     break;
 
