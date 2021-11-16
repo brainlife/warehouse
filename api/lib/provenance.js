@@ -56,8 +56,6 @@ exports.traverseProvenance = async (startTaskId) => {
             return existing.idx;
         }
 
-        if(!dataset.storage) console.dir(dataset);
-
         //register new
         const datasetNodeIdx = nodes.length;
         const node = {
@@ -308,7 +306,7 @@ exports.traverseProvenance = async (startTaskId) => {
                         if(task.config._outputs) {
                             dataset = task.config._outputs.find(o=>o.subdir == datasetConfig.dir);
                             dataset._id = datasetConfig.dir;
-                            dataset.storage = "guess";
+                            //dataset.storage = "guess";
                         }
                     }
                     if(!dataset) return;
@@ -445,10 +443,6 @@ exports.traverseProvenance = async (startTaskId) => {
 
     //link between copied dataset and source dataset
     nodes.filter(n=>(n.type == "dataset" && n.sourceDatasetId)).forEach(copy=>{
-        console.log("looking for ", copy);
-        nodes.forEach(n=>{
-            console.log(n.idx, n.datasetId);
-        });
         const source = nodes.find(n=>n.datasetId == copy.sourceDatasetId);
         if(source) edges.push({
             idx: edges.length,
@@ -878,6 +872,14 @@ exports.computeProbabilities = (cnodes)=>{
 
 //input is an array of provenance graphs (needs shortcuts)
 exports.cluster = (provs)=>{
+    console.log("MCL clustering with ", provs.length, "provs");
+ 
+    //apply markov cluster algorithm on the adjacency matrix to create the final clustering 
+    if(provs.length < 2) {
+        console.log("provs size too small.. returning first index as cluster of 1");
+        return [[0]];
+    }
+
     //count number of app transitions (appA > appB) for each graph.
     provs.forEach(prov=>{
         //console.log("---------------------------------------------");
@@ -902,7 +904,7 @@ exports.cluster = (provs)=>{
 
     //create adjacency matrix between all graph with each cell representing distances between each graph. 
     function computeDistance(p1, p2) {
-        let dist = 0;
+        let dist = 1; //prevent it from becoming 0
         for(let key in p1._transitions) {
             const p1count = p1._transitions[key];
             const p2count = p2._transitions[key];
@@ -915,38 +917,60 @@ exports.cluster = (provs)=>{
             const p2count = p2._transitions[key];
             if(!p1count) dist += p2count;
         }
-        /*
-        console.log("p1...");
-        console.dir(p1._transitions);
-        console.log("p2...");
-        console.dir(p2._transitions);
-        console.log("dist", dist);
-        */
         return dist;
     }
-
     const matrix = [];
     provs.forEach((p1, p1idx)=>{
         matrix[p1idx] = [];
         provs.forEach((p2, p2idx)=>{
-            matrix[p1idx][p2idx] = computeDistance(p1, p2);
+            let v = 0;
+            if(p1idx != p2idx) v = 1/computeDistance(p1, p2); 
+            matrix[p1idx][p2idx] = v;
         }); 
     });
-    
-    //apply markov cluster algorithm on the adjacency matrix to create the final clustering 
-    if(matrix.length < 2) {
-        console.log("matrix size too small.. returning first index as cluster of 1");
-        return [[0]];
-    }
 
-    console.log("adjacency matrix...");
+    //console.log("similarity matrix...");
+    //console.dir(matrix);
+
+    //convert it to transition probability matrix
+    //see page 10 https://sites.cs.ucsb.edu/~xyan/classes/CS595D-2009winter/MCL_Presentation2.pdf
+    provs.forEach((p1, col)=>{
+        //invert distance to make it similarity, then sum all weights in the column
+        let sum = 0;
+        provs.forEach((p2, row)=>{
+            sum += matrix[row][col]; 
+        }); 
+
+        //then convert to probability matrix (each column should sum to 1)
+        provs.forEach((p2, row)=>{
+            let v = matrix[row][col];
+            matrix[row][col] = v/sum;
+        }); 
+    });
+
+    console.log("probability matrix...");
     console.dir(matrix);
+   
+    const clusters = mc.cluster(math.matrix(matrix), {
+        //expandFactor: 3,
+        //inflateFactor: 3,
+        //maxLoops: 20,
+        //multiFactor: 1.2,
+    });    
 
-    const clusters = mc.cluster(math.matrix(matrix));    
-    console.dir("clusters..");
-    console.dir(clusters);
+    //TODO I don't know why but MCL returns multiple pairs
+    //[ [ 0 ], [ 1, 2 ], [ 1, 2 ], [ 3 ], [ 4, 5 ], [ 4, 5 ] ] (for app 5eab8082bd120f70ca6511dd on dev)
+    const seen = []; 
+    const dedupedClusters = [];
+    clusters.forEach(cluster=>{
+        if(seen.includes(cluster[0])) return;
+        dedupedClusters.push(cluster);
+        seen.push(cluster[0]);
+    });  
 
-    return clusters;
+    console.dir("(deduped) clusters..");
+    console.dir(dedupedClusters);
+    return dedupedClusters;
 }
 
 //populate datatype / project info
@@ -955,7 +979,6 @@ exports.populate = async function(prov) {
     await common.startContactCachePromise();
 
     //populate datatype info
-    console.log("populating", prov);
     prov.nodes.filter(n=>!!n.datatype).forEach(node=>{
         if(typeof node.datatype == 'object') return; //duplicate prov that's already populated?
         const id = node.datatype;

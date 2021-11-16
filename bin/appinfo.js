@@ -89,7 +89,54 @@ function handle_app(app, cb) {
                 next();
             }).catch(next);
         },
-        
+      
+        //cache example workflow
+        async ()=>{
+            const cachefname = "/tmp/example.app-"+app.id+".json"; //needs to match the path used in controller/app.js
+
+            const provs = await provenance.sampleTerminalTasks(app.id);
+            provs.map(provenance.setupShortcuts);
+
+            console.log("clustering app example workflows", provs.length);
+            const commonProvs = [];
+            if(provs.length) {
+                const clusters = provenance.cluster(provs);
+                clusters.forEach(cluster=>{
+                    //grab the first one from each cluster
+                    const prov = provs[cluster[0]];
+                    prov._prob = cluster.length / provs.length;
+                    commonProvs.push(prov);
+                });
+            }
+
+            //remove things we don't want to show to the user
+            commonProvs.forEach(prov=>{
+                prov.nodes.forEach(node=>{
+                    delete node.project;
+                    delete node.desc;
+                    delete node.userId;
+                    delete node.user;
+                    delete node.meta;
+                    delete node.datasetId;
+                    delete node.storage;
+                    delete node.storageLocation;
+                    node.tags = [];
+                });
+            });
+
+            //populate things we should populate
+            for await (const prov of commonProvs) {
+                await provenance.populate(prov);
+            }
+
+            //then store this on disk..
+            console.log("saving at", cachefname);
+            fs.writeFileSync(cachefname, JSON.stringify(commonProvs));
+
+            app.stats.examples = commonProvs.length;
+            app.markModified('stats');
+        },
+  
         //list shared resources that are registered to this app
         next=>{
             axios.get(config.amaretti.api+"/resource", {
@@ -152,47 +199,6 @@ function handle_app(app, cb) {
                 //app.doi = undefined
                 next();
             });
-        },
-
-        //cache example workflow
-        async ()=>{
-            const cachefname = "/tmp/example.app-"+app.id+".json"; //needs to match the path used in controller/app.js
-
-            const provs = await provenance.sampleTerminalTasks(app.id);
-            provs.map(provenance.setupShortcuts);
-
-            const commonProvs = [];
-            if(provs.length) {
-                const clusters = provenance.cluster(provs);
-                clusters.forEach(cluster=>{
-                    //grab the first one from each cluster
-                    const prov = provs[cluster[0]];
-                    prov._prob = cluster.length / provs.length;
-                    commonProvs.push(prov);
-                });
-            }
-
-            //remove things we don't want to show to the user
-            commonProvs.forEach(prov=>{
-                prov.nodes.forEach(node=>{
-                    delete node.project;
-                    delete node.desc;
-                    delete node.userId;
-                    delete node.user;
-                    delete node.meta;
-                    delete node.datasetId;
-                    node.tags = [];
-                });
-            });
-
-            //populate things we should populate
-            for await (const prov of commonProvs) {
-                await provenance.populate(prov);
-            }
-
-            //we store this on disk..
-            console.log("saving at", cachefname);
-            fs.writeFileSync(cachefname, JSON.stringify(commonProvs));
         },
 
         //now save the app

@@ -129,7 +129,6 @@ export default {
 
                 switch(node.type) {
                 case "task":
-                    console.log(node.idx, node.taskId);
                     if(this.appid && node.appId == this.appid) {
                         graphNode.label = "This App";
                         graphNode.color = "#2693ff";
@@ -188,27 +187,27 @@ export default {
                         graphNode.font.color = "#159957";
                     } else {
                         //attach source node
-                        const storageNode = {
-                            shape: "box",
-                            id: graphNode.id+".storage",
-                            font: {
-                                size: 10,
-                                color: "#fff",
-                            },
-                            color: "#999",
-                            label: node.storage,
+                        if(node.storage) {
+                            const storageNode = {
+                                shape: "box",
+                                id: graphNode.id+".storage",
+                                font: {
+                                    size: 10,
+                                    color: "#fff",
+                                },
+                                color: "#999",
+                                label: node.storage,
+                            }
+                            if(node.storageLocation) storageNode.label += "\n"+node.storageLocation;
+                            graphNodes.push(storageNode);
+                            graphEdges.push({
+                                arrows: "to", 
+                                from: storageNode.id, 
+                                to: graphNode.id, 
+                                //label: "Upload\n("+node.name+")",
+                                //font: { size: 10, color: '#000a'}
+                            })
                         }
-                        if(node.storageLocation) storageNode.label += "\n"+node.storageLocation;
-
-                        console.log(node.idx, node.storage);
-                        graphNodes.push(storageNode);
-                        graphEdges.push({
-                            arrows: "to", 
-                            from: storageNode.id, 
-                            to: graphNode.id, 
-                            //label: "Upload\n("+node.name+")",
-                            //font: { size: 10, color: '#000a'}
-                        })
                     }
 
                     break;

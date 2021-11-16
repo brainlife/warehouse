@@ -61,7 +61,10 @@
                         </template>
                     </b-tab>
                     <b-tab v-if="config.hasRole('tester', 'brainlife')">
-                        <template v-slot:title>Example Workflow</template>
+                        <template v-slot:title>
+                            Example Workflow
+                            <span style="opacity: 0.6; font-size: 80%" v-if="app.stats.examples">{{app.stats.examples}}</span>
+                        </template>
                     </b-tab>
                 </b-tabs>
             </b-container>

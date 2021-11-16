@@ -706,6 +706,8 @@ var appSchema = mongoose.Schema({
         stars: Number, //github stars
         success_rate: Number, 
         */
+
+        examples: Number, //number of example workflows found
     },
     
     removed: { type: Boolean, default: false} ,
