@@ -374,7 +374,7 @@
                                     <b-form-group>
                                         <b-row>
                                             <b-col cols="12">
-                                                <editor v-if="rawJson" v-model="userEditJSON" @init="editorInit" lang="json" height="1000"/>
+                                                <editor v-if="rawJson" v-model="convertRawJSONtoUserEdit" @init="editorInit" lang="json" height="1000"/>
                                                 <b-row v-else-if="userEdit">
                                                     <b-col cols="6">
                                                         <h4>Public Profile</h4>
@@ -545,7 +545,7 @@ export default {
             },
             passwordSuggestions: [],
             passwordWarning: "" ,
-            userEditJSON : null,
+            convertRawJSONtoUserEdit : null,
             scopeModel : {
                 "brainlife": {
                     "user" : false,
@@ -731,7 +731,7 @@ export default {
             };
             this.userEdit = Object.assign({}, this.userEdit, user);
             this.profile = JSON.stringify(user.profile, null, 4);
-            this.userEditJSON = JSON.stringify(user, null, 4);
+            this.convertRawJSONtoUserEdit = JSON.stringify(user, null, 4);
             // console.log(typeof user.scopes, user.scopes);
             for (const key in this.userEdit.scopes) {
                 // console.log(key);
@@ -911,11 +911,11 @@ export default {
                 });
             }
         },
-        userEditJSON: function() {
-            this.userEdit = JSON.parse(this.userEditJSON||"{}");
+        convertRawJSONtoUserEdit: function() {
+            this.userEdit = JSON.parse(this.convertRawJSONtoUserEdit||"{}");
         },
         userEdit: function() {
-            this.userEditJSON = JSON.stringify(this.userEdit, null, 4);
+            this.convertRawJSONtoUserEdit = JSON.stringify(this.userEdit, null, 4);
         },
         queryUser: function() {
             this.applyFilterUser();
