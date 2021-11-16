@@ -378,8 +378,6 @@
                                                 <b-row v-else-if="userEdit">
                                                     <b-col cols="6">
                                                         <h4>Public Profile</h4>
-                                                        <span class="form-header">Position</span>
-                                                        <b-form-input v-model="userEdit.profile.public.position"></b-form-input>
                                                         <span class="form-header">Institution</span>
                                                         <b-form-input v-if="userEdit.profile.public.institution" v-model="userEdit.profile.public.institution"></b-form-input>
                                                         <span class="form-header">Bio</span>
@@ -535,13 +533,10 @@ export default {
                 },
                 times: {}
             },
-            selected : null,
             debug: null,
             jwt: null,
 
             fullname: "",
-            profile: null,
-            scopes: null,
             openids : null,
             form: {
                 currentPassword: "",
@@ -578,19 +573,19 @@ export default {
 
             permissionScope: {
                 "brainlife": {
-                    "user" : "description",
-                    "admin" : "description of admin"
+                    "user" : "Basic user privileges given to all new users by default",
+                    "admin" : "Allows user to perform administrative tasks for brainlife in general"
                 },
                 "warehouse": {
-                    "admin" : "description of admin of warehouse",
-                    "datatype.create" : "description of datatype.create in warehouse"
+                    "admin" : "Allows user to perform administrative tasks specific to warehouse service",
+                    "datatype.create" : "Allows user to register new datatype"
                 },
                 "amaretti": {
-                    "admin" : "description of admin of amaretti",
-                    "resource.create" : "description of resource.create in amaretti"
+                    "admin" : "Allows user to perform administrative tasks on amaretti service",
+                    "resource.create" : "Allows user to register new resource"
                 },
                 "auth": {
-                    "admin" : "description of admin of auth"
+                    "admin" : "Allows user to perform administrative tasks on authorization service"
                 }
             },
             
@@ -736,10 +731,9 @@ export default {
             };
             this.userEdit = Object.assign({}, this.userEdit, user);
             this.profile = JSON.stringify(user.profile, null, 4);
-            this.scopes = JSON.stringify(user.scopes, null, 4);
             this.userEditJSON = JSON.stringify(user, null, 4);
             // console.log(typeof user.scopes, user.scopes);
-            for (const [key] of Object.entries(this.userEdit.scopes)) {
+            for (const key in this.userEdit.scopes) {
                 // console.log(key);
                 this.userEdit.scopes[key].forEach(permission=>{
                     console.log(key,permission);
@@ -790,7 +784,6 @@ export default {
                 this.showModal = false;
                 this.userEdit = null;
                 this.users = [];
-                this.scopes = null;
                 this.profile = null;
             }).catch(console.error);
         },
@@ -899,16 +892,6 @@ export default {
         tabID() {
             return this.tabs[this.tab].id; 
         },
-        userScopeEdit() {
-            let data;
-            Object.entries(this.userEdit.scopes).forEach(entry=>{
-                console.log(entry);
-            })
-            // this.userEdit.scopes.forEach(scopes=>{
-            //     data = scopes.map(power=> power._id == true);
-            // });
-            return data;
-        }
     },
 
     watch: {
