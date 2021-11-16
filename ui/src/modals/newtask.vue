@@ -14,7 +14,7 @@
     <!--app selection page--> 
     <div v-if="!app" class="app-selecter">
         <div v-if="apps.all">
-            <b-alert v-if="!loading && apps.all.length == 0" show variant="secondary">No App can be submitted with currently available data.</b-alert>
+            <b-alert v-if="!loading && apps.all.length == 0" show variant="secondary">There are no Apps that can be submitted with currently staged data.</b-alert>
             <div v-else>
                 <icon name="search" class="search-icon" scale="1.3"/>
                 <input class="search" ref="search" v-model="filter" placeholder="Filter Apps" @change="update_lists"/>

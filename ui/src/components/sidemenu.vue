@@ -68,7 +68,7 @@
             <span v-if="!config.user.profile.aup" style="position: absolute; top: -15px; left: 20px; font-size: 350%;" class="text-danger">&bull;</span>
             <h4>Settings</h4>
         </li>    
-        <li v-if="config.is_admin" @click="go('/admin')" :class="{active: active == 'admin'}">
+        <li v-if="config.hasRole('admin')" @click="go('/admin')" :class="{active: active == 'admin'}">
             <icon name="wrench" scale="1.2"/>
             <h4>Administration</h4>
         </li>

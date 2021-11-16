@@ -8,8 +8,8 @@
                     <b-tab title="Profile"/>
                     <b-tab title="Account"/>
                     <b-tab title="Notification"/>
-                    <b-tab v-if="config.is_admin" title="Users"/>
-                    <b-tab v-if="config.is_admin" title="Groups"/>
+                    <b-tab v-if="config.hasRole('admin')" title="Users"/>
+                    <b-tab v-if="config.hasRole('admin')" title="Groups"/>
                 </b-tabs>
             </b-container>
         </div><!--header-->
@@ -224,87 +224,99 @@
                 <b-container>
                     <h5>Change Password</h5>     
                     <hr>           
-                    <b-form @submit="changePassword">
-                        <b-form-group label="Current Password">
-                            <b-form-input v-model="form.currentPassword" type="password" required/>
-                        </b-form-group>
-                        <b-form-group label="New Password">
-                            <b-form-input v-model="form.newPassword" type="password" required/>
-                            <password v-model="form.newPassword" :strength-meter-only="true" @feedback="updatePasswordFeedback"/>
-                            <b-alert v-for="(msg, idx) in passwordSuggestions" variant="secondary" :key="idx">{{msg}}</b-alert>
-                            <b-alert :show="!!passwordWarning" variant="danger">{{passwordWarning}}</b-alert>
-                        </b-form-group>
-                        <b-form-group label="Re-enter New Password">
-                            <b-form-input v-model="form.repeatPassword" :state="validaterepeatPass" type="password" required/>
-                        </b-form-group>
-                        <b-form-invalid-feedback :state="validaterepeatPass">
-                            Passwords do not match
-                        </b-form-invalid-feedback>
+                    <b-form @submit="changePassword" style="max-width: 700px">
+                        <b-row>
+                            <b-col cols="4">
+                                <span class="form-header">Current Password</span>
+                            </b-col>
+                            <b-col>
+                                <b-form-input v-model="form.currentPassword" type="password" required/>
+                                <small>For security reason, please enter your current password.</small>
+                            </b-col>
+                        </b-row>
                         <br>
-                        <b-button type="submit" variant="primary" v-if="validaterepeatPass">Update</b-button>                           
-                    </b-form>
-                </b-container>
-                <br>
-                <div v-if="user">
-                    <h5>Connected Accounts</h5>
-                    <div class="well">
-                        <div v-if="!user.ext.googleid">
-                            <b-button class="float-right" @click="connect('google')">Connect</b-button>
-                        </div>
-                        <div v-else>
-                            <b-button class="float-right" @click="disconnect('google')">Disconnect</b-button>
-                            <p class="float-right text-muted" style="margin: 11px;"><b>{{user.ext.googleid}}</b> |</p>
-                        </div>
-                        <p class="float-right text-muted" style="margin: 11px;">
-                                Last Login: 
-                                <span v-if="!user.times.google_login">Never</span>
-                                <span v-else>{{user.times.google_login}}</span>
-                        </p>
-                        <h5><icon name="brands/google" size="2.4"></icon> Google</h5>
-                    </div>
-                    <div class="well">
-                        <b-button class="float-right" v-if="user.ext.github" @click="disconnect('github')">Disconnect</b-button>
-                        <b-button class="float-right" v-else @click="connect('github')">Connect</b-button>
-                        <p class="float-right text-muted" style="margin: 11px;">
-                            <span v-if="user.ext.github"><b>{{user.ext.github}}</b> |</span>
-                            Last Login: 
-                            <span v-if="!user.times.github">Never</span>
-                            <span v-else>{{user.times.github_login}}</span>
-                        </p>
-                        <h5><icon name="brands/github" size="2.4"></icon> Github</h5>
-                    </div>
-                    <div class="well">
-                        <b-button class="float-right" v-if="user.ext.orcid" @click="disconnect('orcid')">Disconnect</b-button>
-                        <b-button class="float-right" v-else @click="connect('orcid')">Connect</b-button>
-                        <p class="float-right text-muted" style="margin: 11px;">
-                            <span v-if="user.ext.orcid"><b>{{user.ext.orcid}}</b> |</span>
-                            Last Login: 
-                            <span v-if="!user.times.orcid">Never</span>
-                            <time v-if="user.times.orcid_login">{{user.times.orcid_login}}</time>
-                        </p>
-                        <h5><icon name="brands/orcid" size="2.4"></icon> ORCID</h5>
-                    </div>
-                    <div class="well">
-                        <b-button class="float-right" @click="connect('oidc')">Connect</b-button>
-                        <h5>
-                            <img src="@/assets/images/cilogon.png" width="24" height="24"> 
-                            OpenID Connect
-                        </h5>
-                        <b-list-group v-if="user.ext.openids">
-                            <b-list-group-item v-for="dn in user.ext.openids" :key="dn">
-                                <b-button class="float-right" v-if="user.ext.openids" @click="disconnect('oidc',{dn})">Disconnect</b-button>
-                                <p style="margin: 0 0 10.5px;">
-                                    {{dn}}
-                                    <span class="text-muted"> | Last Login: 
-                                        <span v-if="!user.times['oidc_login:'+user.profile.sub]">Never</span> 
-                                        <time>{{user.times['oidc_login:'+user.profile.sub]}}</time>
-                                    </span> 
+
+                        <b-row>
+                            <b-col cols="4">
+                                <span class="form-header">New Password</span>
+                            </b-col>
+                            <b-col>
+                                <p>
+                                    <b-form-input v-model="form.newPassword" type="password" required/>
+                                    <password v-if="form.newPassword" v-model="form.newPassword" :strength-meter-only="true" @feedback="updatePasswordFeedback"/>
+                                    <b-alert :show="true" v-for="(msg, idx) in passwordSuggestions" variant="secondary" :key="idx">{{msg}}</b-alert>
+                                    <b-alert :show="!!passwordWarning" variant="danger">{{passwordWarning}}</b-alert>
                                 </p>
-                            </b-list-group-item>
-                        </b-list-group>
+
+                                <p>
+                                    <b>Re-enter New Password</b>
+                                    <b-form-input v-model="form.repeatPassword" :state="validaterepeatPass" type="password" required/>
+                                    <b-form-invalid-feedback :state="validaterepeatPass">
+                                        Passwords do not match
+                                    </b-form-invalid-feedback>
+                                </p>
+                                <b-button type="submit" variant="primary" v-if="validaterepeatPass">Reset Password</b-button>
+                            </b-col>
+                        </b-row>
+                        <br>
+
+                    </b-form>
+                    <br>
+                </b-container>
+
+                <b-container v-if="user">
+                    <h5>Account Association</h5>
+                    <hr>
+                    <p>
+                        <small>You can use the following 3rd party identity providers to login to your brainlife account instead of using brainlife's user/password.</small>
+                    </p>
+                    
+                    <div class="account" v-for="a in accounts" :key="a.type" :class="{'account-connected': user.ext[a.ext]}">
+                        <b-form-checkbox switch :checked="!!user.ext[a.ext]" size="lg" style="float: right" @change="account(a.type, $event)"/>
+                        <icon :name="a.icon" size="3" style="float: left; margin-top: 5px;"/> 
+                        <div class="account-detail">
+                            <span class="account-name">{{a.name}}</span>
+                            <br>
+                            <small v-if="user.ext[a.ext]" style="font-size: 60%">{{user.ext[a.ext]}}</small>
+                        </div>
+                        <div class="account-time">
+                            <small v-if="user.times[a.time]">Last Used: {{new Date(user.times[a.time]).toLocaleString()}}</small>
+                            <small v-else>Never Used</small>
+                        </div>
                     </div>
-                </div>
-                Please visit the legacy <a href="/auth/#!/settings/account" target="_blank">Account Settings</a> page for more account settings.
+
+                    <!--I need to show all registered openid account in separate cards-->
+                    <div class="account" v-for="dn in user.ext.openids" :key="dn" :class="{'account-connected': true}">
+                        <b-form-checkbox switch :checked="true" size="lg" style="float: right" @change="account('oidc', $event, {dn})"/>
+                        <img src="@/assets/images/cilogon.png" width="20" height="20" style="float: left"> 
+                        <div class="account-detail">
+                            <span class="account-name">OpenID Connect</span>
+                            <br>
+                            <small style="font-size: 60%">{{dn}}</small>
+                        </div>
+                        <div class="account-time">
+                            <small v-if="user.times['oidc_login:'+dn]">Last Used: {{new Date(user.times['oidc_login:'+dn]).toLocaleString()}}</small>
+                            <small v-else>Never Used</small>
+                        </div>
+                    </div>
+
+                    <!--fake card to add new openid connect account-->
+                    <div class="account">
+                        <b-form-checkbox switch :checked="false" size="lg" style="float: right" @change="account('oidc', true)"/>
+                        <img src="@/assets/images/cilogon.png" width="20" height="20" style="float: left"> 
+                        <div class="account-detail">
+                            <span class="account-name">OpenID Connect</span>
+                            <br>
+                            <small style="font-size: 60%">Add New Account</small>
+                        </div>
+                        <div class="account-time">
+                        </div>
+                    </div>
+                    <br clear="both">
+                    <!--
+                    Please visit the legacy <a href="/auth/#!/settings/account" target="_blank">Account Settings</a> page for more account settings.
+                    -->
+                </b-container>
             </div>
 
             <!--notification-->
@@ -505,9 +517,7 @@ export default {
                 {id: "groups", label: "Groups"},
             ],
             showModal: false,
-
             tab: 0,
-
             users: [],
             queryUser: "", 
             queryGroup: "",
@@ -622,7 +632,12 @@ export default {
                 { text: '>10 years', value: 4 },
             ],
 
-            //submitting: false,
+            accounts: [
+                { type: "google", ext: "googleid", icon: "brands/google", name: "Google", time: "google_login", },
+                { type: "github", ext: "github", icon: "brands/github", name: "Github", time: "github_login", },
+                { type: "orcid", ext: "orcid", icon: "brands/orcid", name: "ORCID", time: "orcid_login", },
+                { type: "globus", ext: "globus", icon: "cloud", name: "Globus", time: "globus_login", },
+            ],
 
             config: Vue.config,
         }
@@ -679,6 +694,7 @@ export default {
                 this.$notify({type: "error", text: err.response.data.message});
             });
         },
+
         updatePasswordFeedback(feedback) {
             this.passwordSuggestions = feedback.suggestions;
             this.passwordWarning = feedback.warning;
@@ -856,6 +872,22 @@ export default {
                 admins : [],
             }
         },
+        account(type, state, data = {}) {
+            console.log(type, state);
+            if(state) {
+                //connect
+                window.location = Vue.config.auth_api+'/'+type+"/associate/"+this.jwt;
+            } else {
+                this.$http.put(Vue.config.auth_api+'/'+type+'/disconnect',data).then(res=>{
+                    this.$notify({type: "success", text:res.data.message});
+                    Object.assign(this.user.ext, res.data.user.ext);
+                }).catch(err=>{
+                    console.error(err);
+                    this.$notify({type: "error", text: res.data.message});
+                })
+            }
+        },
+
         connect(type) {
             window.location = Vue.config.auth_api+'/'+type+"/associate/"+this.jwt;
         },
@@ -966,7 +998,37 @@ h5 {
     text-transform: uppercase;
     font-weight: bold;
     font-size: 13px;
+.account {
+    display: inline-block;
+    float: left;
+    width: 350px;
+    box-shadow: 1px 1px 3px #0003;
+    border-radius: 10px;
+    padding: 10px;
+    margin-right: 10px;
+    margin-bottom: 10px;
+}
+.account .account-name {
+    font-size: 120%;
+}
+.account-connected {
+    background-color: #2693ff;
+    color: white;
+}
+.account hr {
+    margin: 5px 0;
+}
+.account-detail {
+    margin-left: 25px; 
+    height: 70px;
+}
+.account-time {
+    padding: 5px 0;
+    height: 25px;
+    text-align: right;
+    border-top: 1px solid #0003;
+}
+.account-connected .account-time {
+    border-top: 1px solid #fff3;
 }
 </style>
-
-

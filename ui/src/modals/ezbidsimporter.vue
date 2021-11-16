@@ -93,7 +93,7 @@ export default {
     },
 
     mounted() {
-        this.$root.$on("ezbidsimporter.open", this.open);
+        //this.$root.$on("ezbidsimporter.open", this.open);
 
         //preopened?
         if(this.$root.ezbidsSession) {

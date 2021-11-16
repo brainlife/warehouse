@@ -52,6 +52,12 @@ export default {
                     this.$root.ezbidsSession = {sessionId};
                 }
             }
+
+            if(document.location.hash.startsWith("#object")) {
+                const id = document.location.hash.substring(8);
+                console.log("hash changed to opening object", id);
+                this.$root.openDataObject = {id};
+            }
         },
     },
 
@@ -202,9 +208,15 @@ table.info th {
 table.info td {
     padding: 10px;
 }
-.table-sm th, .table-sm td {
+.table-sm {
     font-size: 90%;
 }
+/*
+.table-sm td {
+    padding: 0 3px;
+    line-height: 110%;
+}
+*/
 
 #warehouse .table thead th {
     opacity: 0.8;
