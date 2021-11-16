@@ -932,6 +932,7 @@ exports.cluster = (provs)=>{
     //console.log("similarity matrix...");
     //console.dir(matrix);
 
+    /*
     //convert it to transition probability matrix
     //see page 10 https://sites.cs.ucsb.edu/~xyan/classes/CS595D-2009winter/MCL_Presentation2.pdf
     provs.forEach((p1, col)=>{
@@ -947,6 +948,7 @@ exports.cluster = (provs)=>{
             matrix[row][col] = v/sum;
         }); 
     });
+    */
 
     console.log("probability matrix...");
     console.dir(matrix);
@@ -963,6 +965,7 @@ exports.cluster = (provs)=>{
     const seen = []; 
     const dedupedClusters = [];
     clusters.forEach(cluster=>{
+        if(!cluster.length) return; //remove empty cluster (looks like it happened with prod: 592dc03eb3cd7c00211dc239)
         if(seen.includes(cluster[0])) return;
         dedupedClusters.push(cluster);
         seen.push(cluster[0]);
