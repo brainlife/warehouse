@@ -366,120 +366,49 @@
                                 <b-pagination v-model="currentPage" :total-rows="rowUsers" :per-page="perPage" aria-controls="my-table"></b-pagination>
                                 <p class="mt-3">Current Page: {{ currentPage }}</p>
                             </b-col>
-                            <b-modal ref="userEditmodal" size="xl" id='userEditmodal' @ok='submitUser'>
+                            <b-modal size="xl" v-if="showModal" id='userEditmodal' ref='ref_modal'>
+                                <template #modal-header>
+                                    <h3>{{userEdit.sub}} {{userEdit.fullname}}</h3>
+                                </template>
                                 <b-container>
                                     <b-form-group>
                                         <b-row>
                                             <b-col cols="12">
-                                                <div class="float-right">
-                                                    <b-button :pressed.sync="rawJson" size="sm" variant="primary">Show Raw Json</b-button>
-                                                </div>
-                                            </b-col>
-                                            <b-col cols="12">
                                                 <editor v-if="rawJson" v-model="userEditJSON" @init="editorInit" lang="json" height="1000"/>
-                                                <div v-else-if="userEdit">
-                                                    {{userEdit}}
-                                                    <h4>Public Information</h4>
-                                                    <span class="form-header">Position</span>
-                                                    <b-form-input v-model="userEdit.profile.public.position"></b-form-input>
-                                                    <span class="form-header">Institution</span>
-                                                    <b-form-input v-if="userEdit.profile.public.institution" v-model="userEdit.profile.public.institution"></b-form-input>
-                                                    <span class="form-header">Bio</span>
-                                                    <b-form-textarea v-model="userEdit.profile.public.bio"></b-form-textarea>
-                                                    <h4>Private Information</h4>
-                                                    <span class="form-header">Position</span>
-                                                    <b-form-input v-model="userEdit.profile.private.position"></b-form-input>
-                                                    <span class="form-header">Purpose</span>
-                                                    <b-form-textarea v-model="userEdit.profile.private.purpose"></b-form-textarea>
-                                                    <h4>Scope</h4>
-                                                        <div v-for="(value, propertyName, index) in permissionScope" :key="index">
-                                                            <span class="form-header">{{propertyName}}</span>
-                                                                <div v-for="(val,pn,ind) in value" :key="ind">
-                                                                    {{scopeModel[propertyName][pn]}}
-                                                                    <b-form-checkbox v-model="scopeModel[propertyName][pn]">{{val}} <b-badge> {{pn}} </b-badge></b-form-checkbox>
-                                                                </div>
-                                                        </div>
-                                                    <b-form-checkbox v-model="userEdit.active">Active</b-form-checkbox>
-                                                    <span class="form-header">Full Name</span>
-                                                    <b-form-input v-if="userEdit.fullname" v-model="userEdit.fullname"/>
-                                                    <br>
-                                                    <span class="form-header">Username</span>
-                                                    <b-form-input v-if="userEdit.username" v-model="userEdit.username"/>
-                                                    <br>
-                                                    <span class="form-header">Email</span>
-                                                    <b-form-input v-if="userEdit.email" v-model="userEdit.email"/>
-                                                    <b-form-checkbox v-model="userEdit.email_confirmed">Confirmed</b-form-checkbox>
-                                                    <hr>
-                                                    <span class="form-header">Google ID</span>
-                                                    <b-form-input v-if="userEdit.ext" v-model="userEdit.ext.googleid"/>
-                                                    <span class="form-header">Open ID</span>
-                                                    <b-form-input v-if="openids" v-model="openids"/>
-                                                    <span class="form-header">Orcid</span>
-                                                    <b-form-input v-if="userEdit.ext" v-model="userEdit.ext.orcid"/>
-                                                    <span class="form-header">Github</span>
-                                                    <b-form-input v-if="userEdit.ext" v-model="userEdit.ext.github"/>
-                                                    <hr>
-                                                    <pre>{{userEdit.times}}</pre>
-                                                </div>
-                                            </b-col>
-                                        </b-row>
-                                    </b-form-group>
-                                </b-container>
-                            </b-modal>
-                            <!-- <b-col>
-                                <div v-if="userEdit">
-                                    <b-form @submit="submitUser">
-                                        <b-container>
-                                            <b-form-group>
-                                                <b-row>
-                                                    <b-col cols="12">
-                                                        <div class="float-right">
-                                                            <b-button :pressed.sync="rawJson" size="sm" variant="primary">Show Raw Json</b-button>
-                                                        </div>
-                                                    </b-col>
-                                                    <b-col cols="12">
-                                                        <editor v-if="rawJson" v-model="userEditJSON" @init="editorInit" lang="json" height="300"/>
-                                                        <h4>Public Information</h4>                                                        
-                                                        <div v-for="(profile, index) in userEdit.profile.public" :key="index">
-                                                            <span class="form-header">{{index}}</span>
-                                                            <editor v-if="typeof userEdit.profile.public[index] == 'object'" @init="editorInit" v-model="userEdit.profile.public[index]" lang="json" height="100"/>
-                                                            <b-form-checkbox v-else-if="typeof userEdit.profile.public[index] == 'boolean'" v-model="userEdit.profile.public[index]"/>
-                                                            <b-form-input v-else size="sm" v-model="userEdit.profile.public[index]"></b-form-input>
-                                                        </div>
-                                                        <br>
-                                                        <h4>Private Information</h4>
-                                                        <div v-for="(profile, index) in userEdit.profile.private" :key="index">
-                                                            <span class="form-header">{{index}}</span>
-                                                            <editor v-if="typeof userEdit.profile.private[index] == 'object'" @init="editorInit" v-model="userEdit.profile.private[index]" lang="json" height="100"/>
-                                                            <b-form-checkbox v-else-if="typeof userEdit.profile.private[index] == 'boolean'" v-model="userEdit.profile.private[index]"/> 
-                                                            <b-form-input v-else size="sm" v-model="userEdit.profile.private[index]"></b-form-input>
-                                                        </div>
-                                                    </b-col>
-                                                    <hr>
-                                                    <b-col cols="12">
-                                                        <h4>Scope</h4>
+                                                <b-row v-else-if="userEdit">
+                                                    <b-col cols="6">
+                                                        <h4>Public Profile</h4>
+                                                        <span class="form-header">Position</span>
+                                                        <b-form-input v-model="userEdit.profile.public.position"></b-form-input>
+                                                        <span class="form-header">Institution</span>
+                                                        <b-form-input v-if="userEdit.profile.public.institution" v-model="userEdit.profile.public.institution"></b-form-input>
+                                                        <span class="form-header">Bio</span>
+                                                        <b-form-textarea v-model="userEdit.profile.public.bio"></b-form-textarea>
+                                                        <h4 style="padding-top: 16px">Scope</h4>
                                                         <div v-for="(value, propertyName, index) in permissionScope" :key="index">
                                                             <span class="form-header">{{propertyName}}</span>
                                                                 <div v-for="(val,pn,ind) in value" :key="ind">
                                                                     <b-form-checkbox v-model="scopeModel[propertyName][pn]">{{val}} <b-badge> {{pn}} </b-badge></b-form-checkbox>
                                                                 </div>
-
-                                                            <span class="form-header">{{keys}}</span>
                                                         </div>
                                                     </b-col>
-                                                    <b-col cols="12">
-                                                        <br>
-                                                        <b-form-checkbox v-model="userEdit.active">Active</b-form-checkbox>
+                                                    <b-col cols="6">
+                                                        <h4>Private Profile</h4>
+                                                        <span class="form-header">Position</span>
+                                                        <b-form-input v-model="userEdit.profile.private.position"></b-form-input>
+                                                        <span class="form-header">Purpose</span>
+                                                        <b-form-textarea v-model="userEdit.profile.private.purpose"></b-form-textarea>
                                                         <span class="form-header">Full Name</span>
                                                         <b-form-input v-if="userEdit.fullname" v-model="userEdit.fullname"/>
-                                                        <br>
                                                         <span class="form-header">Username</span>
                                                         <b-form-input v-if="userEdit.username" v-model="userEdit.username"/>
-                                                        <br>
                                                         <span class="form-header">Email</span>
                                                         <b-form-input v-if="userEdit.email" v-model="userEdit.email"/>
-                                                        <b-form-checkbox v-model="userEdit.email_confirmed">Confirmed</b-form-checkbox>
-                                                        <hr>
+                                                        <div style="display:flex;padding-top:8px;">
+                                                            <b-form-checkbox v-model="userEdit.active">Active</b-form-checkbox>
+                                                            <b-form-checkbox style="margin:auto" v-model="userEdit.email_confirmed">Confirmed</b-form-checkbox>
+                                                        </div>
+                                                        <h4  style="padding-top: 16px">Associated Accounts</h4>
                                                         <span class="form-header">Google ID</span>
                                                         <b-form-input v-if="userEdit.ext" v-model="userEdit.ext.googleid"/>
                                                         <span class="form-header">Open ID</span>
@@ -492,12 +421,18 @@
                                                         <pre>{{userEdit.times}}</pre>
                                                     </b-col>
                                                 </b-row>
-                                            </b-form-group>
-                                            <b-button type="submit" variant="success">Submit</b-button>
-                                        </b-container>
-                                    </b-form>
-                                </div>
-                            </b-col> -->
+                                            </b-col>
+                                        </b-row>
+                                    </b-form-group>
+                                </b-container>
+                                    <template #modal-footer="{cancel}">
+                                        <div class="float-left mr-auto">
+                                            <b-button :pressed.sync="rawJson" size="sm" variant="primary">Show Raw Json</b-button>
+                                        </div>
+                                        <b-button size="sm" variant="success" ref="okBTN" @click="submitUser">OK</b-button>
+                                        <b-button size="sm" variant="danger" @click="cancel()">Cancel</b-button>
+                                    </template>
+                            </b-modal>
                         </b-row>
                     </b-container>
             </div>
@@ -571,6 +506,7 @@ export default {
                 {id: "users", label: "Users"},
                 {id: "groups", label: "Groups"},
             ],
+            showModal: false,
 
             tab: 0,
 
@@ -811,6 +747,24 @@ export default {
                 });
             }
             this.openids = user.ext.openids[0] || " ";
+            this.showModal = true;
+        },
+        checkValidJson(item) {
+            item = typeof item !== "string"
+                ? JSON.stringify(item)
+                : item;
+
+            try {
+                item = JSON.parse(item);
+            } catch (e) {
+                return false;
+            }
+
+            if (typeof item === "object" && item !== null) {
+                return true;
+            }
+
+            return false;
         },
         selectGroup(group) {
             this.groupEdit = Object.assign({}, this.groupEdit, group);
@@ -823,14 +777,17 @@ export default {
         },
         submitUser(e) {
             e.preventDefault();
-            console.log('done');
+            if(!this.checkValidJson(this.userEditJSON)) {
+                this.$notify({type: "error", text: "Json formatting Error"});
+                return;
+            }
             Object.keys(this.scopeModel).forEach(entry => {
                 this.userEdit.scopes[entry] = Object.keys(this.scopeModel[entry]).filter(val=>this.scopeModel[entry][val] == true);
             });
             this.userEdit.ext.openids[0] = this.openids;
             this.$http.put(Vue.config.auth_api+"/user/"+this.userEdit.sub,this.userEdit).then(res=>{
                 this.$notify({type: "success", text: res.data.message});
-                this.$refs['userEditmodal'].hide();
+                this.showModal = false;
                 this.userEdit = null;
                 this.users = [];
                 this.scopes = null;
@@ -992,6 +949,9 @@ export default {
     top: 0px;
     background-color: #f9f9f9;
 }
+.form-header {
+    margin-top: 0.5rem;
+}
 .page-content h2 {
     margin-bottom: 0px;
     padding: 10px 0px;
@@ -1003,6 +963,9 @@ export default {
     margin-bottom: 20px;
     background-color: white;
     border-bottom: 1px solid #eee;
+}
+h4 {
+    opacity: 0.8;
 }
 h5 {
     margin-bottom: 20px;
