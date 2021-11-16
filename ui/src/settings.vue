@@ -758,7 +758,7 @@ export default {
                 return true;
             }
 
-            return false;
+            return true;
         },
         selectGroup(group) {
             this.groupEdit = Object.assign({}, this.groupEdit, group);
@@ -771,7 +771,7 @@ export default {
         },
         submitUser(e) {
             e.preventDefault();
-            if(!this.checkValidJson(this.userEditJSON)) {
+            if(!this.checkValidJson(this.convertRawJSONtoUserEdit)) {
                 this.$notify({type: "error", text: "Json formatting Error"});
                 return;
             }
