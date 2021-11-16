@@ -125,10 +125,16 @@ function handle_app(app, cb) {
                     delete node.desc;
                     delete node.userId;
                     delete node.user;
+                    delete node.tags;
                     delete node.meta;
                     delete node.datasetId;
                     delete node.storage;
                     delete node.storageLocation;
+                    delete node.taskId;
+                    delete node._taskId;
+                    delete node.instanceId;
+                    delete node.resourceId;
+                    delete node.groupId;
                     node.tags = [];
                 });
             });

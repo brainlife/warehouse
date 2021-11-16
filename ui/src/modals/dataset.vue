@@ -419,12 +419,6 @@ export default {
     },
     
     watch: {
-        /*
-        showFull: function() {
-            this.load_prov2();
-        },
-        */
-
         tab_index: function() {
             if(this.tab_index == 1 && this.prov == null) {
                 this.load_prov();

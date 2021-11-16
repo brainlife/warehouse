@@ -63,7 +63,7 @@
                     <b-tab v-if="config.hasRole('tester', 'brainlife')">
                         <template v-slot:title>
                             Example Workflow
-                            <span style="opacity: 0.6; font-size: 80%" v-if="app.stats.examples">{{app.stats.examples}}</span>
+                            <span style="opacity: 0.6; font-size: 80%">{{app.stats.examples||0}}</span>
                         </template>
                     </b-tab>
                 </b-tabs>
@@ -510,7 +510,8 @@ export default {
                 });
 
                 this.$http.get(Vue.config.amaretti_api+'/task/recent', {params: {service: this.app.github}}).then(res=>{
-                    this.tasks = res.data.recent;
+                    //this.tasks = [...res.data.current, ...res.data.recent];
+                    this.tasks = res.data;
 
                     //lookup resource names
                     this.tasks.forEach(task=>{

@@ -21,8 +21,8 @@
                         </b-tab>
                         <b-tab>
                             <template v-slot:title>
-                                <small>{{sample_datasets.length}}</small>
                                 Samples
+                                <small>{{sample_datasets.length}}</small>
                             </template>
                         </b-tab>
                         <b-tab>

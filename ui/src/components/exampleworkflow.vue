@@ -2,11 +2,14 @@
 <div>
     <b-alert :show="provs && !provs.length" variant="secondary">Sorry, we couldn't find an example workflow.</b-alert>
     <br>
-    <div v-if="provs && provs.length">
+    <div v-if="provs && provs.length" style="position: relative;">
         <b-nav tabs>
             <b-nav-item v-for="(prov, idx) in provs" :key="idx" :active="(idx == selected)" @click="selected = idx">{{prov.nodes.length}} nodes (prob: {{(prov._prob*100).toFixed(0)}}%)</b-nav-item>
         </b-nav>
-        <provgraph :prov="provs[selected]" :appid="appid" :showFull="false" style="height: 700px; background-color: #eee;"/>
+        <div style="position: absolute; left: 10px; bottom: 10px; z-index: 1;">
+            <b-button variant="outline-primary" :pressed.sync="showFull" size="sm">Show Full Provenance</b-button>
+        </div>
+        <provgraph :prov="provs[selected]" :appid="appid" :showFull="showFull" style="height: 700px; background-color: #eee;"/>
     </div>
 </div>
 </template>
@@ -37,6 +40,7 @@ export default {
     data() {
         return {
             provs: null,
+            showFull: false,
             selected: 0,
         }
     },
