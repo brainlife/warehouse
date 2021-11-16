@@ -112,7 +112,6 @@ export default {
             let diff = false;
             this.datasets.forEach(did=>{
                 let dataset = this.alldatasets[did];
-                console.log(dataset.meta.subject);
                 if(!subject) subject = dataset.meta.subject;
                 else if(subject != dataset.meta.subject) diff = true;
             });
@@ -203,8 +202,14 @@ export default {
                 removed: false
             };
             if (and_statement.length > 0) find.$and = and_statement;
-            if (params.term) find.$text = { $search: params.term };
-            
+
+            //similar code in modals/appsubmit
+            if (params.term) find.$or = [
+                { 'meta.subject': {$regex: params.term, $options: 'i' }}, 
+                { 'meta.session': {$regex: params.term, $options: 'i' }}, 
+                { 'tags': {$regex: params.term, $options: 'i' }}, 
+                { 'datatype_tags': {$regex: params.term, $options: 'i' }}, 
+            ];
             // final data retrieval parameters
             var skip = (params.page - 1) * this.limit;
             var filter_params = {
@@ -287,7 +292,6 @@ export default {
                 distinct: 'meta.subject',
             }}).then(res=>{
                 this.subjects = res.data;
-                //console.dir(res.data);
             });
         },
     },

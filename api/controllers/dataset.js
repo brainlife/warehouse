@@ -1,5 +1,4 @@
 
-//contrib
 const express = require('express');
 const router = express.Router();
 const winston = require('winston');
@@ -11,10 +10,10 @@ const meter = require('stream-meter');
 const mongoose = require('mongoose');
 const archiver = require('archiver');
 
-//mine
 const config = require('../config');
 const db = require('../models');
 const common = require('../common');
+const provenance = require('../lib/provenance');
 
 function canedit(user, rec, canwrite_project_ids) {
     if(!rec.user_id) return false;  //TODO - can this really happen?
@@ -225,12 +224,58 @@ router.get('/inventory', common.jwt({secret: config.express.pubkey/*, credential
  * @apiDescription                  Get provenance graph info (Public API)
  *
  */
-router.get('/prov/:id', (req, res, next)=>{
+router.get('/prov/:id', async (req, res, next)=>{
     let dataset_id = req.params.id;
+
+    await common.cacheDatatypes();
     generate_prov(dataset_id, (err, nodes, edges)=>{
         if(err) return next(err);
         res.json({nodes, edges});
     });
+});
+
+/**
+ * @apiGroup Dataset
+ * @api {get} /dataset/prov2/:id    Get provenance (edges/nodes)
+ * @apiDescription                  Get provenance graph info (Public API)
+ *
+ */
+router.get('/prov2/:id', async (req, res, next)=>{
+    const dataset = await db.Datasets.findById(req.params.id).lean();
+    if(!dataset) return next("can't find such data object:"+req.params.id);
+    if(!dataset.prov) return next("no prov stored for object:"+req.params.id);
+    if(!dataset.prov.task_id && !dataset.prov.task) return next("no task nor task_id is set on object:"+req.params.id);
+    const prov = await provenance.traverseProvenance(dataset.prov.task_id||dataset.prov.task._id);
+    provenance.setupShortcuts(prov);
+    await provenance.populate(prov);
+    /*
+    const projectIds = prov.nodes.filter(n=>!!n.project).map(n=>n.project);
+    const projects = await db.Projects.find({_id: {$in: projectIds}}, {name: 1}).lean();
+    prov.nodes.filter(n=>!!n.project).forEach(node=>{
+        node.project = projects.find(p=>p._id.toString() == node.project);
+    });
+
+    //populate datatype info
+    await common.cacheDatatypes();
+    prov.nodes.filter(n=>!!n.datatype).forEach(node=>{
+        if(node.datatype) {
+            const datatype = common.datatypeCache[node.datatype];
+            if(datatype) node.datatype = {
+                id: node.datatype, 
+                name: datatype.name
+            };
+            else {
+                console.error("unknown datatype queried", node.datatype);
+                node.datatype = {
+                    id: node.datatype, 
+                    name: "unknown-"+node.datatype,
+                };
+            }
+        }    
+    });
+    */
+
+    res.json(prov);
 });
 
 /**
@@ -259,16 +304,19 @@ router.get('/product/:id', common.jwt({secret: config.express.pubkey}),  (req, r
 });
 
 
+//TODO - update to use lib/provenance
 /**
  * @apiGroup Dataset
  * @api {get} /dataset/provscript/:id     Get provenance (.tar.gz)
  * @apiDescription                  Get provenance scripts
  *
  */
-router.get('/provscript/:id', (req, res, next)=>{
+router.get('/provscript/:id', async (req, res, next)=>{
     let dataset_id = req.params.id;
     let debug_config = "";
     if(config.debug) debug_config = "BLHOST=dev1.soichi.us ";
+
+    await common.cacheDatatypes();
     generate_prov(dataset_id, (err, nodes, edges)=>{
         if(err) return next(err);
         let stage = "";
@@ -341,14 +389,17 @@ ${run}
     });
 });
 
+//update to use lib/provenance
 /**
  * @apiGroup Dataset
  * @api {get} /dataset/boutique/:id Generate boutique package
  * @apiDescription                  Generate .tar containing boutique descriptor, and run.sh
  *
  */
-router.get('/boutique/:id', (req, res, next)=>{
+router.get('/boutique/:id', async (req, res, next)=>{
     let dataset_id = req.params.id;
+
+    await common.cacheDatatypes();
     generate_prov(dataset_id, async (err, nodes, edges)=>{
         if(err) return next(err);
 
@@ -557,20 +608,22 @@ This boutique descriptor that can be used to run the workflow used to generate t
     });
 });
 
-let datatypes_cache = {};
+/*
+//used by prov/prov2
+let datatypeCache = {};
 mongoose.connection.once('open', ()=>{
     //TODO - invalidate eventually? or listen to update events?
     db.Datatypes.find({})
     .exec((err, _datatypes)=>{
         if(err) return cb(err);
         _datatypes.forEach(_datatype=>{
-            datatypes_cache[_datatype._id.toString()] = _datatype;
+            datatypeCache[_datatype._id.toString()] = _datatype;
         });
     });
 });
+*/
 
-//TODO - I should split the algorithms to 2 parts 
-//DEPRECATE by api.provGraph?
+//DEPRECATED by lib/provenance
 //first part to generate a full provenance graph which might be too verbose 
 //  - noisy but a complete picture (no defer)
 //second part to simplify the graph so that users can make sense of it 
@@ -603,7 +656,7 @@ function generate_prov(origin_dataset_id, cb) {
     function compose_dataset_label(dataset) {
         //datatype should never be missing.. but it happened during testing
         let datatype_name = dataset.datatype;
-        let datatype = datatypes_cache[dataset.datatype.toString()];
+        let datatype = common.datatypeCache[dataset.datatype.toString()];
         if(datatype) datatype_name = datatype.name;
         if(dataset.datatype_tags) datatype_name += " "+dataset.datatype_tags.join(":")
         
@@ -693,7 +746,7 @@ function generate_prov(origin_dataset_id, cb) {
                     label: compose_label(task),
                 }, taskInfo(task)));
 
-                let edge_label = datatypes_cache[dataset.datatype].name;
+                let edge_label = common.datatypeCache[dataset.datatype].name;
                 edge_label +=" "+dataset.datatype_tags.map(dt=>"<"+dt+">").join(" ");
                 let archived_dataset_id = null;
                 if(defer) {
@@ -788,7 +841,7 @@ function generate_prov(origin_dataset_id, cb) {
                     if(dep_task.config._inputs) inputTaskId = dep_task.config._inputs[0].task_id;
                     else if(dep_task.deps_config) inputTaskId = dep_task.deps_config[0].task;
                     if(inputTaskId) {
-                        let datatype = datatypes_cache[input.datatype];
+                        let datatype = common.datatypeCache[input.datatype];
                         if(!datatype) datatype = {name: "unknown "+input.datatype};
                         edges.push({
                             to: "task."+task._id,
@@ -800,7 +853,7 @@ function generate_prov(origin_dataset_id, cb) {
                     load_task_prov(dep_task, next_dep); //recurse to its deps
                 } else {
                     //task2task
-                    let datatype = datatypes_cache[input.datatype];
+                    let datatype = common.datatypeCache[input.datatype];
                     if(!datatype) datatype = {name: "unknown "+input.datatype};
                     add_node(Object.assign({
                         id: "task."+input.task_id,

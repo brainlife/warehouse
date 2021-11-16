@@ -109,7 +109,7 @@
             </b-row>
 
 
-            <b-row v-if="config.has_role('admin')">
+            <b-row v-if="config.hasRole('admin')">
                 <b-col cols="3">
                     <span class="form-header">Group Sharing</span>
                 </b-col> 

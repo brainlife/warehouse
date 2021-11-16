@@ -9,6 +9,7 @@ mongoose.set("debug", config.mongoose_debug);
 exports.init = (cb)=>{
     mongoose.connect(config.mongodb, {
         //TODO - move to config
+        /*
         readPreference: 'nearest',
         readConcern: {
             level: 'majority',//prevents read to grab stale data from secondary
@@ -16,8 +17,10 @@ exports.init = (cb)=>{
         writeConcern: {
             w: 'majority', //isn't this the default?
         },
+        */
         useNewUrlParser: true,
         useUnifiedTopology: true,
+        //useCreateIndex: true,
     }, err=>{
         if(err) return cb(err);
         cb();
@@ -524,7 +527,8 @@ var datasetSchema = mongoose.Schema({
     status: { type: String, default: "storing" },
     status_msg: String,
 
-    archive_task_id: String, //amaretti task that was used to archive the data
+    //amaretti task that was used to archive the data
+    archive_task_id: {type: String, index: true}, 
 
     //TODO..
     //validator_task_id: String, //task id for dtv used to validate the output
@@ -559,7 +563,7 @@ datasetSchema.pre('save', function(next) {
     next();
 });
 
-datasetSchema.index({'$**': 'text'}) //make all text fields searchable
+//datasetSchema.index({'$**': 'text'}) //make all text fields searchable
 datasetSchema.index({project: 1, 'prov.task.instance_id': 1, removed: 1, 'meta.subject': 1, 'meta.session': 1, create_date: -1}); //is this deprecated by project/remove/subject/session/-create_ate?
 //datasetSchema.index({project: 1, removed: 1, "meta.subject": 1, "meta.session": 1, "create_date": -1}); //for dataset search by the archive view
 datasetSchema.index({project: 1, datatype: 1, removed: 1, status: 1, "meta.subject": 1, "meta.session": 1, create_date: -1});
@@ -702,6 +706,8 @@ var appSchema = mongoose.Schema({
         stars: Number, //github stars
         success_rate: Number, 
         */
+
+        examples: Number, //number of example workflows found
     },
     
     removed: { type: Boolean, default: false} ,

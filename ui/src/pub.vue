@@ -158,7 +158,6 @@
                 </div>
                 </b-col>
 
-                <!--<span class="form-header">Releases</span>-->
                 <release v-for="release in pub.releases" :key="release._id" :release="release" :project="pub.project"/>
                 <br>
 

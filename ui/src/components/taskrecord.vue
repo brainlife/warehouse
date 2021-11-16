@@ -1,6 +1,6 @@
 <template>
 <tbody>
-    <tr v-for="task in tasks" :key="task._id" @click="click(task)" :class="{clickable: config.is_admin}">
+    <tr v-for="task in tasks" :key="task._id" @click="click(task)" :class="{clickable: config.hasRole('admin')}">
         <td v-if="cols.includes('branch')">
             <b-badge>{{task.service_branch}}</b-badge>
         </td>
@@ -97,20 +97,10 @@ export default {
 
     methods: {
         click(task) {
-            if(Vue.config.is_admin) {
+            if(Vue.config.hasRole("admin")) {
                 console.log("loading task detail", task._id);
-                /*
-                this.$http.get(Vue.config.wf_api+'/task/'+task._id)
-                .then(res=>{
-                    Vue.set(task, '_task', res.data);
-                });
-                */
                 window.open("/novnc/#"+btoa(JSON.stringify({
                     task_id: task._id,
-                    //type: null,
-                    //datatype: this.opt.datatype.name,
-                    //subdir: this.opt.subdir,
-                    //files: this.opt.files,
                 })), task._id, "width=1200,height=800")
             }
         },
