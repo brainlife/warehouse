@@ -4,8 +4,13 @@ const axios = require('axios');
 const config = require('../config');
 const db = require('../models');
 const mongoose = require('mongoose');
+const common = require('../common');
+
+const mc = require('markov-clustering');
+const math = require('mathjs');
 
 exports.traverseProvenance = async (startTaskId) => {
+    
 
     console.debug("traversing from task:", startTaskId);
 
@@ -51,6 +56,8 @@ exports.traverseProvenance = async (startTaskId) => {
             return existing.idx;
         }
 
+        if(!dataset.storage) console.dir(dataset);
+
         //register new
         const datasetNodeIdx = nodes.length;
         const node = {
@@ -89,7 +96,6 @@ exports.traverseProvenance = async (startTaskId) => {
     }
 
     function registerFakeArchive(dataset) {
-
         //we didn't archive on some storage
         if(dataset.storage == "datalad") return;
 
@@ -168,6 +174,7 @@ exports.traverseProvenance = async (startTaskId) => {
             console.error("task", taskId, "doesn't have config");
             return;
         }
+        
 
         //register new task node
         const nodeIdx = nodes.length;
@@ -186,6 +193,8 @@ exports.traverseProvenance = async (startTaskId) => {
             runtime: task.runtime,
             inputs: [],
         };
+
+
         if(task.config._app) {
             const app = await db.Apps.findById(task.config._app).select({config: 1}).exec();//.lean();
             node._config = filterConfig(task.config, app.config);
@@ -296,10 +305,13 @@ exports.traverseProvenance = async (startTaskId) => {
                     if(!dataset) {
                         //console.error("couldn't find sca-product-raw dataset:", datasetConfig.dir, "in task:", task._id);
                         //let's fake a dataset using information from the output (maybe removed?)
-                        if(task.config._outputs) dataset = task.config._outputs.find(o=>o.subdir == datasetConfig.dir);
+                        if(task.config._outputs) {
+                            dataset = task.config._outputs.find(o=>o.subdir == datasetConfig.dir);
+                            dataset._id = datasetConfig.dir;
+                            dataset.storage = "guess";
+                        }
                     }
                     if(!dataset) return;
-                    
 
                     if(dataset.archive_task_id) {
                         tasks.push(dataset.archive_task_id);
@@ -355,7 +367,6 @@ exports.traverseProvenance = async (startTaskId) => {
         //old validator didn't have _outputs.. let's guess the output
         if(node.validator && !task.config._outputs) {
             console.log("validator is missing missing output .. faking");
-            console.dir(node);
             task.config._outputs = [{
                 id: "output",
                 datatype: "whatever",
@@ -434,8 +445,12 @@ exports.traverseProvenance = async (startTaskId) => {
 
     //link between copied dataset and source dataset
     nodes.filter(n=>(n.type == "dataset" && n.sourceDatasetId)).forEach(copy=>{
+        console.log("looking for ", copy);
+        nodes.forEach(n=>{
+            console.log(n.idx, n.datasetId);
+        });
         const source = nodes.find(n=>n.datasetId == copy.sourceDatasetId);
-        edges.push({
+        if(source) edges.push({
             idx: edges.length,
             from: source.idx, 
             to: copy.idx, 
@@ -453,13 +468,10 @@ exports.traverseProvenance = async (startTaskId) => {
     
 //find app tasks that has no following tasks (end of the workflow)
 exports.sampleTerminalTasks = async (appId)=>{
-    console.debug("querying sample tasks")
     const res = await axios.get(config.amaretti.api+'/task/samples/'+appId, {
         headers: { authorization: "Bearer "+config.warehouse.jwt },
     });
     if(res.status != "200") throw "failed to query task:"+taskId;
-    console.debug("got", res.data.length, "samples");
-
     const provs = [];
     for await (const sample of res.data) {
         provs.push(await exports.traverseProvenance(sample._id));
@@ -693,6 +705,8 @@ exports.setupShortcuts = (prov)=>{
         });
     }
 }
+
+/*
 //from array of provenances, construct a single tree with counts indicating number of paths for each branch
 exports.countProvenances = (provs)=>{
     console.debug("counting provenances");
@@ -837,21 +851,6 @@ exports.computeProbabilities = (cnodes)=>{
             //console.log("walking inputs", prob, node.id, nodeProvs, denominator, node.provs);
             //TODO - when an app has multiple input, the we end up walking multiple paths and come up with
             //same or different terimnal probability
-            /*
-            //production
-            saving counts /tmp/count.59fb2f15c996d0002d47ee1d.json
-            picking common provenances
-            reached terminal 0.8571428571428571 [ 0, 1, 2, 3, 4, 5 ]
-            reached terminal 0.14285714285714285 [ 6 ]
-            reached terminal 0.14285714285714285 [ 6 ]
-            reached terminal 0.2857142857142857 [ 0, 5 ]
-            reached terminal 0.5714285714285714 [ 1, 2, 3, 4 ]
-            reached terminal 0.14285714285714285 [ 6 ]
-            (see prov 0,5 has 0.85 or 0.28)
-
-            what should I do in this case? 
-            */
-            
             if(Object.keys(node.inputs).length) for(const inputId in node.inputs) {
                 const inputs = node.inputs[inputId];
                 if(inputs.length) {
@@ -874,6 +873,118 @@ exports.computeProbabilities = (cnodes)=>{
     });
 
     return probs; 
+}
+*/
+
+//input is an array of provenance graphs (needs shortcuts)
+exports.cluster = (provs)=>{
+    //count number of app transitions (appA > appB) for each graph.
+    provs.forEach(prov=>{
+        //console.log("---------------------------------------------");
+        //console.dir(provs);
+        prov._transitions = {};
+        //find task > task edges
+        prov.edges.filter(e=>!e._simplified).forEach(edge=>{
+            const from = prov.nodes[edge.from];
+            const to = prov.nodes[edge.to];
+
+            //make sure this is app to app transition
+            if(!from.appId) return;
+            if(!to.appId) return;
+
+            //count!
+            const id = from.appId+"."+to.appId;
+            if(!prov._transitions[id]) prov._transitions[id] = 0;
+            prov._transitions[id]++;
+        });
+        //console.dir(pairs);
+    });
+
+    //create adjacency matrix between all graph with each cell representing distances between each graph. 
+    function computeDistance(p1, p2) {
+        let dist = 0;
+        for(let key in p1._transitions) {
+            const p1count = p1._transitions[key];
+            const p2count = p2._transitions[key];
+            if(!p2count) dist += p1count;
+            else dist += Math.abs(p1count - p2count); 
+        }
+        //find keys missing in p1
+        for(let key in p2._transitions) {
+            const p1count = p1._transitions[key];
+            const p2count = p2._transitions[key];
+            if(!p1count) dist += p2count;
+        }
+        /*
+        console.log("p1...");
+        console.dir(p1._transitions);
+        console.log("p2...");
+        console.dir(p2._transitions);
+        console.log("dist", dist);
+        */
+        return dist;
+    }
+
+    const matrix = [];
+    provs.forEach((p1, p1idx)=>{
+        matrix[p1idx] = [];
+        provs.forEach((p2, p2idx)=>{
+            matrix[p1idx][p2idx] = computeDistance(p1, p2);
+        }); 
+    });
+    
+    //apply markov cluster algorithm on the adjacency matrix to create the final clustering 
+    if(matrix.length < 2) {
+        console.log("matrix size too small.. returning first index as cluster of 1");
+        return [[0]];
+    }
+
+    console.log("adjacency matrix...");
+    console.dir(matrix);
+
+    const clusters = mc.cluster(math.matrix(matrix));    
+    console.dir("clusters..");
+    console.dir(clusters);
+
+    return clusters;
+}
+
+//populate datatype / project info
+exports.populate = async function(prov) {
+    await common.cacheDatatypes();
+    await common.startContactCachePromise();
+
+    //populate datatype info
+    console.log("populating", prov);
+    prov.nodes.filter(n=>!!n.datatype).forEach(node=>{
+        if(typeof node.datatype == 'object') return; //duplicate prov that's already populated?
+        const id = node.datatype;
+        const datatype = common.datatypeCache[id];
+        let name = "unknown-dt-"+id;
+        if(datatype) name = datatype.name;
+        node.datatype = { id, name, }
+    });
+
+    //populate user info
+    prov.nodes.filter(n=>!!n.userId).forEach(node=>{
+        console.log("llooking for", node.userId);
+        const user = common.deref_contact(node.userId);
+        if(user) {
+            node.user = {
+                sub: user.sub,
+                email: user.email,
+                fullname: user.fullname,
+                username: user.username,
+            };
+        }
+    });
+
+    //populate project info
+    const projectIds = prov.nodes.filter(n=>!!n.project).map(n=>n.project);
+    const projects = await db.Projects.find({_id: {$in: projectIds}}, {name: 1}).lean();
+    prov.nodes.filter(n=>!!n.project).forEach(node=>{
+        node.project = projects.find(p=>p._id.toString() == node.project);
+    });
 }
 
 

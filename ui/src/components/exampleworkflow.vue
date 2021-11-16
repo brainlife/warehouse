@@ -2,10 +2,12 @@
 <div>
     <b-alert :show="provs && !provs.length" variant="secondary">Sorry, we couldn't find an example workflow.</b-alert>
     <br>
-    <b-nav tabs>
-        <b-nav-item v-for="(prov, idx) in provs" :key="idx" :active="(idx == selected)" @click="selected = idx">{{idx}} ({{(prov._prob*100).toFixed(1)}}%)</b-nav-item>
-    </b-nav>
-    <provgraph :prov="provs[selected]" :appid="appid" :showFull="false" style="height: 700px; background-color: #eee;"/>
+    <div v-if="provs && provs.length">
+        <b-nav tabs>
+            <b-nav-item v-for="(prov, idx) in provs" :key="idx" :active="(idx == selected)" @click="selected = idx">{{idx}} ({{prov.nodes.length}} nodes)</b-nav-item>
+        </b-nav>
+        <provgraph :prov="provs[selected]" :appid="appid" :showFull="false" style="height: 700px; background-color: #eee;"/>
+    </div>
 </div>
 </template>
 

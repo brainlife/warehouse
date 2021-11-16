@@ -33,13 +33,16 @@
                     <task :task="task"/>
                 </p>
             </div>
+
+            <div v-if="prov">
+                <provgraph :prov="prov" :taskid="task._id" style="height: 500px;" :showFull="true"/>
+            </div> 
             
             <hr>
             <div style="padding: 20px" v-if="task">
                 <b>Task Dump</b>
                 <pre>{{task}}</pre>
             </div>
-
         </b-tab>
         <b-tab title="Switch User"> 
             <br>
@@ -70,7 +73,6 @@
                 <span class="form-header">App Stats</span>
                 <small>{{appItems.length}} apps</small>
                 <b-table 
-                    :sticky-header="stickyHeader"
                     :small="true" :items="appItems" :fields="appFields" selectable @row-selected="appSelected">
                     <template #cell(name)="data">
                         {{data.item.name}}
@@ -93,8 +95,7 @@
                 </div>
             </div>
             <b-table 
-                sort-by="size" sort-desc="Descending"
-                :small="true" :items="projectRecords" :fields="projectFields" selectable @row-selected="projectSelected">
+                sort-by="size" :small="true" :items="projectRecords" :fields="projectFields" selectable @row-selected="projectSelected">
                 <template #cell(admins)="data">
                     <contact v-for="c in data.item.admins" size="small" :key="c._id" :id="c"/>
                 </template>
@@ -141,7 +142,9 @@ export default {
         task,
         projectaccess,
         contact,
+
         ExportablePlotly: ()=>import('@/components/ExportablePlotly'),
+        provgraph: ()=>import('@/components/provgraph'),
     },
     data () {
         return {
@@ -189,6 +192,8 @@ export default {
                 { key: "objects", label: "Objects", sortable: true },
             ],
             minProjectSize: 500,
+
+            prov: null,
         }
     },
 
@@ -354,7 +359,6 @@ export default {
                     const depIds = this.task.deps_config.map(config=>config.task);
                     this.$http.get(Vue.config.amaretti_api+'/task', { params: {
                         find: JSON.stringify({
-                            //follow_task_id: this.task_id
                             "_id": {$in: depIds},
                         }),
                     }}).then(res=>{
@@ -380,6 +384,11 @@ export default {
                     console.log("task updated!", event);
                     Object.assign(this.task, event.msg);
                 }
+
+                //load task provenance
+                this.$http.get('/app/taskprov/'+this.task_id).then(res=>{
+                    this.prov = res.data;
+                });
             }
         },
     },

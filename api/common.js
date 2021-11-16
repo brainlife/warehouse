@@ -757,9 +757,19 @@ exports.cacheContact = function(cb) {
 //TODO - update cache from amqp events instead?
 let cachedContacts = null;
 exports.startContactCache = function(cb) {
-    console.log("starting contactCache");
+    if(cachedContacts) return cb(); //already started
     setInterval(exports.cacheContact, 1000*60*30); //cache every 30 minutes
     exports.cacheContact(cb);
+}
+
+//just a wrapper for startContactCache.
+exports.startContactCachePromise = async function() {
+    return new Promise((resolve, reject)=>{
+        exports.startContactCache(err=>{
+            if(err) return reject(err);
+            resolve();
+        });
+    });
 }
 
 exports.deref_contact = function(id) {
@@ -1652,7 +1662,7 @@ exports.updateXNATObjects = async (objects)=>{
 
 exports.datatypeCache = null;
 exports.cacheDatatypes = async ()=>{
-    if(exports.datatypeCache) return; //already cached.. invalidate after a while?
+    if(exports.datatypeCache) return; //already cached.. TODO invalidate after a while?
     const datatypes = await db.Datatypes.find({});
     exports.datatypeCache = {};
     datatypes.forEach(datatype=>{

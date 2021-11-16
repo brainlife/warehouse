@@ -161,27 +161,35 @@ router.get('/query', common.jwt({credentialsRequired: false}), (req, res, next)=
 
 //experimental
 router.get('/example/:id', common.jwt(), async (req, res, next)=>{
-
-    //see if we can load it from cache
     const cachefname = "/tmp/example.app-"+req.params.id+".json";
     if(fs.existsSync(cachefname)) {
-        const stat = fs.statSync(cachefname);
-        const old = new Date();
-        old.setDate(new Date().getDate() - 7);  //too long?
-        if(stat.mtime > old) {
-            console.log("using cached output");
-            const cache = fs.readFileSync(cachefname, {encoding: "utf8"});
-            const provs = JSON.parse(cache);
-            return res.json(provs);
-        }
-    } 
+        const cache = fs.readFileSync(cachefname, {encoding: "utf8"});
+        const provs = JSON.parse(cache);
+        return res.json(provs);
+    } else {
+        console.log("app example not cached yet", cachefname);
+        //let appinfo do the caching now
+        return res.json([]); 
 
-    console.log("loading example workflow");
-    const provs = await provenance.sampleTerminalTasks(req.params.id);
-    provs.map(provenance.setupShortcuts);
+        /*
+        console.log("loading example workflow");
+        const provs = await provenance.sampleTerminalTasks(req.params.id);
+        provs.map(provenance.setupShortcuts);
+
+        const commonProvs = [];
+        const clusters = provenance.cluster(provs);
+        clusters.forEach(cluster=>{
+            //grab the first one from each cluster
+            commonProvs.push(provs[cluster[0]]);
+        }); 
+        fs.writeFileSync(cachefname, JSON.stringify(commonProvs));
+        res.json(commonProvs);
+        */
+    }
+
+    /*
     const cnodes = provenance.countProvenances(provs);
     const probGroups = provenance.computeProbabilities(cnodes);
-    const commonProvs= [];
     //grab the top 3 groups
     probGroups.splice(0,3).forEach(probGroup=>{
         const idx = probGroup.provs[0]; //grab the first one from each group
@@ -214,9 +222,16 @@ router.get('/example/:id', common.jwt(), async (req, res, next)=>{
             node.datatype = { id, name, }
         });
     });
+    */
+});
 
-    fs.writeFileSync(cachefname, JSON.stringify(commonProvs));
-    res.json(commonProvs);
+//experimental - query task provenance (admin only)
+router.get('/taskprov/:id', common.jwt(), async (req, res, next)=>{
+    if(!req.user.scopes.warehouse || !~req.user.scopes.warehouse.indexOf('admin')) return true;
+    const prov = await provenance.traverseProvenance(req.params.id);
+    provenance.setupShortcuts(prov);
+    await provenance.populate(prov);
+    res.json(prov);
 });
 
 /**

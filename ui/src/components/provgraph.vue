@@ -19,6 +19,9 @@ export default {
 
         //if you want to highlight the app as "This App", set this
         appid: String,
+
+        //if you want to highlight specific task as "This Task", set this
+        taskid: String,
     },
 
     data() {
@@ -43,9 +46,9 @@ export default {
 
     methods: {
         load() {
-            //if(this.gph) delete this.gph;
-            console.log("prov2");
-            console.dir(this.prov); //debug
+            //debug
+            console.log("provgraph");
+            console.dir(this.prov); 
 
             let hideSimplified = true;
             let hideShortcut = false;
@@ -126,20 +129,27 @@ export default {
 
                 switch(node.type) {
                 case "task":
+                    console.log(node.idx, node.taskId);
                     if(this.appid && node.appId == this.appid) {
                         graphNode.label = "This App";
                         graphNode.color = "#2693ff";
-                        //graphNode.margin = 10;
                         graphNode.font.color = "#fff";
                         graphNode.x = 2000;
                         graphNode.y = 3000;
 
                         delete node._config; //hide config parameter used by "This app"
+                    } else if(this.taskid && node.taskId == this.taskid) {
+                        graphNode.label = "This Task";
+                        graphNode.color = "#2693ff";
+                        graphNode.font.color = "#fff";
+                        graphNode.x = 2000;
+                        graphNode.y = 3000;
                     } else {
                         graphNode.label = "";
                         //if(node.name) graphNode.label += node.name+"\n"; //gets too long
                         if(node.service == "brainlife/app-noop") {
                             //don't show "app-noop" service name..
+                            graphNode.label += "noop";
                         } else {
                             let service = node.service;
                             if(service.startsWith("brainlife/")) service = service.substring(10);
@@ -226,7 +236,6 @@ export default {
                 if(node._simplified && !hideSimplified) {
                     graphNode.font.size -= 5;
                 }
-                //graphNode.label += "\nidx:"+node.idx;
 
                 //construct tooltip
                 let tooltip = "";
@@ -260,7 +269,9 @@ export default {
                 }
                 if(node.desc) tooltip += "<p>desc:"+node.desc+"</p>";
                 if(node.datasetId) tooltip += "<p>datasetid:"+node.datasetId+"</p>";
-                if(node.userId) tooltip += "<p>userId:"+node.userId+"</p>";
+                if(node.user) {
+                    tooltip += "<p>"+node.user.fullname+" &lt;"+node.user.email+"&gt;</p>" ;
+                } else if(node.userId) tooltip += "<p>userId:"+node.userId+"</p>";
                 if(node._taskId) tooltip += "<p>taskId:"+node._taskId+"</p>";
                 tooltip += "<p>idx:"+node.idx+" "+node.type+"</p>";
                 graphNode.title = "<div>"+tooltip+"</div>";
@@ -342,16 +353,6 @@ export default {
                     const dataset = this.prov.nodes[edge._dataset];
                     if(dataset.datasetId) graphEdge.title += "archived as datasetid:"+dataset.datasetId+"\n";
                 }
-                /*
-                if(edge.inter) {
-                    graphEdge.color = {
-                        inherit: false,
-                        color: '#0001',
-                    }
-                    graphEdge.dashes = false;
-                }
-                */
-
                 graphEdges.push(graphEdge);
             })
 
@@ -371,7 +372,6 @@ export default {
                     outputEdges.splice(0).forEach(outputEdge=>{
                         const edge = this.prov.edges[outputEdge.edgeIdx];
                         const dataset = this.prov.nodes[edge._dataset];
-                        //const output = this.prov.nodes[edge._output];
 
                         if(!dataset) return;
 
@@ -391,7 +391,7 @@ export default {
                     });
                     
                     //add user node
-                    if(node.userId) {
+                    if(node.user) {
                         const userNode = {
                             shape: "box",
                             id: gnode.id+".user",
@@ -400,7 +400,7 @@ export default {
                                color: "#fff",
                             },
                             color: "#999",
-                            label: "user:"+node.userId,
+                            label: node.user.fullname,//+" <"+node.user.email+">",
                         }
                         //userNode.y = -2000;
                         graphNodes.push(userNode);
@@ -412,10 +412,8 @@ export default {
                             font: { size: 10, color: '#000a'}
                         })
                     }
-                    
                     break;
                 } 
-
             });
 
             graphEdges.forEach(gedge=>{
@@ -454,42 +452,6 @@ export default {
                     },
                 });
             });
-
-            /*
-            gph.on("doubleClick", e=>{
-                e.nodes.forEach(node=>{
-                    if(node.startsWith("dataset.")) {
-                        let dataset_id = node.substring(8);
-                        //for archive/datasets page
-                        if(this.$route.path.includes(this.dataset._id)) {
-                            //this should trigger reload
-                            this.$router.replace(this.$route.path.replace(this.dataset._id, dataset_id));
-                        } else {
-                            this.$root.$emit('dataset.view', {id: dataset_id});
-                        }
-                    }
-                    if(node.startsWith("task.")) {
-                        let fullnode = res.data.nodes.find(n=>n.id == node);
-                        if(fullnode._app) this.$router.replace("/app/"+fullnode._app);
-                    }
-                });
-                e.edges.forEach(edge_id=>{
-                    let edge = res.dat.edges.find(e=>e.id == edge_id);
-                    if(edge._archived_dataset_id) {
-                        this.$router.replace(this.$route.path.replace(this.dataset._id, edge._archived_dataset_id)); 
-                    }
-                });
-            });
-
-            gph.on("showPopup", e=>{
-                //console.log("popup!", e);
-            });
-            gph.on("hoverNode", e=>{
-                //console.log("hovernode!", e);
-            });
-            */
-
-            //end of load()
         }
 
     },

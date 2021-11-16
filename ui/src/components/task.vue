@@ -91,7 +91,7 @@
                         <time v-if="task.status == 'running'">since <timeago :datetime="task.start_date" :auto-update="30"/></time>
                         <time v-if="task.status == 'finished'"><timeago :datetime="task.finish_date" :auto-update="60"/></time>
                         <time v-if="task.status == 'failed'"><timeago :datetime="task.fail_date" :auto-update="60"/></time>
-                        <time v-if="task.status == 'removed'"><timeago :datetime="task.remove_date" :auto-update="60"/></time>
+                        <time v-if="task.status == 'removed'"><timeago v-if="task.remove_date" :datetime="task.remove_date" :auto-update="60"/></time>
                     </small>
                 </h4>
                 <i class="status-msg">{{task.status_msg.trim()||'empty status message'}}</i>

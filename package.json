@@ -37,6 +37,8 @@
     "gunzip-stream": "^1.0.1",
     "istanbul": "^0.4.5",
     "keyword-extractor": "0.0.20",
+    "markov-clustering": "0.0.4",
+    "mathjs": "^10.0.0",
     "mongoose": "^6.0.12",
     "morgan": "^1.10.0",
     "n-stopwords": "^1.1.2",

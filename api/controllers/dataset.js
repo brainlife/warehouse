@@ -247,8 +247,8 @@ router.get('/prov2/:id', async (req, res, next)=>{
     if(!dataset.prov.task_id && !dataset.prov.task) return next("no task nor task_id is set on object:"+req.params.id);
     const prov = await provenance.traverseProvenance(dataset.prov.task_id||dataset.prov.task._id);
     provenance.setupShortcuts(prov);
-
-    //lookup and populate project names
+    await provenance.populate(prov);
+    /*
     const projectIds = prov.nodes.filter(n=>!!n.project).map(n=>n.project);
     const projects = await db.Projects.find({_id: {$in: projectIds}}, {name: 1}).lean();
     prov.nodes.filter(n=>!!n.project).forEach(node=>{
@@ -273,6 +273,7 @@ router.get('/prov2/:id', async (req, res, next)=>{
             }
         }    
     });
+    */
 
     res.json(prov);
 });

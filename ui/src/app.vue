@@ -712,7 +712,6 @@ export default {
 }
 .tab-content {
     background-color: white; 
-    border-bottom: 1px solid #ddd;
     min-height: 300px;
 }
 </style>
