@@ -998,6 +998,7 @@ h5 {
     text-transform: uppercase;
     font-weight: bold;
     font-size: 13px;
+}
 .account {
     display: inline-block;
     float: left;
