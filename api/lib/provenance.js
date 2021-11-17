@@ -264,7 +264,7 @@ exports.traverseProvenance = async (startTaskId) => {
                 }
 
                 //look for archived task that archived the data object
-                const dataset = await db.Datasets.findById(datasetId).lean();
+                let dataset = await db.Datasets.findById(datasetId).lean();
                 if(!dataset) {
                     //couldn't find dataset.. let's fake a dataset using information from the output (maybe removed?)
                     if(task.config._outputs) {

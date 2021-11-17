@@ -230,8 +230,7 @@
                                 <span class="form-header">Current Password</span>
                             </b-col>
                             <b-col>
-                                <b-form-input v-model="form.currentPassword" type="password" required/>
-                                <small>For security reason, please enter your current password.</small>
+                                <b-form-input v-model="form.currentPassword" type="password" placeholder="Please enter your current password" required/>
                             </b-col>
                         </b-row>
                         <br>
@@ -242,15 +241,14 @@
                             </b-col>
                             <b-col>
                                 <p>
-                                    <b-form-input v-model="form.newPassword" type="password" required/>
+                                    <b-form-input v-model="form.newPassword" type="password" placeholder="Enter new password here" required/>
                                     <password v-if="form.newPassword" v-model="form.newPassword" :strength-meter-only="true" @feedback="updatePasswordFeedback"/>
                                     <b-alert :show="true" v-for="(msg, idx) in passwordSuggestions" variant="secondary" :key="idx">{{msg}}</b-alert>
                                     <b-alert :show="!!passwordWarning" variant="danger">{{passwordWarning}}</b-alert>
                                 </p>
 
-                                <p>
-                                    <b>Re-enter New Password</b>
-                                    <b-form-input v-model="form.repeatPassword" :state="validaterepeatPass" type="password" required/>
+                                <p v-if="form.newPassword">
+                                    <b-form-input v-model="form.repeatPassword" :state="validaterepeatPass" type="password" placeholder="Re-enter new password to confirm" required/>
                                     <b-form-invalid-feedback :state="validaterepeatPass">
                                         Passwords do not match
                                     </b-form-invalid-feedback>
