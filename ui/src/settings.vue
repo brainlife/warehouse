@@ -374,7 +374,7 @@
                             </b-col>
                             <b-modal size="xl" v-if="showModal" id='userEditmodal' ref='ref_modal'>
                                 <template #modal-header>
-                                    <h6>{{userEdit.fullname}} ({{userEditsub}})</h6>
+                                    <h6>{{userEdit.fullname}} ({{userEdit.sub}})</h6>
                                 </template>
                                 <b-container>
                                     <b-form-group>
@@ -437,7 +437,7 @@
                                 </b-container>
                                     <template #modal-footer="{cancel}">
                                         <div class="float-left mr-auto">
-                                            <b-button :pressed.sync="rawJson" variant="primary">Show Raw Json</b-button>
+                                            <b-button :pressed.sync="rawJson" ref="toggleUIandRawJSON" variant="primary">Show Raw Json</b-button>
                                         </div>
                                         <b-button variant="secondary" @click="cancel()">Cancel</b-button>
                                         <b-button variant="primary" ref="okBTN" @click="submitUser">Submit</b-button>
@@ -746,7 +746,6 @@ export default {
                 }
             };
             this.userEdit = Object.assign({}, this.userEdit, user);
-            this.profile = JSON.stringify(user.profile, null, 4);
             this.userEditJSON = JSON.stringify(user, null, 4);
             // console.log(typeof user.scopes, user.scopes);
             for (const key in this.userEdit.scopes) {
@@ -800,7 +799,6 @@ export default {
                 this.showModal = false;
                 this.userEdit = null;
                 this.users = [];
-                this.profile = null;
             }).catch(console.error);
         },
         submitGroup(e) {
@@ -948,6 +946,14 @@ export default {
         },
         userEdit: function() {
             this.userEditJSON = JSON.stringify(this.userEdit, null, 4);
+        },
+        rawJson: function() {
+            const toggleBTN = this.$refs.toggleUIandRawJSON;
+            console.log(this.rawJson, toggleBTN);
+            if(this.rawJson == true) {
+               toggleBTN.innerText = "Show UI";
+            }
+            toggleBTN.innerText = "Show Raw Json";
         },
         queryUser: function() {
             this.applyFilterUser();
