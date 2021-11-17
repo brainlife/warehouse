@@ -118,27 +118,6 @@ function handle_app(app, cb) {
             }); 
             const subsetProvs = commonProvs.splice(0, 5);
 
-            //remove things we don't want to show to the user
-            subsetProvs.forEach(prov=>{
-                prov.nodes.forEach(node=>{
-                    delete node.project;
-                    delete node.desc;
-                    delete node.userId;
-                    delete node.user;
-                    delete node.tags;
-                    delete node.meta;
-                    delete node.datasetId;
-                    delete node.storage;
-                    delete node.storageLocation;
-                    delete node.taskId;
-                    delete node._taskId;
-                    delete node.instanceId;
-                    delete node.resourceId;
-                    delete node.groupId;
-                    node.tags = [];
-                });
-            });
-
             //populate things we should populate
             for await (const prov of subsetProvs) {
                 await provenance.populate(prov);

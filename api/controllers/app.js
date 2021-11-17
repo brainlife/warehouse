@@ -165,10 +165,34 @@ router.get('/example/:id', common.jwt(), async (req, res, next)=>{
     if(fs.existsSync(cachefname)) {
         const cache = fs.readFileSync(cachefname, {encoding: "utf8"});
         const provs = JSON.parse(cache);
+
+        //anonymize if user is not admin
+        if(!req.user.scopes.warehouse || !~req.user.scopes.warehouse.indexOf('admin')) {
+            provs.forEach(prov=>{
+                prov.nodes.forEach(node=>{
+                    delete node.project;
+                    delete node.desc;
+                    delete node.userId;
+                    delete node.user;
+                    delete node.tags;
+                    delete node.meta;
+                    delete node.datasetId;
+                    delete node.storage;
+                    delete node.storageLocation;
+                    delete node.taskId;
+                    delete node._taskId;
+                    delete node.instanceId;
+                    delete node.resourceId;
+                    delete node.groupId;
+                    node.tags = [];
+                });
+            });
+        }
+
         return res.json(provs);
+
     } else {
         console.log("app example not cached yet", cachefname);
-        //let appinfo do the caching now
         return res.json([]); 
 
         /*
