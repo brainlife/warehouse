@@ -1673,6 +1673,7 @@ router.post('/copy', common.jwt({secret: config.express.pubkey}), (req, res, nex
 
             //update to create list of new datasets
             datasets.forEach(dataset=>{
+                //we can create copy of copy of copy of ...
                 if(dataset.storage != "copy") {
                     dataset.storage_config = {
                         dataset_id: dataset._id,
@@ -1686,6 +1687,11 @@ router.post('/copy', common.jwt({secret: config.express.pubkey}), (req, res, nex
                 delete dataset._id;
                 dataset.publications = [];
                 dataset.desc = dataset.desc; //could be undefined
+
+                //reset some other info
+                dataset.create_date = new Date();
+                dataset.user_id = req.user.sub;
+                dataset.download_count = 0;
             });
 
             db.Datasets.insertMany(datasets,(err, docs)=>{
