@@ -430,7 +430,7 @@
                                 </b-container>
                                     <template #modal-footer="{cancel}">
                                         <div class="float-left mr-auto">
-                                            <b-button :pressed.sync="rawJson" variant="primary">{{ UIjsonBtnText }}</b-button>
+                                            <b-button :pressed.sync="rawJson" variant="primary">{{rawJson?'Show UI':'Show JSON'}}</b-button>
                                         </div>
                                         <b-button variant="secondary" @click="cancel()">Cancel</b-button>
                                         <b-button variant="primary" ref="okBTN" @click="submitUser">Submit</b-button>
@@ -513,7 +513,6 @@ export default {
             tab: 0,
             users: [],
             queryUser: "",
-            UIjsonBtnText: "Show Raw Json", 
             queryGroup: "",
             filteredUsers: [],
             filteredGroups: [],
@@ -940,14 +939,6 @@ export default {
         },
         userEdit: function() {
             this.userEditJSON = JSON.stringify(this.userEdit, null, 4);
-        },
-        rawJson: function() {
-            if(this.rawJson == true) {
-               this.$nextTick(function () {
-                    this.UIjsonBtnText= "Show UI";
-               });
-            }
-            this.UIjsonBtnText = "Show Raw Json";
         },
         queryUser: function() {
             this.applyFilterUser();
