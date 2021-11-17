@@ -372,39 +372,51 @@
                                 :fields="fields" 
                                 :per-page="perPage" 
                                 :current-page="currentPage" 
-                                @row-clicked="selectUser"/>
+                                @row-clicked="selectUser" v-b-modal="'userEditmodal'"/>
                                 <b-pagination v-model="currentPage" :total-rows="rowUsers" :per-page="perPage" aria-controls="my-table"></b-pagination>
                                 <p class="mt-3">Current Page: {{ currentPage }}</p>
                             </b-col>
-                            <b-col>
-                                <div v-if="userEdit">
-                                    <b-form @submit="submitUser">
-                                        <b-container>
-                                            <b-form-group>
-                                                <b-row>
+                            <b-modal size="xl" v-if="showModal" id='userEditmodal' ref='ref_modal'>
+                                <template #modal-header>
+                                    <h3>{{userEdit.sub}} {{userEdit.fullname}}</h3>
+                                </template>
+                                <b-container>
+                                    <b-form-group>
+                                        <b-row>
+                                            <b-col cols="12">
+                                                <editor v-if="rawJson" v-model="convertRawJSONtoUserEdit" @init="editorInit" lang="json" height="1000"/>
+                                                <b-row v-else-if="userEdit">
                                                     <b-col cols="6">
-                                                        <span class="form-header">Profile</span>
-                                                        <editor v-model="profile" @init="editorInit" lang="json" height="300"/>
-                                                        <!-- <b-form-textarea v-if="userEdit.profile" v-model="userEdit.profile" rows="8"/> -->
+                                                        <h4>Public Profile</h4>
+                                                        <span class="form-header">Institution</span>
+                                                        <b-form-input v-if="userEdit.profile.public.institution" v-model="userEdit.profile.public.institution"></b-form-input>
+                                                        <span class="form-header">Bio</span>
+                                                        <b-form-textarea v-model="userEdit.profile.public.bio"></b-form-textarea>
+                                                        <h4 style="padding-top: 16px">Scope</h4>
+                                                        <div v-for="(value, propertyName, index) in permissionScope" :key="index">
+                                                            <span class="form-header">{{propertyName}}</span>
+                                                                <div v-for="(val,pn,ind) in value" :key="ind">
+                                                                    <b-form-checkbox v-model="scopeModel[propertyName][pn]">{{val}} <b-badge> {{pn}} </b-badge></b-form-checkbox>
+                                                                </div>
+                                                        </div>
                                                     </b-col>
                                                     <b-col cols="6">
-                                                        <span class="form-header">Scope</span>
-                                                        <editor v-model="scopes" @init="editorInit" lang="json" height="300"/>
-                                                        <!-- <b-form-textarea v-if="userEdit.scopes" v-model="userEdit.scopes" rows="8"/> -->
-                                                    </b-col>
-                                                    <b-col cols="12">
-                                                        <br>
-                                                        <b-form-checkbox v-model="userEdit.active">Active</b-form-checkbox>
+                                                        <h4>Private Profile</h4>
+                                                        <span class="form-header">Position</span>
+                                                        <b-form-input v-model="userEdit.profile.private.position"></b-form-input>
+                                                        <span class="form-header">Purpose</span>
+                                                        <b-form-textarea v-model="userEdit.profile.private.purpose"></b-form-textarea>
                                                         <span class="form-header">Full Name</span>
                                                         <b-form-input v-if="userEdit.fullname" v-model="userEdit.fullname"/>
-                                                        <br>
                                                         <span class="form-header">Username</span>
                                                         <b-form-input v-if="userEdit.username" v-model="userEdit.username"/>
-                                                        <br>
                                                         <span class="form-header">Email</span>
                                                         <b-form-input v-if="userEdit.email" v-model="userEdit.email"/>
-                                                        <b-form-checkbox v-model="userEdit.email_confirmed">Confirmed</b-form-checkbox>
-                                                        <hr>
+                                                        <div style="display:flex;padding-top:8px;">
+                                                            <b-form-checkbox v-model="userEdit.active">Active</b-form-checkbox>
+                                                            <b-form-checkbox style="margin:auto" v-model="userEdit.email_confirmed">Confirmed</b-form-checkbox>
+                                                        </div>
+                                                        <h4  style="padding-top: 16px">Associated Accounts</h4>
                                                         <span class="form-header">Google ID</span>
                                                         <b-form-input v-if="userEdit.ext" v-model="userEdit.ext.googleid"/>
                                                         <span class="form-header">Open ID</span>
@@ -417,12 +429,18 @@
                                                         <pre>{{userEdit.times}}</pre>
                                                     </b-col>
                                                 </b-row>
-                                            </b-form-group>
-                                            <b-button type="submit" variant="success">Submit</b-button>
-                                        </b-container>
-                                    </b-form>
-                                </div>
-                            </b-col>
+                                            </b-col>
+                                        </b-row>
+                                    </b-form-group>
+                                </b-container>
+                                    <template #modal-footer="{cancel}">
+                                        <div class="float-left mr-auto">
+                                            <b-button :pressed.sync="rawJson" size="sm" variant="primary">Show Raw Json</b-button>
+                                        </div>
+                                        <b-button size="sm" variant="success" ref="okBTN" @click="submitUser">OK</b-button>
+                                        <b-button size="sm" variant="danger" @click="cancel()">Cancel</b-button>
+                                    </template>
+                            </b-modal>
                         </b-row>
                     </b-container>
             </div>
@@ -496,22 +514,24 @@ export default {
                 {id: "users", label: "Users"},
                 {id: "groups", label: "Groups"},
             ],
- 
+            showModal: false,
             tab: 0,
-
             users: [],
             queryUser: "", 
             queryGroup: "",
             filteredUsers: [],
             filteredGroups: [],
             groups: [],
-            fields: ["fullname", "username", "active", "email"],
+            fields: ["fullname", "username", "active", "email", 
+                    {key: 'profile.private.institution',label: 'instituition'}, 
+                    {key: 'profile.private.position',label: "position"}],
             groupfields: ["name", "active"],
             perPage: 100,
             userEdit: null,
             groupEdit: null,
             currentPage: 1,
             ready: false,
+            rawJson: false,
             user: {
                 ext: {
                     googleid: '',
@@ -525,8 +545,6 @@ export default {
             jwt: null,
 
             fullname: "",
-            profile: null,
-            scopes: null,
             openids : null,
             form: {
                 currentPassword: "",
@@ -535,13 +553,55 @@ export default {
             },
             passwordSuggestions: [],
             passwordWarning: "" ,
-           
+            convertRawJSONtoUserEdit : null,
+            scopeModel : {
+                "brainlife": {
+                    "user" : false,
+                    "admin" : false,
+                },
+                "warehouse": {
+                    "admin" : false,
+                    "datatype.create" : false
+                },
+                "amaretti": {
+                    "admin" : false,
+                    "resource.create" : false,
+                },
+                "auth": {
+                    "admin" : false,
+                },
+            },
+            tabs: [
+                {id: 'profile', label: "Profile"},
+                {id: 'account', label: "Account"},
+                {id: 'notification', label: "Notification"},
+                {id: "users", label: "Users"},
+                {id: "groups", label: "Groups"},
+            ],
+
+            permissionScope: {
+                "brainlife": {
+                    "user" : "Basic user privileges given to all new users by default",
+                    "admin" : "Allows user to perform administrative tasks for brainlife in general"
+                },
+                "warehouse": {
+                    "admin" : "Allows user to perform administrative tasks specific to warehouse service",
+                    "datatype.create" : "Allows user to register new datatype"
+                },
+                "amaretti": {
+                    "admin" : "Allows user to perform administrative tasks on amaretti service",
+                    "resource.create" : "Allows user to register new resource"
+                },
+                "auth": {
+                    "admin" : "Allows user to perform administrative tasks on authorization service"
+                }
+            },
+            
             profile: {
                 public: {
                     institution: "",
                     position: "",
                     bio: "",
-
                     //institution map coordinate
                     showOnMap: false,
                     lat: "",
@@ -666,10 +726,53 @@ export default {
             return this.groups;
         },
         selectUser(user) {
+            this.scopeModel = {
+                "brainlife": {
+                    "user" : false,
+                    "admin" : false,
+                },
+                "warehouse": {
+                    "admin" : false,
+                    "datatype.create" : false
+                },
+                "amaretti": {
+                    "admin" : false,
+                    "resource.create" : false,
+                },
+                "auth": {
+                    "admin" : false,
+                }
+            };
             this.userEdit = Object.assign({}, this.userEdit, user);
             this.profile = JSON.stringify(user.profile, null, 4);
-            this.scopes = JSON.stringify(user.scopes, null, 4);
+            this.convertRawJSONtoUserEdit = JSON.stringify(user, null, 4);
+            // console.log(typeof user.scopes, user.scopes);
+            for (const key in this.userEdit.scopes) {
+                // console.log(key);
+                this.userEdit.scopes[key].forEach(permission=>{
+                    console.log(key,permission);
+                    this.scopeModel[key][permission] = true
+                });
+            }
             this.openids = user.ext.openids[0] || " ";
+            this.showModal = true;
+        },
+        checkValidJson(item) {
+            item = typeof item !== "string"
+                ? JSON.stringify(item)
+                : item;
+
+            try {
+                item = JSON.parse(item);
+            } catch (e) {
+                return false;
+            }
+
+            if (typeof item === "object" && item !== null) {
+                return true;
+            }
+
+            return true;
         },
         selectGroup(group) {
             this.groupEdit = Object.assign({}, this.groupEdit, group);
@@ -682,14 +785,19 @@ export default {
         },
         submitUser(e) {
             e.preventDefault();
-            this.userEdit.profile = JSON.parse(this.profile||"{}");
-            this.userEdit.scopes = JSON.parse(this.scopes||"{}");
+            if(!this.checkValidJson(this.convertRawJSONtoUserEdit)) {
+                this.$notify({type: "error", text: "Json formatting Error"});
+                return;
+            }
+            Object.keys(this.scopeModel).forEach(entry => {
+                this.userEdit.scopes[entry] = Object.keys(this.scopeModel[entry]).filter(val=>this.scopeModel[entry][val] == true);
+            });
             this.userEdit.ext.openids[0] = this.openids;
             this.$http.put(Vue.config.auth_api+"/user/"+this.userEdit.sub,this.userEdit).then(res=>{
                 this.$notify({type: "success", text: res.data.message});
+                this.showModal = false;
                 this.userEdit = null;
                 this.users = [];
-                this.scopes = null;
                 this.profile = null;
             }).catch(console.error);
         },
@@ -813,14 +921,14 @@ export default {
         },
         tabID() {
             return this.tabs[this.tab].id; 
-        }
+        },
     },
 
     watch: {
         '$route': function() {
             this.handleRouteParams();
         },
-        tab : function() {
+        tab: function() {
             if(this.tab == 3) this.loadUsers();
             if(this.tab == 4) this.loadGroups();
 
@@ -833,7 +941,13 @@ export default {
                 });
             }
         },
-        queryUser : function() {
+        convertRawJSONtoUserEdit: function() {
+            this.userEdit = JSON.parse(this.convertRawJSONtoUserEdit||"{}");
+        },
+        userEdit: function() {
+            this.convertRawJSONtoUserEdit = JSON.stringify(this.userEdit, null, 4);
+        },
+        queryUser: function() {
             this.applyFilterUser();
         },
         queryGroup: function() {
@@ -848,6 +962,9 @@ export default {
     top: 0px;
     background-color: #f9f9f9;
 }
+.form-header {
+    margin-top: 0.5rem;
+}
 .page-content h2 {
     margin-bottom: 0px;
     padding: 10px 0px;
@@ -860,6 +977,9 @@ export default {
     background-color: white;
     border-bottom: 1px solid #eee;
 }
+h4 {
+    opacity: 0.8;
+}
 h5 {
     margin-bottom: 20px;
     opacity: 0.7;
@@ -870,6 +990,12 @@ h5 {
     background-color: #fff;
     display: block;
     clear: both;
+}
+.headingbtnGroup {
+    color: #5F5F5F;
+    text-transform: uppercase;
+    font-weight: bold;
+    font-size: 13px;
 }
 .account {
     display: inline-block;
