@@ -10,8 +10,6 @@ const mc = require('markov-clustering');
 const math = require('mathjs');
 
 exports.traverseProvenance = async (startTaskId) => {
-    
-
     console.debug("traversing from task:", startTaskId);
 
     const nodes = [];
@@ -24,18 +22,6 @@ exports.traverseProvenance = async (startTaskId) => {
     }
     
     //pick things we want to store in nodes.config
-    /*
-    function filterConfig(task) {
-        const filteredConfig = {};
-        for(const key in task.config) {
-            const v = task.config[key];
-            if(key[0] == "_") continue;
-            if(typeof v == "string" && v.startsWith("../")) continue;
-            filteredConfig[key] = v;
-        }
-        return filteredConfig;
-    }
-    */
     function filterConfig(config, appConfig) {
         let _config = {};
         for(let key in config) {
@@ -52,9 +38,7 @@ exports.traverseProvenance = async (startTaskId) => {
 
     function registerDataset(dataset) {
         let existing = nodes.find(node=>(node.type == "dataset" && node.datasetId.toString() == dataset._id.toString()));
-        if(existing) {
-            return existing.idx;
-        }
+        if(existing) return existing.idx;
 
         //register new
         const datasetNodeIdx = nodes.length;
@@ -87,6 +71,9 @@ exports.traverseProvenance = async (startTaskId) => {
         case "copy":
             node.sourceDatasetId = dataset.storage_config.dataset_id.toString();
             node.sourceStorage = dataset.storage_config.storage;
+            break;
+        case "url":
+            if(dataset.storage_config.files) node.storageLocation = dataset.storage_config.files[0].url;
             break;
         }
         nodes.push(node);
@@ -258,28 +245,29 @@ exports.traverseProvenance = async (startTaskId) => {
             for await (const datasetConfig of task.config.datasets) {
                 let datasetId = datasetConfig.id;
                 if(datasetConfig.outdir) {
-                    //for copied dataset, id will be set to the real(source) dataset.
-                    //outdir will be set to indicate the actual(copy) dataset id which we want
+                    //for copied dataset, id will be set to the source dataset.
+                    //outdir will be set to indicate the copy dataset id which we want
                     datasetId = datasetConfig.outdir;
-                }
 
-                //look for archived task that archived the data object
+                    //let's go ahead and register source dataset now in case datset.prov might be missing
+                    //and we can't setup app-stage node for it
+                    const source = await db.Datasets.findById(datasetConfig.id).lean();
+                    registerDataset(source);
+                }
                 let dataset = await db.Datasets.findById(datasetId).lean();
                 if(!dataset) {
-                    //couldn't find dataset.. let's fake a dataset using information from the output (maybe removed?)
+                    //dataset removed!? .. let's fake a dataset using information from the output
                     if(task.config._outputs) {
                         dataset = task.config._outputs.find(o=>o.subdir == datasetConfig.dir);
                         dataset._id = datasetConfig.dir;
                         //dataset.storage = "guess";
                     }
-                }
-                if(!dataset) continue;
 
-                if(dataset.archive_task_id) {
-                    tasks.push(dataset.archive_task_id);
-                } else {
-                    registerFakeArchive(dataset);
+                    if(!dataset) continue;
                 }
+
+                if(dataset.archive_task_id) tasks.push(dataset.archive_task_id);
+                else registerFakeArchive(dataset);
 
                 const datasetNodeIdx = registerDataset(dataset);
                 edges.push({
@@ -296,41 +284,31 @@ exports.traverseProvenance = async (startTaskId) => {
         }
 
         //deprecated staging job
-        if(task.service == "soichih/sca-product-raw") {
-            //TODO - not always download, right?
-            if(!task.config.download) {
-                console.error("only handling download request for sca-product-raw.. but it's not set on ", task._id);
-            } else {
-                for await (const datasetConfig of task.config.download) {
-                    let dataset = await db.Datasets.findById(datasetConfig.dir).lean();
-                    if(!dataset) {
-                        //couldn't find sca-product-raw dataset
-                        //let's fake a dataset using information from the output (maybe removed?)
-                        if(task.config._outputs) {
-                            dataset = task.config._outputs.find(o=>o.subdir == datasetConfig.dir);
-                            dataset._id = datasetConfig.dir;
-                            //dataset.storage = "guess";
-                        }
+        if(task.service == "soichih/sca-product-raw" && task.config.download) {
+            for await (const datasetConfig of task.config.download) {
+                let dataset = await db.Datasets.findById(datasetConfig.dir).lean();
+                if(!dataset) {
+                    //couldn't find sca-product-raw dataset
+                    //let's fake a dataset using information from the output (maybe removed?)
+                    if(task.config._outputs) {
+                        dataset = task.config._outputs.find(o=>o.subdir == datasetConfig.dir);
+                        dataset._id = datasetConfig.dir;
+                        //dataset.storage = "guess";
                     }
+
                     if(!dataset) continue;
-
-                    if(dataset.archive_task_id) {
-                        tasks.push(dataset.archive_task_id);
-                    } else {
-                        //old dataset (like dev:5a2199f06fb74f6eefd5ad5c or test:5afedfdb251f5200274d9ca8) 
-                        //didn't have archive_task_id (because there was no archive service back then?)
-                        //let's fake it by creating a guess in our cache
-                        registerFakeArchive(dataset);
-                    }
-
-                    const datasetNodeIdx = registerDataset(dataset);
-                    edges.push({
-                        idx: edges.length,
-                        from: datasetNodeIdx, 
-                        to: nodeIdx, 
-                        inputId: dataset._id, //is this right?
-                    });
                 }
+
+                if(dataset.archive_task_id) tasks.push(dataset.archive_task_id);
+                else registerFakeArchive(dataset);
+
+                const datasetNodeIdx = registerDataset(dataset);
+                edges.push({
+                    idx: edges.length,
+                    from: datasetNodeIdx, 
+                    to: nodeIdx, 
+                    inputId: dataset._id, //is this right?
+                });
             }
         }   
 
@@ -996,7 +974,6 @@ exports.populate = async function(prov) {
 
     //populate user info
     prov.nodes.filter(n=>!!n.userId).forEach(node=>{
-        console.log("llooking for", node.userId);
         const user = common.deref_contact(node.userId);
         if(user) {
             node.user = {

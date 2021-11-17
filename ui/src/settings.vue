@@ -85,18 +85,11 @@
                             </b-form-checkbox>
                             <div v-if="profile.public.showOnMap">
                                 <small>Please specify longitude / latitude of your institution to show on map</small>
-                                <b-row>
-                                    <b-col>
-                                        <b-form-group label="Latitude">
-                                            <b-form-input v-model="profile.public.lat"/>
-                                        </b-form-group>
-                                    </b-col>
-                                    <b-col>
-                                        <b-form-group label="Longitude">
-                                            <b-form-input v-model="profile.public.lng"/>
-                                        </b-form-group>
-                                    </b-col>
-                                </b-row>
+                                <b-input-group prepend="Latitude">
+                                    <b-form-input v-model="profile.public.lat"></b-form-input>
+                                    <b-input-group-prepend is-text>Longitude</b-input-group-prepend>
+                                    <b-form-input v-model="profile.public.lng"></b-form-input>
+                                </b-input-group>
                             </div>
                             <br>
                         </b-col>
@@ -108,7 +101,7 @@
                             <span class="form-header">Biography</span>
                         </b-col>
                         <b-col>
-                            <b-form-textarea v-model="profile.public.bio" rows="3" 
+                            <b-form-textarea v-model="profile.public.bio" rows="4" max-rows="10"
                                 placeholder="Please enter a brief introduction about yourself and your research that you'd like to share with other members of brainlife."/>
                             <br>
                         </b-col>
@@ -138,7 +131,7 @@
                             <span class="form-header">Purpose</span>
                         </b-col>
                         <b-col>
-                            <b-form-textarea v-model="profile.private.purpose" rows="3" 
+                            <b-form-textarea v-model="profile.private.purpose" rows="4" max-rows="10"
                                 placeholder="(Optional) Please describe how you'd like to use brainlife.io, and your expectations of this platform. We'd like to use this information to measure how we are meeting our user's expectations."/>
                         </b-col>
                     </b-row>
@@ -149,7 +142,6 @@
                             <span class="form-header">Experiences</span>
                         </b-col>
                         <b-col>
-     
                             <p>(Optional) Please enter years of experience you have with ...</p>
                             <p>
                                 <b-form-group label="Neuroimaging Data Analysis (FSL, SPM, MRTRIX, AFNI, BrainVoyager, etc..)">
@@ -176,7 +168,6 @@
                                 <b-form-textarea v-model="profile.private.experience" placeholder="Please enter any other experiences you have that we should know in order to better assist you." rows="3"/>
                                 <small>We will use this information to provide better support, and understand our user base.</small>
                             </p>
-                            
                         </b-col>
                     </b-row>
 
@@ -199,7 +190,6 @@
                                 Agree to Brainlife <a href="/docs/aup" target="_blank">Acceptable Use Policy</a><br>
                                 <br>
                             </b-form-checkbox>
-                          
                         </b-col>
                     </b-row>
 
@@ -264,7 +254,6 @@
                     <p>
                         <small>You can use the following 3rd party identity providers to login to your brainlife account instead of using brainlife's user/password.</small>
                     </p>
-                    
                     <div class="account" v-for="a in accounts" :key="a.type" :class="{'account-connected': user.ext[a.ext]}">
                         <b-form-checkbox switch :checked="!!user.ext[a.ext]" size="lg" style="float: right" @change="account(a.type, $event)"/>
                         <icon :name="a.icon" size="3" style="float: left; margin-top: 5px;"/> 
@@ -419,12 +408,16 @@
                                                         </div>
                                                         <br>
                                                         <h5>Associated Accounts</h5>
-                                                        <span class="form-header">Google ID</span>
+                                                        <span class="form-header">Google</span>
                                                         <b-form-input v-if="userEdit.ext" v-model="userEdit.ext.googleid"/>
-                                                        <span class="form-header">Open ID</span>
+                                                        <!-- openID is an array
+                                                        <span class="form-header">OpenID</span>
                                                         <b-form-input v-if="openids" v-model="openids"/>
-                                                        <span class="form-header">Orcid</span>
+                                                        -->
+                                                        <span class="form-header">ORCID</span>
                                                         <b-form-input v-if="userEdit.ext" v-model="userEdit.ext.orcid"/>
+                                                        <span class="form-header">Globus</span>
+                                                        <b-form-input v-if="userEdit.ext" v-model="userEdit.ext.globus"/>
                                                         <span class="form-header">Github</span>
                                                         <b-form-input v-if="userEdit.ext" v-model="userEdit.ext.github"/>
                                                         <hr>
