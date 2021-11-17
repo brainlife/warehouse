@@ -173,7 +173,6 @@ exports.traverseProvenance = async (startTaskId) => {
             return;
         }
         
-
         //register new task node
         const nodeIdx = nodes.length;
         const node = {
@@ -191,7 +190,6 @@ exports.traverseProvenance = async (startTaskId) => {
             runtime: task.runtime,
             inputs: [],
         };
-
 
         if(task.config._app) {
             const app = await db.Apps.findById(task.config._app).select({config: 1}).exec();//.lean();
@@ -258,7 +256,6 @@ exports.traverseProvenance = async (startTaskId) => {
 
         if(task.service == "brainlife/app-stage") {
             for await (const datasetConfig of task.config.datasets) {
-        
                 let datasetId = datasetConfig.id;
                 if(datasetConfig.outdir) {
                     //for copied dataset, id will be set to the real(source) dataset.
@@ -269,9 +266,15 @@ exports.traverseProvenance = async (startTaskId) => {
                 //look for archived task that archived the data object
                 const dataset = await db.Datasets.findById(datasetId).lean();
                 if(!dataset) {
-                    console.error("couldn't find staging dataset:", datasetId, "in task:", task._id, datasetConfig);
-                    continue;
+                    //couldn't find dataset.. let's fake a dataset using information from the output (maybe removed?)
+                    if(task.config._outputs) {
+                        dataset = task.config._outputs.find(o=>o.subdir == datasetConfig.dir);
+                        dataset._id = datasetConfig.dir;
+                        //dataset.storage = "guess";
+                    }
                 }
+                if(!dataset) continue;
+
                 if(dataset.archive_task_id) {
                     tasks.push(dataset.archive_task_id);
                 } else {
@@ -301,7 +304,7 @@ exports.traverseProvenance = async (startTaskId) => {
                 for await (const datasetConfig of task.config.download) {
                     let dataset = await db.Datasets.findById(datasetConfig.dir).lean();
                     if(!dataset) {
-                        //console.error("couldn't find sca-product-raw dataset:", datasetConfig.dir, "in task:", task._id);
+                        //couldn't find sca-product-raw dataset
                         //let's fake a dataset using information from the output (maybe removed?)
                         if(task.config._outputs) {
                             dataset = task.config._outputs.find(o=>o.subdir == datasetConfig.dir);
@@ -309,7 +312,7 @@ exports.traverseProvenance = async (startTaskId) => {
                             //dataset.storage = "guess";
                         }
                     }
-                    if(!dataset) return;
+                    if(!dataset) continue;
 
                     if(dataset.archive_task_id) {
                         tasks.push(dataset.archive_task_id);
