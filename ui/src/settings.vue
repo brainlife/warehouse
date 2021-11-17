@@ -53,7 +53,6 @@
                         </b-col>
                     </b-row>
 
-                    <hr>
                     <h5>Public Profile</h5>
                     <p><small>The following information will be shared publically among all brainlife users.</small></p>
                     <b-row>
@@ -115,7 +114,6 @@
                         </b-col>
                     </b-row>
 
-                    <hr>
                     <h5>Private Profile</h5>
                     <p><small>The following information will be shared with your project members and brainlife administrators.
                             Brainlife.io is a NSF funded project and supported by Indiana University. 
@@ -223,7 +221,6 @@
             <div v-if="tabID == 'account'">
                 <b-container>
                     <h5>Change Password</h5>     
-                    <hr>           
                     <b-form @submit="changePassword" style="max-width: 700px">
                         <b-row>
                             <b-col cols="4">
@@ -264,7 +261,6 @@
 
                 <b-container v-if="user">
                     <h5>Account Association</h5>
-                    <hr>
                     <p>
                         <small>You can use the following 3rd party identity providers to login to your brainlife account instead of using brainlife's user/password.</small>
                     </p>
@@ -378,34 +374,39 @@
                             </b-col>
                             <b-modal size="xl" v-if="showModal" id='userEditmodal' ref='ref_modal'>
                                 <template #modal-header>
-                                    <h3>{{userEdit.sub}} {{userEdit.fullname}}</h3>
+                                    <h6>{{userEdit.fullname}} ({{userEditsub}})</h6>
                                 </template>
                                 <b-container>
                                     <b-form-group>
                                         <b-row>
                                             <b-col cols="12">
-                                                <editor v-if="rawJson" v-model="convertRawJSONtoUserEdit" @init="editorInit" lang="json" height="1000"/>
+                                                <editor v-if="rawJson" v-model="userEditJSON" @init="editorInit" lang="json" height="1000"/>
                                                 <b-row v-else-if="userEdit">
                                                     <b-col cols="6">
-                                                        <h4>Public Profile</h4>
+                                                        <h5>Public Profile</h5>
                                                         <span class="form-header">Institution</span>
                                                         <b-form-input v-if="userEdit.profile.public.institution" v-model="userEdit.profile.public.institution"></b-form-input>
-                                                        <span class="form-header">Bio</span>
-                                                        <b-form-textarea v-model="userEdit.profile.public.bio"></b-form-textarea>
-                                                        <h4 style="padding-top: 16px">Scope</h4>
+                                                        <span class="form-header">Biography</span>
+                                                        <b-form-textarea v-model="userEdit.profile.public.bio" row="3" max-rows="8"></b-form-textarea>
+                    
+                                                        <br>
+                                                        <h5>Scope</h5>
                                                         <div v-for="(value, propertyName, index) in permissionScope" :key="index">
                                                             <span class="form-header">{{propertyName}}</span>
                                                                 <div v-for="(val,pn,ind) in value" :key="ind">
-                                                                    <b-form-checkbox v-model="scopeModel[propertyName][pn]">{{val}} <b-badge> {{pn}} </b-badge></b-form-checkbox>
+                                                                    <b-form-checkbox v-model="scopeModel[propertyName][pn]">
+                                                                        <b-badge variant="outline-light">{{pn}}</b-badge><br>
+                                                                        <small>{{val}}</small>
+                                                                    </b-form-checkbox>
                                                                 </div>
                                                         </div>
                                                     </b-col>
                                                     <b-col cols="6">
-                                                        <h4>Private Profile</h4>
+                                                        <h5>Private Profile</h5>
                                                         <span class="form-header">Position</span>
                                                         <b-form-input v-model="userEdit.profile.private.position"></b-form-input>
                                                         <span class="form-header">Purpose</span>
-                                                        <b-form-textarea v-model="userEdit.profile.private.purpose"></b-form-textarea>
+                                                        <b-form-textarea v-model="userEdit.profile.private.purpose" rows="3" max-rows="8"></b-form-textarea>
                                                         <span class="form-header">Full Name</span>
                                                         <b-form-input v-if="userEdit.fullname" v-model="userEdit.fullname"/>
                                                         <span class="form-header">Username</span>
@@ -416,7 +417,8 @@
                                                             <b-form-checkbox v-model="userEdit.active">Active</b-form-checkbox>
                                                             <b-form-checkbox style="margin:auto" v-model="userEdit.email_confirmed">Confirmed</b-form-checkbox>
                                                         </div>
-                                                        <h4  style="padding-top: 16px">Associated Accounts</h4>
+                                                        <br>
+                                                        <h5>Associated Accounts</h5>
                                                         <span class="form-header">Google ID</span>
                                                         <b-form-input v-if="userEdit.ext" v-model="userEdit.ext.googleid"/>
                                                         <span class="form-header">Open ID</span>
@@ -435,10 +437,10 @@
                                 </b-container>
                                     <template #modal-footer="{cancel}">
                                         <div class="float-left mr-auto">
-                                            <b-button :pressed.sync="rawJson" size="sm" variant="primary">Show Raw Json</b-button>
+                                            <b-button :pressed.sync="rawJson" variant="primary">Show Raw Json</b-button>
                                         </div>
-                                        <b-button size="sm" variant="success" ref="okBTN" @click="submitUser">OK</b-button>
-                                        <b-button size="sm" variant="danger" @click="cancel()">Cancel</b-button>
+                                        <b-button variant="secondary" @click="cancel()">Cancel</b-button>
+                                        <b-button variant="primary" ref="okBTN" @click="submitUser">Submit</b-button>
                                     </template>
                             </b-modal>
                         </b-row>
@@ -553,7 +555,7 @@ export default {
             },
             passwordSuggestions: [],
             passwordWarning: "" ,
-            convertRawJSONtoUserEdit : null,
+            userEditJSON : null,
             scopeModel : {
                 "brainlife": {
                     "user" : false,
@@ -745,7 +747,7 @@ export default {
             };
             this.userEdit = Object.assign({}, this.userEdit, user);
             this.profile = JSON.stringify(user.profile, null, 4);
-            this.convertRawJSONtoUserEdit = JSON.stringify(user, null, 4);
+            this.userEditJSON = JSON.stringify(user, null, 4);
             // console.log(typeof user.scopes, user.scopes);
             for (const key in this.userEdit.scopes) {
                 // console.log(key);
@@ -785,7 +787,7 @@ export default {
         },
         submitUser(e) {
             e.preventDefault();
-            if(!this.checkValidJson(this.convertRawJSONtoUserEdit)) {
+            if(!this.checkValidJson(this.userEditJSON)) {
                 this.$notify({type: "error", text: "Json formatting Error"});
                 return;
             }
@@ -941,11 +943,11 @@ export default {
                 });
             }
         },
-        convertRawJSONtoUserEdit: function() {
-            this.userEdit = JSON.parse(this.convertRawJSONtoUserEdit||"{}");
+        userEditJSON: function() {
+            this.userEdit = JSON.parse(this.userEditJSON||"{}");
         },
         userEdit: function() {
-            this.convertRawJSONtoUserEdit = JSON.stringify(this.userEdit, null, 4);
+            this.userEditJSON = JSON.stringify(this.userEdit, null, 4);
         },
         queryUser: function() {
             this.applyFilterUser();
@@ -977,12 +979,11 @@ export default {
     background-color: white;
     border-bottom: 1px solid #eee;
 }
-h4 {
-    opacity: 0.8;
-}
 h5 {
-    margin-bottom: 20px;
+    padding-bottom: 10px;
+    margin-bottom: 10px;
     opacity: 0.7;
+    border-bottom: 1px solid #ddd;
 }
 .well {
     padding: 10px;
