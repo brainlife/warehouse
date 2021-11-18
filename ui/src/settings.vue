@@ -107,6 +107,9 @@ export default {
     margin-bottom: 20px;
     background-color: white;
     border-bottom: 1px solid #eee;
+    position: sticky;
+    top: 0;
+    z-index: 4;
 }
 
 /deep/ .container h5 {

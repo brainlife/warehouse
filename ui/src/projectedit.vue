@@ -1,5 +1,5 @@
 <template>
-<div class="projectedit">
+<div class="projectedit" v-if="project">
     <div class="page-header">
         <b-container>
             <!--
@@ -94,7 +94,7 @@
                     <span class="form-header">Administrators</span>
                 </b-col> 
                 <b-col cols="9">
-                    <contactlist v-model="project.admins"></contactlist>
+                    <contactlist v-model="project.admins"/>
                     <p class="text-muted"><small>Users who can update the project metadata, and groups</small></p>
                 </b-col>
             </b-row>
@@ -104,7 +104,7 @@
                     <span class="form-header">Members</span>
                 </b-col> 
                 <b-col cols="9">
-                    <contactlist v-model="project.members"></contactlist>
+                    <contactlist v-model="project.members"/>
                     <p class="text-muted"><small>Users who can update datasets in this project. Also for a private project: Users who can run Apps registered on this project.</small></p>     
                 </b-col>
             </b-row>
@@ -114,7 +114,7 @@
                     <span class="form-header">Guests</span>
                 </b-col> 
                 <b-col cols="9">
-                    <contactlist v-model="project.guests"></contactlist>
+                    <contactlist v-model="project.guests"/>
                     <p class="text-muted"><small>For Private project, users who has read access to datasets.</small></p>
                 </b-col>
             </b-row>
@@ -272,25 +272,9 @@ export default {
 
     data () {
         return {
-            project: {
-                _id: null, 
-                name: "New Project",
-                desc: "",
-                access: "private",
-                admins: [Vue.config.user.sub],
-                members: [],
-                agreements: [],
-
-                xnat: {
-                    enabled: false,
-                    scans: [],
-                },
-
-                //group_analysis: false,
-            },
-
             xnatTestResult: null,
 
+            project: null,
             participants: null,
             participants_columns: null,
 
@@ -341,6 +325,8 @@ export default {
                     find: JSON.stringify({_id: this.$route.params.id})
                 }}).then(res=>{
                     this.project = res.data.projects[0];
+                    console.log("loaded project");
+                    console.dir(this.project);
 
                     //initialize missing fields (mainly for backward compatibility)
                     if(!this.project.agreements) Vue.set(this.project, "agreements", []); 
@@ -360,6 +346,24 @@ export default {
             
             } else {
                 //new project
+                this.project = {
+                    _id: null, 
+                    name: "New Project",
+                    desc: "",
+                    access: "private",
+
+                    admins: [Vue.config.user.sub],
+                    members: [],
+                    guests: [],
+
+                    agreements: [],
+
+                    xnat: {
+                        enabled: false,
+                        scans: [],
+                    },
+                };
+
                 this.participants = JSON.stringify(participants_def, null, 4);
                 this.participants_columns = JSON.stringify(participants_columns_def, null, 4);
             } 

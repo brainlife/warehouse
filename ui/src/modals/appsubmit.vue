@@ -159,8 +159,7 @@ export default {
             this.form.config = {};
             this.form.advanced = {};
 
-            //load app detail
-            return this.$http.get('app', {params: {
+            this.$http.get('app', {params: {
                 find: JSON.stringify({_id}),
                 populate: 'inputs.datatype outputs.datatype',
                 limit: 1,

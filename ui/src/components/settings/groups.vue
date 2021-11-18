@@ -1,11 +1,11 @@
 <template>
 <div>
     <b-container>
-        <h5>Groups</h5>
         <!--
         <b-form-input v-model="queryGroup" type="text" placeholder="Search Groups" class="input"/>
         -->
-        <b-table :tbody-tr-class="rowClass" striped hover small 
+        <b-pagination v-model="currentPage" :total-rows="groups.length" :per-page="perPage" aria-controls="my-table"/>
+        <b-table :tbody-tr-class="rowClass" hover small 
             :items="groups" 
             :fields="fields" 
             :per-page="perPage" 
@@ -19,9 +19,10 @@
             <span class="form-header">Name</span>
             <b-form-input v-model="form.name"/>
             <span class="form-header">Admins</span>
-            <contactlist v-model="form.admins"></contactlist>
+            <contactlist v-model="form._admins"></contactlist>
             <span class="form-header">Members</span>
-            <contactlist type="text" v-model="form.members"></contactlist>
+            <contactlist type="text" v-model="form._members"></contactlist>
+            <small>* project admins/members are stored in project collection also</small>
             <span class="form-header">Description</span>
             <b-form-textarea v-model="form.desc" rows="8"/>
         </b-modal>
@@ -47,7 +48,7 @@ export default {
             groups: [],
             //filteredGroups: [],
 
-            fields: ["name", "desc", "admins", "members", "active"],
+            fields: ["id", "name", "desc", "admins", "members", "active"],
 
             form: null,
 
@@ -81,6 +82,11 @@ export default {
         selectGroup(group) {
             console.dir(group);
             this.form = JSON.parse(JSON.stringify(group)); //deep copy
+
+            //all service other than auth deals with sub in string
+            //we will update auth service to use string eventually 
+            this.form._members = this.form.members.map(m=>m.toString());
+            this.form._admins = this.form.admins.map(m=>m.toString());
         },
 
         closeModal() {
@@ -92,6 +98,10 @@ export default {
 
             //TODO validate?
 
+            //convert back to numbers
+            this.form.members = this.form._members.map(m=>parseInt(m));
+            this.form.admins = this.form._admins.map(m=>parseInt(m));
+
             if(this.form.id) {
                 //update
                 this.$http.put(Vue.config.auth_api+"/group/"+this.form.id,this.form).then(res=>{
@@ -100,14 +110,21 @@ export default {
                     const group = this.groups.find(g=>g._id == this.form._id);
                     Object.assign(group, this.form);
                     this.closeModal();
-                }).catch(console.error);                
+                }).catch(this.handleError);                
             } else {
                 //create new group
                 this.$http.post(Vue.config.auth_api+"/group/",this.form).then(res=>{
                     this.$notify({type: "success", text: res.data.message});
                     this.groups.push(this.form);
                     this.closeModal();
-                }).catch(console.error);
+                }).catch(this.handleError);
+            }
+        },
+
+        handleError(err) {
+            console.error(err);
+            if(err.response && err.response.data && err.response.data.message) {
+                this.$notify({type: "error", text: err.response.data.message});
             }
         },
 

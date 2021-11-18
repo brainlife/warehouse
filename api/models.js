@@ -37,6 +37,7 @@ var projectSchema = mongoose.Schema({
     //user who created this project 
     user_id: {type: String, index: true}, 
 
+    //auth service still uses number to store sub, we should eventually convert to string
     admins: [ String ], //list of users who can administer this project (co-PIs?)
     members: [ String ], //list of users who can read/write things under this project
     guests: [ String ], //(for private project) list of users who has read access to datasets
@@ -312,6 +313,7 @@ var datatypeSchema = mongoose.Schema({
     desc: String, 
     readme: String,  //in markdown
 
+    //auth service still uses number to store sub, we should eventually convert to string
     admins: [ String ], //list of users who can administer this datatype
     
     //file inventory for this datatype
@@ -615,6 +617,8 @@ exports.UIs = mongoose.model('UIs', UISchema);
 var appSchema = mongoose.Schema({
     user_id: String, //registrar of this application
     projects: [{type: mongoose.Schema.Types.ObjectId, ref: 'Projects'}], //projects that this app is members of
+
+    //auth service still uses number to store sub, we should eventually convert to string
     admins: [ String ], //list of users who can administer this app
     avatar: String, //url for app avatar
 

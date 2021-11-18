@@ -3,15 +3,15 @@
     <b-container>
         <b-row>
             <b-col>
-                <h5>Users</h5>
                 <!--<b-form-input v-model="query" type="text" placeholder="Search Users" class="input"/>-->
-                <b-table :tbody-tr-class="rowClass" ref="userTable" striped hover small
+                <b-pagination v-model="currentPage" :total-rows="users.length" :per-page="perPage" aria-controls="my-table"/>
+                <b-table :tbody-tr-class="rowClass" ref="userTable" hover small
                 :items="users" 
                 :fields="fields" 
                 :per-page="perPage" 
                 :current-page="currentPage" 
                 @row-clicked="select" v-b-modal.modal-useredit/>
-                <b-pagination v-model="currentPage" :total-rows="users.length" :per-page="perPage" aria-controls="my-table"></b-pagination>
+                <b-pagination v-model="currentPage" :total-rows="users.length" :per-page="perPage" aria-controls="my-table"/>
                 <p class="mt-3">Current Page: {{ currentPage }}</p>
             </b-col>
             <b-modal size="xl" id='modal-useredit' v-if="form">
@@ -186,12 +186,12 @@ export default {
         switchToUI() {
             const form = JSON.parse(this.json.toString());
             Object.assign(this.form, form);
-            this.writeBooleanScopes();
+            this.convertArrayScopesToBoolean();
             this.mode = "ui";
         },
 
         switchToJSON() {
-            this.readBooleanScopes();
+            this.convertBooleanScopesToArray();
             delete this.form._scopes;
             this.json = JSON.stringify(this.form, null, 4);
             this.mode = "json";
@@ -211,10 +211,10 @@ export default {
             if(!this.form.profile.public) this.form.profile.public = {};
             if(!this.form.profile.private) this.form.profile.private = {};
 
-            this.writeBooleanScopes();
+            this.convertArrayScopesToBoolean();
         },
 
-        writeBooleanScopes() {
+        convertArrayScopesToBoolean() {
             //construct alternative _scopes object to hold checkboxes
             this.form._scopes = {};
             for(const service in this.scopeCatalog) {
@@ -225,7 +225,7 @@ export default {
             } 
         },
 
-        readBooleanScopes() {
+        convertBooleanScopesToArray() {
             //convert checkboxes back to normal scopes
             for(const service in this.scopeCatalog) {
                 for(const key in this.scopeCatalog[service]) {
@@ -244,14 +244,14 @@ export default {
         },
 
         submitUser(e) {
-            e.preventDefault();
+            //e.preventDefault();
 
             //make sure we are in ui mode
             if(this.mode == "json") this.switchToUI();
 
             //TODO.. validate
 
-            this.readBooleanScopes();
+            this.convertBooleanScopesToArray();
 
             //this.form.ext.openids[0] = this.openids;
             this.$http.put(Vue.config.auth_api+"/user/"+this.form.sub, this.form).then(res=>{
@@ -262,7 +262,14 @@ export default {
                 const user = this.users.find(u=>u.sub == this.form.sub);
                 Object.assign(user, this.form);
 
-            }).catch(console.error);
+            }).catch(this.handleError);
+        },
+
+        handleError(err) {
+            console.error(err);
+            if(err.response && err.response.data && err.response.data.message) {
+                this.$notify({type: "error", text: err.response.data.message});
+            }
         },
 
         editorInit(editor) {

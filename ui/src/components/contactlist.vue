@@ -1,19 +1,20 @@
 <template>
-<div v-if="profiles">
-    <select2 style="width: 100%;" v-model="values" :options="profiles" :multiple="true"></select2>
-</div>
+<v-select v-if="profiles"
+    v-model.sync="values" 
+    :options="profiles" 
+    :reduce="p=>p.sub" 
+    label="label" 
+    multiple/>
 </template>
 
 <script>
 
 import Vue from 'vue'
-import select2 from '@/components/select2' //TODO - use vue-select instead
 
-let profiles = null;
+let profilesCache = null;
 
 export default {
     props: ['value'],
-    components: { select2 },
     data () {
         return {
             values: [],
@@ -22,26 +23,36 @@ export default {
     },
 
     watch: {
-        value: function(values) {
-            this.values = values; 
+        /*
+        value: function() {
+            this.values = this.value.splice();
         },
-        values: function(values) {
-            this.$emit('input', values);
-        }
+        */
+
+        values: function() {
+            this.$emit('input', this.values);
+        },
     },
 
     mounted: function() {
-        this.values = this.value; //init
+        if(this.value) this.values = this.value;
 
         //TODO I should let ui-select/async and let it "search" users
-        if(!profiles) profiles = this.$http.get(Vue.config.auth_api+'/profile/list', {params: {
+        if(!profilesCache) profilesCache = this.$http.get(Vue.config.auth_api+'/profile/list', {params: {
             find: JSON.stringify({active: true}),
             limit: 5000, 
         }});
-        profiles.then(res=>{
+
+        profilesCache.then(res=>{
             this.profiles = [];
             res.data.profiles.forEach(profile=>{
-                this.profiles.push({id: profile.sub, text: profile.fullname + "<"+profile.email+">"});
+                //auth service still uses number for sub, but we should eventually convert it 
+                //to use string warehouse stores sub in string.
+                //let's operate using string across all other services
+                this.profiles.push({
+                    sub: profile.sub.toString(), 
+                    label: profile.fullname + " <"+profile.email+">",
+                });
             });
         }, res=>{
             console.error(res);

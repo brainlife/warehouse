@@ -1,7 +1,8 @@
 <template>
 <div class="rightview" :class="{open}" v-if="!noRightView">
     <div class="icon" @click="toggle('doc')" :class="{active: $root.rightviewOpen == 'doc'}">
-        <icon name="book" scale="1.2"/>
+        <icon v-if="$root.rightviewOpen" name="chevron-right" scale="1.2" style="margin-left: 3px;"/>
+        <icon v-if="!$root.rightviewOpen" name="book" scale="1.2"/>
     </div>
 
     <div v-if="open">
