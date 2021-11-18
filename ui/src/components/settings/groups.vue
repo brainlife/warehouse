@@ -9,8 +9,18 @@
             :items="groups" 
             :fields="fields" 
             :per-page="perPage" 
-            :current-page="currentPage"  
-            @row-clicked="selectGroup" v-b-modal.modal-groupedit/>
+            :current-page="currentPage"
+            @row-clicked="selectGroup" v-b-modal.modal-groupedit>
+            <template #cell(active)="data">
+                <b-badge variant="success" v-if="data.item.active">✓</b-badge>
+            </template>
+            <template #cell(admins)="data">
+                <contact v-for="c in data.item.admins" :key="c._id" :id="c" size="tiny"/>
+            </template>
+            <template #cell(members)="data">
+                <contact v-for="c in data.item.members" :key="c._id" :id="c" size="tiny"/>
+            </template>
+        </b-table>
         <b-pagination v-model="currentPage" :total-rows="groups.length" :per-page="perPage" aria-controls="my-table"/>
         <p class="mt-3">Current Page: {{ currentPage }}</p>
 
@@ -41,6 +51,7 @@ import Vue from 'vue'
 export default {
     components: { 
         contactlist: ()=>import('@/components/contactlist'),
+        contact: ()=>import('@/components/contact'),
     },
 
     data () {
@@ -48,7 +59,7 @@ export default {
             groups: [],
             //filteredGroups: [],
 
-            fields: ["id", "name", "desc", "admins", "members", "active"],
+            fields: ["id", "active", "name", "desc", "admins", "members"],
 
             form: null,
 

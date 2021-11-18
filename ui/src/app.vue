@@ -60,7 +60,7 @@
                             <span style="opacity: 0.6; font-size: 80%" v-if="tasks.length > 0">{{tasks.length}}</span>
                         </template>
                     </b-tab>
-                    <b-tab v-if="config.hasRole('tester', 'brainlife')">
+                    <b-tab><!-- v-if="config.hasRole('tester', 'brainlife')">-->
                         <template v-slot:title>
                             Example Workflow
                             <span style="opacity: 0.6; font-size: 80%">{{app.stats.examples||0}}</span>

@@ -10,7 +10,11 @@
                 :fields="fields" 
                 :per-page="perPage" 
                 :current-page="currentPage" 
-                @row-clicked="select" v-b-modal.modal-useredit/>
+                @row-clicked="select" v-b-modal.modal-useredit>
+                <template #cell(active)="data">
+                    <b-badge variant="success" v-if="data.item.active">✓</b-badge>
+                </template>
+                </b-table>
                 <b-pagination v-model="currentPage" :total-rows="users.length" :per-page="perPage" aria-controls="my-table"/>
                 <p class="mt-3">Current Page: {{ currentPage }}</p>
             </b-col>
@@ -109,9 +113,15 @@ export default {
 
             currentPage: 1,
             perPage: 50,
-            fields: ["sub", "fullname", "username", "active", "email", 
-                    {key: 'profile.public.institution',label: 'instituition'}, 
-                    {key: 'profile.private.position',label: "position"}],
+            fields: [
+                "sub", 
+                "username", 
+                "fullname", 
+                "active", 
+                "email", 
+                {key: 'profile.public.institution',label: 'instituition'}, 
+                {key: 'profile.private.position',label: "position"}
+            ],
 
             scopeCatalog: {
                 "brainlife": {
