@@ -86,10 +86,13 @@
                             <span class="form-header">Owner</span>
                         </b-col>
                         <b-col>
-                            <small>User who registered this resource and can administer this resource</small>
+                            <p>
+                                <small>User who registered this resource and can administer this resource</small>
+                            </p>
                             <p>
                                 <contact :id="resource.user_id"/>
                             </p>
+                            <br>
                         </b-col>
                     </b-row>
 
@@ -98,10 +101,13 @@
                             <span class="form-header">Admins</span>
                         </b-col>
                         <b-col>
-                            <small>Users who can edit this resource</small>
+                            <p>
+                                <small>Users who can administer this resource</small>
+                            </p>
                             <p v-for="c in resource.admins" :key="c._id">
                                 <contact :id="c"/>
                             </p>
+                            <br>
                         </b-col>
                     </b-row>
 
@@ -430,8 +436,8 @@ export default {
                         },
                     },
                     //font: Vue.config.plotly.font,
-                    plot_bgcolor: "#fff0",
-                    paper_bgcolor: "#fff0",
+                    //plot_bgcolor: "#fff",
+                    //paper_bgcolor: "#fff",
                 };
             }).catch(console.error);
         },

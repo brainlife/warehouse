@@ -1,5 +1,5 @@
 <template>
-<div>
+<div v-if="resource">
     <div class="page-header">
         <b-container>
             <h4 style="margin-right: 150px">{{resource.name||'No name'}}</h4>
@@ -235,18 +235,7 @@ export default {
     },
     data () {
         return {
-            resource: {
-                _id: null, 
-                active: true,
-                admins: [Vue.config.user.sub],
-                name: "",
-                avatar: "",
-                config: {
-                    desc: "",
-                    services: [],
-                    maxtask: 1,
-                },
-            },
+            resource: null,
 
             envs_: "",
             //global: false, 
@@ -261,6 +250,18 @@ export default {
     },
 
     mounted: function() {
+
+        //load all apps service names
+        this.$http.get("app", {params: {
+            select: "github",
+            limit: 1000,
+        }}).then(res=>{
+            this.service_names = res.data.apps.map(app=>app.github);
+            this.service_names = [...new Set(this.service_names)]; //debupe
+            this.service_names = this.service_names.filter(name=>name && name.includes("/")); //remove odd looking service names
+            this.service_names.sort();
+        });
+
         if(this.$route.params.id !== '_') {
             //TODO use resource_cache mixin?
             this.$http.get(Vue.config.amaretti_api+'/resource', {params: {
@@ -271,17 +272,20 @@ export default {
             });
         } else {
             this.reset_sshkey();
+            this.resource = {
+                _id: null, 
+                active: true,
+                admins: [Vue.config.user.sub],
+                name: "untitled",
+                avatar: "",
+                config: {
+                    desc: "",
+                    services: [],
+                    maxtask: 1,
+                },
+            };
         }
 
-        this.$http.get("app", {params: {
-            select: "github",
-            limit: 1000, //TODO - do something smarter
-        }}).then(res=>{
-            this.service_names = res.data.apps.map(app=>app.github);
-            this.service_names = [...new Set(this.service_names)]; //debupe
-            this.service_names = this.service_names.filter(name=>name && name.includes("/")); //remove odd looking service names
-            this.service_names.sort();
-        });
     },
 
     methods: {
@@ -374,10 +378,10 @@ export default {
 
 <style scoped>
 .page-header {
-padding: 10px 20px;    
+    padding: 10px 20px;    
 }
 .page-header h4 {
-opacity: 0.8;
+    opacity: 0.8;
 }
 </style>
 

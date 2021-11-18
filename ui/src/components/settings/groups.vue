@@ -15,10 +15,10 @@
                 <b-badge variant="success" v-if="data.item.active">✓</b-badge>
             </template>
             <template #cell(admins)="data">
-                <contact v-for="c in data.item.admins" :key="c._id" :id="c" size="tiny"/>
+                <contact v-for="c in data.item.admins" :key="c._id" :id="c.toString()" size="tiny"/>
             </template>
             <template #cell(members)="data">
-                <contact v-for="c in data.item.members" :key="c._id" :id="c" size="tiny"/>
+                <contact v-for="c in data.item.members" :key="c._id" :id="c.toString()" size="tiny"/>
             </template>
         </b-table>
         <b-pagination v-model="currentPage" :total-rows="groups.length" :per-page="perPage" aria-controls="my-table"/>
