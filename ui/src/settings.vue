@@ -77,6 +77,7 @@ export default {
                 });
             }
         },
+
     },
 
     computed: {
@@ -108,7 +109,7 @@ export default {
     border-bottom: 1px solid #eee;
 }
 
-.container h5 {
+/deep/ .container h5 {
     padding-bottom: 10px;
     margin-bottom: 10px;
     opacity: 0.7;
