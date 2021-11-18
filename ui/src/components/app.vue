@@ -137,7 +137,6 @@ export default {
 
         click() {
             if(this.clickable) {
-                console.log("rerounting to "+this.app_._id);
                 this.$router.push('/app/'+this.app_._id);
                 this.$emit("open", this.app_._id);
             }

@@ -436,7 +436,6 @@ export default {
             }
         },
         tab: function() {
-            console.log(this.$route.params.tab,this.tabs[this.tab].id);
             if(this.$route.params.tab != this.tabs[this.tab].id) {
                 this.$router.replace("/app/"+this.app._id+"/"+this.tabs[this.tab].id);
             }
@@ -539,7 +538,6 @@ export default {
         },
 
         handleRouteParams() {
-            console.log("handleRouteParams", this.$route.params);
             let tab_id = this.$route.params.tab;
             if(tab_id) this.tab = this.tabs.findIndex(tab=>tab.id == tab_id);
         },

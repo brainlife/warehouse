@@ -81,7 +81,6 @@ export default new Router({
             sidemenu: "app",
             mode: "copy",
         }},
-
         {path: '/app/:id/:tab?', component: app, meta: {
             public: true, 
             sidemenu: "app",
@@ -205,11 +204,6 @@ export default new Router({
         {path: '/settings/:tab?', component: settings, meta: {
             sidemenu: "setting",       
         }},
-
-        {path: '/settings/:tab?', component: settings, meta: {
-            sidemenu: "setting",       
-        }},
-
 
         {path: '/test', component: test, meta: {
             sidemenu: null,

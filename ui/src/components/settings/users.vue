@@ -1,0 +1,288 @@
+<template>
+<div>
+    <b-container>
+        <b-row>
+            <b-col>
+                <h5>Users</h5>
+                <!--<b-form-input v-model="query" type="text" placeholder="Search Users" class="input"/>-->
+                <b-table :tbody-tr-class="rowClass" ref="userTable" striped hover small
+                :items="users" 
+                :fields="fields" 
+                :per-page="perPage" 
+                :current-page="currentPage" 
+                @row-clicked="select" v-b-modal.modal-useredit/>
+                <b-pagination v-model="currentPage" :total-rows="users.length" :per-page="perPage" aria-controls="my-table"></b-pagination>
+                <p class="mt-3">Current Page: {{ currentPage }}</p>
+            </b-col>
+            <b-modal size="xl" id='modal-useredit' v-if="form">
+                <template #modal-header>
+                    <h5 style="margin-bottom: 0;">{{form.fullname}} <small style="float: right">{{form.sub}}</small></h5>
+                    <div class="button" @click="closeModal()" style="float: right">
+                        <icon name="times" scale="1.5"/>
+                    </div>
+                </template>
+                <editor v-if="mode == 'json'" v-model="json" @init="editorInit" lang="json" height="500"/>
+                <div v-if="mode == 'ui'">
+                    <b-row>
+                        <b-col cols="6">
+                            <b-row>
+                                <b-col cols="6"><b-form-checkbox v-model="form.active">Active</b-form-checkbox></b-col>
+                                <b-col cols="6"><b-form-checkbox style="margin:auto" v-model="form.email_confirmed">Confirmed</b-form-checkbox></b-col>
+                            </b-row>
+                            <span class="form-header">Full Name</span>
+                            <b-form-input v-if="form.fullname" v-model="form.fullname"/>
+                            <span class="form-header">Username</span>
+                            <b-form-input v-if="form.username" v-model="form.username"/>
+                            <span class="form-header">Email</span>
+                            <b-form-input v-if="form.email" v-model="form.email"/>
+
+                            <br>
+                            <h5>Scope</h5>
+                            <div v-for="(info, service, index) in scopeCatalog" :key="index">
+                                <span class="form-header">{{service}}</span>
+                                    <div v-for="(desc,key,ind) in info" :key="ind">
+                                        <b-form-checkbox v-model="form._scopes[service][key]">
+                                            <b-badge variant="outline-light">{{key}}</b-badge><br>
+                                            <small>{{desc}}</small>
+                                        </b-form-checkbox>
+                                    </div>
+                            </div>
+                        </b-col>
+                        <b-col cols="6">
+                            <h5>Private Profile</h5>
+                            <span class="form-header">Position</span>
+                            <b-form-input v-model="form.profile.private.position"></b-form-input>
+                            <span class="form-header">Purpose</span>
+                            <b-form-textarea v-model="form.profile.private.purpose" rows="3" max-rows="8"></b-form-textarea>
+                            <br>
+                            <h5>Public Profile</h5>
+                            <span class="form-header">Institution</span>
+                            <b-form-input v-model="form.profile.public.institution"></b-form-input>
+                            <span class="form-header">Biography</span>
+                            <b-form-textarea v-model="form.profile.public.bio" row="3" max-rows="8"></b-form-textarea>
+
+                            <br>
+                            <h5>Associated Accounts</h5>
+                            <span class="form-header">Google</span>
+                            <b-form-input v-if="form.ext" v-model="form.ext.googleid"/>
+                            <span class="form-header">ORCID</span>
+                            <b-form-input v-if="form.ext" v-model="form.ext.orcid"/>
+                            <span class="form-header">Globus</span>
+                            <b-form-input v-if="form.ext" v-model="form.ext.globus"/>
+                            <span class="form-header">Github</span>
+                            <b-form-input v-if="form.ext" v-model="form.ext.github"/>
+                            <hr>
+                            <h5>Times</h5>
+                            <pre style="font-size: 80%">{{form.times}}</pre>
+                        </b-col>
+                    </b-row>
+                </div>
+
+                <template #modal-footer="{cancel}">
+                    <div class="float-left mr-auto">
+                        <b-button v-if="mode == 'ui'" @click="switchToJSON" variant="secondary">Show JSON</b-button>
+                        <b-button v-if="mode == 'json'" @click="switchToUI" variant="secondary">Show UI</b-button>
+                    </div>
+                    <b-button variant="secondary" @click="cancel()">Cancel</b-button>
+                    <b-button variant="primary" ref="okBTN" @click="submitUser">Submit</b-button>
+                </template>
+            </b-modal>
+        </b-row>
+    </b-container>
+</div>
+
+</template>
+
+<script>
+
+import Vue from 'vue'
+
+export default {
+    components: { 
+        editor: ()=>import('vue2-ace-editor'),
+    },
+
+    data () {
+        return {
+            users: [],
+
+
+            currentPage: 1,
+            perPage: 50,
+            fields: ["sub", "fullname", "username", "active", "email", 
+                    {key: 'profile.public.institution',label: 'instituition'}, 
+                    {key: 'profile.private.position',label: "position"}],
+
+            scopeCatalog: {
+                "brainlife": {
+                    "user" : "Basic user privileges given to all new users by default",
+                    "admin" : "Allows user to perform administrative tasks for brainlife in general"
+                },
+                "warehouse": {
+                    "admin" : "Allows user to perform administrative tasks specific to warehouse service",
+                    "datatype.create" : "Allows user to register new datatype"
+                },
+                "amaretti": {
+                    "admin" : "Allows user to perform administrative tasks on amaretti service",
+                    "resource.create" : "Allows user to register new resource"
+                },
+                "auth": {
+                    "admin" : "Allows user to perform administrative tasks on authorization service"
+                }
+            },
+
+            //query: "",
+
+            mode: "ui",
+            form: null,
+            json : null,
+
+            config: Vue.config,
+        }
+    },
+
+    mounted() {
+        //TODO - only load users in the page
+        this.$http.get(Vue.config.auth_api+"/users").then(res=>{
+            this.users = res.data;
+        }).catch(err=>{
+            console.error(err.response);
+            this.$notify({type: "error", text: err});
+        });
+    },
+
+    methods: {
+        closeModal() {
+            this.$root.$emit('bv::hide::modal', 'modal-useredit')
+        },
+
+        rowClass(item, type) {
+            if (!item || type !== 'row') return;
+            if(this.form && this.form._id == item._id) return 'table-primary';
+        },
+
+        /*
+        changeQueryDebounceUser() {
+            clearTimeout(queryDebounceUser);
+            queryDebounceUser = setTimeout(()=>{
+                this.applyFilterUser();
+            }, 300);        
+        },
+        applyFilterUser() {
+            let tokens = this.query.toLowerCase().split(" ");
+            this.filteredUsers = this.users.filter(user=>{
+                let stuff = [
+                    user.fullname,
+                    user.username,
+                    user.email
+                ];
+                const text = stuff.filter(thing=>!!thing).join(" ").toLowerCase();
+                return tokens.every(token=>text.includes(token));
+            });
+
+        },
+        */
+
+        switchToUI() {
+            const form = JSON.parse(this.json.toString());
+            Object.assign(this.form, form);
+            this.writeBooleanScopes();
+            this.mode = "ui";
+        },
+
+        switchToJSON() {
+            this.readBooleanScopes();
+            delete this.form._scopes;
+            this.json = JSON.stringify(this.form, null, 4);
+            this.mode = "json";
+        },
+
+        select(user) {
+            console.dir(user);
+
+            this.form = JSON.parse(JSON.stringify(user)); //copy
+            this.mode = "ui";
+
+            //TODO - handle openids
+            //this.openids = user.ext.openids[0] || " ";
+
+            //for really old users
+            if(!this.form.profile) this.form.profile = {};
+            if(!this.form.profile.public) this.form.profile.public = {};
+            if(!this.form.profile.private) this.form.profile.private = {};
+
+            this.writeBooleanScopes();
+        },
+
+        writeBooleanScopes() {
+            //construct alternative _scopes object to hold checkboxes
+            this.form._scopes = {};
+            for(const service in this.scopeCatalog) {
+                this.form._scopes[service] = {};
+                for(const key in this.scopeCatalog[service]) {
+                    this.form._scopes[service][key] = (this.form.scopes[service] && this.form.scopes[service].includes(key));
+                }  
+            } 
+        },
+
+        readBooleanScopes() {
+            //convert checkboxes back to normal scopes
+            for(const service in this.scopeCatalog) {
+                for(const key in this.scopeCatalog[service]) {
+                    if(!this.form.scopes[service]) this.form.scopes[service] = [];
+                    const tags = this.form.scopes[service];
+                    if(this.form._scopes[service][key]) {
+                        //make sure it's set
+                        if(!tags.includes(key)) tags.push(key);
+                    } else {
+                        //make sure it's not set
+                        const idx = tags.indexOf(key);
+                        if(~idx) tags.splice(idx, 1);
+                    }
+                }  
+            } 
+        },
+
+        submitUser(e) {
+            e.preventDefault();
+
+            //make sure we are in ui mode
+            if(this.mode == "json") this.switchToUI();
+
+            //TODO.. validate
+
+            this.readBooleanScopes();
+
+            //this.form.ext.openids[0] = this.openids;
+            this.$http.put(Vue.config.auth_api+"/user/"+this.form.sub, this.form).then(res=>{
+                this.$notify({type: "success", text: res.data.message});
+
+                this.closeModal();
+
+                const user = this.users.find(u=>u.sub == this.form.sub);
+                Object.assign(user, this.form);
+
+            }).catch(console.error);
+        },
+
+        editorInit(editor) {
+            require('brace/mode/json')
+            editor.container.style.lineHeight = 1.25;
+            editor.renderer.updateFontSize();
+        },
+    },
+}
+</script>
+
+<style scoped>
+.container h5 {
+    padding-bottom: 10px;
+    margin-bottom: 10px;
+    opacity: 0.7;
+    border-bottom: 1px solid #ddd;
+}
+.form-header {
+    margin-top: 7px;
+}
+</style>
+
