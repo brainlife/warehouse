@@ -3,7 +3,6 @@
     <div class="page-header">
         <h4>Administration</h4>
     </div>
-
     <b-tabs class="brainlife-tab" v-model="tab">
         <b-tab title="Task"> 
             <br>
