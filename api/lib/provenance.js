@@ -6,7 +6,7 @@ const db = require('../models');
 const mongoose = require('mongoose');
 const common = require('../common');
 
-const mc = require('markov-clustering'); //obsoleted
+//const mc = require('markov-clustering'); //obsoleted
 const dbscan = require('@cdxoo/dbscan');
 
 const math = require('mathjs');
@@ -903,6 +903,7 @@ exports.cluster = (provs)=>{
         return dist;
     }
 
+    /*
     const matrix = [];
     provs.forEach((p1, p1idx)=>{
         matrix[p1idx] = [];
@@ -916,7 +917,6 @@ exports.cluster = (provs)=>{
     //console.log("similarity matrix...");
     //console.dir(matrix);
 
-    /*
     //convert it to transition probability matrix
     //see page 10 https://sites.cs.ucsb.edu/~xyan/classes/CS595D-2009winter/MCL_Presentation2.pdf
     provs.forEach((p1, col)=>{
@@ -932,7 +932,6 @@ exports.cluster = (provs)=>{
             matrix[row][col] = v/sum;
         }); 
     });
-    */
 
     console.log("probability matrix...");
     console.dir(matrix);
@@ -957,16 +956,16 @@ exports.cluster = (provs)=>{
 
     console.dir("(deduped) clusters..");
     console.dir(dedupedClusters);
-    //return dedupedClusters;
+    */
 
-    console.log("using dbscan");
-    const clusters2 = dbscan({
+    console.log("clustering with dbscan");
+    const clusters = dbscan({
         dataset: provs,
         epsilon: 1.1,
         distanceFunction: computeDistance,
     });
-    console.dir(clusters2);
-    return clusters2.clusters;
+    console.dir(clusters);
+    return clusters.clusters;
 }
 
 //populate datatype / project info
