@@ -1,6 +1,7 @@
 <template>
 <div>
     <div class="page-content" ref="scrolled">
+        <!--
         <div class="header">
             <b-container>
                 <h2>Resources</h2>
@@ -9,15 +10,12 @@
                 </p>
             </b-container>
         </div>
+        -->
 
         <div v-if="my_resources.length > 0">
             <h4 class="header-sticky"><b-container>My Resources</b-container></h4> 
             <b-container>
-                <b-row no-gutters>
-                <b-col cols="6" v-for="resource in my_resources" :key="resource._id">
-                    <resource class="resource" :resource="resource"/>
-                </b-col>
-                </b-row>
+                <resource v-for="resource in my_resources" :key="resource._id" class="resource" :resource="resource"/>
             </b-container>
         </div>
         <br>
@@ -26,16 +24,15 @@
         <h4 class="header-sticky"><b-container>Shared Resources</b-container></h4> 
         <b-container>
             <p>
-                <small>The following resources are shared among all Brainlife users.</small>
+                The following resources are shared among all Brainlife users.
             </p>
-            <b-row no-gutters>
-            <b-col cols="6" v-for="resource in shared_resources" :key="resource._id">
-                <resource class="resource" :resource="resource"/>
-            </b-col>
-            </b-row>
+            <resource v-for="resource in shared_resources" :key="resource._id" class="resource" :resource="resource"/>
+            <br>
+            <br>
+            <p>
+                To register your own resources, please see <a href="https://brainlife.io/docs/resources/register/" target="doc">Registering Resources</a>.
+            </p>
         </b-container>
-        <br>
-        <br>
         <br>
         <br>
 
@@ -97,7 +94,7 @@ export default {
         });
         this.$http.get(Vue.config.amaretti_api+'/resource', {params: {
             find, 
-            select: 'resource_id config.desc config.maxtask name citation status status_msg lastok_date active gids stats'
+            select: 'resource_id config.desc config.maxtask name citation status status_msg lastok_date active gids stats avatar'
         }}).then(res=>{
             this.resources = res.data.resources;
         }).catch(console.error);
@@ -113,44 +110,39 @@ export default {
 
 <style scoped>
 .page-content {
-top: 0px;
+    top: 0px;
 }
 .page-content h2 {
-margin-bottom: 0px;
-padding: 10px 0px;
-font-size: 20pt;
-}
-.page-content h3 {
-background-color: white;
-color: gray;
-padding: 20px;
-margin-bottom: 0px;
+    margin-bottom: 0px;
+    padding: 10px 0px;
+    font-size: 20pt;
 }
 .page-content h4 {
-padding: 15px 20px;
-background-color: white;
-opacity: 0.8;
-color: #999;
-font-size: 17pt;
-font-weight: bold;
+    padding: 15px 20px;
+    background-color: white;
+    opacity: 0.8;
+    color: #999;
+    font-size: 17pt;
+    font-weight: bold;
 }
 .header {
-padding: 10px;
-background-color: white;
-border-bottom: 1px solid #eee;
+    padding: 10px;
+    background-color: white;
+    border-bottom: 1px solid #eee;
 }
 h4.header-sticky {
-position: sticky;
-top: 0px;
-z-index: 2;
-box-shadow: 0 0 1px #ccc;
-padding-top: 12px;
-height: 50px;
+    position: sticky;
+    top: 0px;
+    z-index: 2;
+    box-shadow: 0 0 1px #ccc;
+    padding-top: 12px;
+    height: 50px;
 }
 .resource {
-margin-bottom: 5px;
-margin-right: 5px;
-box-shadow: 2px 2px 3px rgba(0,0,0,0.1);
+    border-bottom: 1px solid #0001;
+}
+.container p {
+    margin-left: 20px;
 }
 </style>
 

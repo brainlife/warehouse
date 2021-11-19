@@ -889,7 +889,7 @@ exports.storage_systems.xnat = {
     test: cb=>{
         console.log("xnat storage test - todo");
         cb();
-    }, 
+    },
 
     stat: (dataset, cb)=>{
         cb();
@@ -900,7 +900,7 @@ exports.storage_systems.xnat = {
     },
 
     download: (dataset, cb)=>{
-        let url = dataset.storage_config.url; 
+        let url = dataset.storage_config.url;
         /*
         let path = dataset.project+"/"+dataset._id+".tar";
         let stream = request.get({
@@ -920,7 +920,7 @@ exports.storage_systems.xnat = {
             cb(null, res.data, dataset._id+".DICOM.zip");
         });
     },
-} 
+}
 
 //config used to backup data from warehouse 
 exports.sda = {

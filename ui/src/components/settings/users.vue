@@ -4,19 +4,20 @@
         <b-row>
             <b-col>
                 <!--<b-form-input v-model="query" type="text" placeholder="Search Users" class="input"/>-->
-                <b-pagination v-model="currentPage" :total-rows="users.length" :per-page="perPage" aria-controls="my-table"/>
-                <b-table :tbody-tr-class="rowClass" ref="userTable" hover small
-                :items="users" 
-                :fields="fields" 
-                :per-page="perPage" 
-                :current-page="currentPage" 
-                @row-clicked="select" v-b-modal.modal-useredit>
-                <template #cell(active)="data">
-                    <b-badge variant="success" v-if="data.item.active">✓</b-badge>
-                </template>
-                </b-table>
-                <b-pagination v-model="currentPage" :total-rows="users.length" :per-page="perPage" aria-controls="my-table"/>
-                <p class="mt-3">Current Page: {{ currentPage }}</p>
+                <div style="background-color: white; padding: 10px;">
+                    <b-pagination v-model="currentPage" :total-rows="users.length" :per-page="perPage" aria-controls="my-table"/>
+                    <b-table :tbody-tr-class="rowClass" ref="userTable" hover small
+                    :items="users" 
+                    :fields="fields" 
+                    :per-page="perPage" 
+                    :current-page="currentPage" 
+                    @row-clicked="select" v-b-modal.modal-useredit>
+                    <template #cell(active)="data">
+                        <b-badge variant="success" v-if="data.item.active">✓</b-badge>
+                    </template>
+                    </b-table>
+                    <b-pagination v-model="currentPage" :total-rows="users.length" :per-page="perPage" aria-controls="my-table"/>
+                </div>
             </b-col>
             <b-modal size="xl" id='modal-useredit' v-if="form">
                 <template #modal-header>
@@ -100,6 +101,8 @@
 <script>
 
 import Vue from 'vue'
+
+const lib = require('@/lib');
 
 export default {
     components: { 
@@ -283,9 +286,9 @@ export default {
         },
 
         editorInit(editor) {
-            require('brace/mode/json')
-            editor.container.style.lineHeight = 1.25;
-            editor.renderer.updateFontSize();
+            lib.editorInit(editor, ()=>{
+                //nothing to add..
+            });
         },
     },
 }

@@ -4,25 +4,26 @@
         <!--
         <b-form-input v-model="queryGroup" type="text" placeholder="Search Groups" class="input"/>
         -->
-        <b-pagination v-model="currentPage" :total-rows="groups.length" :per-page="perPage" aria-controls="my-table"/>
-        <b-table :tbody-tr-class="rowClass" hover small 
-            :items="groups" 
-            :fields="fields" 
-            :per-page="perPage" 
-            :current-page="currentPage"
-            @row-clicked="selectGroup" v-b-modal.modal-groupedit>
-            <template #cell(active)="data">
-                <b-badge variant="success" v-if="data.item.active">✓</b-badge>
-            </template>
-            <template #cell(admins)="data">
-                <contact v-for="c in data.item.admins" :key="c._id" :id="c.toString()" size="tiny"/>
-            </template>
-            <template #cell(members)="data">
-                <contact v-for="c in data.item.members" :key="c._id" :id="c.toString()" size="tiny"/>
-            </template>
-        </b-table>
-        <b-pagination v-model="currentPage" :total-rows="groups.length" :per-page="perPage" aria-controls="my-table"/>
-        <p class="mt-3">Current Page: {{ currentPage }}</p>
+        <div style="background-color: white; padding: 10px;">
+            <b-pagination v-model="currentPage" :total-rows="groups.length" :per-page="perPage" aria-controls="my-table"/>
+            <b-table :tbody-tr-class="rowClass" hover small 
+                :items="groups" 
+                :fields="fields" 
+                :per-page="perPage" 
+                :current-page="currentPage"
+                @row-clicked="selectGroup" v-b-modal.modal-groupedit>
+                <template #cell(active)="data">
+                    <b-badge variant="success" v-if="data.item.active">✓</b-badge>
+                </template>
+                <template #cell(admins)="data">
+                    <contact v-for="c in data.item.admins" :key="c._id" :id="c.toString()" size="tiny"/>
+                </template>
+                <template #cell(members)="data">
+                    <contact v-for="c in data.item.members" :key="c._id" :id="c.toString()" size="tiny"/>
+                </template>
+            </b-table>
+            <b-pagination v-model="currentPage" :total-rows="groups.length" :per-page="perPage" aria-controls="my-table"/>
+        </div>
 
         <b-modal v-if="form" id="modal-groupedit" :title="form.name||'(Untitled)'" @ok="submit">
             <b-form-checkbox v-model="form.active">Active</b-form-checkbox>

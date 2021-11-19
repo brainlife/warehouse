@@ -49,11 +49,27 @@
                         <img v-if="resource.avatar" :src="resource.avatar" style="float: right; position: relative; top: -15px; margin-left: 15px;" width="150px" height="150px">
                         <p>
                             <b-badge pill class="bigpill">
-                                <icon name="calendar" style="opacity: 0.4;"/> <small>Registered</small>&nbsp;&nbsp;{{new Date(resource.create_date).toLocaleDateString()}}
+                                <icon name="calendar"/> <small>Registered</small>&nbsp;&nbsp;{{new Date(resource.create_date).toLocaleDateString()}}
                             </b-badge>
                             <b-badge pill class="bigpill" title="Number of tasks currently running on this resource" v-if="tasksRunning">
-                                <icon name="play" style="opacity: 0.4;"/>&nbsp;&nbsp;&nbsp;{{tasksRunning.length}}&nbsp;&nbsp;<small>Running / {{resource.config.maxtask}} max</small>
+                                <icon name="play"/>&nbsp;&nbsp;&nbsp;{{tasksRunning.length}}&nbsp;&nbsp;<small>Running / {{resource.config.maxtask}} max</small>
                             </b-badge>
+
+                            <b-badge pill class="bigpill">
+                                <icon name="check"/>&nbsp;
+                                {{resource.stats.total.finished|formatNumber}} <span style="opacity: 0.5">Finished</span>
+                            </b-badge>
+                            <!--
+                            <b-badge pill class="bigpill">
+                                <icon name="th-large"/>&nbsp;
+                                {{resource.stats.total.running}} Running
+                            </b-badge>
+                            -->
+                            <b-badge pill class="bigpill">
+                                <icon name="exclamation-circle"/>&nbsp;
+                                {{resource.stats.total.failed|formatNumber}} <span style="opacity: 0.5">Failed</span>
+                            </b-badge>
+    
                         </p>
                         <p style="line-height: 180%">{{resource.config.desc||'no description'}}</p>
                         <p style="margin-bottom: 0;">
@@ -302,6 +318,8 @@ import statustag from '@/components/statustag'
 import stateprogress from '@/components/stateprogress'
 import taskRecord from '@/components/taskrecord'
 
+const lib = require('@/lib');
+
 export default {
     components: { 
         pageheader, 
@@ -465,10 +483,9 @@ export default {
         },
 
         editorInit(editor) {
-            require('brace/mode/json')
-            editor.container.style.lineHeight = 1.25;
-            editor.renderer.updateFontSize();
-            editor.setReadOnly(true);
+            lib.editorInit(editor, ()=>{
+                editor.setReadOnly(true);
+            });
         },
 
         edit() {

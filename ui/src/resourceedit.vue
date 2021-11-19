@@ -271,7 +271,6 @@ export default {
                 this.envs_ = JSON.stringify(this.resource.envs, null, 4);
             });
         } else {
-            this.reset_sshkey();
             this.resource = {
                 _id: null, 
                 active: true,
@@ -284,6 +283,7 @@ export default {
                     maxtask: 1,
                 },
             };
+            this.reset_sshkey();
         }
 
     },

@@ -6,7 +6,9 @@ const db = require('../models');
 const mongoose = require('mongoose');
 const common = require('../common');
 
-const mc = require('markov-clustering');
+const mc = require('markov-clustering'); //obsoleted
+const dbscan = require('@cdxoo/dbscan');
+
 const math = require('mathjs');
 
 exports.traverseProvenance = async (startTaskId) => {
@@ -900,6 +902,7 @@ exports.cluster = (provs)=>{
         }
         return dist;
     }
+
     const matrix = [];
     provs.forEach((p1, p1idx)=>{
         matrix[p1idx] = [];
@@ -954,7 +957,16 @@ exports.cluster = (provs)=>{
 
     console.dir("(deduped) clusters..");
     console.dir(dedupedClusters);
-    return dedupedClusters;
+    //return dedupedClusters;
+
+    console.log("using dbscan");
+    const clusters2 = dbscan({
+        dataset: provs,
+        epsilon: 1.1,
+        distanceFunction: computeDistance,
+    });
+    console.dir(clusters2);
+    return clusters2.clusters;
 }
 
 //populate datatype / project info

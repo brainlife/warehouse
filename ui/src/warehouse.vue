@@ -592,7 +592,7 @@ pre {
     border: 1px solid #ddd; 
     padding: 4px 15px; 
     opacity: 0.7;
-    color: black;
+    color: #444;
     height: 26px;
 }
 .bigpill svg {

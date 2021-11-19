@@ -255,6 +255,8 @@ import tageditor from '@/components/tageditor'
 
 import datatypes from '@/mixins/datatypes'
 
+const lib = require('@/lib');
+
 export default {
     mixins: [ datatypes ],
     components: { 
@@ -406,9 +408,9 @@ export default {
         },
 
         editorInit(editor) {
-            require('brace/mode/json')
-            editor.container.style.lineHeight = 1.25;
-            editor.renderer.updateFontSize();
+            lib.editorInit(editor, ()=>{
+                //nothing else to load
+            });
         },
 
         submit(evt) {

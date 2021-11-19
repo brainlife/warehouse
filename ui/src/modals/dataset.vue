@@ -257,6 +257,7 @@
                         </div>
                     </div><!--dataset-detail-->
                 </b-tab>
+                <!--
                 <b-tab title="Provenance(old)">
                     <div v-if="prov" class="dataset-provenance">
                         <div v-if="prov.edges.length == 0">
@@ -270,6 +271,7 @@
                         </div>
                     </div>
                 </b-tab>
+                -->
                 <b-tab title="Provenance">
                     <h5 style="padding: 20px; opacity: 0.5;" v-if="!prov2">Loading ...</h5>
                     <div class="dataset-provenance" v-if="prov2">
@@ -367,7 +369,7 @@ export default {
         return {
             dataset: null,
             apps: null,
-            prov: null, 
+            //prov: null, 
             prov2: null, 
             product: null,
 
@@ -420,10 +422,7 @@ export default {
     
     watch: {
         tab_index: function() {
-            if(this.tab_index == 1 && this.prov == null) {
-                this.load_prov();
-            }
-            if(this.tab_index == 2) this.load_prov2();
+            if(this.tab_index == 1) this.load_prov2();
         },
         '$route': function() {
             if (this.dataset) {
@@ -458,6 +457,7 @@ export default {
             }, 500);
         },
 
+        /*
         load_prov() {
             //load provenance
             this.$http.get('dataset/prov/'+this.dataset._id).then(res=>{
@@ -596,6 +596,7 @@ export default {
                 }
             });
         },
+        */
 
         load_prov2() {
             //load provenance
@@ -637,8 +638,6 @@ export default {
         },
 
         load_secondary() {
-            console.log("loading secondary");
-
             //if follow_task_id is set, that means this data object came from _dtv
             //_dtv may produces secondary archive, so wait for that
             //see the secondary output archive diagram to understand this

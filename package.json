@@ -21,6 +21,7 @@
   },
   "homepage": "https://github.com/brain-life/warehouse#readme",
   "dependencies": {
+    "@cdxoo/dbscan": "^1.0.2",
     "amqp": "^0.2.7",
     "archiver": "^5.3.0",
     "async": "^3.2.2",

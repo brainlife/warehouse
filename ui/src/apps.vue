@@ -347,13 +347,13 @@ export default {
     transition: box-shadow 0.3s ease;
 }
 .app:hover {
-box-shadow: 2px 2px 6px rgba(0,0,0,0.2);
+    box-shadow: 2px 2px 6px rgba(0,0,0,0.2);
 }
 .button-fixed {
-margin-right: 280px;
+    margin-right: 280px;
 }
 .search-box .clear-search {
-right: 260px;
+    right: 260px;
 }
 </style>
 
