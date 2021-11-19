@@ -261,11 +261,10 @@ exports.traverseProvenance = async (startTaskId) => {
                     //dataset removed!? .. let's fake a dataset using information from the output
                     if(task.config._outputs) {
                         dataset = task.config._outputs.find(o=>o.subdir == datasetConfig.dir);
+                        if(!dataset) continue;
                         dataset._id = datasetConfig.dir;
                         //dataset.storage = "guess";
                     }
-
-                    if(!dataset) continue;
                 }
 
                 if(dataset.archive_task_id) tasks.push(dataset.archive_task_id);
@@ -294,11 +293,11 @@ exports.traverseProvenance = async (startTaskId) => {
                     //let's fake a dataset using information from the output (maybe removed?)
                     if(task.config._outputs) {
                         dataset = task.config._outputs.find(o=>o.subdir == datasetConfig.dir);
+                        if(!dataset) continue;
                         dataset._id = datasetConfig.dir;
                         //dataset.storage = "guess";
                     }
 
-                    if(!dataset) continue;
                 }
 
                 if(dataset.archive_task_id) tasks.push(dataset.archive_task_id);
