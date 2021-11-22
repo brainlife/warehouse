@@ -10,11 +10,11 @@
     <div class="page-content">
         <b-container>
             <div v-if="!pubs" style="margin: 40px;"><h3>Loading ..</h3></div>
-            <div v-if="!filtered.length && query">
+            <div v-if="!pubs.length && query">
                 <p style="opacity: 0.5; margin: 20px; font-size: 120%;">No matching publications</p>
             </div>
             <div v-else style="margin: 10px 0px;">
-                <div v-for="pub in getPubs()" :key="pub._id" style="margin-bottom: 30px; box-shadow: 1px 1px 4px #9996">
+                <div v-for="pub in pubs" :key="pub._id" style="margin-bottom: 30px; box-shadow: 1px 1px 4px #9996">
                     <pubcard :pub="pub"/>
                 </div>
             </div>
@@ -38,40 +38,52 @@ export default {
         }
     },
 
-    created: function() {
-        this.$http.get('pub', {params: {
-            find: JSON.stringify({ 
-                removed: false 
-            }),
-            populate: 'project',
-            select: '-readme', //ignore some heavy stuff
-            deref_contacts: true,
-        }})
-        .then(res=>{
-            this.pubs = res.data.pubs;
+    // created: function() {
+    //     this.$http.get('pub', {params: {
+    //         find: JSON.stringify({ 
+    //             removed: false 
+    //         }),
+    //         populate: 'project',
+    //         select: '-readme', //ignore some heavy stuff
+    //         deref_contacts: true,
+    //     }})
+    //     .then(res=>{
+    //         this.pubs = res.data.pubs;
 
-            Vue.nextTick(()=>{
-                console.log("initializing altmetric embed")
-                _altmetric_embed_init(this.$el);
-            });
+    //         Vue.nextTick(()=>{
+    //             console.log("initializing altmetric embed")
+    //             _altmetric_embed_init(this.$el);
+    //         });
 
-        }, res=>{
-            console.error(res);
-        });
+    //     }, res=>{
+    //         console.error(res);
+    //     });
+    // },
+    mounted() {
+        this.load();
     },
-
     watch : {
         query() {
-            this.applyFilter();
+            this.load();
         }
     },
 
     methods: {
-        getPubs() {
-            if(!this.query) return this.pubs;
-            return this.filtered;
+        load() {
+            this.$http.get('pub/query', {params: {
+                select: '-readme',
+                q: this.query,
+            }}).then(res=>{
+                this.pubs = res.data.pubs;
+                Vue.nextTick(()=>{
+                    console.log("initializing altmetric embed")
+                    _altmetric_embed_init(this.$el);
+                });
+            }).catch(err=>{
+                console.error(err);
+            });
         },
-
+        
         clearQuery() {
             this.query = ''
             this.changeQuery();
@@ -85,25 +97,8 @@ export default {
         changeQuery() {
             if(!this.datatypes) return setTimeout(this.changeQuery, 300);
             sessionStorage.setItem("pubs.query", this.query);
-            this.applyFilter();
+            this.load();
         },
-
-        applyFilter() {
-            let tokens = this.query.toLowerCase().split(" ");
-            this.filtered = this.pubs.filter(pub=>{
-                //pull all the tokens I want to search from publication
-                let stuff = [
-                    pub.name,
-                    pub.desc,
-                    pub.doi,
-                    pub.license,
-                    ...pub.tags,
-                    ...pub.authors.map(a=>a.fullname)
-                ];
-                const text = stuff.filter(thing=>!!thing).join(" ").toLowerCase();
-                return tokens.every(token=>text.includes(token));
-            });
-        }
     }
 }
 </script>

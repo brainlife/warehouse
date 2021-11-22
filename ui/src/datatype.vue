@@ -20,7 +20,10 @@
                             <template v-slot:title>README</template>
                         </b-tab>
                         <b-tab>
-                            <template v-slot:title>Samples</template>
+                            <template v-slot:title>
+                                Samples
+                                <small>{{sample_datasets.length}}</small>
+                            </template>
                         </b-tab>
                         <b-tab>
                             <template v-slot:title>
@@ -360,7 +363,7 @@ export default {
                             {'outputs.datatype': this.datatype._id},
                         ]
                     }),
-                    select: 'name desc inputs outputs stats github projects',
+                    select: 'name desc inputs outputs stats github projects samples',
                     populate: 'inputs.datatype outputs.datatype', //<app> likes datatypes populated
                     limit: 500, //TODO - this is not sustailable
                 }}).then(res=>{
@@ -372,6 +375,7 @@ export default {
 
                 //load sample datasets
                 if(this.datatype.samples) {
+                    console.log("loading sample datasets", this.datatype.samples)
                     this.$http.get('/dataset', {params: {
                         find: JSON.stringify({
                             _id: {$in: this.datatype.samples},
@@ -391,8 +395,8 @@ export default {
         },
         open_sample_dataset(dataset) {
             console.log("click sample", dataset._id);
-            this.$router.replace('/project/'+dataset.project+'/dataset/'+dataset._id);
-            //this.$root.$emit('dataset.view', {id: dataset_id,  back: './'});
+            this.$router.replace('/project/'+dataset.project+'#object:'+dataset._id);
+            this.$root.$emit('dataset.view', {id: dataset._id});
         },
 
         get_datatypes(prefix) {

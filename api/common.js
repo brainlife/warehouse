@@ -1,6 +1,5 @@
 
-//TODO switch to axios!
-const request = require('request');
+const request = require('request'); //TODO switch to axios!
 const rp = require('request-promise-native');
 const keywordEx = require("keyword-extractor");
 const tmp = require('tmp');
@@ -18,11 +17,6 @@ const config = require('./config');
 const db = require('./models');
 const mongoose = require('mongoose');
 
-
-
-//TODO - user needs to call redis.quit() to quit?
-//exports.redis = redis.createClient(config.redis.port, config.redis.server);
-//exports.redis.on('error', err=>{throw err});
 exports.connectRedis = function() {
     const con = redis.createClient(config.redis.port, config.redis.server);
     con.on('error', console.error);
@@ -117,9 +111,7 @@ function register_dataset(task, output, product, cb) {
         datatype: output.datatype,
         datatype_tags: product.datatype_tags,
 
-        //status: "waiting",
         status_msg: "Waiting for the archiver ..",
-        //product: escape_dot(product),
 
         prov: {
             //only store the most important things
@@ -473,7 +465,6 @@ exports.updateRelatedPaperMag = function(rec,cb) {
     let keywords = keywordEx.extract(str,{
         language:"english",
         remove_digits: true,
-        //return_changed_case: true,
         return_chaned_words: true,
         remove_duplicates: true,
     });
@@ -766,9 +757,19 @@ exports.cacheContact = function(cb) {
 //TODO - update cache from amqp events instead?
 let cachedContacts = null;
 exports.startContactCache = function(cb) {
-    console.log("starting contactCache");
+    if(cachedContacts) return cb(); //already started
     setInterval(exports.cacheContact, 1000*60*30); //cache every 30 minutes
     exports.cacheContact(cb);
+}
+
+//just a wrapper for startContactCache.
+exports.startContactCachePromise = async function() {
+    return new Promise((resolve, reject)=>{
+        exports.startContactCache(err=>{
+            if(err) return reject(err);
+            resolve();
+        });
+    });
 }
 
 exports.deref_contact = function(id) {
@@ -1317,6 +1318,7 @@ exports.list_users = async ()=>{
     return lists;
 }
 
+//https://github.com/brainlife/brainlife/issues/96
 exports.aggregateDatasetsByApps = query=>{
     return new Promise((resolve, reject)=>{
         query["prov.task.config._app"] = {$exists: true};
@@ -1445,7 +1447,7 @@ exports.enumXnatObjects = async (project)=>{
                         datatype: mapping.datatype,
                         datatype_tags: mapping.datatype_tags,
 
-                        desc: (oScan.note||oScan.series_description),
+                        desc: oScan.URI+" "+(oScan.note||oScan.series_description),
                         tags: [oScan.type], //has to exist for ui
 
                         storage: "xnat",
@@ -1649,6 +1651,7 @@ exports.enumXnatObjects = async (project)=>{
 exports.updateXNATObjects = async (objects)=>{
     for(let object of objects) {
         console.log(JSON.stringify(object, null, 4));
+        //TODO - this wipes out any updates made by user for existing object.. maybe I should upsert a bit more manually?
         let res = await db.Datasets.findOneAndUpdate({
             "storage": "xnat",
             "storage_config.url": object.storage_config.url,
@@ -1657,4 +1660,13 @@ exports.updateXNATObjects = async (objects)=>{
     }
 }
 
+exports.datatypeCache = null;
+exports.cacheDatatypes = async ()=>{
+    if(exports.datatypeCache) return; //already cached.. TODO invalidate after a while?
+    const datatypes = await db.Datatypes.find({});
+    exports.datatypeCache = {};
+    datatypes.forEach(datatype=>{
+        exports.datatypeCache[datatype._id.toString()] = datatype;
+    });
+}
 

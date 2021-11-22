@@ -60,8 +60,11 @@
                             <span style="opacity: 0.6; font-size: 80%" v-if="tasks.length > 0">{{tasks.length}}</span>
                         </template>
                     </b-tab>
-                    <b-tab>
-                        <template v-slot:title>Disqus</template>
+                    <b-tab v-if="config.hasRole('tester', 'brainlife')">
+                        <template v-slot:title>
+                            Example Workflow
+                            <span style="opacity: 0.6; font-size: 80%">{{app.stats.examples||0}}</span>
+                        </template>
                     </b-tab>
                 </b-tabs>
             </b-container>
@@ -329,39 +332,6 @@
                             </tr>
                         </thead>
                         <taskRecord :tasks="tasks" :cols="['branch', 'project', 'status', 'resource', 'submitter', 'dates']"/>
-                        <!--
-                        <tr v-for="task in tasks" :key="task._id">
-                            <td>
-                                <b-badge variant="light">{{task.service_branch}}</b-badge>
-                            </td>
-                            <td style="word-break: break-all;">
-                                <span class="status-color" :class="task.status" style="padding: 3px" :title="task.status">
-                                    <statusicon :status="task.status" /> 
-                                </span>
-                                <small>{{task.status_msg}}</small>
-                                <small style="font-size: 70%">{{task._id}}</small>
-                            </td>
-                            <td>
-                                <span v-if="task._project">{{task._project.name}}</span>
-                                <span v-else style="opacity: 0.7;">(Private)
-                                    <small><icon name="id-badge"/> {{task._group_id}}</small>
-                                </span>
-                            </td>
-                            <td>
-                                <span v-if="task._resource">{{task._resource.name}}</span>
-                                <span v-else style="opacity: 0.7;">(Private)</span>
-                            </td>
-                            <td>
-                                <contact :id="task.user_id" size="small"/>
-                            </td>
-                            <td>
-                                <small v-if="task.status == 'requested'"><time>Requested <timeago :datetime="task.request_date" :auto-update="1"/></time></small>
-                                <small v-else-if="task.status == 'running'"><time>Started <timeago :datetime="task.start_date" :auto-update="1"/></time></small>
-                                <small v-else-if="task.status == 'finished'"><time>Finished <timeago :datetime="task.finish_date" :auto-update="1"/></time></small>
-                                <small v-else-if="task.status == 'failed'"><time>Failed <timeago :datetime="task.fail_date" :auto-update="1"/></time></small>
-                            </td>
-                        </tr>
-                        -->
                     </table>
                 </div>
                 <div v-else style="opacity: 0.7;">
@@ -371,11 +341,9 @@
             </b-container>
         </div>
 
-        <div v-if="tabID == 'disqus'" class="tab-content">
+        <div v-if="tabID == 'example'" class="tab-content">
             <b-container>
-                <br>
-                <vue-disqus shortname="brain-life" :identifier="app._id"/>
-                <br>
+                <exampleworkflow :appid="app._id"/>
             </b-container>
         </div>
         <br>
@@ -404,6 +372,7 @@ import resource from '@/components/resource'
 import statusicon from '@/components/statusicon'
 import taskRecord from '@/components/taskrecord'
 import projectcard from '@/components/projectcard'
+import exampleworkflow from '@/components/exampleworkflow'
 
 import resource_cache from '@/mixins/resource_cache'
 
@@ -426,6 +395,7 @@ export default {
         statusicon,
         taskRecord, 
         projectcard,
+        exampleworkflow,
 
         editor: ()=>import('vue2-ace-editor'),
     },
@@ -443,10 +413,10 @@ export default {
 
             tab: 0,
             tabs: [
-                {id: "detail", label: "Detail"},
-                {id: "readme", label: "README"},
-                {id: "recentJobs", label: "Recent Jobs"},
-                {id: "disqus", label: "Disqus"},
+                {id: "detail"},
+                {id: "readme"},
+                {id: "recentJobs"},
+                {id: "example"},
             ],
 
             tasks: [], //recent tasks submitted
@@ -466,7 +436,6 @@ export default {
             }
         },
         tab: function() {
-            console.log(this.$route.params.tab,this.tabs[this.tab].id);
             if(this.$route.params.tab != this.tabs[this.tab].id) {
                 this.$router.replace("/app/"+this.app._id+"/"+this.tabs[this.tab].id);
             }
@@ -540,7 +509,8 @@ export default {
                 });
 
                 this.$http.get(Vue.config.amaretti_api+'/task/recent', {params: {service: this.app.github}}).then(res=>{
-                    this.tasks = res.data.recent;
+                    //this.tasks = [...res.data.current, ...res.data.recent];
+                    this.tasks = res.data;
 
                     //lookup resource names
                     this.tasks.forEach(task=>{
@@ -548,25 +518,7 @@ export default {
                         if(task.resource_id) this.resource_cache(task.resource_id, (err, resource)=>{
                             task._resource = resource;
                         });
-                    });
-
-                    /*
-                    //resolve project names
-                    let gids = this.tasks.map(task=>task._group_id);
-                    let project_find = JSON.stringify({
-                        group_id: {$in: gids},
-                    });
-                    this.$http.get("/project", {params: {find: project_find, select: 'name group_id'}}).then(res=>{
-                        let projects = {};
-                        res.data.projects.forEach(project=>{
-                            projects[project.group_id] = project;
-                        });
-                        this.tasks.forEach(task=>{
-                            task._project = projects[task._group_id];
-                        });
-                    });
-                    */
-                    
+                    });                   
                 }).catch(console.error);
 
                 this.$http.get(Vue.config.amaretti_api+'/service/info', {params: {service: this.app.github}}).then(res=>{
@@ -586,7 +538,6 @@ export default {
         },
 
         handleRouteParams() {
-            console.log("handleRouteParams", this.$route.params);
             let tab_id = this.$route.params.tab;
             if(tab_id) this.tab = this.tabs.findIndex(tab=>tab.id == tab_id);
         },
@@ -763,7 +714,6 @@ export default {
 }
 .tab-content {
     background-color: white; 
-    border-bottom: 1px solid #ddd;
     min-height: 300px;
 }
 </style>

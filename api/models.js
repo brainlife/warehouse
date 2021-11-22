@@ -8,6 +8,8 @@ mongoose.set("debug", config.mongoose_debug);
 
 exports.init = (cb)=>{
     mongoose.connect(config.mongodb, {
+        //TODO - move to config
+        /*
         readPreference: 'nearest',
         readConcern: {
             level: 'majority',//prevents read to grab stale data from secondary
@@ -15,8 +17,10 @@ exports.init = (cb)=>{
         writeConcern: {
             w: 'majority', //isn't this the default?
         },
+        */
         useNewUrlParser: true,
         useUnifiedTopology: true,
+        //useCreateIndex: true,
     }, err=>{
         if(err) return cb(err);
         cb();
@@ -523,7 +527,8 @@ var datasetSchema = mongoose.Schema({
     status: { type: String, default: "storing" },
     status_msg: String,
 
-    archive_task_id: String, //amaretti task that was used to archive the data
+    //amaretti task that was used to archive the data
+    archive_task_id: {type: String, index: true}, 
 
     //TODO..
     //validator_task_id: String, //task id for dtv used to validate the output
@@ -534,7 +539,9 @@ var datasetSchema = mongoose.Schema({
     create_date: { type: Date, default: Date.now }, //date when this dataset was registered
     backup_date: Date, //date when this dataset was copied to the SDA (not set if it's not yet backed up)
     remove_date: Date, //date when this dataset was removed
-    update_date: { type: Date }, //date which this document was last updated (used by rule handler, and to see when this dataset was last downloaded / used /touched, etc..)
+
+    //date which this document was last updated (used by rule handler, and to see when this dataset was last downloaded / used /touched, etc..)
+    update_date: { type: Date, default: Date.now }, 
 
     removed: { type: Boolean, default: false },
 
@@ -551,21 +558,12 @@ datasetSchema.post('validate', function() {
     }
 });
 
-//TODO - I think it's better to have each model handle this as it's not transparent when/which middleware hooks gets called
-/*
-datasetSchema.post('save', exports.dataset_event);
-datasetSchema.post('updateOne', exports.dataset_event);
-datasetSchema.post('findOneAndUpdate', exports.dataset_event);
-datasetSchema.post('findOneAndRemove', exports.dataset_event);
-datasetSchema.post('remove', exports.dataset_event);
-*/
 datasetSchema.pre('save', function(next) {
-    console.log("updating dataset....................................", this._id);
     this.update_date = new Date;
     next();
 });
 
-datasetSchema.index({'$**': 'text'}) //make all text fields searchable
+//datasetSchema.index({'$**': 'text'}) //make all text fields searchable
 datasetSchema.index({project: 1, 'prov.task.instance_id': 1, removed: 1, 'meta.subject': 1, 'meta.session': 1, create_date: -1}); //is this deprecated by project/remove/subject/session/-create_ate?
 //datasetSchema.index({project: 1, removed: 1, "meta.subject": 1, "meta.session": 1, "create_date": -1}); //for dataset search by the archive view
 datasetSchema.index({project: 1, datatype: 1, removed: 1, status: 1, "meta.subject": 1, "meta.session": 1, create_date: -1});
@@ -708,6 +706,8 @@ var appSchema = mongoose.Schema({
         stars: Number, //github stars
         success_rate: Number, 
         */
+
+        examples: Number, //number of example workflows found
     },
     
     removed: { type: Boolean, default: false} ,
@@ -822,9 +822,7 @@ ruleSchema.post('findOneAndRemove', exports.rule_event);
 ruleSchema.post('remove', exports.rule_event);
 */
 
-//TODO not tested
 ruleSchema.pre('save', function(next) {
-    //console.log("updating rule....................................", this._id);
     this.update_date = new Date;
     next();
 });

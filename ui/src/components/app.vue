@@ -1,6 +1,5 @@
 <template>
 <div v-if="app_" class="appcard" :class="{'compact': compact, 'clickable': clickable, 'deprecated': app_.deprecated_by}" @click="click">
-    <doibadge v-if="showDoi && app_.doi" :doi="app_.doi" :jump="true" style="position: relative; float: right; z-index: 1; transform: scale(0.8); transform-origin: right;"/>
     <div v-if="compact">
         <appavatar :app="app_" style="position: absolute; right: 0;" :width="80" :height="80"/>
         <span v-if="app_.deprecated_by" class="deprecated-label" style="top: inherit; bottom: 0;">Deprecated</span>
@@ -80,6 +79,7 @@
             </span>
         </div>
     </div>
+    <doibadge v-if="showDoi && app_.doi" :doi="app_.doi" :jump="true"/>
 </div>
 </template>
 
@@ -137,7 +137,6 @@ export default {
 
         click() {
             if(this.clickable) {
-                console.log("rerounting to "+this.app_._id);
                 this.$router.push('/app/'+this.app_._id);
                 this.$emit("open", this.app_._id);
             }

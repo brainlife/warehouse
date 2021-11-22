@@ -122,7 +122,8 @@ export default {
 
             sessions: [],
 
-            //will come from db someday
+            //TODO should come from db someday
+            /*
             apps: [
                 {
                     text: "Please select a class to start",
@@ -133,7 +134,7 @@ export default {
                     //img: "https://kanoki.org/wp-content/uploads/2017/07/Screen-Shot-2017-07-15-at-04.59.36.png",
                     value: {
                         desc: "Jupyter Datascience Notebook (lab-2.1.1) with Dipy(1.3.0) and Fury",
-                        container: "brainlife/ga-dipy",
+                        container: "brainlife/ga-python",
                         tag: "lab211-dipy130",
                     },
                 },
@@ -146,38 +147,8 @@ export default {
                         tag: "1.0",
                     }
                 },
-                /*
-                {
-                    text: "jupyter/datascience-notebook", 
-                    //img: "https://kanoki.org/wp-content/uploads/2017/07/Screen-Shot-2017-07-15-at-04.59.36.png",
-                    value: {
-                        desc: "Jupyter Datascience Notebook (lab-2.1.1)",
-                        container: "jupyter/datascience-notebook", 
-                        tag: "lab-2.1.1", 
-                    }
-                },
-                {
-                    text: "jupyter/scipy-notebook", 
-                    //img: "https://kanoki.org/wp-content/uploads/2017/07/Screen-Shot-2017-07-15-at-04.59.36.png",
-                    //img: "https://www.dataquest.io/wp-content/uploads/2019/01/interface-screenshot.png",
-                    value: {
-                        desc: "Jupyter Notebook Scientific Python Stack",
-                        container: "jupyter/scipy-notebook", 
-                        tag: "latest",
-                    }
-                },   
-                {
-                    text: "python/tensorflow", 
-                    //img: "https://i.imgur.com/n0PmXQn.gif",
-                    //img: "https://kanoki.org/wp-content/uploads/2017/07/Screen-Shot-2017-07-15-at-04.59.36.png",
-                    value: {
-                        desc: "Jupyter Notebook Scientific Python Stack w/ Tensorflow",
-                        container: "jupyter/tensorflow-notebook", 
-                        tag: "latest",
-                    }
-                },
-                */
             ],
+            */
 
             editingTask: null,
             editingName: "",

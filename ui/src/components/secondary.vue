@@ -33,6 +33,8 @@
             :task="task" :output_id="output_id" :datatype_tags="datatype_tags" :product="product"/>
         <parcstats v-else-if="datatype_id == '5edd3b77c5972b8c47b3a2c3'" 
             :task="task" :output_id="output_id" :product="product"/>
+        <microperimetry v-else-if="datatype_id == '604976b3ebfe45c4633ae3d2'" 
+            :task="task" :output_id="output_id" :product="product"/>
         <small v-else>no secondary UI for this datatype ({{datatype_id}})</small>
     </div>
 </div>
@@ -68,6 +70,7 @@ export default {
         'ashs': ()=> import('@/secondary/ashs'),
         'tractmeasures': ()=> import('@/secondary/tractmeasures'),
         'parcstats': ()=> import('@/secondary/parcstats'),
+        'microperimetry': ()=> import('@/secondary/microperimetry'),
     },
 }
 </script>

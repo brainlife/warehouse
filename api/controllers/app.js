@@ -6,11 +6,13 @@ const winston = require('winston');
 const async = require('async');
 const request = require('request');
 const axios = require('axios');
+const fs = require('fs');
 
 const config = require('../config');
 const logger = winston.createLogger(config.logger.winston);
 const db = require('../models');
 const common = require('../common');
+const provenance = require('../lib/provenance');
 
 function canedit(user, rec) {
     if(user) {
@@ -155,6 +157,105 @@ router.get('/query', common.jwt({credentialsRequired: false}), (req, res, next)=
 
         res.json(filtered);
     });
+});
+
+//experimental
+router.get('/example/:id', common.jwt(), async (req, res, next)=>{
+    const cachefname = "/tmp/example.app-"+req.params.id+".json";
+    if(fs.existsSync(cachefname)) {
+        const cache = fs.readFileSync(cachefname, {encoding: "utf8"});
+        const provs = JSON.parse(cache);
+
+        //anonymize if user is not admin
+        if(!req.user.scopes.warehouse || !~req.user.scopes.warehouse.indexOf('admin')) {
+            provs.forEach(prov=>{
+                prov.nodes.forEach(node=>{
+                    delete node.project;
+                    delete node.desc;
+                    delete node.userId;
+                    delete node.user;
+                    delete node.tags;
+                    delete node.meta;
+                    delete node.datasetId;
+                    delete node.storage;
+                    delete node.storageLocation;
+                    delete node.taskId;
+                    delete node._taskId;
+                    delete node.instanceId;
+                    delete node.resourceId;
+                    delete node.groupId;
+                    node.tags = [];
+                });
+            });
+        }
+
+        return res.json(provs);
+
+    } else {
+        console.log("app example not cached yet", cachefname);
+        return res.json([]); 
+
+        /*
+        console.log("loading example workflow");
+        const provs = await provenance.sampleTerminalTasks(req.params.id);
+        provs.map(provenance.setupShortcuts);
+
+        const commonProvs = [];
+        const clusters = provenance.cluster(provs);
+        clusters.forEach(cluster=>{
+            //grab the first one from each cluster
+            commonProvs.push(provs[cluster[0]]);
+        }); 
+        fs.writeFileSync(cachefname, JSON.stringify(commonProvs));
+        res.json(commonProvs);
+        */
+    }
+
+    /*
+    const cnodes = provenance.countProvenances(provs);
+    const probGroups = provenance.computeProbabilities(cnodes);
+    //grab the top 3 groups
+    probGroups.splice(0,3).forEach(probGroup=>{
+        const idx = probGroup.provs[0]; //grab the first one from each group
+        console.log("picking",idx, probGroup.prob);
+        const prov = provs[idx];
+        prov._prob = probGroup.prob;
+        prov._probSiblings = probGroup.provs.length;
+        commonProvs.push(prov);
+    });
+
+    await common.cacheDatatypes();
+    commonProvs.forEach(prov=>{
+        //remove things we don't want to show to the user
+        prov.nodes.forEach(node=>{
+            delete node.project;
+            delete node.desc;
+            delete node.userId;
+            delete node.meta;
+            delete node.datasetId;
+            node.tags = [];
+        });
+
+        //populate datatype info
+        prov.nodes.filter(n=>!!n.datatype).forEach(node=>{
+            if(typeof node.datatype == 'object') return; //duplicate prov that's already populated?
+            const id = node.datatype;
+            const datatype = common.datatypeCache[id];
+            let name = "unknown-dt-"+id;
+            if(datatype) name = datatype.name;
+            node.datatype = { id, name, }
+        });
+    });
+    */
+});
+
+//experimental - query task provenance (admin only)
+router.get('/taskprov/:id', common.jwt(), async (req, res, next)=>{
+    if(!req.user.scopes.warehouse || !~req.user.scopes.warehouse.indexOf('admin')) return true;
+    const prov = await provenance.traverseProvenance(req.params.id);
+    provenance.setupShortcuts(prov);
+    await provenance.populate(prov);
+    res.json(prov);
 });
 
 /**
@@ -497,6 +598,7 @@ router.get('/info/:org/:name', common.jwt(), async (req, res, next)=>{
         next("No such repo?");
     }
 });
+
 
 module.exports = router;
 

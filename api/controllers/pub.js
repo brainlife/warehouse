@@ -75,6 +75,90 @@ router.get('/', (req, res, next)=>{
 });
 
 /**
+ * @apiGroup Publication
+ * @api {get} /pub/query
+ * @apiDescription                 Query publications based on search query (public)
+ * 
+ * @apiParam {String} q            Query used to search for publications
+ * @apiParam {String} [select]     Fields to load - multiple fields can be entered with %20 as delimiter
+ *
+ * @apiHeader {String} [authorization]  
+ *                                 A valid JWT token "Bearer : xxxxx"
+ * 
+ * @apiSuccess {Object}            Project record registered 
+ */
+
+router.get('/query',common.jwt({credentialsRequired: false}),(req, res, next)=> {
+    let find = {removed : false};
+    let skip = req.query.skip || 0;
+    let limit = req.query.limit || 100;
+
+    db.Publications.find(find)
+    .populate('project', 'avatar')
+    .select(req.query.select || 'name desc authors contributors fundings') //only select name desccontrib fundings by default
+    .limit(+limit)
+    .skip(+skip)
+    .sort(req.query.sort || '_id')
+    .lean()
+    .exec((err, pubs)=> {
+        if(err) return next(err);
+        db.Publications.countDocuments(find).exec((err, count)=>{
+            if(err) return next(err);
+
+            // if(!req.query.q) return res.json({pubs, count});
+            let retPubs = pubs;
+            if(req.query.q) {
+                const queryTokens = req.query.q.toLowerCase().split(" ");
+                pubs.forEach(pub => {
+                    let tokens = [
+                        pub.name,
+                        pub.desc,
+                        pub.doi,
+                        pub.license,
+                        ...pub.tags,
+                    ];
+                
+                    function addContactTokens(c) {
+                        if(!c) return;
+                        tokens.push(c.fullname);
+                        tokens.push(c.username);
+                        tokens.push(c.email);
+                    }
+                    if(pub.authors) pub.authors.map(common.deref_contact).forEach(addContactTokens);
+                    if(pub.contributors) pub.contributors.map(common.deref_contact).forEach(addContactTokens);
+                    if(pub.fundings) {
+                        // should I add mongoID too? 
+                        pub.fundings.forEach(funding=>{
+                            tokens.push(funding.id);
+                            tokens.push(funding.funder);
+                        })
+                    }
+                    tokens = tokens.filter(thing=>!!thing).map(token=>token.toLowerCase());
+                    pub._tokens = tokens.join(" ");
+                });
+
+            
+                retPubs = pubs.filter(pub=>{
+                    let match = true;
+                    queryTokens.forEach(token=>{
+                        if(!match) return;
+                        if(!pub._tokens.includes(token)) match = false;
+                    });
+                    return match;
+                });
+                retPubs.forEach(pub=>{ delete pub._tokens; });
+            }
+            //dereference contacts
+            retPubs.forEach(pub=>{
+                pub.authors = pub.authors.map(common.deref_contact).filter(c=>!!c);
+                pub.contributors = pub.contributors.map(common.deref_contact).filter(c=>!!c);
+            });
+            res.json({"pubs" : retPubs, "count" : count});
+        });
+    });
+});
+
+/**
  * @apiGroup Publications
  * @api {get} /pub/datasets/:releaseid  
  *                              Query published datasets
@@ -155,8 +239,10 @@ router.post('/', common.jwt(), (req, res, next)=>{
         //mint new doi - get next doi id - use number of publication record with doi (brittle?)
         db.Publications.countDocuments({doi: {$exists: true}}).exec((err, count)=>{
             if(err) return next(err);
-            let doi = config.datacite.prefix+"pub."+count; //TODO - should make the "shoulder" configurable?
-            pub.doi = doi;
+            if(config.datacite) {
+                let doi = config.datacite.prefix+"pub."+count; //TODO - should make the "shoulder" configurable?
+                pub.doi = doi;
+            }
             pub.save(err=>{
                 if(err) return next(err);
                 //return to the caller already
@@ -164,7 +250,7 @@ router.post('/', common.jwt(), (req, res, next)=>{
 
                 //post metadata to datacite and set url
                 let metadata = common.compose_pub_datacite_metadata(pub);
-                common.doi_post_metadata(metadata, err=>{
+                if(config.datacite) common.doi_post_metadata(metadata, err=>{
                     if(err) return next(err);
                     //then attach url to it (to "mint" it!)
                     let url = config.warehouse.url+"/pub/"+pub._id;  //TODO make it configurable?

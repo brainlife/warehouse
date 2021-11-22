@@ -11,6 +11,8 @@ const logger = winston.createLogger(config.logger.winston);
 const db = require('../api/models');
 const common = require('../api/common');
 
+const provenance = require('../api/lib/provenance');
+
 console.log("running appinfo");
 
 db.init(err=>{
@@ -43,12 +45,10 @@ function run() {
         if(err) console.error(err);
 
         //then load apps 
-        db.Apps.find({
-            removed: false,
-        })
-        .exec((err, apps)=>{
+        db.Apps.find({ removed: false }).exec((err, apps)=>{
             if(err) throw err;
             report.app_counts = apps.length;
+            
             async.eachSeries(apps, handle_app, err=>{
                 if(err) logger.error(err);
                 console.log("done going through all apps sleeping.....");
@@ -60,6 +60,9 @@ function run() {
 
 function handle_app(app, cb) {
     logger.debug("....................... %s %s", app.name, app._id.toString());
+
+    //only process a single app
+    //if(app._id != "5dc36c242f23fd1368387879") return cb();
 
     async.series([
         //caching serviceinfo
@@ -87,7 +90,47 @@ function handle_app(app, cb) {
                 next();
             }).catch(next);
         },
-        
+      
+        //cache example workflow
+        async ()=>{
+            const cachefname = "/tmp/example.app-"+app.id+".json"; //needs to match the path used in controller/app.js
+
+            const provs = await provenance.sampleTerminalTasks(app.id);
+            provs.map(provenance.setupShortcuts);
+
+            console.log("clustering app example workflows", provs.length);
+            const commonProvs = [];
+            if(provs.length) {
+                const clusters = provenance.cluster(provs);
+                clusters.forEach(cluster=>{
+                    //grab the first one from each cluster
+                    const prov = provs[cluster[0]];
+                    prov._prob = cluster.length / provs.length;
+                    commonProvs.push(prov);
+                });
+            }
+
+            //sort provs by _prob and pick the top #5
+            commonProvs.sort((a,b)=>{
+                if(a._prob < b._prob) return 1;
+                if(a._prob > b._prob) return -1;
+                return 0;
+            }); 
+            const subsetProvs = commonProvs.splice(0, 5);
+
+            //populate things we should populate
+            for await (const prov of subsetProvs) {
+                await provenance.populate(prov);
+            }
+
+            //then store this on disk..
+            console.log("saving at", cachefname);
+            fs.writeFileSync(cachefname, JSON.stringify(subsetProvs));
+
+            app.stats.examples = subsetProvs.length;
+            app.markModified('stats');
+        },
+  
         //list shared resources that are registered to this app
         next=>{
             axios.get(config.amaretti.api+"/resource", {

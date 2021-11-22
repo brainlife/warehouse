@@ -2,7 +2,7 @@
 <transition name="fade">
 <div v-if="dataset" class="brainlife-modal-overlay">
     <b-container class="brainlife-modal">
-        <div class="brainlife-modal-header">
+        <div class="brainlife-modal-header" v-if="!dataset.removed">
             <div class="brainlife-modal-header-buttons" style="margin-left: 10px;">
                 <b-dropdown text="Download" v-if="dataset.storage" variant="outline-secondary" size="sm">
                     <b-dropdown-item @click="download">This Data-Object <small v-if="dataset.size">({{dataset.size|filesize}})</small></b-dropdown-item>
@@ -15,7 +15,7 @@
                     </b-dropdown-item>
                     <b-dropdown-item v-if="dataset.prov" @click="download_boutique">Boutique descriptor (experimental)</b-dropdown-item>
                 </b-dropdown>
-                <div class="button" @click="remove" v-if="dataset._canedit && !dataset.removed" title="Remove Data-object">
+                <div class="button" @click="remove" v-if="dataset._canedit" title="Remove Data-object">
                     <icon name="trash" scale="1.1"/>
                 </div>
                 <div class="button" @click="copy" v-if="dataset.storage" title="Copy">
@@ -194,14 +194,12 @@
                                 <b-col>
                                     <p>
                                         <span v-if="dataset.status == 'stored'">
-                                            <div v-if="dataset.storage == 'copy'">
-                                                <projectcard :project="dataset.project"/>
-                                            </div>
-                                            <b>
-                                                {{dataset.storage}} 
-                                                <span v-if="dataset.storage == 'copy'">({{dataset.storage_config.storage}})</span>
-                                                <span v-if="dataset.storage_config && dataset.storage_config.path" style="opacity: 0.8; font-weight: normal; font-size: 90%">{{dataset.storage_config.path}}</span>
-                                            </b>
+                                            <b>{{dataset.storage}}</b>
+                                            <span v-if="dataset.storage_config && dataset.storage_config.path" style="opacity: 0.8; font-weight: normal; font-size: 90%">{{dataset.storage_config.path}}</span>
+                                            <span v-if="dataset.storage == 'copy'">
+                                                from <b>{{dataset.storage_config.project.name}}</b> project
+                                                stored in ({{dataset.storage_config.storage}})
+                                            </span>
                                             <span class="text-muted" v-if="dataset.size">({{dataset.size | filesize}})</span>
                                             <div v-if="dataset.storage == 'url'">
                                                 <b-row v-for="file in dataset.storage_config.files" :key="file.id">
@@ -259,7 +257,7 @@
                         </div>
                     </div><!--dataset-detail-->
                 </b-tab>
-                <b-tab title="Provenance">
+                <b-tab title="Provenance(old)">
                     <div v-if="prov" class="dataset-provenance">
                         <div v-if="prov.edges.length == 0">
                             <b-alert show variant="secondary">This data-object was uploaded by the user, and therefore has no provenance information.</b-alert>
@@ -271,6 +269,21 @@
                             <div ref="vis" style="height: 100%;"/>
                         </div>
                     </div>
+                </b-tab>
+                <b-tab title="Provenance">
+                    <h5 style="padding: 20px; opacity: 0.5;" v-if="!prov2">Loading ...</h5>
+                    <div class="dataset-provenance" v-if="prov2">
+                        <div v-if="!prov2.nodes">
+                            <b-alert show variant="secondary">This data-object has no provenance information.</b-alert>
+                        </div>
+                        <div v-if="prov2.nodes" style="height: 100%">
+                            <div style="position: absolute; left: 10px; bottom: 10px; z-index: 1;">
+                                <b-button variant="outline-primary" :pressed.sync="showFull" size="sm">Show Full Provenance</b-button>
+                            </div>
+                            <provgraph :prov="prov2" :showFull="showFull" :dataset="dataset" style="height: 100%;"/>
+                        </div>
+                    </div>
+                    
                 </b-tab>
                 <b-tab title="Metadata/Sidecar">
                     <div class="dataset-meta">
@@ -286,21 +299,7 @@
                         </div>
                     </div>
                 </b-tab>
-                <!-- not useful?
-                <b-tab title="Apps">
-                    <div class="dataset-apps" v-if="apps">
-                        <p v-if="apps.length > 0" class="text-muted">The following apps can be submitted with this data-object.</p>
-                        <b-alert :show="apps.length == 0" variant="secondary" style="margin: -20px;">There are currently no applications that use the datatype from this data-object.</b-alert>
-                        <div v-for="app in apps" :key="app._id" style="width: 33%; float: left;">
-                            <div style="margin-right: 10px; margin-bottom: 10px;" @click="openapp(app._id)" class="clickable">
-                                <app :app="app" height="270px" :clickable="false"></app>
-                            </div>
-                        </div>
-                    </div>
-                </b-tab>
-                -->
             </b-tabs>
-
     </b-container>
 </div>
 </transition>
@@ -320,12 +319,17 @@ import tageditor from '@/components/tageditor'
 import taskconfig from '@/components/taskconfig'
 import product from '@/components/product'
 import secondary from '@/components/secondary'
+import provgraph from '@/components/provgraph'
 
 import agreementMixin from '@/mixins/agreement'
 import secondaryWaiter from '@/mixins/secondarywaiter'
 import resourceCache from '@/mixins/resource_cache'
 
 const getVis = ()=>import('vis/dist/vis-network.min')
+let vis = null;
+getVis().then(_vis=>{
+    vis = _vis;
+});
 import 'vis/dist/vis-network.min.css'
 
 const lib = require('@/lib');
@@ -352,6 +356,7 @@ export default {
         taskconfig, 
         product, 
         secondary, 
+        provgraph, 
         task: ()=>import('@/components/task'),
 
         projectcard: ()=>import('@/components/projectcard'),
@@ -363,6 +368,7 @@ export default {
             dataset: null,
             apps: null,
             prov: null, 
+            prov2: null, 
             product: null,
 
             dtv: null,
@@ -380,14 +386,24 @@ export default {
             tm_load_archive_task: null,
             tm_load_status: null,
 
+            showFull: false,
+            
             config: Vue.config,
         } 
     },
 
-    created() {
+    mounted() {
+        console.log("registering callback for dataset.view");
         this.$root.$on("dataset.view", opt=>{
+            console.log("opening data object view", opt);
             this.load(opt.id);
         });
+
+        //preopened?
+        if(this.$root.openDataObject) {
+            this.load(this.$root.openDataObject.id);
+            this.$root.openDataObject = null;
+        }
 
         //TODO - call removeEventListener in destroy()? Or I should do this everytime modal is shown/hidden?
         document.addEventListener("keydown", e => {
@@ -407,6 +423,7 @@ export default {
             if(this.tab_index == 1 && this.prov == null) {
                 this.load_prov();
             }
+            if(this.tab_index == 2) this.load_prov2();
         },
         '$route': function() {
             if (this.dataset) {
@@ -466,8 +483,6 @@ export default {
                         node.margin = 10;
                         node.font = {color: "#fff"};
                     }
-                    //node.title = node.id;
-                    //node.title = JSON.stringify(node._app_config, null, 4);
 
                     //construct tooltip
                     let tooltip = "";
@@ -494,7 +509,7 @@ export default {
                             tooltip += "</table>";
                         }
                     }
-                    node.title = tooltip+"<small>"+node.id+"</small>";
+                    node.title = tooltip+"\n<small>"+node.id+"</small>";
                 });
                 
                 this.prov.edges.forEach(edge=>{
@@ -509,40 +524,42 @@ export default {
                         size: 10,
                         color: '#000a',
                     }
-                
                 })
+
+                console.log("prov1");
+                console.dir(res.data);
                 
                 if(this.prov.edges.length) {
-                    Vue.nextTick(()=>{
                         getVis().then(vis=>{
-                            var gph = new vis.Network(this.$refs.vis, res.data, {
-                                layout: {
-                                    randomSeed: 0,
-                                },
-                                physics:{
-                                    //enabled: true, //default true
-                                    barnesHut:{
-                                        //springConstant: 0.20,
-                                        //springLength: 150,
-                                        //avoidOverlap: 0.2,
-                                        //damping: 0.3,
-                                        gravitationalConstant: -3000,
-                                    }
-                                },
-                                nodes: {
-                                    shadow: {
-                                        enabled: true,
-                                        //make it less pronounced than default
-                                        size: 3,
-                                        x: 1,
-                                        y: 1 ,
-                                        color: 'rgba(0,0,0,0.2)',
+                            var gph = new vis.Network(this.$refs.vis, res.data, 
+                                {
+                                    layout: {
+                                        randomSeed: 0,
                                     },
-                                    borderWidth: 0,
-                                },
-                            });
+                                    physics:{
+                                        //enabled: true, //default true
+                                        barnesHut:{
+                                            //springConstant: 0.20,
+                                            //springLength: 150,
+                                            //avoidOverlap: 0.2,
+                                            //damping: 0.3,
+                                            gravitationalConstant: -3000,
+                                        }
+                                    },
+                                    nodes: {
+                                        shadow: {
+                                            enabled: true,
+                                            //make it less pronounced than default
+                                            size: 3,
+                                            x: 1,
+                                            y: 1 ,
+                                            color: 'rgba(0,0,0,0.2)',
+                                        },
+                                        borderWidth: 0,
+                                    },
+                                }
+                            );
                             gph.on("doubleClick", e=>{
-                                /*e.edges, e.event, e.nodes. e.pointer*/
                                 e.nodes.forEach(node=>{
                                     if(node.startsWith("dataset.")) {
                                         let dataset_id = node.substring(8);
@@ -575,9 +592,23 @@ export default {
                             gph.on("hoverNode", e=>{
                                 //console.log("hovernode!", e);
                             });
-                        });
                     });
                 }
+            });
+        },
+
+        load_prov2() {
+            //load provenance
+            this.prov2 = null;
+            if(!this.dataset.prov) {
+                this.prov2 = {};
+                return;
+            }
+            this.$http.get('dataset/prov2/'+this.dataset._id).then(res=>{
+                this.prov2 = res.data;
+            }).catch(err=>{
+                console.error(err);
+                this.prov2 = {};
             });
         },
 
@@ -815,15 +846,23 @@ export default {
 
             const datasetRes = await this.$http.get('dataset', {params: {
                 find: JSON.stringify({_id: id}),
-                populate: JSON.stringify([{
-                    path: "datatype", // prov.deps.dataset",
-                    populate: {
-                        path: "uis",
-                        model: "UIs",
+                populate: JSON.stringify([
+                    {
+                        path: "datatype", // prov.deps.dataset",
+                        populate: {
+                            path: "uis",
+                            model: "UIs",
+                        }
+                    }, 
+                    {
+                        path: "project"
+                    },
+                    {
+                        path: "storage_config.project",
+                        model: "Projects",
+                        select: "name",
                     }
-                }, {
-                    path: "project"
-                }]),
+                ]),
             }});
 
             if(datasetRes.data.count == 0) {
@@ -853,19 +892,22 @@ export default {
                     this.load_resource();
                     this.load_secondary();
                 }
-            }
+            } 
 
             /////////////////////////////////////////////////////////////////////////////
 
             // load follow_task if set
-            if(this.dataset.prov.task && this.dataset.prov.task.follow_task_id) {
-                console.log("loading follow_task");
-                const taskRes = await this.$http.get(Vue.config.amaretti_api+'/task', {params: {
-                    find: JSON.stringify({ 
-                        _id: this.dataset.prov.task.follow_task_id,
-                    }),
-                }});
-                this.followTask = taskRes.data.tasks[0];
+            if(this.dataset.prov) { 
+                //TODO - for old task, prov.task is loaded asynchronously above.. so I should wait to do this?
+                if(this.dataset.prov.task && this.dataset.prov.task.follow_task_id) {
+                    console.log("loading follow_task");
+                    const taskRes = await this.$http.get(Vue.config.amaretti_api+'/task', {params: {
+                        find: JSON.stringify({ 
+                            _id: this.dataset.prov.task.follow_task_id,
+                        }),
+                    }});
+                    this.followTask = taskRes.data.tasks[0];
+                }
             }
 
             /////////////////////////////////////////////////////////////////////////////

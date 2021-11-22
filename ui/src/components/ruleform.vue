@@ -8,7 +8,7 @@
             <b-form-input v-model="rule.name" type="text" placeholder="Please enter a name for this rule (optional)"></b-form-input>
         </b-form-group>
 
-        <b-form-group label="App to run *" horizontal>
+        <b-form-group label="App*" horizontal>
             <v-select required v-model="rule.app" label="name" :filterable="false" :options="search_apps" @search="search_app" 
                 placeholder="Search App">
                 <template slot="no-options">please enter App name / desc to search</template>

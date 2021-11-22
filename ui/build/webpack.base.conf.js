@@ -32,6 +32,7 @@ module.exports = {
       ? config.build.assetsPublicPath
       : config.dev.assetsPublicPath
   },
+
   resolve: {
     extensions: ['.js', '.vue', '.json'],
     alias: {
@@ -44,7 +45,21 @@ module.exports = {
       '@': resolve('src'),
     }
   },
+
   module: {
+    /*
+    loaders: [
+      {
+        test: /\.vue$/,
+        loader: 'vue'
+      }, 
+      {
+          test: /\.s[a|c]ss$/,
+          loader: 'style!css!sass'
+      }
+    ],
+    */
+
     rules: [
       ...(config.dev.useEslint ? [createLintingRule()] : []),
       {
@@ -62,7 +77,7 @@ module.exports = {
       //plotly needs ify-loader (rest should be babel-loader - for es6 syntax)
       {
         test: /\.js$/,
-		loader: 'ify-loader', //to make it work with plotly
+        loader: 'ify-loader', //to make it work with plotly
         exclude: [resolve('src')],
       },
 
@@ -90,18 +105,33 @@ module.exports = {
           name: utils.assetsPath('fonts/[name].[hash:7].[ext]')
         }
       },
+
+      /*
+      // this will apply to both plain `.scss` files
+      // AND `<style lang="scss">` blocks in `.vue` files
+      {
+        test: /\.scss$/,
+        use: [
+          'vue-style-loader',
+          'css-loader',
+          'sass-loader'
+        ]
+      },
+      */
+
     ],
   },
 
-//jquery used by components/select2
-plugins: [
+  //jquery used by components/select2
+  plugins: [
     new webpack.ProvidePlugin({
         $: 'jquery',
         jquery: 'jquery',
         jQuery: 'jquery',
         'window.jQuery': 'jquery'
     })
-],
+  ],
+
   node: {
     // prevent webpack from injecting useless setImmediate polyfill because Vue
     // source contains it (although only uses it if it's native).

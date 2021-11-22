@@ -266,12 +266,15 @@ export default {
             if(err) console.error(err);
             this.reload();
         });
-
+        /* modal gets registered after datasets page is mounted, so we can't emit event
         let subid = this.$route.params.subid;
         if(subid) {
-            this.$root.$emit('dataset.view', {id: subid, back: './'});
+            this.$nextTick(()=>{
+                console.log("requesting to open", subid);
+                this.$root.$emit('dataset.view', {id: subid, back: './'});
+            });
         }
-
+        */
         this.applyParticipants();
     },
 
@@ -291,6 +294,8 @@ export default {
             }
             this.reload();
         },
+
+        /*
         '$route': function() {
             var tab_id = this.$route.params.tab;
             if(tab_id == "dataset") {
@@ -298,6 +303,7 @@ export default {
                 this.$root.$emit('dataset.view', {id: subid, back: './'});
             }
         },
+        */
 
         participants() {
             this.applyParticipants();
@@ -497,8 +503,6 @@ export default {
                 });
                 finds["$and"] = ands;
             }
-            console.log("using query");
-            console.dir(finds);
             return finds;
         },
 
@@ -629,7 +633,8 @@ export default {
         },
 
         open(dataset_id) {
-            this.$router.replace('/project/'+this.project._id+'/dataset/'+dataset_id);
+            this.$router.replace('/project/'+this.project._id+'#object:'+dataset_id);
+            this.$root.$emit('dataset.view', {id: dataset_id});
         },
 
         check(dataset, event) {
