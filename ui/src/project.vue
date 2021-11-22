@@ -247,7 +247,7 @@
                                 </template>
                             </b-tab>
 
-                            <b-tab title="Disqus"/>
+                            <b-tab title="Comments"/>
                         </b-tabs>
 
                         <!--readme-->
@@ -326,7 +326,23 @@
                         </div>
 
                         <div v-if="detailTab == 4">
-                            <vue-disqus ref="disqus" shortname="brain-life" :identifier="selected._id"/>
+                            <!-- <vue-disqus ref="disqus" shortname="brain-life" :identifier="selected._id"/> -->
+                            <b-alert show variant="secondary" v-if="!config.user">
+                                Please login to Comments.
+                            </b-alert>
+                            <div v-else>
+                                <vue-editor id="commentEditor" v-model="comment"></vue-editor>
+                                <br/>
+                                <b-button v-if="comment.length" @click="submitComment()">Comment</b-button>
+                                <div v-if="selected.comments && selected.comments.length">
+                                    <div v-for="comment in selected.comments" :key="comment._id">
+                                        <div>comment</div>
+                                    </div>
+                                </div>
+                                <div v-if="!selected.comments">
+                                    <p>Be the first one to comment !</p>
+                                </div>
+                            </div>
                         </div>
 
                     </div><!-- main content-->
@@ -411,6 +427,7 @@ import newtaskModal from '@/modals/newtask'
 import datatypeselecterModal from '@/modals/datatypeselecter'
 import ReconnectingWebSocket from 'reconnectingwebsocket'
 import citation from '@/components/citation'
+import {VueEditor} from "vue2-editor"
 
 let ps;
 
@@ -433,6 +450,7 @@ export default {
         mag,
         doibadge,
         app,
+        VueEditor,
 
         'groupAnalysis': ()=> import('@/components/groupanalysis'),
 
@@ -476,6 +494,7 @@ export default {
             ws: null,
 
             config: Vue.config,
+            comment : "",
 
         }
     },
@@ -573,6 +592,10 @@ export default {
                     this.$router.push('/project');        
                 });
             }
+        },
+
+        submitComment() {
+            console.log(this.comment);
         },
 
         openProject(projectId) {
@@ -885,5 +908,8 @@ p.info .fa-icon {
     .main {
         margin-right: 20px;
     }
+}
+#commentEditor {
+    height: 100px;
 }
 </style>
