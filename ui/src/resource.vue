@@ -205,7 +205,7 @@
                     </p>
                 </b-container>
             </div>
-            <div v-if="tab == 1">
+            <div v-if="tabID == 'apps'">
                 <!--apps-->
                 <b-container>
                     <br>
@@ -239,7 +239,7 @@
                     </table>
                 </b-container>
             </div>
-            <div v-if="tab == 2">
+            <div v-if="tabID == 'jobs'">
                 <!--recent jobs-->
                 <b-container>
                     <br>
@@ -266,7 +266,7 @@
                     </table>
                 </b-container>
             </div>
-            <div v-if="tab == 3">
+            <div v-if="tabID == 'projects'">
                 <!--projects-->
                 <b-container>
                     <br>
@@ -347,16 +347,25 @@ export default {
             usage_layout: null, 
 
             tab: 0,
-
+            tabs : [
+                {id: "detail", label: "Detail"},
+                {id: "apps", label: "Apps"},
+                {id: "jobs", label: "Jobs"},
+                {id: "projects", label: "Projects"}
+            ],
             testing: false,
             config: Vue.config,
         }
     },
 
     computed: {
+        tabID() {
+            return this.tabs[this.tab].id; 
+        }
     },
 
     mounted() {
+        this.handleRouteParams();
         this.load();
     },
 
@@ -367,6 +376,11 @@ export default {
             if(!stat || !stat.finished || !stat.failed) return null;
             let p = stat.finished / (stat.finished + stat.failed);
             return (p*100).toFixed(1)+ "%";
+        },
+        handleRouteParams() {
+            console.log("handleRouteParams", this.$route.params);
+            const tab_id = this.$route.params.tab;
+            if(tab_id) this.tab = this.tabs.findIndex(tab=>tab.id == tab_id); 
         },
         load() {
             //not using resource_cache mixin because we want the latest content?
@@ -496,8 +510,14 @@ export default {
 
     watch: {
         '$route': function() {
+            this.handleRouteParams();
             load();
         },
+        tab: function() {
+            if(this.$route.params.tab != this.tabs[this.tab].id) {
+                this.$router.replace("/resource/"+this.resource._id+"/"+this.tabs[this.tab].id);
+            }
+        }
     }
 }
 </script>
