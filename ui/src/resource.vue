@@ -378,7 +378,6 @@ export default {
             return (p*100).toFixed(1)+ "%";
         },
         handleRouteParams() {
-            console.log("handleRouteParams", this.$route.params);
             const tab_id = this.$route.params.tab;
             if(tab_id) this.tab = this.tabs.findIndex(tab=>tab.id == tab_id); 
         },
@@ -511,7 +510,6 @@ export default {
     watch: {
         '$route': function() {
             this.handleRouteParams();
-            load();
         },
         tab: function() {
             if(this.$route.params.tab != this.tabs[this.tab].id) {

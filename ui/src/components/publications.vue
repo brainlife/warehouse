@@ -24,10 +24,10 @@
                         <div class="button" size="sm" @click="open(pub)" title="See in published page"> <icon name="eye"/> </div>
                     </div>
                     <b-badge v-if="pub.removed" variant="danger">Removed</b-badge>
-                    <h5>
+                    <h5 class="serif name">
                         {{pub.name}}
                     </h5>
-                    <p style="opacity: 0.7; margin-bottom: 5px;">
+                    <p class="serif desc">
                         {{pub.desc}}
                     </p>
                     <p style="line-height: 180%; margin-bottom: 5px;" v-if="pub.tags.length > 0">
@@ -225,19 +225,19 @@ export default {
 
 <style scoped>
 .info {
-top: 95px;
-padding: 10px 20px;
-color: #999;
-background-color: #f9f9f9;
-z-index: 1; /*needed to make sort order dropdown box to show up on top of page-content*/
+    top: 95px;
+    padding: 10px 20px;
+    color: #999;
+    background-color: #f9f9f9;
+    z-index: 1; /*needed to make sort order dropdown box to show up on top of page-content*/
 }
 .page-content {
-overflow-x: hidden; /*i can't figure out why there would be x scroll bar when a rule is active*/
-top: 95px;
+    overflow-x: hidden; /*i can't figure out why there would be x scroll bar when a rule is active*/
+    top: 95px;
 }
 
 .pub:first-child {
-margin-top: 2px;
+    margin-top: 2px;
 }
 .pub {
     margin: 0px 20px;
@@ -249,6 +249,13 @@ margin-top: 2px;
 }
 .pub-action {
     float: right;
+}
+.name {
+    display: inline-block;
+    opacity: 0.8;
+}
+.desc {
+    line-height: 180%;
 }
 </style>
 
