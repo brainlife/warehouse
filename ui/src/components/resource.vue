@@ -7,13 +7,13 @@
 
     <b-row>
         <b-col>
-            <p>
+            <p class="serif">
                 <b-badge v-if="!resource.gids || resource.gids.length == 0" variant="secondary" title="Private resource that's not shared with anyone.">
                     <icon name="lock" scale="0.8"/>
                 </b-badge>
                 <b>{{resource_obj.name}}</b>
             </p>
-            <p>
+            <p class="serif desc">
                 <small>{{trim(resource_obj.config.desc)}}</small>
             </p>
             <p style="opacity: 0.8;">
@@ -38,7 +38,7 @@
             </p>
         </b-col>
 
-        <b-col cols="2">
+        <b-col cols="1">
             <!--
             <span :title="resource_obj.status">
                 <icon v-if="resource_obj.status == 'ok'" name="check-circle" style="color: #28a745;"/>
@@ -48,7 +48,7 @@
             <statustag :status="resource_obj.status"/>
         </b-col>
 
-        <b-col cols="4">
+        <b-col cols="3">
             <!--small chart to show the recent execution-->
             <div style="position: relative; height: 100px;">
                 <div style="position: absolute; top: 0">
@@ -223,6 +223,9 @@ export default {
 </script>
 
 <style scoped>
+.desc {
+    line-height: 180%;
+}
 .alert {
     padding: 2px 5px;
 }

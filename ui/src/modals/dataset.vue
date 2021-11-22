@@ -289,15 +289,10 @@
                 </b-tab>
                 <b-tab title="Metadata/Sidecar">
                     <div class="dataset-meta">
-                        <div>
-                            <span class="form-header metadata">Metadata / sidecar <small v-if="dataset._canedit">(editable)</small></span>
-                            <div style="margin-right: 30px">
-                                <editor v-model="dataset._meta" @init="editorInit" @input="update_meta_json()" lang="json" height="450"/>
-                                <div v-if="dataset._canedit" style="margin: 5px 0;">
-                                    <b-button v-if="dataset._meta_dirty" variant="primary" @click="save_meta()" style="float: right;">Save Metadata</b-button>
-                                    <br clear="both">
-                                </div>
-                            </div>
+                        <editor v-model="dataset._meta" @init="editorInit" @input="update_meta_json()" lang="json" height="100%"/>
+                        <div v-if="dataset._canedit" style="position: absolute; bottom: 10px; right: 30px;">
+                            <b-button v-if="dataset._meta_dirty" variant="primary" @click="save_meta()" style="float: right;">Save Metadata</b-button>
+                            <br clear="both">
                         </div>
                     </div>
                 </b-tab>
@@ -1098,11 +1093,11 @@ export default {
 .dataset-apps,
 .dataset-provenance,
 .dataset-meta {
-position: absolute;
-top: 105px;
-left: 0;
-right: 0;
-bottom: 0px;
+    position: absolute;
+    top: 105px;
+    left: 0;
+    right: 0;
+    bottom: 0;
 }
 .dataset-provenance {
 background-color: #f9f9f9;

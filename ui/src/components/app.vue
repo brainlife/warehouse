@@ -3,8 +3,8 @@
     <div v-if="compact">
         <appavatar :app="app_" style="position: absolute; right: 0;" :width="80" :height="80"/>
         <span v-if="app_.deprecated_by" class="deprecated-label" style="top: inherit; bottom: 0;">Deprecated</span>
-        <div style="max-height: 75px; margin-left: 10px; margin-right: 90px; overflow: hidden;">
-            <h4 class="name">
+        <div style="max-height: 85px; margin-left: 10px; margin-right: 90px; overflow: hidden;">
+            <h4 class="name serif">
                 <icon v-if="app_.projects && app_.projects.length > 0" scale="0.9" name="lock" title="not working.." class="text-secondary"/>
                 <!--<icon v-if="app_.deprecated_by" scale="0.9" name="regular/calendar-times" title="deprecated" class="text-secondary"/>-->
                 {{app_.name}} <span class="github" style="font-weight: normal;">{{app_.github}}</span> 
@@ -18,15 +18,10 @@
         <span v-if="app_.deprecated_by" class="deprecated-label">Deprecated</span>
         <appavatar :app="app_" style="float: right; margin-left: 10px;" :width="80" :height="80"/>
         <div class="header">
-            <h4 class="name">
+            <h4 class="name serif">
                 <span v-if="app_.projects && app_.projects.length > 0" title="Private App" class="text-secondary">
                     <icon name="lock"/>
                 </span>
-                <!--
-                <span v-if="app_.deprecated_by" :id="'dep_'+app_.deprecated_by" title="Deprecated">
-                    <icon name="regular/calendar-times"/>
-                </span>
-                -->
                 {{app_.name}}
             </h4>
             <h5 class="github">{{app_.github}} <b-badge>{{branch||app_.github_branch}}</b-badge></h5>
@@ -77,9 +72,9 @@
             <span class="stat" style="float: right;" title="success rate = finished/(failed+finished)" v-if="app_.stats.success_rate">
                 <icon name="check-circle" scale="0.8"/> {{app_.stats.success_rate.toFixed(1)}}%
             </span>
+            <span v-if="showDoi && app_.doi">{{app_.doi}}</span>
         </div>
     </div>
-    <doibadge v-if="showDoi && app_.doi" :doi="app_.doi" :jump="true"/>
 </div>
 </template>
 
@@ -179,22 +174,22 @@ margin-bottom: 0px;
 transition: color 0.5s;
 }
 .desc {
-opacity: 0.85;
-margin-top: 0px;
-padding: 7px;
-margin-bottom: 32px;
-
-font-size: 11px;
-color: #444;
+    opacity: 0.85;
+    margin-top: 0px;
+    padding: 7px;
+    margin-bottom: 32px;
+    font-size: 12.5px;
+    color: #444;
 }
 .image {
 width: 100%;
 display: block;
 }
 h4 {
-font-size: 14px;
+font-size: 13px;
 font-weight: bold;
 padding-bottom: 0px;
+line-height: 150%;
 }
 h5 {
 font-size: 12px;

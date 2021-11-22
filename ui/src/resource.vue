@@ -10,14 +10,17 @@
                         <b-btn size="sm" v-if="testing" title="Test" disabled><icon name="cog" :spin="true"/> Testing ... </b-btn>
                         <b-btn @click="edit" v-if="resource._canedit" variant="secondary" size="sm"><icon name="edit"/> Edit</b-btn>
                     </div>
-                    <h5>
-                        <b-badge v-if="!resource.active">Inactive</b-badge>
-                        <b-badge v-if="!resource.gids || resource.gids.length == 0" variant="secondary" title="Private resource"><icon name="lock" scale="0.9"/></b-badge>
-                        {{resource.name}}
-                    </h5>
-                    <h6 style="opacity: 0.5;">
-                        {{resource.config.username}}@{{resource.config.hostname}}
-                    </h6>
+
+                    <div style="padding-left: 15px">
+                        <h5 class="serif">
+                            <b-badge v-if="!resource.active">Inactive</b-badge>
+                            <b-badge v-if="!resource.gids || resource.gids.length == 0" variant="secondary" title="Private resource"><icon name="lock" scale="0.9"/></b-badge>
+                            {{resource.name}}
+                        </h5>
+                        <h6 style="opacity: 0.5;">
+                            {{resource.config.username}}@{{resource.config.hostname}}
+                        </h6>
+                    </div>
 
                     <b-tabs class="brainlife-tab" v-model="tab">
                         <b-tab>
@@ -71,7 +74,7 @@
                             </b-badge>
     
                         </p>
-                        <p style="line-height: 180%">{{resource.config.desc||'no description'}}</p>
+                        <p class="serif desc">{{resource.config.desc||'no description'}}</p>
                         <p style="margin-bottom: 0;">
                             <statustag :status="resource.status" style="font-size: 150%"/>
                             <span style="padding-left: 15px; opacity: 0.7;">
@@ -155,9 +158,6 @@
                             <span class="form-header">Groups</span>
                         </b-col>
                         <b-col>
-                            <!--
-                            <tags :tags="resource.gids"/><br>
-                            --->
                             <p>
                                 <small>Members of the following groups can run jobs on this resource</small>
                             </p>
@@ -283,8 +283,8 @@
                         <div v-for="project in resource.stats.projects" :key="project._id">
                             <b-row v-if="projects[project._id] && project.total_walltime > 3600*1000*10" style="border-top: 1px solid #eee; padding: 2px 0px">
                                 <b-col cols="6">
-                                    <b>{{projects[project._id].name}}</b><br>
-                                    <small>{{projects[project._id].desc}}</small>
+                                    <b class="serif">{{projects[project._id].name}}</b><br>
+                                    <small class="serif desc">{{projects[project._id].desc}}</small>
                                 </b-col>
                                 <b-col>
                                     <small><contact v-for="id in projects[project._id].admins" size="small" :key="id" :id="id"/></small>
@@ -503,38 +503,41 @@ export default {
 </script>
 
 <style scoped>
+.desc {
+    line-height: 180%;
+}
 .page-content {
-top: 0px;
-background-color: #f9f9f9;
+    top: 0px;
+    background-color: #f9f9f9;
 }
 .page-content h2 {
-margin-bottom: 0px;
-padding: 10px 0px;
-font-size: 20pt;
+    margin-bottom: 0px;
+    padding: 10px 0px;
+    font-size: 20pt;
 }
 .page-content h3 {
-background-color: white;
-color: gray;
-padding: 20px;
-margin-bottom: 0px;
+    background-color: white;
+    color: gray;
+    padding: 20px;
+    margin-bottom: 0px;
 }
 .page-content h4 {
-padding: 15px 20px;
-background-color: white;
-opacity: 0.8;
-color: #999;
-font-size: 17pt;
-font-weight: bold;
+    padding: 15px 20px;
+    background-color: white;
+    opacity: 0.8;
+    color: #999;
+    font-size: 17pt;
+    font-weight: bold;
 }
 .header {
-background-color: white;
-padding: 15px 0 0 0;
-border-bottom: 1px solid #ddd;
+    background-color: white;
+    padding: 15px 0 0 0;
+    border-bottom: 1px solid #ddd;
 }
 .header-sticky {
-position: sticky;
-top: 0px;
-z-index: 5; /*to clear editor linenumbers*/
+    position: sticky;
+    top: 0px;
+    z-index: 5; /*to clear editor linenumbers*/
 }
 code.json {
 background-color: white;

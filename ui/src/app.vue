@@ -35,17 +35,17 @@
                     <b-btn @click="execute" variant="primary" size="sm" style="margin-top: 3px;"><icon name="play"/>&nbsp;&nbsp;&nbsp;<b>Execute</b></b-btn>    
                 </div>
 
-                <h5>
+                <h5 class="serif">
                     <b-badge v-if="app.projects && app.projects.length > 0" variant="secondary" title="Private App">
                         <icon name="lock" scale="0.8"/>
                     </b-badge>
                     {{app.name}}
                 </h5>
 
-                <h6 style="opacity: 0.8;">
+                <div style="opacity: 0.8; font-size: 1em;">
                     <a target="github" :href="'https://github.com/'+app.github+'/tree/'+(app.github_branch||'master')" style="color: gray;">{{app.github}}</a>
                     <small><b-badge variant="secondary" v-if="app.github_branch" style="position: relative; top: -2px"><icon name="code-branch" scale="0.6"/> {{app.github_branch}}</b-badge></small>
-                </h6>
+                </div>
 
                 <b-tabs class="brainlife-tab" v-model="tab">
                     <b-tab>
@@ -71,7 +71,6 @@
             <b-alert :show="app.removed" variant="secondary">This App has been removed.</b-alert>
         </div><!--header-->
 
-        <!-- detail -->
         <div v-if="tabID == 'detail'" class="tab-content">
             <b-container>
                 <appavatar :app="app" style="float: right; position: relative; top: -15px; margin-left: 15px;" :width="150" :height="150"/>
@@ -96,7 +95,7 @@
                         <icon name="clock" style="opacity: 0.4;"/>&nbsp;&nbsp;&nbsp;{{avg_runtime(app.stats.runtime_mean, app.stats.runtime_std)}}
                     </b-badge>
                 </p>
-                <p style="line-height: 180%;">{{app.desc_override||app.desc}}</p>
+                <p class="desc serif">{{app.desc_override||app.desc}}</p>
 
                 <!--<span class="form-header">Topics</span>-->
                 <p style="line-height: 250%;">
@@ -241,8 +240,6 @@
                     </p>
 
                     <div v-for="resource in resources_considered" :key="resource._id" class="resource-area">
-                        <resource :resource="resource" :title="resource.config.desc"/>
-                        <pre style="font-size: 80%; margin: 10px; padding: 0; opacity: 0.8;">{{resource.detail.msg}}</pre>
                         <div v-if="resource.status != 'ok'" class="resource-status bg-danger">
                             <icon name="exclamation" style="position: relative; top: -3px;"/>
                             &nbsp;
@@ -255,12 +252,12 @@
                             &nbsp;
                             <b>Busy</b>
                         </div>
-                        <div v-else-if="preferred_resource && resource.id == preferred_resource._id" class="resource-status bg-success" 
-                            title="Curretl, this resource will be used to execute this App.">
+                        <div v-else-if="preferred_resource && resource.id == preferred_resource._id" 
+                            class="resource-status bg-success" 
+                            title="This resource will be used to execute this App.">
                             <icon name="thumbs-up" style="position: relative; top: -3px;"/>
                             &nbsp;
                             <b>BEST</b>
-                            <!--Best-->
                             <span class="score">Score {{resource.score}}</span>
                         </div>
                         <div v-else-if="resource.score == 0" class="resource-status" style="color: #fff; background-color: #666;" 
@@ -270,6 +267,18 @@
                         <div v-else class="resource-status" style="color: #888;" title="Your App could be submitted to this resource if you prefer it">        
                             <span class="score">Score {{resource.score}}</span>
                         </div>
+
+                        <b-row no-gutters>
+                            <b-col>
+                                <resource :resource="resource" :title="resource.config.desc"/>
+                            </b-col>
+                            <b-col cols="3">
+                                <div style="background-color: #f0f0f0; border-bottom-right-radius: 8px; padding: 10px; height: 100%;">
+                                    <span class="form-header"><b>Selection Reason</b></span>
+                                    <pre style="font-size: 80%;">{{resource.detail.msg}}</pre>
+                                </div>
+                            </b-col>
+                        </b-row>
                     </div><!--resource-->
                 </div><!--resource_considered-->
 
@@ -337,9 +346,7 @@
         </div>
 
         <div v-if="tabID == 'example'" class="tab-content">
-            <b-container>
-                <exampleworkflow :appid="app._id"/>
-            </b-container>
+            <exampleworkflow :appid="app._id"/>
         </div>
         <br>
         <br>
@@ -632,7 +639,7 @@ export default {
 
 .header {
     background-color: white;
-    padding: 15px 0 0 0;
+    padding-top: 15px;
     border-bottom: 1px solid #ddd;
     position: sticky;
     top: 0;
@@ -654,8 +661,9 @@ export default {
 }
 .resource-area {
     background-color: white;
-    box-shadow: 1px 1px 3px #0003;
     margin-bottom: 10px;
+    box-shadow: 2px 2px 3px #0002;
+    border-radius: 8px;
 }
 .resource-status {
     font-size: 10pt;
@@ -665,6 +673,8 @@ export default {
     height: 30px;
     padding: 5px 10px;
     width: 100%;
+    border-top-right-radius: 8px;
+    border-top-left-radius: 8px;
 }
 .resource-status .score {
     float: right;
@@ -709,6 +719,10 @@ export default {
 .tab-content {
     background-color: white; 
     min-height: 300px;
+}
+.desc {
+    opacity: 0.8;
+    line-height: 180%;
 }
 </style>
 

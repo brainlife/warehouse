@@ -21,10 +21,10 @@
                     <icon name="id-badge" scale="0.7" style="opacity: 0.6" title="group id"/> {{project.group_id}}
                     -->
                 </div>
-                <span class="title">
+                <span class="title serif">
                     {{project.name}} <b-badge class="list-badge" variant="primary" v-if="project.new">New</b-badge> 
                 </span>
-                <div class="desc">{{project.desc||'no description'}}</div>
+                <div class="desc">{{trim(project.desc)}}</div>
             </div>
         </b-col>
         <b-col md="3">
@@ -89,6 +89,11 @@ export default {
         open() {
             this.$router.push("/project/"+this.project._id);
         },
+        trim(s) {
+            if(!s) return "Untitled"; 
+            if(s.length < 300) return s; 
+            return s.substring(0, 300)+"...";
+        },
     },
     computed: {
         contacts() {
@@ -101,7 +106,7 @@ export default {
 <style scoped>
 .project {
 background-color: white;
-padding: 3px 6px;
+padding: 7px 6px;
 margin-bottom: 1px;
 }
 .project:hover {
@@ -130,5 +135,6 @@ font-weight: bold;
 .desc {
 font-size: 85%;
 opacity: 0.7;
+padding-top: 5px;
 }
 </style>

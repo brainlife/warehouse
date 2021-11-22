@@ -3,7 +3,7 @@
     <projectavatar class="avatar" :project="project" :width="60" :height="60"/>
     <div class="private" v-if="project.access == 'private'"><icon name="lock"/></div>
     <div class="main-content">
-        <p class="title">
+        <p class="title serif">
             <b-badge class="list-badge" variant="primary" v-if="project.new">New</b-badge>
             {{project.name}}
         </p>

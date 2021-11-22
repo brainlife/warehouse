@@ -29,8 +29,8 @@
             <div v-if="!loading && total_datasets == 0" style="margin: 20px; opacity: 0.8;">
                 Please upload data by clicking the button on the right bottom corner of the page. You can also copy data from another project.
             </div>
-            
-            <!--start of dataset list-->
+
+            <!--the list-->
             <div v-for="(page, page_idx) in pages" v-if="datatypes" :key="page_idx" style="font-size: 12px;">
                 <div v-if="page_info[page_idx] && !page_info[page_idx].visible" :style="{'height': page_info[page_idx].height+'px'}">
                 </div>

@@ -13,11 +13,11 @@
         </div>
 
         <div style="margin-right: 150px; padding: 10px;">
-            <h5 class="name">
+            <h5 class="name serif">
                 <b-badge v-if="pub.removed" variant="danger">Removed</b-badge>
                 {{pub.name}}
             </h5>
-            <p style="opacity: 0.8; line-height: 180%;">
+            <p class="desc serif">
                 {{pub.desc}}
             </p>
 
@@ -106,14 +106,11 @@ export default {
 .pubcard {
     clear: both;
 }
-h4 {
-    font-size: 15px;
-    font-weight: bold;
-    color: #333;
-}
 .name {
-    color: #333;
-    padding: 0px;
+    color: #666;
+}
+.desc {
+    line-height: 180%;
 }
 .pub-removed {
     opacity: 0.5;
@@ -135,5 +132,4 @@ h4 {
     transition: box-shadow 0.3s;
     box-shadow: 1px 1px 4px #0003;
 }
-
 </style>

@@ -11,18 +11,18 @@
             </b-container>
         </div>
         -->
-
         <div v-if="my_resources.length > 0">
             <h4 class="header-sticky"><b-container>My Resources</b-container></h4> 
             <b-container>
                 <resource v-for="resource in my_resources" :key="resource._id" class="resource" :resource="resource"/>
             </b-container>
+            <br>
+            <br>
         </div>
-        <br>
-        <br>
 
         <h4 class="header-sticky"><b-container>Shared Resources</b-container></h4> 
         <b-container>
+            <br>
             <p>
                 The following resources are shared among all Brainlife users.
             </p>

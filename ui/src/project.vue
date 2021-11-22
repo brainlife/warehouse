@@ -8,10 +8,10 @@
                     <icon name="edit" scale="1.25"/>
                 </div>
             </div>
-            <h4>
+            <h5 class="serif">
                 <projectaccess :access="selected.access" style="position: relative; top: -3px;"/> 
                 {{selected.name}}
-            </h4>
+            </h5>
         </div>
         <div class="page-content top-tabs">
             <b-tabs class="brainlife-tab" v-model="tab">
@@ -85,10 +85,6 @@
                             <span class="form-header">Data Source</span>
                             <p style="margin-bottom: 5px;"><small>This project contains data imported from the following sources.</small></p>
                             <p v-for="rec in selected.importedDLDatasets" :key="rec._id" style="margin-bottom: 3px">
-                                <!--
-                                <small>{{rec.dataset_description}}</small>
-                                <small>{{rec.stats}}</small>
-                                -->
                                 <b style="font-size: 85%">{{rec.dataset_description.DatasetDOI||rec.path}}</b><br>
                                 <small>{{rec.dataset_description.Name}}</small>
                             </p>
@@ -130,7 +126,7 @@
                             </b-badge>
                         </p>
 
-                        <p style="opacity: 0.8; margin-bottom: 0; line-height: 180%;">
+                        <p class="desc serif">
                             {{selected.desc||'no description.'}}
                         </p>
                         <br>
@@ -247,7 +243,9 @@
                                 </template>
                             </b-tab>
 
+                            <!--
                             <b-tab title="Disqus"/>
+                            -->
                         </b-tabs>
 
                         <!--readme-->
@@ -268,15 +266,15 @@
 
                             <div v-if="selected.stats.apps && selected.stats.apps.length > 0">
                                 <span class="form-header">App Usage</span>
-                                <p><small>The following Apps were used to generate the data in this project</small></p>                        
-                                <b-row style="border-bottom: 1px solid #eee; margin-bottom: 10px;">
-                                    <b-col cols="10"><!--<small>Apps</small>--></b-col>
+                                <p><small>The following Apps were used to generate the data in this project.</small></p>                        
+                                <b-row style="border-bottom: 1px solid #0003; margin-bottom: 10px; opacity: 0.7">
+                                    <b-col cols="10">App</b-col>
                                     <b-col cols="2">Execution Count</b-col>
                                 </b-row>
                                 <b-row v-for="rec in selected.stats.apps" :key="rec._id">
                                     <b-col cols="10">
-                                        <div style="margin-bottom: 10px; border-left: 3px solid #f0f0f0; border-bottom: 1px solid #eee;">
-                                            <app v-if="rec.app._id" :app="rec.app" :branch="rec.task.service_branch" :compact="true" :showDoi="true"/>
+                                        <div style="margin-bottom: 20px;">
+                                            <app v-if="rec.app._id" :app="rec.app" :branch="rec.task.service_branch" :showDoi="true"/>
                                         </div>
                                     </b-col>
                                     <b-col cols="2"> <small>{{rec.count}}</small> </b-col>
@@ -325,9 +323,11 @@
                             </div>
                         </div>
 
+                        <!--
                         <div v-if="detailTab == 4">
                             <vue-disqus ref="disqus" shortname="brain-life" :identifier="selected._id"/>
                         </div>
+                        -->
 
                     </div><!-- main content-->
                 </div><!--project header-->
@@ -744,8 +744,13 @@ export default {
 </script>
 
 <style scoped>
+.desc {
+    opacity: 0.8;
+    line-height: 180%;
+}
+
 .page-header {
-    padding: 10px 20px;    
+    padding: 12px 15px;
 }
 .page-header h4 {
     margin-right: 150px; 

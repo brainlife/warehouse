@@ -75,6 +75,13 @@ export default {
                 q: this.query,
             }}).then(res=>{
                 this.pubs = res.data.pubs;
+
+                //sort in reverse chronological order
+                this.pubs.sort((a,b)=>{
+                    if(a.create_date < b.create_date) return 1;
+                    if(a.create_date > b.create_date) return -1;
+                    return 0;
+                });
                 Vue.nextTick(()=>{
                     console.log("initializing altmetric embed")
                     _altmetric_embed_init(this.$el);

@@ -160,13 +160,6 @@ var projectSchema = mongoose.Schema({
         fields: Array,
         abstract : String,     
     }],   
-    /*
-    //TODO - will be deprecated when datalad goes online
-    //for openneuro proxy project (not set if it's not openneuro)
-    openneuro: {
-        dataset_id: String,
-    },
-    */
 
     importedDLDatasets: [
         { 
@@ -242,7 +235,6 @@ exports.Projects = mongoose.model("Projects", projectSchema);
 var participantsSchema = mongoose.Schema({
     project: {type: mongoose.Schema.Types.ObjectId, ref: "Projects"},
 
-
     //from participants.json keyed by (column header)
     columns: mongoose.Schema.Types.Mixed, 
     //like.. 
@@ -277,7 +269,7 @@ var participantsSchema = mongoose.Schema({
     //    }
 
     //deprecated - use subjects once we no longer need it
-    rows: mongoose.Schema.Types.Mixed, 
+    //rows: mongoose.Schema.Types.Mixed, 
 
     //from participants.tsv (keyed by subject)
     subjects: mongoose.Schema.Types.Mixed, 
@@ -315,7 +307,7 @@ var datatypeSchema = mongoose.Schema({
 
     //auth service still uses number to store sub, we should eventually convert to string
     admins: [ String ], //list of users who can administer this datatype
-    
+
     //file inventory for this datatype
     files: [ new mongoose.Schema({ //mongoose.Schema allows for *missing*
         id: String,
@@ -423,26 +415,22 @@ var releaseSchema = mongoose.Schema({
 mongoose.model("Releases", releaseSchema);
 
 var publicationSchema = mongoose.Schema({
-    
-    //user who created this publication 
-    user_id: {type: String, index: true}, 
+
+    //user who created this publication
+    user_id: {type: String, index: true},
 
     license: String, //cc0, ccby.40, etc.
     doi: String, //doi for this dataset (we generate this)
     paper_doi: String, //doi for the paper (journal should publish this) TODO - is this used?t
 
-    fundings: [ new mongoose.Schema({funder: String, id: String}) ], 
-    
+    fundings: [ new mongoose.Schema({funder: String, id: String}) ],
+
     //project that this data belongs to
     project: {type: mongoose.Schema.Types.ObjectId, ref: "Projects"},
 
     authors: [ String ], //list of users who are the author/creator of this publicaions
     contributors: [ String ], //list of users who contributed (PI, etc..)
 
-    //publishParticipantsInfo: { type: Boolean, default: false }, //publish project participants info
-
-    //publisher: String, //NatureScientificData //TODO - is this used?
-    
     name: String, //title of the publication
     desc: String, 
     tags: [String], //software, eeg, mri, etc..
@@ -461,12 +449,10 @@ var publicationSchema = mongoose.Schema({
         venue : String, 
         authors : Array,
         fields: Array,
-        abstract : String,     
+        abstract : String,
     }],
-        
 });
 exports.Publications = mongoose.model("Publications", publicationSchema);
-
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 //
@@ -475,12 +461,9 @@ exports.Publications = mongoose.model("Publications", publicationSchema);
 //
 var datasetSchema = mongoose.Schema({
 
-    //experimental field to show that this dataset was created by copying another dataset.
-    //copied_from_id: {type: mongoose.Schema.Types.ObjectId, ref: "Datasets"},
-    
     //user who submitted this rule. task will run under this user
     user_id: String,
-    
+
     //project that this data belongs to
     project: {type: mongoose.Schema.Types.ObjectId, ref: 'Projects'},
 
@@ -490,7 +473,7 @@ var datasetSchema = mongoose.Schema({
 
     //meta fields as specified in the datatype.meta
     meta: mongoose.Schema.Types.Mixed,
-    
+
     //human readable name / desc
     //name: String, //deprecated
     desc: String, 
@@ -499,10 +482,10 @@ var datasetSchema = mongoose.Schema({
 
     //physical location of this crate (URI?)
     storage: String, //azure, dc2, sda?, jetstream-swift, etc.. (as configured in /config)
-    
+
     //any extra storage config (maybe like subdir needed to access the dataset)
     storage_config: mongoose.Schema.Types.Mixed, 
-    
+
     //size of datasets (when downloaded)
     size: Number,
 

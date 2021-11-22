@@ -1,5 +1,5 @@
 <template>
-<div>
+<div style="font-size: 90%;">
     <datatypetag :datatype="set.datatype" :tags="set.datatype_tags" :clickable="false"/> 
     <small v-if="set.subjects && set.subjects.length == 0">({{set.count||0}} obj <span style="opacity:0.5">|</span> {{(set.size||0)|filesize}})</small>
 </div>
@@ -16,3 +16,6 @@ export default {
     },
 }
 </script>
+<style scoped>
+
+</style>

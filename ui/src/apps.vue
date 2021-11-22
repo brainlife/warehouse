@@ -173,7 +173,7 @@ export default {
                 //organize apps into various tags
                 this.apps.forEach(app=>{
                     var tags = [ 'miscellaneous' ];
-                    if(app.tags && app.tags.length > 0) tags = app.tags;
+                    if(app.tags && app.tags.length > 0) tags = [ app.tags[0] ]; //only use the first one
                     tags.forEach(tag=>{
                         if(!this.app_groups[tag]) Vue.set(this.app_groups, tag, []);
                         if(!~this.sorted_tags.indexOf(tag)) this.sorted_tags.push(tag);

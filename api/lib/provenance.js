@@ -5,8 +5,6 @@ const config = require('../config');
 const db = require('../models');
 const mongoose = require('mongoose');
 const common = require('../common');
-
-//const mc = require('markov-clustering'); //obsoleted
 const dbscan = require('@cdxoo/dbscan');
 
 const math = require('mathjs');
@@ -148,12 +146,18 @@ exports.traverseProvenance = async (startTaskId) => {
             if(!task.config) task.config = {};
             if(!task.config._outputs) {
                 console.log("noop task", task._id, "doesn't have config set.. faking");
-                task.config._outputs = [{
+                const output = {
                     id: "noop",
                     datatype: "59c3eae633fc1cf9ead71679", //raw?
                     datatypeTags: [],
                     tags: [],
-                }];
+                }
+
+                //we started storing under "upload" directory around march
+                if(task.service == "braainlife/app-noop" && task.finish_date > new Date("2021-03-01")) {
+                    output.subdir = "upload";
+                }
+                task.config._outputs = [output];
             }
         }
 
@@ -377,14 +381,6 @@ exports.traverseProvenance = async (startTaskId) => {
                 tags: output.tags,
             }
 
-            //fake archiver expect subdir to be set to output_id but old task didn't do this sometimes
-            //if(!outputNode.subdir) outputNode.subdir = output.id;
-
-            /*
-            if(task.service == "brainlife/app-stage") {
-                outputNode._datasetId = output.dataset_id;
-            }
-            */
             nodes.push(outputNode);
             edges.push({ 
                 idx: edges.length,

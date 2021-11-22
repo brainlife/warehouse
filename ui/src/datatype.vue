@@ -8,10 +8,9 @@
                     <div style="float: right; z-index: 1; position: relative;">
                         <b-btn @click="edit" v-if="canedit" variant="secondary" size="sm"><icon name="edit"/> Edit</b-btn>
                     </div>
-                    <h2>
+                    <h5>
                         <datatypetag :datatype="datatype" :trimname="false"/>
-                    </h2>
-
+                    </h5>
                     <b-tabs class="brainlife-tab" v-model="tab">
                         <b-tab>
                             <template v-slot:title>Detail</template>
@@ -53,7 +52,7 @@
                                 <icon name="dot-circle"/>&nbsp;&nbsp;&nbsp;Analysis
                             </b-badge>
                         </p>
-                        <p>{{datatype.desc}}</p>
+                        <p class="serif" style="line-height: 180%">{{datatype.desc}}</p>
                     </b-container>
                 </div><!--sub header-->
                 <b-container>

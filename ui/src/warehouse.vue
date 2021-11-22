@@ -65,12 +65,28 @@ export default {
 </script>
 
 <style type="scss">
+
+@import url('https://fonts.googleapis.com/css2?family=Merriweather+Sans:wght@400;700&family=Merriweather:wght@400;700');
+
 #warehouse {
     height: 100%;
     background-color: #f9f9f9;
-    color: #444;
+    color: #333;
     font-size: 14px;
+    font-family: 'Merriweather Sans',Georgia,sans-serif;
 }
+.serif,
+.readme {
+    font-family: Merriweather,Georgia,serif;
+}
+.readme {
+    line-height: 180%;
+}
+
+h1,h2,h3,h4,h5,.title {
+    font-weight: 600;
+}
+
 body.dragging {
     user-select: none;
 }
@@ -592,7 +608,7 @@ pre {
     border: 1px solid #ddd; 
     padding: 4px 15px; 
     opacity: 0.7;
-    color: #444;
+    color: #333;
     height: 26px;
 }
 .bigpill svg {
