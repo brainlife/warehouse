@@ -290,7 +290,7 @@ export default {
     mounted() {
         this.$root.$on("rule.edit", opt=>{
             this.tab = 0;
-            this.resetApp();
+            this.resetIOConfig();
 
             //overwrite with user provied default
             Object.assign(this.rule, {
@@ -307,6 +307,7 @@ export default {
             this.ensure_ids_exists(); 
             this.ensure_config_exists();
             this.load_dataset_tags();
+            this.query_matching_datasets();
 
             this.subscribe();
             this.$root.$emit('bv::show::modal', 'modal-rule')
@@ -337,12 +338,13 @@ export default {
 
     methods: {
         changeapp(){
-            this.resetApp();
+            this.resetIOConfig();
             this.rule.branch = this.rule.app.github_branch;
 
             this.ensure_ids_exists();
             this.ensure_config_exists();
             this.load_dataset_tags();
+            this.query_matching_datasets();
         },
 
         subscribe() {
@@ -419,7 +421,11 @@ export default {
 
                 let find = {
                     project: this.rule.input_project_override[id] || this.rule.project,
-                    datatype: input.datatype,
+
+                    //app search mixin populates _id.. so unpopulate
+                    //but we are just got it from the database, then it should be just string id
+                    datatype: input.datatype._id || input.datatype,
+
                     storage: { $exists: true }, //just to be consistent with rule_handler
                     removed: false,
                 }
@@ -454,7 +460,8 @@ export default {
                 if(neg_tags.length > 0) tag_query.push({datatype_tags: {$nin:neg_tags}});
 
                 if(tag_query.length > 0) find.$and = tag_query;
-
+                
+                console.log("searching for inputs", id, find);
                 this.$http.get('dataset', {params: {
                     find: JSON.stringify(find),
                     limit: 1, //I just need count (0 means all!)
@@ -465,7 +472,7 @@ export default {
             }
         },
 
-        resetApp() {
+        resetIOConfig() {
             Object.assign(this.rule, {
                 input_tags: {},
                 input_tags_count: {}, //number of matching input datasets for each input

@@ -19,10 +19,6 @@ export default {
                         { name: {$regex: search, $options: 'i' }},
                         { desc: {$regex: search, $options: 'i' }},
                         { github: {$regex: search, $options: 'i' }},
-
-                        //$text index search can't do substring search, which is not very intuitive
-                        //https://stackoverflow.com/questions/24343156/mongodb-prefix-wildcard-fulltext-search-text-find-part-with-search-string
-                        //{ '$text': {'$search': search} },
                     ],
                     _id: {$nin: this.search_apps_ignore },
                     removed: false,
