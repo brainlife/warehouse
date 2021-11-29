@@ -44,7 +44,7 @@
                 <b-col cols="9">
                     <b-form-textarea :rows="4" :max-rows="20" v-model="project.readme" placeholder="Enter extended README content"/>
                     <p>
-                        <small class="text-muted">in <a href="https://help.github.com/articles/basic-writing-and-formatting-syntax/" target="_blank">markdown format</a></small>
+                        <small class="text-muted">You can use <a href="https://help.github.com/articles/basic-writing-and-formatting-syntax/" target="_blank">markdown format</a></small>
                     </p>
                 </b-col>
             </b-row>

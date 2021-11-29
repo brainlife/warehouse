@@ -13,12 +13,17 @@
             </div>
 
             <b-row class="table-column">
-                <b-col cols="2"><h4>Subject <small style="opacity: 0.5">/ Ses</small></h4></b-col>
+                <b-col cols="2"><h4>Subject <small>/ Ses</small></h4></b-col>
                 <b-col cols="10">
                     <b-row>
                         <b-col cols="3"><h4>Datatype</h4></b-col>
                         <b-col cols="3"><h4>App/Description</h4></b-col>
-                        <b-col cols="3"><h4>Create&nbsp;Date</h4></b-col>
+                        <b-col cols="3">
+                            <h4>
+                                Create&nbsp;Date
+                                <small style="float: right">Size</small>
+                            </h4>
+                        </b-col>
                         <b-col cols="3"><h4>Tags</h4></b-col>
                     </b-row>
                 </b-col>

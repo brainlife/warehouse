@@ -154,7 +154,7 @@ exports.traverseProvenance = async (startTaskId) => {
                 }
 
                 //we started storing under "upload" directory around march
-                if(task.service == "braainlife/app-noop" && task.finish_date > new Date("2021-03-01")) {
+                if(task.service == "brainlife/app-noop" && new Date(task.finish_date) > new Date("2021-03-01")) {
                     output.subdir = "upload";
                 }
                 task.config._outputs = [output];

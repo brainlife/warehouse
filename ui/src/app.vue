@@ -54,13 +54,13 @@
                     <b-tab>
                         <template v-slot:title>README</template>
                     </b-tab>
-                    <b-tab v-if="config.user">
+                    <b-tab>
                         <template v-slot:title>
                             Recent Jobs
                             <span style="opacity: 0.6; font-size: 80%" v-if="tasks.length > 0">{{tasks.length}}</span>
                         </template>
                     </b-tab>
-                    <b-tab v-if="config.user"><!-- v-if="config.hasRole('tester', 'brainlife')">-->
+                    <b-tab>
                         <template v-slot:title>
                             Example Workflow
                             <span style="opacity: 0.6; font-size: 80%">{{app.stats.examples||0}}</span>
@@ -320,7 +320,8 @@
         </div>
 
         <div v-if="tabID == 'recentJobs'" class="tab-content">
-            <b-container>
+            <b-alert :show="!config.user" variant="secondary">Please login to see recent jobs</b-alert>
+            <b-container v-if="config.user">
                 <br>
                 <div v-if="tasks.length > 0">
                     <p style="opacity: 0.7; font-size: 80%;">Showing up to 30 most recent jobs</p>
@@ -366,7 +367,6 @@ import datatype from '@/components/datatype'
 import datatypefile from '@/components/datatypefile'
 import datatypetag from '@/components/datatypetag'
 import appavatar from '@/components/appavatar'
-import VueMarkdown from 'vue-markdown'
 import statustag from '@/components/statustag'
 import projectavatar from '@/components/projectavatar'
 import doibadge from '@/components/doibadge'
@@ -387,7 +387,7 @@ export default {
         tags, 
         datatype, 
         appavatar,
-        VueMarkdown, 
+        VueMarkdown: ()=>import('vue-markdown'),
         statustag, 
         datatypetag, 
         datatypefile,
@@ -503,28 +503,31 @@ export default {
                 }
 
                 this.app = res.data.apps[0];
-                //if(this.cofig.debug) this.app.doi = "10.25663/brainlife.app.188"; //didn't work
-                if(this.config.user) this.find_resources(this.app.github);
                 Vue.nextTick(()=>{
                     //re-initialize altmetric badge - now that we have badge <div> placed
                     _altmetric_embed_init(this.$el);
                 });
 
-                this.$http.get(Vue.config.amaretti_api+'/task/recent', {params: {service: this.app.github}}).then(res=>{
-                    this.tasks = res.data;
+                if(this.config.user) {
+                    this.find_resources(this.app.github);
 
-                    //lookup resource names
-                    this.tasks.forEach(task=>{
-                        task._resource = {name: "N/A"};
-                        if(task.resource_id) this.resource_cache(task.resource_id, (err, resource)=>{
-                            task._resource = resource;
-                        });
-                    });                   
-                }).catch(console.error);
+                    this.$http.get(Vue.config.amaretti_api+'/task/recent', {params: {service: this.app.github}}).then(res=>{
+                        this.tasks = res.data;
 
-                this.$http.get(Vue.config.amaretti_api+'/service/info', {params: {service: this.app.github}}).then(res=>{
-                    this.serviceinfo = res.data;
-                }).catch(console.error);
+                        //lookup resource names
+                        this.tasks.forEach(task=>{
+                            task._resource = {name: "N/A"};
+                            if(task.resource_id) this.resource_cache(task.resource_id, (err, resource)=>{
+                                task._resource = resource;
+                            });
+                        });                   
+                    }).catch(console.error);
+
+                    this.$http.get(Vue.config.amaretti_api+'/service/info', {params: {service: this.app.github}}).then(res=>{
+                        this.serviceinfo = res.data;
+                    }).catch(console.error);
+
+                }
 
                 //then load github README
                 var branch = this.app.github_branch||"master";

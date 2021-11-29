@@ -23,7 +23,7 @@
                         <!--let's show tab specific info-->
                         <span v-if="tabinfo.id == 'detail'">
                         </span>
-                        
+
                         <span v-if="tabinfo.id == 'dataset'" style="opacity: 0.6; font-size: 80%;">
                             <span title="Number of subjects stored in archive" 
                                 v-if="selected.stats && selected.stats.datasets && selected.stats.datasets.subject_count">
@@ -34,13 +34,13 @@
                                 &nbsp;<icon name="cubes" scale="0.8"/>&nbsp;&nbsp;{{selected.stats.datasets.count}}
                             </span>
                         </span>
-                        
+
                         <span v-if="tabinfo.id == 'process'" title="Number of tasks" style="opacity: 0.8;"> 
                             <div v-if="selected.stats && get_total(selected.stats.instances) > 0" style="display: inline-block; width: 75px;">
                                 <stateprogress :states="selected.stats.instances"/>
                             </div>
                         </span>
-                        
+
                         <span v-if="tabinfo.id == 'pipeline' && selected.stats && selected.stats.rules && (selected.stats.rules.active||selected.stats.rules.inactive)" 
                             title="Number of pipeline rules" style="opacity: 0.6; font-size: 80%;">
                             &nbsp;{{selected.stats.rules.active}} <small>/ {{selected.stats.rules.active + selected.stats.rules.inactive}}</small>
@@ -79,8 +79,6 @@
                                 <small>Group ID</small>
                             </b-badge>
                         </p>
-                        
-
                         <div v-if="selected.importedDLDatasets && selected.importedDLDatasets.length">
                             <span class="form-header">Data Source</span>
                             <p style="margin-bottom: 5px;"><small>This project contains data imported from the following sources.</small></p>
@@ -146,7 +144,6 @@
                                 <p v-else>
                                     <contact v-for="c in selected.admins" :key="c._id" :id="c" size="small" style="line-height: 150%;"/>
                                 </p>
-                      
                             </b-col>
 
                             <b-col lg>
@@ -156,13 +153,11 @@
                                 <p v-else>
                                     <contact v-for="c in selected.members" :key="c._id" :id="c" size="small" style="line-height: 150%;"/>
                                 </p>
-                         
                             </b-col>
 
                             <b-col lg v-if="config.user && selected.access == 'private' && selected.guests && selected.guests.length > 0">
                                 <span class="form-header" title="has read access to data.">Guests</span>
                                 <contact v-for="c in selected.guests" :key="c._id" :id="c" size="small" style="line-height: 150%;"/>
-                   
                             </b-col>
                         </b-row>
                         <br>
@@ -257,8 +252,15 @@
                         <!--participants-->
                         <div v-if="detailTab == 1">
                             <p><small>Participants info provides information for each subject and can be used for the group analysis.</small></p>                        
-                            <b-alert variant="secondary" :show="selected.publishParticipantsInfo" style="margin-bottom: 15px;">This information will be published as part of all publications made from this project.</b-alert>
-                            <participants v-if="participants && Object.keys(participants).length" :rows="participants" :columns="participants_columns" style="overflow: auto; max-height: 500px;"/>
+                            <b-alert variant="secondary" :show="selected.publishParticipantsInfo" style="margin-bottom: 15px;">
+                                This information will be published as part of all publications made from this project.
+                            </b-alert>
+
+                            <participants v-if="participants && Object.keys(participants).length" 
+                                :rows="participants" 
+                                :columns="participants_columns" 
+                                style="overflow: auto; max-height: 500px;"/>
+
                         </div>
 
                         <!--app info-->
@@ -336,7 +338,7 @@
                     <pre>{{selected.mag}}</pre>
                     <pre>{{selected}}</pre>
                 </div>
-        
+
             </div><!-- project detail content-->
         </div>
 
@@ -619,7 +621,10 @@ export default {
                         var event = JSON.parse(json.data);
                         for(let k in event.msg) {
                             if(this.selected[k] === undefined) this.selected[k] = event.msg[k];
-                            else Object.assign(this.selected[k], event.msg[k]);
+                            else {
+                                if(typeof this.selected[k] == 'object') Object.assign(this.selected[k], event.msg[k]);
+                                else this.selected[k] = event.msg[k];
+                            }
                         }
                     };
                 };

@@ -67,6 +67,7 @@ import 'vue-awesome/icons/certificate.js'
 import 'vue-awesome/icons/cloud.js'
 import 'vue-awesome/icons/cloud-download-alt.js'
 import 'vue-awesome/icons/edit.js'
+import 'vue-awesome/icons/indent.js'
 import 'vue-awesome/icons/sort.js'
 import 'vue-awesome/icons/stop.js'
 import 'vue-awesome/icons/stop-circle.js'
@@ -98,6 +99,7 @@ import 'vue-awesome/icons/arrow-up.js'
 import 'vue-awesome/icons/arrow-down.js'
 import 'vue-awesome/icons/arrow-right.js'
 import 'vue-awesome/icons/arrow-left.js'
+import 'vue-awesome/icons/arrows-alt-v.js'
 import 'vue-awesome/icons/info-circle.js'
 import 'vue-awesome/icons/circle.js'
 import 'vue-awesome/icons/dot-circle.js'
@@ -111,6 +113,8 @@ import 'vue-awesome/icons/thumbs-up.js'
 import 'vue-awesome/icons/folder.js'
 import 'vue-awesome/icons/clock.js'
 import 'vue-awesome/icons/folder-open.js'
+import 'vue-awesome/icons/minus.js'
+import 'vue-awesome/icons/plus.js'
 import 'vue-awesome/icons/link.js'
 import 'vue-awesome/icons/brands/slack.js'
 import 'vue-awesome/icons/brands/github.js'
@@ -295,10 +299,6 @@ function jwt_decode_brainlife(jwt) {
     //let's just covert it to string 
     Vue.config.user.sub = Vue.config.user.sub.toString();
     axios.defaults.headers.common['Authorization'] = 'Bearer '+Vue.config.jwt;
-
-    //deprecated .. use Vue.config.has_role
-    //Vue.config.is_admin = Vue.config.hasRole("admin"); 
-    //if(Vue.config.has_role("admin")) console.log("user is admin!");
 }
 
 Vue.config.jwt = localStorage.getItem("jwt");//jwt token for user

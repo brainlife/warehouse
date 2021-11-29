@@ -25,9 +25,9 @@
             :class="{dataset_selected: (selected && dataset._id == selected._id)}"> 
             <p style="margin-bottom:7px;">
                 <b-badge variant="light" style="font-size: 85%;">{{dataset.path | shortName}}</b-badge>
-                {{dataset.dataset_description.Name}}
+                <span class="serif">{{dataset.dataset_description.Name}}</span>
                 <span v-if="dataset.dataset_description.Authors">
-                    <small v-for="(author, idx) in dataset.dataset_description.Authors.slice(0, 3)" :key="idx"> | {{author}} </small>
+                    <small v-for="(author, idx) in dataset.dataset_description.Authors.slice(0, 3)" :key="idx"> <span style="opacity: 0.3;">|</span> {{author}} </small>
                 </span>
             </p>
             <p style="margin-bottom:0px;">
@@ -55,7 +55,7 @@
                     <b-badge variant="light">{{selected.dataset_description.DatasetDOI}}</b-badge>
                 </a>
                 <pre v-else style="opacity: 0.5; font-size: 70%">{{selected.path}}</pre>
-                <h5 class="serif" style="font-size: 20px; margin-bottom: 0">{{selected.dataset_description.Name}}</h5>
+                <h5 class="serif" style="font-size: 20px; line-height: 150%; margin-bottom: 10px;">{{selected.dataset_description.Name}}</h5>
                 <small v-for="(author, idx) in selected.dataset_description.Authors" :key="idx"> 
                     <span v-if="idx > 0" style="opacity: 0.3;">|</span> {{author}} 
                 </small>
@@ -208,10 +208,7 @@ export default {
     mixins: [pagesplitter, datatypecache],
     components: { 
         pageheader, datatypetag, VueMarkdown, tags, license, 
-        //datatype, app, VueMarkdown, contact, tags, 
     },
-    
-    //props: ['dataset_id'],
 
     data() {
         return {
@@ -338,7 +335,7 @@ export default {
             this.$http('datalad/datasets', {params: {
                 find: JSON.stringify(find),
                 select: 'path name dataset_description stats',
-                sort: 'path',
+                sort: '-create_date',
                 limit: 0,
             }}).then(res=>{
                 this.datasets = res.data;
@@ -428,7 +425,6 @@ export default {
             //dataset files
             this.$http('datalad/items', {params: {
                 find: JSON.stringify({dldataset: dataset_id}), 
-                //sort: 'datasets.meta.subject datasets.meta.session', //slow?
                 select: 'dataset.meta.subject dataset.meta.session dataset.desc dataset.datatype dataset.datatype_tags dataset.tags',
                 limit: this.itemLimit,
                 sort: 'dataset.meta.subject',

@@ -1044,22 +1044,6 @@ exports.update_project_stats = async function(project, cb) {
         let groupanalysis = {
             sessions: [],
         }
-        /*
-        let gaInstanceRes = await axios(config.amaretti.api+"/instance", {
-            params: {
-                find: JSON.stringify({
-                    //status: {$in: ["running", "stopped"]}, //this is for instance!
-                    group_id: project.group_id,
-                    name: "ga-launchers", //must match from ui' components[groupanslysis.vue]
-                }),
-            },
-            headers: { authorization: "Bearer "+config.warehouse.jwt, },
-        });
-        let gaInstances = gaInstanceRes.data.instances;
-
-        if(gaInstances.length > 0) {
-        let instance = gaInstances[0]; //there should be only 1
-        */
 
         //load existing sessions
         let sessionsRes = await axios(config.amaretti.api+"/task", {

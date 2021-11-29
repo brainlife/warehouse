@@ -390,9 +390,7 @@ export default {
     },
 
     mounted() {
-        console.log("registering callback for dataset.view");
         this.$root.$on("dataset.view", opt=>{
-            console.log("opening data object view", opt);
             this.load(opt.id);
         });
 
@@ -665,7 +663,7 @@ export default {
                             else {
                                 this.secondary = secondary;
                             }
-                        });                        
+                        });
                     }
                 });
             }
@@ -847,7 +845,7 @@ export default {
                             path: "uis",
                             model: "UIs",
                         }
-                    }, 
+                    },
                     {
                         path: "project"
                     },
@@ -867,7 +865,7 @@ export default {
             if(this.dataset.status == "storing") {
                 this.tm_load_status = setTimeout(()=>{ this.load_status(id); }, 5000);
             }
-            this.load_archive_task(); 
+            this.load_archive_task();
             this.load_product();
 
             Vue.set(this.dataset, '_meta',  JSON.stringify(this.dataset.meta, null, 4));
@@ -886,7 +884,7 @@ export default {
                     this.load_resource();
                     this.load_secondary();
                 }
-            } 
+            }
 
             /////////////////////////////////////////////////////////////////////////////
 

@@ -21,7 +21,7 @@
             </b-col>
             <b-modal size="xl" id='modal-useredit' v-if="form">
                 <template #modal-header>
-                    <h5 style="margin-bottom: 0;">{{form.fullname}} <small style="float: right">{{form.sub}}</small></h5>
+                    <h4 style="margin-bottom: 0;">{{form.fullname}} <small style="float: right">{{form.sub}}</small></h4>
                     <div class="button" @click="closeModal()" style="float: right">
                         <icon name="times" scale="1.5"/>
                     </div>
@@ -216,9 +216,6 @@ export default {
             this.form = JSON.parse(JSON.stringify(user)); //copy
             this.mode = "ui";
 
-            //TODO - handle openids
-            //this.openids = user.ext.openids[0] || " ";
-
             //for really old users
             if(!this.form.profile) this.form.profile = {};
             if(!this.form.profile.public) this.form.profile.public = {};
@@ -295,11 +292,12 @@ export default {
 </script>
 
 <style scoped>
-.container h5 {
-    padding-bottom: 10px;
+/deep/ h5 {
+    padding-bottom: 5px;
     margin-bottom: 10px;
-    opacity: 0.7;
+    opacity: 0.5;
     border-bottom: 1px solid #ddd;
+    font-size: 120%;
 }
 .form-header {
     margin-top: 7px;

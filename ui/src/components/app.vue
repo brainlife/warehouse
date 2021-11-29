@@ -47,12 +47,12 @@
         <slot/>
         <div class="stats" v-if="app_.stats">
             <span class="stat" title="Number of time this App was requested">
-                <icon name="play" scale="0.8"/> {{app_.stats.requested}}
+                <icon name="play" scale="0.8"/> {{app_.stats.requested|formatNumber}}
                 &nbsp;
                 &nbsp;
             </span>
             <span class="stat" title="Number of unique users who requested this App">
-                <icon name="user" scale="0.8"/> {{app_.stats.users}}
+                <icon name="user" scale="0.8"/> {{app_.stats.users|formatNumber}}
                 &nbsp;
                 &nbsp;
             </span>

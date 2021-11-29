@@ -160,14 +160,16 @@ router.get('/query', common.jwt({credentialsRequired: false}), (req, res, next)=
 });
 
 //experimental
-router.get('/example/:id', common.jwt(), async (req, res, next)=>{
+router.get('/example/:id', common.jwt({credentialsRequired: false}), async (req, res, next)=>{
     const cachefname = "/tmp/example.app-"+req.params.id+".json";
     if(fs.existsSync(cachefname)) {
         const cache = fs.readFileSync(cachefname, {encoding: "utf8"});
         const provs = JSON.parse(cache);
 
-        //anonymize if user is not admin
-        if(!req.user.scopes.warehouse || !~req.user.scopes.warehouse.indexOf('admin')) {
+        if(req.user && req.user.scopes.warehouse && req.user.scopes.warehouse.includes('admin')) {
+            //let admin see things that other user can't see
+        } else {
+            //remove info
             provs.forEach(prov=>{
                 prov.nodes.forEach(node=>{
                     delete node.project;

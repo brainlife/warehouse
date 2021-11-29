@@ -129,7 +129,7 @@ color: #dc3545;
 margin-right: 3px;
 }
 .title {
-font-size: 95%;
+font-size: 90%;
 font-weight: bold;
 }
 .desc {

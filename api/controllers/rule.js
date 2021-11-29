@@ -133,9 +133,10 @@ router.post('/', common.jwt(), (req, res, next)=>{
         }
         new db.Rules(Object.assign(req.body, override)).save((err, rule)=>{
             if(err) return next(err);
-            common.publish("rule.create."+req.user.sub+"."+req.body.project+"."+rule._id, {})
+            console.log("created new rule", rule._id);
+            common.publish("rule.create."+req.user.sub+"."+req.body.project+"."+rule._id, rule)
             res.json(rule); 
-            
+
             //TODO - need to query for project .. and update stats
             //common.updatate_project_stats(project, err=>{});
         });
@@ -198,15 +199,18 @@ router.put('/:id', common.jwt(), (req, res, next)=>{
     });
 });
 
+//DEPRECATED 
+//I will let user toggle activation flag anytime but give them ability to remove jobs
 /**
  * @apiGroup Pipeline Rules
- * @api {put} /rule/:id/deactivate
+ * @api {put} /rule/deactivate/:id
  *                              Deactivate the rule
  * @apiDescription              Removed all running/requested tasks
  *
  * @apiHeader {String} authorization 
  *                              A valid JWT token "Bearer: xxxxx"
  */
+/*
 router.put('/deactivate/:id', common.jwt(), function(req, res, next) {
     const id = req.params.id;
     db.Rules.findById(id, function(err, rule) {
@@ -222,38 +226,106 @@ router.put('/deactivate/:id', common.jwt(), function(req, res, next) {
             rule.save(function(err) {
                 if(err) return next(err);
                 common.publish("rule.update."+req.user.sub+"."+rule.project+"."+rule._id, rule)
-                //res.json({status: "ok"});
                 //I need to wait for the rule_handler to finish its cycle before I start removing tasks..
-                //for now, I am going to give 5 seconds 
-                //TODO - maybe I should wait for event from rule_handler?
-                logger.debug("waiting for rule handler to finish processing for the current round");
                 common.wait_for_event("warehouse.rule", "done", (err, message)=>{
-                    //logger.debug(JSON.stringify(message, null, 4));
-                    request.get({ url: config.amaretti.api+"/task", json: true, headers: { authorization: req.headers.authorization },
+
+                    //look for jobs submitted by this rule
+                    request.get({ 
+                        url: config.amaretti.api+"/task", json: true, 
+                        headers: { authorization: req.headers.authorization },
                         qs: {
                             find: JSON.stringify({
                                 'config._rule.id': rule._id,
-                                //'config._app': {$exists: true}, //don't want to remove staging task (might be used by other rules)
                                 status: {$ne: "removed"},
                             }),
                             limit: 5000, //big enough to grab all tasks?
                         },
                     }, (err, _res, data)=>{
                         if(err) return cb(err);
-                        //console.dir(data.tasks);
                         async.eachSeries(data.tasks, (task, next_task)=>{
-                            logger.debug("removing task %s", task._id.toString());
-                            request.delete({url: config.amaretti.api+"/task/"+task._id, json: true, headers: { authorization: req.headers.authorization }}, next_task);
+                            console.log("removing task %s", task._id.toString());
+                            request.delete({
+                                url: config.amaretti.api+"/task/"+task._id, json: true, 
+                                headers: { authorization: req.headers.authorization }
+                            }, next_task);
                         }, err=>{
                             if(err) return next(err);
                             res.json({status: "ok"});
-
-                            //TODO - need to query for project .. and update stats
-                            //common.updatate_project_stats(project, err=>{});
                         });
                     });
                 });
             });  
+        });
+    });
+});
+*/
+
+/**
+ * @apiGroup Pipeline Rules
+ * @api {put} /rule/removejobs/:id      Removed all running/requested tasks
+ * @apiHeader {String} authorization    A valid JWT token "Bearer: xxxxx"
+ */
+router.put('/removejobs/:id', common.jwt(), function(req, res, next) {
+    const id = req.params.id;
+    db.Rules.findById(id, function(err, rule) {
+        if(err) return next(err);
+        if(!rule) return next(new Error("can't find the rule with id:"+id));
+
+        //check user has access to the project
+        common.getprojects(req.user, function(err, canread_project_ids, canwrite_project_ids) {
+            if(err) return next(err);
+            let found = canwrite_project_ids.find(id=>id.equals(rule.project));
+            if(!found) return next("you are not allowed to edit this rule");
+
+            common.publish("rule.update."+req.user.sub+"."+rule.project+"."+rule._id, rule)
+
+            //I need to wait for the rule_handler to finish its cycle before I start removing tasks..
+            //TODO - this could take a while? (too long for this synchronous api?)
+            common.wait_for_event("warehouse.rule", "done", (err, message)=>{
+
+                //ok now for jobs submitted by this rule
+                request.get({ 
+                    url: config.amaretti.api+"/task", json: true, 
+                    headers: { authorization: req.headers.authorization },
+                    qs: {
+                        find: JSON.stringify({
+                            'config._rule.id': rule._id,
+                            status: {$ne: "removed"},
+                        }),
+                        limit: 5000, //big enough to grab all tasks?
+                    },
+                }, (err, _res, data)=>{
+                    if(err) return cb(err);
+
+                    //now remove jobs!
+                    async.eachSeries(data.tasks, (task, next_task)=>{
+                        console.log("removing task %s", task._id.toString());
+                        request.delete({
+                            url: config.amaretti.api+"/task/"+task._id, json: true, 
+                            headers: { authorization: req.headers.authorization }
+                        }, next_task);
+                    }, err=>{
+                        if(err) return next(err);
+                        res.json({status: "ok", msg: "Successfullhy made requests to remove "+data.tasks.length+" jobs"});
+                    });
+                });
+            });
+        });
+    });
+});
+
+//used by ui> components/pipeline/rule to let user force recompuation of pipeline rule stats
+//it shouldn't be necessary but I can't figure out why sometimes event_handler doesn't process
+//stats.. It happens when a jobs are in requested states and goes immediately removed. It should
+//send task events to wf.task queue.. but maybe warehouse task service isn't sending them
+//or maybe the debouncer in event_handler isn't working?
+router.post('/updatestats/:id', common.jwt(), function(req, res, next) {
+    const id = req.params.id;
+    db.Rules.findById(id, function(err, rule) {
+        if(err) return next(err);
+        if(!rule) return next(new Error("can't find the rule with id:"+id));
+        common.update_rule_stats(id, (err, _rule)=>{
+            res.json({stats: _rule.stats});
         });
     });
 });
@@ -292,6 +364,7 @@ router.delete('/:id', common.jwt(), function(req, res, next) {
         });
     });
 });
+
 
 module.exports = router;
 

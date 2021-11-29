@@ -2,27 +2,6 @@
 <div v-if="taskconfig && appconfig">
     <small style="opacity: 0.5" v-if="Object.keys(taskconfig).length == 0">No configuration</small>
     <taskconfigtable :appconfig="appconfig" :config="taskconfig"/>
-    <!--
-    <table width="100%">
-        <tr v-for="(v,k) in taskconfig" :key="k" class="config-row" :class="{ default: is_default(k) }">
-            <th>{{k}}</th>
-            <td>
-                <div style="word-break: break-all; display: inline-block;">
-                    <pre v-if="v === null" class="text-muted" style="margin-bottom: 0;">null</pre>
-                    <span v-else-if="v === ''">(empty)</span>
-                    <pre v-else-if="typeof v == 'object'" style="margin-bottom: 0;">{{JSON.stringify(v, null, 4)}}</pre>
-                    <pre v-else style="white-space: pre-wrap; margin-bottom: 0;">{{v}}</pre>
-                </div>
-                <span style="position: relative; top: -4px; opacity: 0.6;" v-if="!is_default(k)">(default: {{get_default(k)}})</span>
-            </td>
-            <td style="font-size: 85%;" width="50%" v-if="appconfig[k]" :title="appconfig[k].desc" v-b-tooltip.hover>
-                <div style="white-space: pre-line; overflow: hidden; text-overflow: ellipsis; height: 15px;">
-                    {{appconfig[k].desc}} 
-                </div>
-            </td>
-        </tr>
-    </table>
-    -->
     <div v-if="!showAdDef && Object.keys(adDefConfig).length" class="adDef">
         <div @click="showAdDef = true" class="toggler">
             <icon name="caret-right" style="width: 20px"/> Show Other Advanced Options <small>(set to default)</small>
