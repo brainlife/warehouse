@@ -918,3 +918,20 @@ dlItemSchema.index({'dldataset': 1, 'dataset.datatype': 1, 'dataset.meta.subject
 exports.DLItems = mongoose.model('DLItems', dlItemSchema);
 
 
+var commentSchema = mongoose.Schema({
+    comment: String,
+    user_id: String, //sub of the user
+    create_date: {type: Date, default: Date.now},
+    
+    //one of the following should be set
+    project: {type: mongoose.Schema.Types.ObjectId, ref: 'Projects'},
+    //if this comment pertains to a project, this is set
+    pub: {type: mongoose.Schema.Types.ObjectId, ref: 'Publication'},
+    //if this comment pertains to an app, this is et
+
+    update_date: { type: Date, default: Date.now },
+    //let user "edit" comment, and if it's edited, this is set.
+    removed: { type: Boolean, default: false },
+    });
+
+exports.Comments = mongoose.model('Comments', commentSchema);
