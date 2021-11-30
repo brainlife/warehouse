@@ -43,9 +43,9 @@ router.get('/', common.jwt({credentialsRequired: true}), (req, res, next) =>{
 /**
  * @apiGroup Comments
  * @api {post} /comment Post comment on a Project
- * @apiParam {id} userID 
+ * @apiParam {user_id} userID 
  * @apiParam {String} comment
- * 
+ * @apiParam {project} projectID
  * @apiSuccess {}            Comment registered 
  */
 
