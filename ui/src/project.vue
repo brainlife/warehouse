@@ -681,7 +681,7 @@ export default {
                     */
                     names.push(stat.name);
                     walltimes.push(stat.total_walltime/(3600*1000));
-                    counts.push(stat.count.toString()+" tasks");
+                    counts.push(stat.count.toString()+" jobs");
                 });
                 //create plotly graph
                 var data = [{

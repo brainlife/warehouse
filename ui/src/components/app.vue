@@ -186,14 +186,14 @@ margin-left: 7px;
     display: block;
 }
 h4 {
-    font-size: 14px;
+    font-size: 13.5px;
     font-weight: bold;
     padding-bottom: 0px;
     line-height: 150%;
 }
 h5 {
-font-size: 12px;
-line-height: 160%;
+    font-size: 12px;
+    line-height: 160%;
 }
 .compact .name {
 padding-top: 5px;

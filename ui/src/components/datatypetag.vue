@@ -98,7 +98,6 @@ export default {
 <style scoped>
 .dt {
     display: inline;
-    font-size: 90%;
 }
 .dt-clickable {
     cursor: pointer;

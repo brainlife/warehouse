@@ -36,7 +36,7 @@
             </div>
 
             <!--the list-->
-            <div v-for="(page, page_idx) in pages" v-if="datatypes" :key="page_idx" style="font-size: 12px;">
+            <div v-for="(page, page_idx) in pages" v-if="datatypes" :key="page_idx" style="font-size: 11px;">
                 <div v-if="page_info[page_idx] && !page_info[page_idx].visible" :style="{'height': page_info[page_idx].height+'px'}">
                 </div>
                 <b-row class="subjects" v-for="group in Object.keys(page).sort()" :key="group" :ref="'sub-'+group" v-else>

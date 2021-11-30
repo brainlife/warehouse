@@ -7,13 +7,13 @@
 
     <b-row>
         <b-col>
-            <p class="serif">
+            <p>
                 <b-badge v-if="!resource.gids || resource.gids.length == 0" variant="secondary" title="Private resource that's not shared with anyone.">
                     <icon name="lock" scale="0.8"/>
                 </b-badge>
                 <b>{{resource_obj.name}}</b>
             </p>
-            <p class="serif desc">
+            <p class="desc">
                 <small>{{trim(resource_obj.config.desc)}}</small>
             </p>
             <p style="opacity: 0.8;">

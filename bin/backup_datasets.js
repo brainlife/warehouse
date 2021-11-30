@@ -4,10 +4,9 @@ const request = require('request');
 const fs = require('fs');
 const tar = require('tar');
 const winston = require('winston');
-const ssh2 = require('ssh2');
+const Client = require('ssh2').Client;
 
 const config = require('../api/config');
-//const logger = winston.createLogger(config.logger.winston);
 const db = require('../api/models');
 
 console.log("connecting to db");
@@ -26,8 +25,7 @@ db.init(function(err) {
 
 function connect_sda(cb) {
     console.log("connecting to sda");
-    let Client = require('ssh2');
-    let conn = new Client();
+    const conn = new Client();
     conn.on('ready', ()=>{
         console.log('ssh ready - opening sftp');
         conn.sftp((err, sftp)=>{

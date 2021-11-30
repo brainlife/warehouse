@@ -12,7 +12,7 @@
                     </div>
 
                     <div style="padding-left: 15px">
-                        <h5 class="serif">
+                        <h5>
                             <b-badge v-if="!resource.active">Inactive</b-badge>
                             <b-badge v-if="!resource.gids || resource.gids.length == 0" variant="secondary" title="Private resource"><icon name="lock" scale="0.9"/></b-badge>
                             {{resource.name}}
@@ -74,7 +74,7 @@
                             </b-badge>
     
                         </p>
-                        <p class="serif desc">{{resource.config.desc||'no description'}}</p>
+                        <p class="desc">{{resource.config.desc||'no description'}}</p>
                         <p style="margin-bottom: 0;">
                             <statustag :status="resource.status" style="font-size: 150%"/>
                             <span style="padding-left: 15px; opacity: 0.7;">
@@ -283,8 +283,8 @@
                         <div v-for="project in resource.stats.projects" :key="project._id">
                             <b-row v-if="projects[project._id] && project.total_walltime > 3600*1000*10" style="border-top: 1px solid #eee; padding: 2px 0px">
                                 <b-col cols="6">
-                                    <b class="serif">{{projects[project._id].name}}</b><br>
-                                    <small class="serif desc">{{projects[project._id].desc}}</small>
+                                    <b>{{projects[project._id].name}}</b><br>
+                                    <small class="desc">{{projects[project._id].desc}}</small>
                                 </b-col>
                                 <b-col>
                                     <small><contact v-for="id in projects[project._id].admins" size="small" :key="id" :id="id"/></small>
