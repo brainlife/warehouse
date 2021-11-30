@@ -25,7 +25,7 @@
             :class="{dataset_selected: (selected && dataset._id == selected._id)}"> 
             <p style="margin-bottom:7px;">
                 <b-badge variant="light" style="font-size: 85%;">{{dataset.path | shortName}}</b-badge>
-                <span class="serif">{{dataset.dataset_description.Name}}</span>
+                <span>{{dataset.dataset_description.Name}}</span>
                 <span v-if="dataset.dataset_description.Authors">
                     <small v-for="(author, idx) in dataset.dataset_description.Authors.slice(0, 3)" :key="idx"> <span style="opacity: 0.3;">|</span> {{author}} </small>
                 </span>
@@ -55,7 +55,7 @@
                     <b-badge variant="light">{{selected.dataset_description.DatasetDOI}}</b-badge>
                 </a>
                 <pre v-else style="opacity: 0.5; font-size: 70%">{{selected.path}}</pre>
-                <h5 class="serif" style="font-size: 20px; line-height: 150%; margin-bottom: 10px;">{{selected.dataset_description.Name}}</h5>
+                <h5 style="font-size: 20px; line-height: 150%; margin-bottom: 10px;">{{selected.dataset_description.Name}}</h5>
                 <small v-for="(author, idx) in selected.dataset_description.Authors" :key="idx"> 
                     <span v-if="idx > 0" style="opacity: 0.3;">|</span> {{author}} 
                 </small>

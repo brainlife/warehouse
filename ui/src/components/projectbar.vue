@@ -21,7 +21,7 @@
                     <icon name="id-badge" scale="0.7" style="opacity: 0.6" title="group id"/> {{project.group_id}}
                     -->
                 </div>
-                <span class="title serif">
+                <span class="title">
                     {{project.name}} <b-badge class="list-badge" variant="primary" v-if="project.new">New</b-badge> 
                 </span>
                 <div class="desc">{{trim(project.desc)}}</div>

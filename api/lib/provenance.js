@@ -185,9 +185,10 @@ exports.traverseProvenance = async (startTaskId) => {
         };
 
         if(task.config._app) {
-            const app = await db.Apps.findById(task.config._app).select({config: 1}).exec();//.lean();
+            const app = await db.Apps.findById(task.config._app).select({config: 1, desc: 1}).exec();//.lean();
             node._config = filterConfig(task.config, app.config);
             node.appId = task.config._app;
+            node.desc = app.desc;
         }
         if(task.service.startsWith("brainlife/validator-") ||
            task.service.startsWith("brain-life/validator-")) node.validator = true;

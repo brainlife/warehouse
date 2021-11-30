@@ -1,6 +1,6 @@
 <template>
 <div class="pipeline-group" :class="{'group-root': root}" :style="{'background-color': group.color}">
-    <h6 style="opacity: 0.7" v-if="!root">{{group.name}}</h6>
+    <h5 style="opacity: 0.7" v-if="!root">{{group.name}}</h5>
 
     <div v-if="!group.open" class="item-body">
         <pipelineReadme v-if="closedItem" :item="closedItem" @updated="$emit('updated')"/>
@@ -13,28 +13,16 @@
             <div class="item-buttons">
                 <b-button-group>
 
-                    <b-btn variant="primary" size="sm" @click="editReadme(item)" v-if="item.type == 'readme' && item._editing === null"><icon name="edit"/></b-btn>
-                    <b-btn variant="primary" size="sm" @click="editRule(item)" v-if="item.type == 'rule'"><icon name="edit"/></b-btn>
-                    <b-btn variant="primary" size="sm" @click="editGroup(item)" v-if="item.type == 'group'"><icon name="edit"/></b-btn>
+                    <b-btn variant="primary" size="sm" @click="editReadme(item)" title="Edit" v-if="item.type == 'readme' && item._editing === null"><icon name="edit"/></b-btn>
+                    <b-btn variant="primary" size="sm" @click="editRule(item)" title="Edit" v-if="item.type == 'rule'"><icon name="edit"/></b-btn>
+                    <b-btn variant="primary" size="sm" @click="editGroup(item)" title="Edit" v-if="item.type == 'group'"><icon name="edit"/></b-btn>
+                    <b-btn variant="outline-secondary" size="sm" class="handle" title="Move this item"><icon name="arrows-alt-v"/></b-btn>
+                    <b-btn variant="primary" size="sm" v-if="item.type == 'readme' && item._editing !== null" title="Save the update" @click="saveReadme(item)">Save</b-btn>
+                    <b-btn variant="secondary" size="sm" v-if="item.type == 'readme' && item._editing !== null" title="Edit this note" @click="cancelEditReadme(item)">X</b-btn>
+                    <b-btn variant="outline-secondary" size="sm" v-if="item.type == 'group' && item.open" title="Close this group" @click="toggle(item)"><icon name="minus"/></b-btn>
+                    <b-btn variant="outline-secondary" size="sm" v-if="item.type == 'group' && !item.open" title="Open this group" @click="toggle(item)"><icon name="plus"/></b-btn>
 
-                    <!--
-                    <b-btn variant="outline-secondary" size="sm" @click="moveup(item)" v-if="idx != 0" :title="item.type">
-                        <icon name="arrow-up"/>
-                    </b-btn>
-                    <b-btn variant="outline-secondary" size="sm" @click="movedown(item)" v-if="idx != group.items.length-1" :title="item.type">
-                        <icon name="arrow-down"/>
-                    </b-btn>
-                    -->
-
-                    <b-btn variant="outline-secondary" size="sm" class="handle"><icon name="arrows-alt-v"/></b-btn>
-
-                    <b-btn variant="primary" size="sm" v-if="item.type == 'readme' && item._editing !== null" @click="saveReadme(item)">Save</b-btn>
-                    <b-btn variant="secondary" size="sm" v-if="item.type == 'readme' && item._editing !== null" @click="cancelEditReadme(item)">X</b-btn>
-
-                    <b-btn variant="outline-secondary" size="sm" v-if="item.type == 'group' && item.open" @click="toggle(item)"><icon name="minus"/></b-btn>
-                    <b-btn variant="outline-secondary" size="sm" v-if="item.type == 'group' && !item.open" @click="toggle(item)"><icon name="plus"/></b-btn>
-
-                    <b-btn variant="danger" size="sm" @click="remove(item)"><icon name="trash"/></b-btn>
+                    <b-btn variant="danger" size="sm" @click="remove(item)" title="Remove this item"><icon name="trash"/></b-btn>
                 </b-button-group>
             </div>
 
@@ -236,7 +224,7 @@ export default {
 .pipeline-group {
     padding: 10px 20px;
     box-shadow: 1px 1px 3px #0002;
-    border-radius: 10px;
+    border-radius: 5px;
     margin-bottom: 10px;
 }
 .group-root {

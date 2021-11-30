@@ -4,7 +4,7 @@
         <appavatar :app="app_" style="position: absolute; right: 0;" :width="80" :height="80"/>
         <span v-if="app_.deprecated_by" class="deprecated-label" style="top: inherit; bottom: 0;">Deprecated</span>
         <div style="max-height: 85px; margin-left: 10px; margin-right: 90px; overflow: hidden;">
-            <h4 class="name serif">
+            <h4 class="name">
                 <icon v-if="app_.projects && app_.projects.length > 0" scale="0.9" name="lock" title="not working.." class="text-secondary"/>
                 <!--<icon v-if="app_.deprecated_by" scale="0.9" name="regular/calendar-times" title="deprecated" class="text-secondary"/>-->
                 {{app_.name}} <span class="github" style="font-weight: normal;">{{app_.github}}</span> 
@@ -18,7 +18,7 @@
         <span v-if="app_.deprecated_by" class="deprecated-label">Deprecated</span>
         <appavatar :app="app_" style="float: right; margin-left: 10px;" :width="80" :height="80"/>
         <div class="header">
-            <h4 class="name serif">
+            <h4 class="name">
                 <span v-if="app_.projects && app_.projects.length > 0" title="Private App" class="text-secondary">
                     <icon name="lock"/>
                 </span>

@@ -35,7 +35,7 @@
                     <b-btn @click="execute" variant="primary" size="sm" style="margin-top: 3px;"><icon name="play"/>&nbsp;&nbsp;&nbsp;<b>Execute</b></b-btn>    
                 </div>
 
-                <h5 class="serif">
+                <h5>
                     <b-badge v-if="app.projects && app.projects.length > 0" variant="secondary" title="Private App">
                         <icon name="lock" scale="0.8"/>
                     </b-badge>
@@ -95,7 +95,7 @@
                         <icon name="clock" style="opacity: 0.4;"/>&nbsp;&nbsp;&nbsp;{{avg_runtime(app.stats.runtime_mean, app.stats.runtime_std)}}
                     </b-badge>
                 </p>
-                <p class="desc serif">{{app.desc_override||app.desc}}</p>
+                <p class="desc">{{app.desc_override||app.desc}}</p>
 
                 <!--<span class="form-header">Topics</span>-->
                 <p style="line-height: 250%;">

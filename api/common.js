@@ -900,7 +900,7 @@ exports.update_dataset_stats = async function(project_id, cb) {
         }
         inventory.forEach(item=>{
             subjects.add(item._id.subject);
-            
+
             //some project contains dataset without datatype??
             if(item._id.datatype) {
                 let type = item._id.datatype;
@@ -919,6 +919,8 @@ exports.update_dataset_stats = async function(project_id, cb) {
             stats.size += item.size;
         });
         stats.subject_count = subjects.size;
+        console.log("publishing project update", project_id);
+        console.dir(stats);
         exports.publish("project.update.warehouse."+project_id, {stats: {
             datasets: stats
         }})
@@ -1075,13 +1077,6 @@ exports.update_project_stats = async function(project, cb) {
                 count: rec.count,
                 app: rec.app,
                 task: rec.task,
-                /*
-                name: rec.app.name,
-                doi: rec.app.doi,
-
-                service: rec.service,
-                service_branch: rec.service_branch,
-                */
             });
         })
 
@@ -1117,8 +1112,11 @@ exports.update_project_stats = async function(project, cb) {
 
                 //resource detail for quick reference
                 name: resource.name,
-                desc: resource.config.desc,
-                citation: resource.citation,
+
+                //we could have hundreds of records for resource_stats as we group by service/resource.
+                //adding desc/citation here is not appropriate ..
+                //desc: resource.config.desc,
+                //citation: resource.citation,
 
                 count: raw.count,
                 total_walltime: raw.total_walltime,
@@ -1142,10 +1140,8 @@ exports.update_project_stats = async function(project, cb) {
         exports.publish("project.update.warehouse."+project._id, {stats: {
             rules,
             instances: instance_counts,
-            //groupanalysis,
         }})
 
-        console.log("all done!!!!!!!!!!!!!!");
         if(cb) cb(null, newproject);
 
     } catch (err) {
