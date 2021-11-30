@@ -1070,8 +1070,8 @@ exports.update_project_stats = async function(project, cb) {
         });
         
         //app stats -------------------------------------------------------------
-        let recs = await exports.aggregateDatasetsByApps({project:project._id})
-        let app_stats = [];
+        const recs = await exports.aggregateDatasetsByApps({project:project._id})
+        const app_stats = [];
         recs.forEach(rec=>{
             app_stats.push({
                 count: rec.count,
@@ -1080,7 +1080,7 @@ exports.update_project_stats = async function(project, cb) {
             });
         })
 
-        //TODO query task/resource_service_count api
+        //resource / service counts --------------------------------------------
         let resource_usage = await rp.get({
             url: config.amaretti.api+"/task/resource_usage", json: true,
             qs: {
@@ -1088,22 +1088,21 @@ exports.update_project_stats = async function(project, cb) {
             },
             headers: { authorization: "Bearer "+config.warehouse.jwt, },
         });
-
-        //TODO resource_usage api returns group with no resource_id attached.. (bug?) let's filter them out for now
+        //resource_usage api returns group with no resource_id attached.. (bug?) let's filter them out for now
         resource_usage = resource_usage.filter(r=>r._id.resource_id !== undefined);
 
         //load resource details to be merged into the resource_usage info
         let resource_ids = resource_usage.map(raw=>raw._id.resource_id);
-
-        //dedupe resource_ids
-        resource_ids = [...new Set(resource_ids)];
-        let {resources} = await rp.get({
+        resource_ids = [...new Set(resource_ids)]; //dedupe resource_ids
+        const {resources} = await rp.get({
             url: config.amaretti.api+"/resource", json: true,
             qs: {
                 find: JSON.stringify({_id: {$in: resource_ids}, user_id: null}),
             },
             headers: { authorization: "Bearer "+config.warehouse.jwt, },
         });
+        const resource_stats = [];
+        /*
         let resource_stats = resource_usage.map(raw=>{
             let resource = resources.find(r=>r._id == raw._id.resource_id);
             return {
@@ -1121,6 +1120,24 @@ exports.update_project_stats = async function(project, cb) {
                 count: raw.count,
                 total_walltime: raw.total_walltime,
             }
+        });
+        */
+        resources.forEach(resource=>{
+            let count = 0;
+            let total_walltime = 0;
+            let services = [];
+            resource_usage.filter(r=>r._id.resource_id == resource._id).forEach(raw=>{
+                count+=raw.count;
+                total_walltime+=raw.total_walltime;
+                services.push(raw._id.service);
+            });
+            resource_stats.push({
+                resource_id: resource._id,
+                name: resource.name,
+                count,
+                total_walltime,
+                services,
+            });
         });
 
         //lad number of publications

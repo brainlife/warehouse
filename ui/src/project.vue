@@ -653,7 +653,10 @@ export default {
             if(this.selected.stats && this.selected.stats.resources) {
                 let resources = {};
                 this.total_walltime = 0;
-                let services = [];
+                //let services = [];
+                const names = [];
+                const walltimes = [];
+                const counts = [];
                 this.selected.stats.resources.forEach(stat=>{
                     if(stat.total_walltime == 0) return;
                     this.total_walltime += stat.total_walltime;
@@ -668,60 +671,72 @@ export default {
                         };
                     }
                     let d = resources[stat.resource_id];
-                    if(!services.includes(stat.service)) services.push(stat.service);
-                    if(!d.x.includes(stat.service)) {
+                    /*
+                    //if(!services.includes(stat.service)) services.push(stat.service);
+                    //if(!d.x.includes(stat.service)) {
                         d.x.push(stat.total_walltime/(3600*1000));
                         d.y.push(stat.service);
                         d.text.push(stat.count.toString()+" tasks");
-                    }
+                    //}
+                    */
+                    names.push(stat.name);
+                    walltimes.push(stat.total_walltime/(3600*1000));
+                    counts.push(stat.count.toStrinG()+" tasks");
                 });
+                //create plotly graph
+                var data = [{
+                    y: names,
+                    x: walltimes,
+                    text: counts,
+                    //name: stat.resource_id+" (private)",
+                    type: "bar",
+                    orientation: 'h'
+                }];
+                var layout = {
+                    yaxis: {
+                        //title: 'Apps'
+                    },
+                    xaxis: {
+                        title: 'Total Walltime (hour)',  
+                        type: 'log',
+                        //autorange: true
+                        showgrid: true,
+                    },
+                    barmode: 'relative',
+                    margin: {
+                        t: 20,
+                        l: 240,
+                        pad: 10
+                    },
+                    //height: 17*services.length+120,
+                    height: 17*names.length+120,
+                    font: Vue.config.plotly.font,
+                    paper_bgcolor: "#fff0",
+                };
+                this.resource_usage = {data, layout};
 
-                //query resource info
+                //collection resource citation info
                 let resource_ids = Object.keys(resources);
                 this.$http.get(Vue.config.amaretti_api+"/resource", {params: {
                     find: JSON.stringify({
                         _id: {$in: resource_ids},
                     }),
-                    select: 'name config.desc',
+                    select: 'name config.desc citation',
                 }})
                 .then(res=>{
                     //set resource names
                     res.data.resources.forEach(resource=>{
                         resources[resource._id].name = resource.name;
                     });
-
-                    //collect resource citation
-                    this.selected.stats.resources.forEach(stat=>{
-                        if(!stat.citation) return; //don't show resources with no citations
-                        let resource = res.data.resources.find(r=>r._id == stat.resource_id);
-                        if(!resource) return; //no such resource?
-                        let resource_citations = this.resource_citations.find(r=>r.resource._id == stat.resource_id);
-                        if(!resource_citations) this.resource_citations.push({resource, citation: stat.citation});    
+                    res.data.resources.forEach(resource=>{
+                        if(!resource.citation) return; //don't show resources with no citations
+                        //let resource = res.data.resources.find(r=>r._id == stat.resource_id);
+                        //if(!resource) return; //no such resource?
+                        //let resource_citations = this.resource_citations.find(r=>r.resource._id == stat.resource_id);
+                        //if(!resource_citations) this.resource_citations.push({resource, citation: stat.citation});    
+                        this.resource_citations.push({resource, citation: resource.citation});
                     });
 
-                    //create plotly graph
-                    var data = Object.values(resources);
-                    var layout = {
-                        yaxis: {
-                            //title: 'Apps'
-                        },
-                        xaxis: {
-                            title: 'Total Walltime (hour)',  
-                            type: 'log',
-                            //autorange: true
-                            showgrid: true,
-                        },
-                        barmode: 'relative',
-                        margin: {
-                            t: 20,
-                            l: 240,
-                            pad: 10
-                        },
-                        height: 17*services.length+120,
-                        font: Vue.config.plotly.font,
-                        paper_bgcolor: "#fff0",
-                    };
-                    this.resource_usage = {data, layout};
                 });
             }
         },

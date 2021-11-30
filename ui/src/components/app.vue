@@ -167,11 +167,11 @@ margin-right: 7px;
 margin-left: 7px;
 }
 .name {
-color: #444;
-padding: 0px;
-padding-top: 7px;
-margin-bottom: 0px;
-transition: color 0.5s;
+    color: #444;
+    padding: 0px;
+    padding-top: 7px;
+    margin-bottom: 0px;
+    transition: color 0.5s;
 }
 .desc {
     opacity: 0.85;
@@ -182,14 +182,14 @@ transition: color 0.5s;
     color: #444;
 }
 .image {
-width: 100%;
-display: block;
+    width: 100%;
+    display: block;
 }
 h4 {
-font-size: 13px;
-font-weight: bold;
-padding-bottom: 0px;
-line-height: 150%;
+    font-size: 14px;
+    font-weight: bold;
+    padding-bottom: 0px;
+    line-height: 150%;
 }
 h5 {
 font-size: 12px;
