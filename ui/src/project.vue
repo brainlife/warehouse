@@ -286,7 +286,7 @@
 
                             <div v-if="resource_usage && total_walltime > 3600*1000">
                                 <span class="form-header">Resource Usage</span>
-                                <p><small>Data-objects on this project has been computed using the following apps/resources.</small></p>             
+                                <p><small>Data-objects on this project has been computed using the following resources.</small></p>             
                                 <ExportablePlotly :data="resource_usage.data" 
                                         :layout="resource_usage.layout" 
                                         :autoResize="true" 
@@ -681,7 +681,7 @@ export default {
                     */
                     names.push(stat.name);
                     walltimes.push(stat.total_walltime/(3600*1000));
-                    counts.push(stat.count.toStrinG()+" tasks");
+                    counts.push(stat.count.toString()+" tasks");
                 });
                 //create plotly graph
                 var data = [{

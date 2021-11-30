@@ -104,10 +104,12 @@ var projectSchema = mongoose.Schema({
 
             //for quick referncing the resource detail
             name: String,
-            desc: String,
-            citation: String,
 
-            service: String, //amaretti service (github)
+            //becomes too big
+            //desc: String,
+            //citation: String,
+
+            services: [String],//amaretti service (github) names
             count: Number, //number of time this app/resource pair appears for stored datasets
             total_walltime: Number, //msec for total walltime 
         }],

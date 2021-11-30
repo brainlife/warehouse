@@ -1129,8 +1129,9 @@ exports.update_project_stats = async function(project, cb) {
             resource_usage.filter(r=>r._id.resource_id == resource._id).forEach(raw=>{
                 count+=raw.count;
                 total_walltime+=raw.total_walltime;
-                services.push(raw._id.service);
+                if(!services.includes(raw._id.service)) services.push(raw._id.service);
             });
+            console.dir(services);
             resource_stats.push({
                 resource_id: resource._id,
                 name: resource.name,
@@ -1139,6 +1140,7 @@ exports.update_project_stats = async function(project, cb) {
                 services,
             });
         });
+        console.log("---resource_stats---");
 
         //lad number of publications
         let publications = await db.Publications.countDocuments({project});
