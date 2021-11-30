@@ -23,7 +23,7 @@
                         <!--let's show tab specific info-->
                         <span v-if="tabinfo.id == 'detail'">
                         </span>
-                        
+
                         <span v-if="tabinfo.id == 'dataset'" style="opacity: 0.6; font-size: 80%;">
                             <span title="Number of subjects stored in archive" 
                                 v-if="selected.stats && selected.stats.datasets && selected.stats.datasets.subject_count">
@@ -34,13 +34,13 @@
                                 &nbsp;<icon name="cubes" scale="0.8"/>&nbsp;&nbsp;{{selected.stats.datasets.count}}
                             </span>
                         </span>
-                        
+
                         <span v-if="tabinfo.id == 'process'" title="Number of tasks" style="opacity: 0.8;"> 
                             <div v-if="selected.stats && get_total(selected.stats.instances) > 0" style="display: inline-block; width: 75px;">
                                 <stateprogress :states="selected.stats.instances"/>
                             </div>
                         </span>
-                        
+
                         <span v-if="tabinfo.id == 'pipeline' && selected.stats && selected.stats.rules && (selected.stats.rules.active||selected.stats.rules.inactive)" 
                             title="Number of pipeline rules" style="opacity: 0.6; font-size: 80%;">
                             &nbsp;{{selected.stats.rules.active}} <small>/ {{selected.stats.rules.active + selected.stats.rules.inactive}}</small>
@@ -79,7 +79,7 @@
                                 <small>Group ID</small>
                             </b-badge>
                         </p>
-                        
+
 
                         <div v-if="selected.importedDLDatasets && selected.importedDLDatasets.length">
                             <span class="form-header">Data Source</span>
@@ -150,7 +150,7 @@
                                 <p v-else>
                                     <contact v-for="c in selected.admins" :key="c._id" :id="c" size="small" style="line-height: 150%;"/>
                                 </p>
-                      
+
                             </b-col>
 
                             <b-col lg>
@@ -160,13 +160,13 @@
                                 <p v-else>
                                     <contact v-for="c in selected.members" :key="c._id" :id="c" size="small" style="line-height: 150%;"/>
                                 </p>
-                         
+
                             </b-col>
 
                             <b-col lg v-if="config.user && selected.access == 'private' && selected.guests && selected.guests.length > 0">
                                 <span class="form-header" title="has read access to data.">Guests</span>
                                 <contact v-for="c in selected.guests" :key="c._id" :id="c" size="small" style="line-height: 150%;"/>
-                   
+
                             </b-col>
                         </b-row>
                         <br>
@@ -258,7 +258,7 @@
 
                         <!--participants-->
                         <div v-if="detailTab == 1">
-                            <p><small>Participants info provides information for each subject and can be used for the group analysis.</small></p>                        
+                            <p><small>Participants info provides information for each subject and can be used for the group analysis.</small></p>
                             <b-alert variant="secondary" :show="selected.publishParticipantsInfo" style="margin-bottom: 15px;">This information will be published as part of all publications made from this project.</b-alert>
                             <participants v-if="participants && Object.keys(participants).length" :rows="participants" :columns="participants_columns" style="overflow: auto; max-height: 500px;"/>
                         </div>
@@ -268,7 +268,7 @@
 
                             <div v-if="selected.stats.apps && selected.stats.apps.length > 0">
                                 <span class="form-header">App Usage</span>
-                                <p><small>The following Apps were used to generate the data in this project</small></p>                        
+                                <p><small>The following Apps were used to generate the data in this project</small></p>
                                 <b-row style="border-bottom: 1px solid #eee; margin-bottom: 10px;">
                                     <b-col cols="10"><!--<small>Apps</small>--></b-col>
                                     <b-col cols="2">Execution Count</b-col>
@@ -287,9 +287,9 @@
                             <div v-if="resource_usage && total_walltime > 3600*1000">
                                 <span class="form-header">Resource Usage</span>
                                 <p><small>Data-objects on this project has been computed using the following apps/resources.</small></p>             
-                                <ExportablePlotly :data="resource_usage.data" 
-                                        :layout="resource_usage.layout" 
-                                        :autoResize="true" 
+                                <ExportablePlotly :data="resource_usage.data"
+                                        :layout="resource_usage.layout"
+                                        :autoResize="true"
                                         :watchShallow="true"/>
                                 <br>
                             </div>
@@ -334,12 +334,12 @@
                                 <vue-editor id="commentEditor" v-model="comment"></vue-editor>
                                 <br/>
                                 <b-button v-if="comment.length" @click="submitComment()">Comment</b-button>
-                                <div v-if="selected.comments && selected.comments.length">
-                                    <div v-for="comment in selected.comments" :key="comment._id">
-                                        <div>comment</div>
+                                <div v-if="comments && comments.length">
+                                    <div v-for="comment in comments" :key="comment._id">
+                                        <div>{{comment.comment}}</div>
                                     </div>
                                 </div>
-                                <div v-if="!selected.comments">
+                                <div v-if="!comments.length">
                                     <p>Be the first one to comment !</p>
                                 </div>
                             </div>
@@ -352,7 +352,7 @@
                     <pre>{{selected.mag}}</pre>
                     <pre>{{selected}}</pre>
                 </div>
-        
+
             </div><!-- project detail content-->
         </div>
 
@@ -495,6 +495,7 @@ export default {
 
             config: Vue.config,
             comment : "",
+            comments : [],
 
         }
     },
@@ -519,6 +520,19 @@ export default {
                 this.$router.replace("/project/"+this.selected._id+"/"+this.tabs[this.tab].id);
             }
         },
+        detailTab: function() {
+            if(this.detailTab == 4) {
+                this.axios.get("/comment",{params : {
+                    project : this.selected._id
+                }}).then(res=>{
+                    console.log(res.data);
+                    this.comments = res.data.comments;
+                }).catch(err=>{
+                    console.error(err);
+                    this.$notify({text: err.response.data.message, type: 'error' });
+                })
+            }
+        }
     },
 
     computed: {
@@ -589,13 +603,24 @@ export default {
                 this.$http.delete('project/'+this.selected._id)
                 .then(res=>{
                     this.selected.removed = true;
-                    this.$router.push('/project');        
+                    this.$router.push('/project');
                 });
             }
         },
 
         submitComment() {
             console.log(this.comment);
+            this.$http.post('comment/', {
+                    user_id : ""+Vue.config.user.sub,
+                    project : this.selected._id,
+                    comment : this.comment
+            }).then(res=>{
+                console.log(res.data);
+                Vue.set(this.comments, this.comments.length, res.data);
+            }).catch(err=>{
+                console.error(err);
+                this.$notify({ text: err.response.data.message, type: 'error'});
+            })
         },
 
         openProject(projectId) {
@@ -646,7 +671,7 @@ export default {
                         }
                     };
                 };
-                    
+
                 //optionally.. load participant info
                 //TODO - maybe I should expose it if publishParticipantsInfo is true
                 if(this.isadmin() || this.ismember()) {
@@ -665,7 +690,7 @@ export default {
         },
 
         update_resource_usage_graph() {
-            
+
             //create resource usage graph
             if(this.selected.stats && this.selected.stats.resources) {
                 let resources = {};
@@ -738,6 +763,32 @@ export default {
                         font: Vue.config.plotly.font,
                         paper_bgcolor: "#fff0",
                     };
+
+                    /*
+                    let options = {
+                        //until my PR gets accepted, we need to resize this ... https://github.com/statnett/vue-plotly/pull/18
+                        toImageButtonOptions: {
+                            width: 1200,
+                            height: 600,
+                        },
+                        
+                        modeBarButtonsToAdd: [{
+                            name: 'SVG',
+
+                            //TODO - I should find a better logo for svg export
+                            icon: {
+                                'width': 1792,
+                                'path': 'M1344 1344q0-26-19-45t-45-19-45 19-19 45 19 45 45 19 45-19 19-45zm256 0q0-26-19-45t-45-19-45 19-19 45 19 45 45 19 45-19 19-45zm128-224v320q0 40-28 68t-68 28h-1472q-40 0-68-28t-28-68v-320q0-40 28-68t68-28h465l135 136q58 56 136 56t136-56l136-136h464q40 0 68 28t28 68zm-325-569q17 41-14 70l-448 448q-18 19-45 19t-45-19l-448-448q-31-29-14-70 17-39 59-39h256v-448q0-26 19-45t45-19h256q26 0 45 19t19 45v448h256q42 0 59 39z',
+                                'ascent': 1792,
+                                'descent': 0,
+                            },
+                            click: ()=>{
+                                let plot = this.$refs.resource_usage;
+                                plot.downloadImage({format: 'svg'});
+                            }
+                        }],
+                    }
+                    */
                     this.resource_usage = {data, layout};
                 });
             }
