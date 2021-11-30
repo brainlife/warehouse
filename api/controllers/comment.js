@@ -21,8 +21,8 @@ const common = require('../common');
  */
 
 router.get('/', common.jwt({credentialsRequired: true}), (req, res, next) =>{
-    let project = req.body.project;
-    if(!req.body.project) return next("project not defined");
+    if(!req.query.project) return next("project not defined");
+    let project = req.query.project;
     if(project) {
         const find = {"project": project, "removed" : false};
         db.Comments.find(find).exec((err, recs)=>{
