@@ -331,12 +331,40 @@
                                 Please login to Comments.
                             </b-alert>
                             <div v-else>
-                                <vue-editor id="commentEditor" v-model="comment"></vue-editor>
+                                <vue-editor id="commentEditor" :editorToolbar="customToolbar" v-model="comment"></vue-editor>
                                 <br/>
                                 <b-button v-if="comment.length" @click="submitComment()">Comment</b-button>
                                 <div v-if="comments && comments.length">
                                     <div v-for="comment in comments" :key="comment._id">
-                                        <div>{{comment.comment}}</div>
+                                        <div class="commentbox">
+                                            <div class="comcontent">
+                                                <contact :id="comment.user_id" size="small"
+                                                style="line-height: 150%;"/>
+                                                <div style="float: right">
+                                                    <b-badge pill class="bigpill" title="Comment Date">
+                                                        <icon name="calendar" style="opacity: 0.4;"/>&nbsp;&nbsp;
+                                                            {{new Date(comment.update_date).
+                                                            toLocaleDateString()}}
+                                                    </b-badge>
+                                                    <div @click="editComment(comment)"
+                                                    v-if="isauthor(comment.user_id)"
+                                                    class="button"
+                                                    title="Edit Comment">
+                                                        <icon name="edit" scale="1.25"/>
+                                                    </div>
+                                                    <div @click="deleteComment(comment)"
+                                                    v-if="isauthor(comment.user_id)"
+                                                    class="button"
+                                                    title="Delete Comment">
+                                                        <icon name="trash" scale="1.25"/>
+                                                    </div>
+                                                </div>
+                                                <br/>
+                                                <p>
+                                                    <span v-html="comment.comment"></span>
+                                                </p>
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
                                 <div v-if="!comments.length">
@@ -432,12 +460,12 @@ import {VueEditor} from "vue2-editor"
 let ps;
 
 export default {
-    components: { 
-        projectaccess, 
-        pageheader,     
-        contact, 
-        VueMarkdown, 
-        projectavatar, 
+    components: {
+        projectaccess,
+        pageheader,
+        contact,
+        VueMarkdown,
+        projectavatar,
         license,
         pubcard, 
         datasets,
@@ -466,9 +494,11 @@ export default {
 
     data () {
         return {
-            selected: null, 
+            selected: null,
             resource_usage: null,
             total_walltime: 0,
+            editcommentID : null,
+            editcommentIndex: null,
 
             participants: null,
             participants_columns: null,
@@ -494,8 +524,12 @@ export default {
             ws: null,
 
             config: Vue.config,
-            comment : "",
-            comments : [],
+            comment: "",
+            comments: [],
+            customToolbar:  [
+                ["bold", "italic", "underline"],
+                [{ list: "ordered" }, { list: "bullet" }],
+            ]
 
         }
     },
@@ -553,6 +587,26 @@ export default {
     },
 
     methods: {
+        deleteComment(comment) {
+            this.$http.delete('comment/'+comment._id, {
+            }).then(res=>{
+                console.log(res.data);
+                this.comments.splice(this.comments.indexOf(comment), 1);
+                }).catch(err=>{
+                console.error(err);
+                this.$notify({ text: err.response.data.message, type: 'error'});
+            })
+        },
+        editComment(comment) {
+            this.comment = "";
+            this.comment = comment.comment;
+            this.editcommentID = comment._id;
+            this.editcommentIndex = this.comments.indexOf(comment);
+        },
+        format(date) {
+            let month = date.toLocaleString("en-US", { month: 'short' })
+            return date.getDate() + ' ' + month + ' ' + date.getFullYear();
+        },
 
         get_total(instances) {
             if(!instances) return 0;
@@ -598,6 +652,11 @@ export default {
             return false;
         },
 
+        isauthor(sub) {
+            if(!Vue.config.user) return false;
+            if(Vue.config.user.sub == sub) return true;
+        },
+
         remove() {
             if(confirm("Do you really want to remove this project?")) {
                 this.$http.delete('project/'+this.selected._id)
@@ -610,17 +669,28 @@ export default {
 
         submitComment() {
             console.log(this.comment);
-            this.$http.post('comment/', {
-                    user_id : ""+Vue.config.user.sub,
-                    project : this.selected._id,
-                    comment : this.comment
-            }).then(res=>{
-                console.log(res.data);
-                Vue.set(this.comments, this.comments.length, res.data);
-            }).catch(err=>{
-                console.error(err);
-                this.$notify({ text: err.response.data.message, type: 'error'});
-            })
+            if(this.editcommentID) {
+                this.$http.patch('comment/'+this.editcommentID, {commentString: this.comment})
+                .then(res=>{
+                    console.log(res.data);
+                    this.comments[this.editcommentIndex] = res.data;
+                    this.comment = "";
+                    this.editcommentID = null;
+                })
+            }else{
+                this.$http.post('comment/', {
+                        user_id : ""+Vue.config.user.sub,
+                        project : this.selected._id,
+                        comment : this.comment
+                }).then(res=>{
+                    console.log(res.data);
+                    Vue.set(this.comments, this.comments.length, res.data);
+                    this.comment = "";
+                }).catch(err=>{
+                    console.error(err);
+                    this.$notify({ text: err.response.data.message, type: 'error'});
+                })
+            }
         },
 
         openProject(projectId) {
@@ -936,5 +1006,14 @@ p.info .fa-icon {
 }
 #commentEditor {
     height: 100px;
+}
+.commentbox {
+    background-color: #ffffff;
+    border: 1px solid #d0d7de;
+    border-radius: 6px;
+    margin: 5px;
+}
+.comcontent {
+    margin: 8px;
 }
 </style>
