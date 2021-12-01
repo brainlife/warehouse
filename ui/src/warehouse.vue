@@ -64,7 +64,7 @@ export default {
 }
 </script>
 
-<style type="scss">
+<style>
 
 @import url('https://fonts.googleapis.com/css2?family=Merriweather+Sans:wght@400;700&family=Merriweather:wght@400;700');
 

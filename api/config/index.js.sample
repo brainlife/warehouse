@@ -18,7 +18,7 @@ const async = require('async');
 const AWS = require('aws-sdk');
 
 exports.mongodb = "mongodb://localhost/warehouse";
-exports.mongoose_debug = true;
+//exports.mongoose_debug = true;
 
 exports.debug = true; 
 

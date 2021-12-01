@@ -773,6 +773,11 @@ var ruleSchema = mongoose.Schema({
             stop_requested: Number,
             running_sync: Number,
         },
+        counts: {
+            waiting: Number,
+            running: Number, //number of tasks existing - including failed, requested, etc
+            finished: Number, 
+        },
     },
 
     //when the rule is first defined

@@ -10,12 +10,29 @@
             <taskconfigtable :config="rule.config" :appconfig="rule.app.config" :hideDefault="true"/>
         </div>
     </app>
-    
+   
+    <p class="desc" v-if="rule.name">{{rule.name}}</p>
+
+    <!--other metadata-->
+    <div style="margin-left: 10px; margin-top: 10px;">
+        <div>
+            <span style="opacity: 0.5">Created</span> <timeago :datetime="rule.create_date" :auto-update="10"/>
+            &nbsp;
+            by
+            &nbsp;
+            &nbsp;
+            <contact :id="rule.user_id" size="small"/>
+            <span style="opacity: 0.5">Updated</span> <timeago :datetime="rule.update_date" :auto-update="10"/>
+            &nbsp;
+            &nbsp;
+        </div>
+    </div>
+ 
     <hr>
     <div style="margin-left: 10px;">
         <b-row>
             <b-col>
-                <icon name="arrow-right" style="float: right; position: relative; top: 0px;"/>
+                <icon name="arrow-right" style="float: right; position: relative; top: 0px; opacity: 0.5;"/>
                 <span class="form-header" style="display: inline-block;">Input</span>
                 &nbsp;
                 <span v-if="rule.subject_match" title="Only handle subjects that matches this regex">
@@ -49,49 +66,37 @@
     </div>
 
     <hr>
+
     <b-row>
         <b-col :cols="4">
-            <div style="margin-left: 10px">
-                <b-form-checkbox switch v-model="rule.active" @change="flip">
-                    <b style="position: relative; top: 2px; font-weight: bold;">
-                        <span v-if="rule.active" class="text-primary" title="Piepline will submit new job when conditions are met">Active</span>
-                        <span v-else class="text-secondary" title="No new jobs will be submitted by this rule">Inactive</span>
-                    </b>
+            <div>
+                <div class="button" @click="updateStats" style="float: right;" title="Reprocess this rule now"><icon name="sync-alt"/></div>
+                &nbsp;
+                &nbsp;
+                <b-form-checkbox switch v-model="rule.active" size="lg" @change="flip" name="something" style="display: inline-block">
+                    <b v-if="rule.active" class="text-primary" title="Piepline will submit new job when conditions are met">Active</b>
+                    <b v-else class="text-secondary" title="No new jobs will be submitted by this rule">Inactive</b>
                 </b-form-checkbox>
             </div>
         </b-col>
-        <b-col :cols="4">
-            <div style="box-shadow: 1px 1px 3px #0003; border-radius: 5px; margin-top: 4px;" v-if="rule.active || numJobsRunning">
-                <stateprogress v-if="rule.stats" :states="rule.stats.tasks"/>
-            </div>
+
+        <!--counts-->
+        <b-col :cols="2" v-if="rule.stats && rule.stats.counts" title="Number of subjects/session that this rule is waiting for the input data to become available">
+            <h5 style="height: 20px; margin-bottom: 3px">{{rule.stats.counts.waiting}}</h5>
+            <span class="form-header">Waiting</span>
         </b-col>
-        <b-col :cols="4">
-            <div v-if="numJobsRunning">
-                <div class="button" @click="removeJobs">
-                    <icon name="trash"/>&nbsp;&nbsp;Remove All Jobs
-                </div>
-                <div class="button" @click="updateStats">
-                    <icon name="sync-alt"/>
-                </div>
+        <b-col v-if="rule.stats && rule.stats.tasks">
+            <div style="height: 20px; margin-bottom: 3px">
+                <stateprogress v-if="(rule.active || numJobsRunning)" :states="rule.stats.tasks"/>
             </div>
+            <div v-if="numJobsRunning" class="button" style="float: right; position: relative; top: -3px;" @click="removeJobs"> <icon name="trash"/>&nbsp;&nbsp;Remove All Jobs </div>
+            <span class="form-header" style="float: left;">Processing</span>
+        </b-col>
+        <b-col :cols="2" v-if="rule.stats && rule.stats.counts">
+            <h5 style="height: 20px; margin-bottom: 3px">{{rule.stats.counts.finished}}</h5>
+            <span class="form-header">Finished</span>
         </b-col>
     </b-row>
-
-    <!--other metadata-->
-    <div style="margin-left: 10px; margin-top: 10px;">
-        <p class="desc" v-if="rule.name">{{rule.name}}</p>
-        <div>
-            <span style="opacity: 0.5">Created</span> <timeago :datetime="rule.create_date" :auto-update="10"/>
-            &nbsp;
-            by
-            &nbsp;
-            &nbsp;
-            <contact :id="rule.user_id" size="small"/>
-            <span style="opacity: 0.5">Updated</span> <timeago :datetime="rule.update_date" :auto-update="10"/>
-            &nbsp;
-            &nbsp;
-        </div>
-    </div>
 </div>
 </template>
 
@@ -204,10 +209,11 @@ export default {
     opacity: 0.6;
 }
 hr {
-    margin-top: 5px;
-    margin-bottom: 5px;
+    margin-top: 8px;
+    margin-bottom: 10px;
 }
 .desc {
+    margin-left: 10px;
     margin-bottom: 5px;
 }
 </style>

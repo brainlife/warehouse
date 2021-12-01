@@ -321,12 +321,9 @@ router.put('/removejobs/:id', common.jwt(), function(req, res, next) {
 //or maybe the debouncer in event_handler isn't working?
 router.post('/updatestats/:id', common.jwt(), function(req, res, next) {
     const id = req.params.id;
-    db.Rules.findById(id, function(err, rule) {
+    common.update_rule_stats(id, (err, _rule)=>{
         if(err) return next(err);
-        if(!rule) return next(new Error("can't find the rule with id:"+id));
-        common.update_rule_stats(id, (err, _rule)=>{
-            res.json({stats: _rule.stats});
-        });
+        res.json({stats: _rule.stats});
     });
 });
 

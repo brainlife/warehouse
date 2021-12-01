@@ -47,11 +47,14 @@
 
         </div>
 
-        <div class="page-content instances-list scroll-shadow" ref="instances-list" :style="{width: listWidth+'px'}">
-            <!--no instances show help doc-->
-            <p v-if="instances.length == 0" class="text-muted" style="padding: 10px;">
+        <div class="page-content instances-list" v-if="!sorted_and_filtered_instances.length">
+            <p class="text-muted" style="padding: 10px; margin: 10px;">
                 Please create a new process.
             </p>
+        </div>
+
+        <div class="page-content instances-list scroll-shadow" ref="instances-list" :style="{width: listWidth+'px'}" v-if="sorted_and_filtered_instances.length">
+            <!--no instances show help doc-->
 
             <!--show list-->
             <div v-if="instances.length > 0">
