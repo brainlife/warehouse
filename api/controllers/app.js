@@ -109,7 +109,7 @@ router.get('/query', common.jwt({credentialsRequired: false}), (req, res, next)=
                 {projects: {$exists: false}}, //if projects not set, it's availableo to everyone
             ]
         })
-        .select('-config -avatar -stats.gitinfo -contributors') //cut things we don't need
+        .select('-config -stats.gitinfo -contributors') //cut things we don't need
         //we want to search into datatype name/desc (desc might be too much?)
         .populate('inputs.datatype', 'name desc') 
         .populate('outputs.datatype', 'name desc')
