@@ -52,7 +52,7 @@
                                 <icon name="dot-circle"/>&nbsp;&nbsp;&nbsp;Analysis
                             </b-badge>
                         </p>
-                        <p class="serif" style="line-height: 180%">{{datatype.desc}}</p>
+                        <p style="line-height: 180%">{{datatype.desc}}</p>
                     </b-container>
                 </div><!--sub header-->
                 <b-container>

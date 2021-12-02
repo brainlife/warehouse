@@ -6,6 +6,7 @@
             :group="this.project.pipelines" 
             @updated="updatePipeline" 
             @newrule="newrule" 
+            @copyrule="copyrule" 
             :rules="rules" 
             :root="true"
             class="pipeline-group"/>
@@ -110,8 +111,8 @@ export default {
                         name: "", //we don't show name on root
                         open: true,
                         color: "inherit", //root doesn't have any color
+                        /*
                         items: [
-                            //{type: "readme", readme: "Main README for the entire pipeline", _editing: null},
                             {
                                 type: "group", 
                                 name: "Please rename this group",
@@ -123,11 +124,13 @@ export default {
                                 ]
                             },
                         ],
+                        */
+                        items: [
+                            ...this.rules.filter(r=>!r.removed).map(r=>({type: "rule", ruleId: r._id}))
+                        ]
                     };
                     Vue.set(this.project, 'pipelines', pipelines);
                 }
-                //console.log("pipelines");
-                //console.dir(this.project.pipelines);
             });
         },
 
@@ -177,9 +180,6 @@ export default {
         updatePipeline() {
             this.$http.put('project/'+this.project._id, {
                 pipelines: this.project.pipelines,
-            }).then(res=>{
-                //console.debug("updated pipelines");
-                //console.dir(this.project.pipelines);
             });
         },
 
@@ -190,7 +190,25 @@ export default {
                     project: this.project._id, 
                 },
                 cb: (err, _rule)=>{
-                    console.log("created new rule", _rule);
+                    this.appcache(_rule.app, {populate_datatype: false}, (err, app)=>{
+                        _rule.app = app;
+                        this.rules.push(_rule);
+
+                        group.items.push({type: "rule", ruleId: _rule._id})
+                        this.updatePipeline();
+                    });
+                }
+            });
+        },
+
+        copyrule({group, ruleId}) {
+            const rule = this.rules.find(r=>r._id == ruleId);
+            const newrule = Object.assign({}, rule);
+            delete newrule._id;
+            newrule.name = "(copy of) "+newrule.name||'untitled';
+            this.$root.$emit("rule.edit", {
+                rule: newrule,
+                cb: (err, _rule)=>{
                     this.appcache(_rule.app, {populate_datatype: false}, (err, app)=>{
                         _rule.app = app;
                         this.rules.push(_rule);

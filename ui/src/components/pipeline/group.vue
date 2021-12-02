@@ -1,5 +1,5 @@
 <template>
-<div class="pipeline-group" :class="{'group-root': root}" :style="{'background-color': group.color}">
+<div class="pipeline-group" :class="{'group-root': root, 'group-open': group.open}" :style="{'background-color': group.color}">
     <h5 style="opacity: 0.7" v-if="!root">{{group.name}}</h5>
 
     <div v-if="!group.open" class="item-body">
@@ -7,7 +7,7 @@
         <small>{{activeRuleCount}} Active</small>
     </div>
 
-    <draggable :list="group.items" group="pipeline-items" :style="{'min-height': group.open?'300px':''}" @end="$emit('updated')" handle=".handle">
+    <draggable :list="group.items" class="draggable" group="pipeline-items" @end="$emit('updated')" handle=".handle">
         <div v-if="group.open" v-for="(item, idx) in group.items" :key="idx" class="item">
             <!--move button-->
             <div class="item-buttons">
@@ -16,6 +16,7 @@
                     <b-btn variant="primary" size="sm" @click="editReadme(item)" title="Edit" v-if="item.type == 'readme' && item._editing === null"><icon name="edit"/></b-btn>
                     <b-btn variant="primary" size="sm" @click="editRule(item)" title="Edit" v-if="item.type == 'rule'"><icon name="edit"/></b-btn>
                     <b-btn variant="primary" size="sm" @click="editGroup(item)" title="Edit" v-if="item.type == 'group'"><icon name="edit"/></b-btn>
+                    <b-btn variant="outline-secondary" size="sm" @click="copyrule({group, ruleId: item.ruleId})" title="Edit" v-if="item.type == 'rule'"><icon name="copy"/></b-btn>
                     <b-btn variant="outline-secondary" size="sm" class="handle" title="Move this item"><icon name="arrows-alt-v"/></b-btn>
                     <b-btn variant="primary" size="sm" v-if="item.type == 'readme' && item._editing !== null" title="Save the update" @click="saveReadme(item)">Save</b-btn>
                     <b-btn variant="secondary" size="sm" v-if="item.type == 'readme' && item._editing !== null" title="Edit this note" @click="cancelEditReadme(item)">X</b-btn>
@@ -30,7 +31,8 @@
                 <pipelineGroup v-if="item.type == 'group'" 
                     :group="item"
                     @updated="$emit('updated')"
-                    @newrule="newrule" 
+                    @newrule="newrule"
+                    @copyrule="copyrule"
                     :rules="rules"/>
 
                 <pipelineReadme v-if="item.type == 'readme'" 
@@ -43,13 +45,13 @@
         </div>
     </draggable>
     <p class="group-buttons" v-if="group.open">
-        <b-button variant="success" size="sm" @click="newrule(group)" v-if="!root">
+        <b-button variant="success" size="sm" @click="newrule(group)">
             <icon name="robot"/>&nbsp;&nbsp;Add Rule
         </b-button>
         <b-button variant="outline-secondary" size="sm" @click="newgroup" v-if="root" title="Create New Group">
             <icon name="indent"/>&nbsp;&nbsp;Add Group
         </b-button>
-        <b-button variant="outline-secondary" size="sm" @click="newmarkdown" v-if="!root" title="Add New Note">
+        <b-button variant="outline-secondary" size="sm" @click="newmarkdown" title="Add New Note">
             <icon name="edit"/>&nbsp;&nbsp;Add Note
         </b-button>
     </p>
@@ -107,7 +109,6 @@ export default {
             this.$root.$emit("pipelinegroup.edit", {
                 group: {},
                 cb: (err, group)=>{
-                    console.log("created new group", group);
                     /*
                     this.group.items.push({
                         type: "group",
@@ -134,6 +135,10 @@ export default {
             this.$emit("newrule", group);
         },
 
+        copyrule(opt) {
+            this.$emit("copyrule", opt);
+        },
+
         cancelEditReadme(item) {
             item._editing = null;
             this.$emit("updated");
@@ -158,7 +163,6 @@ export default {
             this.$root.$emit("pipelinegroup.edit", {
                 group,
                 cb: (err, updated)=>{
-                    console.log("updated group", updated);
                     Object.assign(group, updated);
                     this.$emit("updated");
                 }
@@ -200,18 +204,6 @@ export default {
             }
         },
 
-        /*
-        checkEmpty(group) {
-            //if a group becomes empty, remove it
-            if(group.items.length == 0) {
-                console.log("a group became empty.. removing this group");
-                const idx = this.group.items.indexOf(group);
-                this.group.items.splice(idx, 1);
-            }
-            this.$emit("updated");
-        },
-        */
-
         toggle(item) {
             item.open = !item.open;
             this.$emit("updated");
@@ -232,27 +224,20 @@ export default {
     border-radius: 0;
     box-shadow: none;
 }
-
-.group-root > .group-buttons {
-}
-
 .item {
     padding-bottom: 6px;
     min-height: 35px;
 }
-.spacefordrop {
-    min-height: 300px;
-}
 .item-buttons {
     float: right; 
-    width: 100px; 
+    width: 120px; 
     opacity: 0.1;
     transition: 0.3s opacity;
     position: relative;
     left: -5px;
 }
 .item-body {
-    margin-right: 100px;
+    margin-right: 120px;
     padding-right: 10px;
     border-right: 3px solid #0000;
 }
@@ -261,5 +246,11 @@ export default {
 }
 .handle {
     cursor: ns-resize !important;
+}
+.group-open > .draggable {
+    min-height: 300px;
+}
+.group-root.group-open > .draggable {
+    min-height: inherit;
 }
 </style>

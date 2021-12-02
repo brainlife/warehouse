@@ -46,7 +46,10 @@
 
                 <div v-for="input in rule.app.inputs" :key="input._id" style="display: inline-block;">
                     <div v-if="inputUsed(input.id)" style="display: inline-block;">
-                        <datatypetag :datatype="input.datatype" :tags="[...input.datatype_tags, ...rule.extra_datatype_tags[input.id]]" :clickable="false"/>
+                        <datatypetag 
+                            :datatype="input.datatype"
+                            :tags="getInputTags(input)"
+                            :clickable="false"/>
                         <small v-for="(tag,idx) in rule.input_tags[input.id]" :key="idx"> | {{tag}} </small>
                     </div>
                     &nbsp;
@@ -137,6 +140,7 @@ export default {
         },
 
         outputArchived(id) {
+            if(!this.rule.archive) return false; //for really old rule?
             if(!this.rule.archive[id]) return false; //TODO investigate why this happens
             return this.rule.archive[id].do;
         },
@@ -191,6 +195,13 @@ export default {
             this.$http.post("rule/updatestats/"+this.rule._id).then(res=>{
                 console.dir(res.data);
             });
+        },
+
+        getInputTags(input) {
+            const tags = input.datatype_tags;
+            if(this.rule.extra_datatype_tags && this.rule.extra_datatype_tags[input.id]) {
+                return [...tags, ...this.rule.extra_datatype_tags[input.id]];
+            } else return tags;
         },
     },
 

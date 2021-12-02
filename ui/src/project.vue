@@ -8,7 +8,7 @@
                     <icon name="edit" scale="1.25"/>
                 </div>
             </div>
-            <h5>
+            <h5 style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
                 <projectaccess :access="selected.access" style="position: relative; top: -3px;"/> 
                 {{selected.name}}
             </h5>
@@ -619,7 +619,6 @@ export default {
                     }));
                     this.ws.onmessage = (json)=>{
                         var event = JSON.parse(json.data);
-                        console.dir(event);
                         for(let k in event.msg) {
                             if(this.selected[k] === undefined) this.selected[k] = event.msg[k];
                             else {
