@@ -127,8 +127,6 @@ function handle_rule(rule, cb) {
         
         //validate
         next=>{
-            console.log(rule._id, rule.name);
-
             if(!rule.project) return next("project not specified");
             if(!rule.app) return next("app not specified");
 

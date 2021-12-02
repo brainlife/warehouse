@@ -137,6 +137,7 @@ export default {
         },
 
         outputArchived(id) {
+            if(!this.rule.archive[id]) return false; //TODO investigate why this happens
             return this.rule.archive[id].do;
         },
 
