@@ -9,13 +9,14 @@
                 </b-button>
             </p>
             -->
-            <h4 style="margin-right: 150px">{{project.name||'No name'}}</h4>
+            <h4>{{project.name||'No name'}}</h4>
         </b-container>
     </div>
     <div class="page-content">
         <br>
         <b-form @submit="submit">
         <b-container>
+            <h5>Project Detail</h5>
             <b-row>
                 <b-col cols="3">
                     <span class="form-header">Name *</span>
@@ -31,8 +32,10 @@
                     <span class="form-header">Description *</span>
                 </b-col> 
                 <b-col cols="9">
-                    <p>
+                    <p style="position: relative">
+                        <span @click="showMart = true" style="position: absolute; top: 10px; right: 10px; cursor: pointer;">😋</span>
                         <b-form-textarea v-model="project.desc" placeholder="Enter description for this project." required/>
+                        <emojimart v-if="showMart" @select="addEmojiToDesc" style="position: absolute; z-index: 5; right: 0;"/>
                     </p>
                 </b-col>
             </b-row>
@@ -48,6 +51,18 @@
                     </p>
                 </b-col>
             </b-row>
+
+            <b-row>
+                <b-col cols="3">
+                    <span class="form-header">Avatar</span>
+                </b-col> 
+                <b-col cols="9">
+                    <b-input type="text" v-model="project.avatar" placeholder="Image URL for the project avatar (if not set, randomly generate)"/>
+                    <p class="text-muted"><small>You can try choosing an image from websites like https://picsart.com/</small></p>
+                </b-col>
+            </b-row>
+
+            <h5>Access Control</h5>
             <b-row>
                 <b-col cols="3">
                     <span class="form-header">Access Policy</span>
@@ -119,34 +134,36 @@
                 </b-col>
             </b-row>
             
+            <h5>Phenotype</h5>
+            <p> <small>phenotype (aka participants data) allows you to store subject specific information used to perform group analysis.</small> </p>
             <b-row>
                 <b-col cols="3">
-                    <span class="form-header">Avatar</span>
                 </b-col> 
                 <b-col cols="9">
-                    <b-input type="text" v-model="project.avatar" placeholder="Image URL for the project avatar (if not set, randomly generate)"/>
-                    <p class="text-muted"><small>You can try choosing an image from websites like https://picsart.com/</small></p>
+                    <b-form-checkbox v-model="project.publishParticipantsInfo">
+                        Publish Participants Info<br>
+                        <small>
+                            Participants information will be made public and included as part of publications from this project. Please be sure to only include information authorized by your IRB or consented by your test subjects. Do not include any identifiable information.
+                        </small>
+                    </b-form-checkbox>
+                    <br>
                 </b-col>
             </b-row>
-
             <b-row v-if="participants !== undefined">
                 <b-col cols="3">
                     <span class="form-header">Participants Info</span>
                 </b-col> 
                 <b-col cols="9">
-                    <b-form-group label="Participants Info" horizontal>
-                        <b-form-checkbox v-model="project.publishParticipantsInfo">
-                            Publish Participants Info<br>
-                            <small>
-                                Participants information will be made public and included as part of publications from this project. Please be sure to only include information authorized by your IRB or consented by your test subjects. Do not include any identifiable information.
-                            </small>
-                         </b-form-checkbox>
-                    </b-form-group>
                     <p class="text-muted"><small>Key/value dictionary for each subject (participants.tsv). You can use this information in analysis tab. It should be array of objects containig at least 'subject' key and other fields</small></p>
                     <editor v-model="participants" @init="editorInit" lang="json" height="500"/>
-
                     <br>
+                </b-col>
+            </b-row>
+            <b-row v-if="participants !== undefined">
+                <b-col cols="3">
                     <span class="form-header">Column Definitions</span>
+                </b-col> 
+                <b-col cols="9">
                     <p class="text-muted"><small>Participants Info column Definitions (participants.json). Please read the <a href="https://bids-specification.readthedocs.io/en/stable/03-modality-agnostic-files.html#phenotypic-and-assessment-data">BIDS speficication</a></small></p>
                     <editor v-model="participants_columns" @init="editorInit" lang="json" height="300"/>
                     <br>
@@ -154,15 +171,16 @@
                 </b-col>
             </b-row>
 
+            <h5>Remote Storage</h5>
+            <p><small>You can import and store data on remote storage systems instead of using brainlife's default storage.</small></p>
             <b-row>
-                <b-col cols="3">
-                    <span class="form-header">XNAT Integration (experimental)</span>
-                </b-col> 
-                <b-col cols="9">
+                <b-col cols="5">
                     <b-form-checkbox v-model="project.xnat.enabled">Integrate with XNAT</b-form-checkbox>
                     <p>
                         <small>Data on this project can be populated from the existing XNAT project. Any new data derivatives will be stored on this XNAT project.</small>
                     </p>
+                </b-col> 
+                <b-col cols="7">
                     <div v-if="project.xnat.enabled">
                         <b-form-group label="XNAT Hostname">
                             <b-input type="text" v-model="project.xnat.hostname" placeholder="https://example.xnat.com" required/>
@@ -220,7 +238,19 @@
                     </div>
                 </b-col> 
             </b-row>
- 
+
+            <h5>Resource Restriction</h5>
+            <b-form-checkbox v-model="project.limitResource">
+                Only submit jobs on private resources shared for this project<br>
+                <small>Private resources can be shared among members of other projects. By selecting this option, jobs submitted on this project will only run on those resources. Please make sure that Apps you are trying to submit are enabled on specified resources.</small>
+            </b-form-checkbox>
+            <br>
+            <div style="margin-left: 20px">
+                <span class="form-header">Shared Resources</span>
+                <b-alert variant="secondary" :show="sharedResources && sharedResources.length == 0">There are no resources assigned to this project.</b-alert>
+                <resource v-for="resource in sharedResources" :key="resource._id" :resource="resource"/>
+            </div>
+
             <div class="page-footer">
                 <b-container>
                     <b-button variant="danger" @click="remove" style="float: left"><icon name="trash"/> Remove</b-button>
@@ -254,6 +284,7 @@ import datatype from '@/components/datatype'
 import tageditor from '@/components/tageditor'
 
 import datatypes from '@/mixins/datatypes'
+import { Picker } from 'emoji-mart-vue'
 
 const lib = require('@/lib');
 
@@ -269,6 +300,9 @@ export default {
         datatype,
         tageditor,
 
+        resource: ()=>import('@/components/resource'),
+        emojimart: Picker,
+
         editor: require('vue2-ace-editor'),
     },
 
@@ -280,6 +314,10 @@ export default {
             participants: null,
             participants_columns: null,
 
+            showMart: false,
+
+            sharedResources: null,
+
             submitting: false,
 
             config: Vue.config,
@@ -287,10 +325,12 @@ export default {
     },
 
     mounted: function() {
+
         let participants_def = [
             {subject: "001", age: 12, sex: "F", "handedness": "R"},
             {subject: "002", age: 34, sex: "M", "handedness": "L"},
         ]; 
+
         let participants_columns_def = {
             "gender" : {
                 "LongName" : "gender",
@@ -336,6 +376,18 @@ export default {
                         enabled: false,
                         scans: [],
                     });
+
+                    //load shared resources
+                    if(this.project.group_id) {
+                        this.$http.get(Vue.config.amaretti_api+'/resource', {params: {
+                            find: {
+                                gids: this.project.group_id,
+                            },
+                            select: 'name active config.hostname config.desc status avatar',
+                        }}).then(res=>{
+                            this.sharedResources = res.data.resources;
+                        });
+                    }
                 });
 
                 //load participant info
@@ -345,7 +397,7 @@ export default {
                         this.participants_columns = JSON.stringify(res.data.columns||participants_columns_def, null, 4);
                     }
                 });
-            
+
             } else {
                 //new project
                 this.project = {
@@ -360,6 +412,8 @@ export default {
 
                     agreements: [],
 
+                    limitResource: false,
+
                     xnat: {
                         enabled: false,
                         scans: [],
@@ -368,8 +422,9 @@ export default {
 
                 this.participants = JSON.stringify(participants_def, null, 4);
                 this.participants_columns = JSON.stringify(participants_columns_def, null, 4);
-            } 
+            }
         });
+
     },
 
     methods: {
@@ -388,6 +443,11 @@ export default {
                     this.$router.push('/projects');        
                 });
             }
+        },
+
+        addEmojiToDesc(emoji) {
+            this.project.desc += emoji.native;
+            this.showMart = false;
         },
 
         testXnat() {
@@ -488,16 +548,23 @@ export default {
 
 <style scoped>
 .page-header {
-padding: 10px 20px;    
+    padding: 10px 0;
 }
 .page-header h4 {
-opacity: 0.8;
+    opacity: 0.8;
 }
 .readme {
-background-color: white;
-max-height: 500px;
-overflow: auto;
-padding: 20px;
+    background-color: white;
+    max-height: 500px;
+    overflow: auto;
+    padding: 20px;
 }
+.container h5 {
+    padding-bottom: 10px;
+    margin-bottom: 10px;
+    opacity: 0.7;
+    border-bottom: 1px solid #ddd;
+}
+
 </style>
 
