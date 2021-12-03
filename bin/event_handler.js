@@ -630,7 +630,7 @@ function handle_instance(instance, cb) {
                 let project = await db.Projects.findOne({group_id: instance.group_id});
                 console.log("requesting to update_project_stats");
                 common.update_project_stats(project);
-            }, 1000*30); 
+            }, 1000*60*10); 
         }
     //}
     cb();

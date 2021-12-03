@@ -146,7 +146,6 @@ function handle_rule(rule, cb) {
                     projects.push(rule.input_project_override[input_id]); 
                 }
             }                
-
             db.Datasets.findOne({
                 project: { $in: projects }, 
                 update_date: { $exists: true } , 

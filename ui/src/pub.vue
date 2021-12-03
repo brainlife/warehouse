@@ -40,29 +40,35 @@
                 </div>
 
                 <div v-if="pub.releases.length" class="releases">
-                    <!--<div class="content-header">Contents</div>-->
+                    <!--
                     <div class="content-subheader border-bottom">Releases</div>
+                    -->
                     <div v-for="release in pub.releases" :key="release._id" class="content-item">
                         <small style="float: right">
                             {{new Date(release.create_date).toLocaleDateString()}}
                         </small>
-                        <b-badge @click="jump('release.'+release.name)">{{release.name}}</b-badge>
-                        <p>
-                            <small v-if="release.desc">{{release.desc}}</small>
+                        <div @click="jump('release.'+release.name)" class="clickable border-bottom">Release <b>{{release.name}}</b></div>
+                        <p v-if="release.desc">
+                            <small>{{release.desc}}</small>
                         </p>
-                        <small class="clickable" @click="jump('release.'+release.name+'.data')" v-if="release.sets && release.sets.length">Data ({{release.sets.length}} subjects)</small>
-                        <br>
-                        <small class="clickable" @click="jump('release.'+release.name+'.preprocessing')" v-if="release.apps && release.apps.length">Preprocessing ({{release.apps.length}} apps)</small>
-                        <br>
-                        <small class="clickable" @click="jump('release.'+release.name+'.analysis')" v-if="release.gaarchives && release.gaarchives.length">Analysis ({{release.gaarchives.length}} notebooks)</small>
+                        <div v-if="release.sets && release.sets.length">
+                            <small class="clickable" @click="jump('release.'+release.name+'.data')">
+                                Data ({{release.sets.length}} subjects)
+                            </small>
+                        </div>
+                        <div v-if="release.apps && release.apps.length">
+                            <small class="clickable" @click="jump('release.'+release.name+'.preprocessing')">
+                                Preprocessing ({{release.apps.length}} apps)
+                            </small>
+                        </div>
+                        <div v-if="release.gaarchives && release.gaarchives.length">
+                            <small class="clickable" @click="jump('release.'+release.name+'.analysis')">
+                                Analysis ({{release.gaarchives.length}} notebooks)
+                            </small>
+                        </div>
                     </div>
                 </div>
                 <br>
-
-                <!--
-                <div class="content-subheader">Citation</div>
-                <br>
-                -->
 
                 <div v-if="pub.contributors.length" class="clickable" @click="jump('contributors')">
                     <div class="content-subheader border-bottom">Contributors</div>
@@ -152,7 +158,6 @@
                 </div>
                 </b-col>
 
-                <!--<span class="form-header">Releases</span>-->
                 <release v-for="release in pub.releases" :key="release._id" :release="release" :project="pub.project"/>
                 <br>
 
@@ -269,10 +274,12 @@
                         </b-col>
                         <b-col>
                             <div v-for="funding in pub.fundings" :key="funding._id" class="funder">
+                                <a :href="redirect(funding)">
                                 <div v-if="funding.funder == 'NSF'" class="funder-label bg-success">NSF</div>
                                 <div v-else-if="funding.funder == 'NIH'" class="funder-label bg-info">NIH</div>
                                 <div v-else class="funder-label bg-warning">{{funding.funder}}</div>
                                 {{funding.id}}
+                                </a>
                             </div>
                             <br>
                             <br>
@@ -354,7 +361,7 @@ export default {
     computed: {
         sortedPapers : function() {
             return this.pub.relatedPapers.sort((a,b)=> b.citationCount - a.citationCount );
-        }
+        },
     },
 
     //https://help.altmetric.com/support/solutions/articles/6000141419-what-metadata-is-required-to-track-our-content-
@@ -399,7 +406,7 @@ export default {
         //load publication detail
         const res = await this.$http.get('pub', {params: {
             find: JSON.stringify({_id: this.$route.params.id}),
-            populate: 'project release',
+            populate: 'project releases',
             deref_contacts: true,
         }});
 
@@ -457,6 +464,16 @@ export default {
 
         openproject(project_id) {
             this.$router.push('/project/'+project_id);
+        },
+
+        redirect(funding) {
+            // if funding NSF funding is IIS-1636893 then the numeric part is the id which will help to get the url.
+            const nsf_match = funding.id.match(/([^-]+[0-9])/);
+            // if funding NIH funding is NIH NIMH U01MH097435 then everything after letter U is used in url.
+            const nih_match = funding.id.match(/([^U]*)$/);
+
+            if(funding.funder == 'NSF' && nsf_match[1]) return "https://www.nsf.gov/awardsearch/showAward?AWD_ID="+nsf_match[1];
+            if(funding.funder == 'NIH' && nih_match[1]) return  "https://reporter.nih.gov/project-details/U"+nih_match[1];
         },
 
         /*
@@ -530,7 +547,7 @@ color: white;
     border-radius: 0px;
     margin-right: 4px;
 }
-.funder {
+.funder, a {
     background-color: white;
     margin-bottom: 5px;
     padding-right: 10px;
@@ -541,6 +558,9 @@ color: white;
     color: white;
     display: inline-block;
     padding: 0px 5px;
+}
+.funder, a:hover,active,visited{
+    text-decoration-line:none;
 }
 .datasets {
     margin: 5px 20px;

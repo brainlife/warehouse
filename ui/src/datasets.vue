@@ -287,7 +287,6 @@ export default {
         this.readHash();
         this.load_datasets();
         this.init_splitter();
-
         let dataset_id = this.$route.params.dataset_id;
         if(dataset_id) this.load_dataset(dataset_id);
     },
@@ -387,6 +386,7 @@ export default {
             if(this.selected && this.selected._id == dataset_id) {
                 this.$router.push('/datasets'+document.location.hash);
             } else {
+                console.log("opening", dataset_id)
                 this.$router.push('/datasets/'+dataset_id+document.location.hash);
                 document.getElementsByClassName("page-main")[0].scrollTop = 0;
             }
@@ -651,6 +651,10 @@ z-index: 1;
 }
 .search-icon {
 left: 12px;
+}
+
+.disableText {
+    user-select: none;
 }
 
 </style>

@@ -23,7 +23,7 @@
                         <!--let's show tab specific info-->
                         <span v-if="tabinfo.id == 'detail'">
                         </span>
-                        
+
                         <span v-if="tabinfo.id == 'dataset'" style="opacity: 0.6; font-size: 80%;">
                             <span title="Number of subjects stored in archive" 
                                 v-if="selected.stats && selected.stats.datasets && selected.stats.datasets.subject_count">
@@ -34,13 +34,13 @@
                                 &nbsp;<icon name="cubes" scale="0.8"/>&nbsp;&nbsp;{{selected.stats.datasets.count}}
                             </span>
                         </span>
-                        
+
                         <span v-if="tabinfo.id == 'process'" title="Number of tasks" style="opacity: 0.8;"> 
                             <div v-if="selected.stats && get_total(selected.stats.instances) > 0" style="display: inline-block; width: 75px;">
                                 <stateprogress :states="selected.stats.instances"/>
                             </div>
                         </span>
-                        
+
                         <span v-if="tabinfo.id == 'pipeline' && selected.stats && selected.stats.rules && (selected.stats.rules.active||selected.stats.rules.inactive)" 
                             title="Number of pipeline rules" style="opacity: 0.6; font-size: 80%;">
                             &nbsp;{{selected.stats.rules.active}} <small>/ {{selected.stats.rules.active + selected.stats.rules.inactive}}</small>
@@ -79,7 +79,7 @@
                                 <small>Group ID</small>
                             </b-badge>
                         </p>
-                        
+
 
                         <div v-if="selected.importedDLDatasets && selected.importedDLDatasets.length">
                             <span class="form-header">Data Source</span>
@@ -150,7 +150,7 @@
                                 <p v-else>
                                     <contact v-for="c in selected.admins" :key="c._id" :id="c" size="small" style="line-height: 150%;"/>
                                 </p>
-                      
+
                             </b-col>
 
                             <b-col lg>
@@ -160,13 +160,13 @@
                                 <p v-else>
                                     <contact v-for="c in selected.members" :key="c._id" :id="c" size="small" style="line-height: 150%;"/>
                                 </p>
-                         
+
                             </b-col>
 
                             <b-col lg v-if="config.user && selected.access == 'private' && selected.guests && selected.guests.length > 0">
                                 <span class="form-header" title="has read access to data.">Guests</span>
                                 <contact v-for="c in selected.guests" :key="c._id" :id="c" size="small" style="line-height: 150%;"/>
-                   
+
                             </b-col>
                         </b-row>
                         <br>
@@ -258,7 +258,7 @@
 
                         <!--participants-->
                         <div v-if="detailTab == 1">
-                            <p><small>Participants info provides information for each subject and can be used for the group analysis.</small></p>                        
+                            <p><small>Participants info provides information for each subject and can be used for the group analysis.</small></p>
                             <b-alert variant="secondary" :show="selected.publishParticipantsInfo" style="margin-bottom: 15px;">This information will be published as part of all publications made from this project.</b-alert>
                             <participants v-if="participants && Object.keys(participants).length" :rows="participants" :columns="participants_columns" style="overflow: auto; max-height: 500px;"/>
                         </div>
@@ -268,7 +268,7 @@
 
                             <div v-if="selected.stats.apps && selected.stats.apps.length > 0">
                                 <span class="form-header">App Usage</span>
-                                <p><small>The following Apps were used to generate the data in this project</small></p>                        
+                                <p><small>The following Apps were used to generate the data in this project</small></p>
                                 <b-row style="border-bottom: 1px solid #eee; margin-bottom: 10px;">
                                     <b-col cols="10"><!--<small>Apps</small>--></b-col>
                                     <b-col cols="2">Execution Count</b-col>
@@ -286,10 +286,10 @@
 
                             <div v-if="resource_usage && total_walltime > 3600*1000">
                                 <span class="form-header">Resource Usage</span>
-                                <p><small>Data-objects on this project has been computed using the following apps/resources.</small></p>             
-                                <ExportablePlotly :data="resource_usage.data" 
-                                        :layout="resource_usage.layout" 
-                                        :autoResize="true" 
+                                <p><small>Data-objects on this project has been computed using the following apps/resources.</small></p>
+                                <ExportablePlotly :data="resource_usage.data"
+                                        :layout="resource_usage.layout"
+                                        :autoResize="true"
                                         :watchShallow="true"/>
                                 <br>
                             </div>
@@ -301,7 +301,7 @@
                                 <p><small>Please use the following citations to cite the Apps/resources used by this project.</small></p>
                                 <p v-for="app in selected.stats.apps" :key="app._id">
                                     <icon name="robot" style="opacity: 0.5;"/> <b>{{app.app.name}}</b><br>
-                                    <citation :doi="app.app.doi"/> 
+                                    <citation :doi="app.app.doi"/>
                                 </p>
 
                                 <div v-if="resource_citations.length > 0">
@@ -331,15 +331,45 @@
                                 Please login to Comments.
                             </b-alert>
                             <div v-else>
-                                <vue-editor id="commentEditor" v-model="comment"></vue-editor>
-                                <br/>
-                                <b-button v-if="comment.length" @click="submitComment()">Comment</b-button>
-                                <div v-if="selected.comments && selected.comments.length">
-                                    <div v-for="comment in selected.comments" :key="comment._id">
-                                        <div>comment</div>
+                                <div v-if="comments && comments.length">
+                                    <div v-for="comment in comments" :key="comment._id">
+                                        <div class="commentbox">
+                                            <div class="comment-header">
+                                                <contact :id="comment.user_id" size="small"
+                                                style="line-height: 150%;"/>
+                                                <div style="float: right">
+                                                    <b-badge pill class="bigpill" title="Comment Date">
+                                                        <icon name="calendar" style="opacity: 0.4;"/>&nbsp;&nbsp;
+                                                            {{new Date(comment.update_date).
+                                                            toLocaleDateString()}}
+                                                    </b-badge>
+                                                    <div @click="editComment(comment)"
+                                                    v-if="isauthor(comment.user_id)"
+                                                    class="button"
+                                                    title="Edit Comment">
+                                                        <icon name="edit" scale="1.25"/>
+                                                    </div>
+                                                    <div @click="deleteComment(comment)"
+                                                    v-if="isauthor(comment.user_id)"
+                                                    class="button"
+                                                    title="Delete Comment">
+                                                        <icon name="trash" scale="1.25"/>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="comcontent">
+                                                <p>
+                                                    <span v-html="comment.comment"></span>
+                                                </p>
+                                            </div>
+                                        </div>
+                                        </div>
                                     </div>
                                 </div>
-                                <div v-if="!selected.comments">
+                                 <vue-editor id="commentEditor" :editorToolbar="customToolbar" v-model="comment"></vue-editor>
+                                <br/>
+                                <b-button v-if="comment.length" @click="submitComment()">Comment</b-button>
+                                <div v-if="!comments.length">
                                     <p>Be the first one to comment !</p>
                                 </div>
                             </div>
@@ -352,7 +382,7 @@
                     <pre>{{selected.mag}}</pre>
                     <pre>{{selected}}</pre>
                 </div>
-        
+
             </div><!-- project detail content-->
         </div>
 
@@ -432,20 +462,20 @@ import {VueEditor} from "vue2-editor"
 let ps;
 
 export default {
-    components: { 
-        projectaccess, 
-        pageheader,     
-        contact, 
-        VueMarkdown, 
-        projectavatar, 
+    components: {
+        projectaccess,
+        pageheader,
+        contact,
+        VueMarkdown,
+        projectavatar,
         license,
-        pubcard, 
+        pubcard,
         datasets,
-        processes, 
-        publications, 
+        processes,
+        publications,
         pipelines,
-        agreements, 
-        datatypetag, 
+        agreements,
+        datatypetag,
         participants,
         mag,
         doibadge,
@@ -454,21 +484,23 @@ export default {
 
         'groupAnalysis': ()=> import('@/components/groupanalysis'),
 
-        //noprocess, 
-        resource, 
+        //noprocess,
+        resource,
         ExportablePlotly: ()=>import('@/components/ExportablePlotly'),
 
-        newtaskModal, 
-        datatypeselecterModal, 
+        newtaskModal,
+        datatypeselecterModal,
         stateprogress,
         citation,
     },
 
     data () {
         return {
-            selected: null, 
+            selected: null,
             resource_usage: null,
             total_walltime: 0,
+            editcommentID : null,
+            editcommentIndex: null,
 
             participants: null,
             participants_columns: null,
@@ -494,7 +526,12 @@ export default {
             ws: null,
 
             config: Vue.config,
-            comment : "",
+            comment: "",
+            comments: [],
+            customToolbar:  [
+                ["bold", "italic", "underline"],
+                [{ list: "ordered" }, { list: "bullet" }],
+            ]
 
         }
     },
@@ -519,6 +556,42 @@ export default {
                 this.$router.replace("/project/"+this.selected._id+"/"+this.tabs[this.tab].id);
             }
         },
+        detailTab: function() {
+            if(this.detailTab == 4) {
+                this.axios.get("/comment",{params : {
+                    project : this.selected._id
+                }}).then(res=>{
+                    console.log(res.data);
+                    var url = Vue.config.event_ws+"/subscribe?jwt="+Vue.config.jwt;
+                    console.log(url);
+                    this.ws = new ReconnectingWebSocket(url, null, {reconnectInterval: 3000});
+                    this.ws.onopen = (e)=>{
+                        this.ws.send(JSON.stringify({
+                            bind: {
+                                ex: "warehouse",
+                                key: "comment_project.update.*."+this.selected._id,
+                            }
+                        }));
+                        this.ws.onmessage = (json)=>{
+                            let event = JSON.parse(json.data);
+                            console.log(event);
+                            let index = this.comments.findIndex(comment=>
+                                comment._id == event.msg._id);
+                            if(!event.msg.removed) {
+                                // console.log("Updating",event.msg);
+                                // console.log("Updating comment at",index,event.msg);
+                                this.comments.splice(index, 1, event.msg);
+                                // console.log("now it is", this.comments[index]);
+                            } else this.comments.splice(index, 1);
+                        };
+                };
+                    this.comments = res.data.comments;
+                }).catch(err=>{
+                    console.error(err);
+                    this.$notify({text: err.response.data.message, type: 'error' });
+                })
+            }
+        }
     },
 
     computed: {
@@ -539,6 +612,26 @@ export default {
     },
 
     methods: {
+        deleteComment(comment) {
+            this.$http.delete('comment/'+comment._id, {
+            }).then(res=>{
+                console.log(res.data);
+                this.comments.splice(this.comments.indexOf(comment), 1);
+                }).catch(err=>{
+                console.error(err);
+                this.$notify({ text: err.response.data.message, type: 'error'});
+            })
+        },
+        editComment(comment) {
+            this.comment = "";
+            this.comment = comment.comment;
+            this.editcommentID = comment._id;
+            this.editcommentIndex = this.comments.indexOf(comment);
+        },
+        format(date) {
+            let month = date.toLocaleString("en-US", { month: 'short' })
+            return date.getDate() + ' ' + month + ' ' + date.getFullYear();
+        },
 
         get_total(instances) {
             if(!instances) return 0;
@@ -584,18 +677,45 @@ export default {
             return false;
         },
 
+        isauthor(sub) {
+            if(!Vue.config.user) return false;
+            if(Vue.config.user.sub == sub) return true;
+        },
+
         remove() {
             if(confirm("Do you really want to remove this project?")) {
                 this.$http.delete('project/'+this.selected._id)
                 .then(res=>{
                     this.selected.removed = true;
-                    this.$router.push('/project');        
+                    this.$router.push('/project');
                 });
             }
         },
 
         submitComment() {
             console.log(this.comment);
+            if(this.editcommentID) {
+                this.$http.patch('comment/'+this.editcommentID, {commentString: this.comment})
+                .then(res=>{
+                    console.log(res.data);
+                    this.comments[this.editcommentIndex] = res.data;
+                    this.comment = "";
+                    this.editcommentID = null;
+                })
+            }else{
+                this.$http.post('comment/', {
+                        user_id : ""+Vue.config.user.sub,
+                        project : this.selected._id,
+                        comment : this.comment
+                }).then(res=>{
+                    console.log(res.data);
+                    Vue.set(this.comments, this.comments.length, res.data);
+                    this.comment = "";
+                }).catch(err=>{
+                    console.error(err);
+                    this.$notify({ text: err.response.data.message, type: 'error'});
+                })
+            }
         },
 
         openProject(projectId) {
@@ -646,15 +766,16 @@ export default {
                         }
                     };
                 };
-                    
+
+
                 //optionally.. load participant info
                 //TODO - maybe I should expose it if publishParticipantsInfo is true
                 if(this.isadmin() || this.ismember()) {
                     this.participants = null;
                     this.axios.get("/participant/"+projectId).then(res=>{
                         if(res.data) {
-                            this.participants = res.data.subjects||{}; 
-                            this.participants_columns = res.data.columns||{}; 
+                            this.participants = res.data.subjects||{};
+                            this.participants_columns = res.data.columns||{};
                         }
                     });
                 }
@@ -665,7 +786,7 @@ export default {
         },
 
         update_resource_usage_graph() {
-            
+
             //create resource usage graph
             if(this.selected.stats && this.selected.stats.resources) {
                 let resources = {};
@@ -713,7 +834,7 @@ export default {
                         let resource = res.data.resources.find(r=>r._id == stat.resource_id);
                         if(!resource) return; //no such resource?
                         let resource_citations = this.resource_citations.find(r=>r.resource._id == stat.resource_id);
-                        if(!resource_citations) this.resource_citations.push({resource, citation: stat.citation});    
+                        if(!resource_citations) this.resource_citations.push({resource, citation: stat.citation});
                     });
 
                     //create plotly graph
@@ -723,7 +844,7 @@ export default {
                             //title: 'Apps'
                         },
                         xaxis: {
-                            title: 'Total Walltime (hour)',  
+                            title: 'Total Walltime (hour)',
                             type: 'log',
                             //autorange: true
                             showgrid: true,
@@ -746,7 +867,7 @@ export default {
                             width: 1200,
                             height: 600,
                         },
-                        
+
                         modeBarButtonsToAdd: [{
                             name: 'SVG',
 
@@ -794,17 +915,17 @@ export default {
 
 <style scoped>
 .page-header {
-    padding: 10px 20px;    
+    padding: 10px 20px;
 }
 .page-header h4 {
-    margin-right: 150px; 
+    margin-right: 150px;
 }
 .page-content {
     overflow-x: hidden;
     top: 95px;
 }
 .project-header {
-    padding: 20px; 
+    padding: 20px;
     box-shadow: 0 0 2px #ccc;
     background-color: white;
     top: 0px;
@@ -814,7 +935,7 @@ export default {
 .top-tabs {
     top: 50px;
     height: 45px;
-    background-color: white; 
+    background-color: white;
     box-shadow: 0px 0px 2px #ccc;
     z-index: 1;
     overflow: hidden;
@@ -840,8 +961,8 @@ export default {
     background-color: #eee;
 }
 .box {
-    background-color: #fff; 
-    padding: 20px; 
+    background-color: #fff;
+    padding: 20px;
     margin-bottom: 20px;
     box-shadow: 0 0 3px #0002;
     border-radius: 4px;
@@ -868,11 +989,11 @@ p.info .fa-icon {
     margin-bottom: 10px;
 }
 .datatypes .datatypes-header {
-    opacity: 0.5; 
-    font-weight: bold; 
+    opacity: 0.5;
+    font-weight: bold;
     font-size: 85%;
-    margin-bottom: 5px; 
-    text-transform: uppercase;    
+    margin-bottom: 5px;
+    text-transform: uppercase;
 }
 .bigpill {
     padding: 5px 10px;
@@ -885,11 +1006,11 @@ p.info .fa-icon {
 }
 
 .side {
-    float: right; 
-    width: 280px; 
-    padding: 20px; 
+    float: right;
+    width: 280px;
+    padding: 20px;
     /* we need scrollbar..
-    position: sticky; 
+    position: sticky;
     top: 0px;
     */
     padding-top: 40px;
@@ -911,5 +1032,13 @@ p.info .fa-icon {
 }
 #commentEditor {
     height: 100px;
+}
+.commentbox {
+    background-color: #ffffff;
+    border-radius: 6px;
+    margin: 5px;
+}
+.comcontent {
+    margin: 8px;
 }
 </style>

@@ -68,30 +68,28 @@ async function handleXNAT(project) {
         password: project.xnat.secret,
     }
 
-    //if(project.tokenUpdated < dago) {
-        console.log("refreshing access token", project.xnat.hostname);
-        try {
-            console.log("issuing new token");
-            const res = await axios.get(project.xnat.hostname+"/data/services/tokens/issue", {auth});
-            console.debug(res.statusCode);
+    console.log("refreshing access token", project.xnat.hostname);
+    try {
+        console.log("issuing new token");
+        const res = await axios.get(project.xnat.hostname+"/data/services/tokens/issue", {auth});
+        console.debug(res.statusCode);
 
-            console.log("invalidating old token");
-            const invalidateRes = await axios.get(project.xnat.hostname+"/data/services/tokens/invalidate/"+project.xnat.token+"/"+project.xnat.secret, {auth});
-            console.debug(invalidateRes.statusCode, invalidateRes.data);
+        console.log("invalidating old token");
+        const invalidateRes = await axios.get(project.xnat.hostname+"/data/services/tokens/invalidate/"+project.xnat.token+"/"+project.xnat.secret, {auth});
+        console.debug(invalidateRes.statusCode, invalidateRes.data);
 
-            //replace with new one
-            project.xnat.token = res.data.alias;
-            project.xnat.secret = res.data.secret;
-            project.tokenUpdated = new Date();
+        //replace with new one
+        project.xnat.token = res.data.alias;
+        project.xnat.secret = res.data.secret;
+        project.tokenUpdated = new Date();
 
-        } catch (err) {
-            console.error(err.response);
-            project.xnat.token = undefined;
-            project.xnat.secret = undefined;
-            project.xnat.enabled = false;
-        }
-        project.markModified('xnat');
-    //}
+    } catch (err) {
+        console.error(err.response);
+        project.xnat.token = undefined;
+        project.xnat.secret = undefined;
+        project.xnat.enabled = false;
+    }
+    project.markModified('xnat');
 
     const objects = await common.enumXnatObjects(project);
     await common.updateXNATObjects(objects);

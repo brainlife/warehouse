@@ -22,7 +22,6 @@ import 'perfect-scrollbar/css/perfect-scrollbar.css'
 //https://www.npmjs.com/package/vue-notification
 import Notifications from 'vue-notification' //override element-ui ugly $notify..
 
-//import 'vue-awesome/icons'
 import 'vue-awesome/icons/robot.js'
 import 'vue-awesome/icons/book.js'
 import 'vue-awesome/icons/paper-plane.js'
@@ -142,7 +141,7 @@ import VueTimeago from 'vue-timeago'
 import SocialSharing from 'vue-social-sharing';
 
 //import VueAnalytics from 'vue-analytics'
-import VueGtag from 'vue-tag'
+import VueGtag from 'vue-gtag'
 
 import axios from 'axios'
 import VueAxios from 'vue-axios'
@@ -258,7 +257,7 @@ Vue.config.plotly = {
     },
 };
 
-Vue.config.has_role = function(role, service = "warehouse") {
+Vue.config.hasRole = function(role, service = "warehouse") {
     if( Vue.config.user && 
         Vue.config.user.scopes[service] &&
         ~Vue.config.user.scopes[service].indexOf(role)) return true;
@@ -298,8 +297,8 @@ function jwt_decode_brainlife(jwt) {
     axios.defaults.headers.common['Authorization'] = 'Bearer '+Vue.config.jwt;
 
     //deprecated .. use Vue.config.has_role
-    Vue.config.is_admin = Vue.config.has_role("admin"); 
-    if(Vue.config.has_role("admin")) console.log("user is admin!");
+    //Vue.config.is_admin = Vue.config.hasRole("admin"); 
+    //if(Vue.config.has_role("admin")) console.log("user is admin!");
 }
 
 Vue.config.jwt = localStorage.getItem("jwt");//jwt token for user
@@ -331,14 +330,14 @@ router.beforeEach(function (to, from, next) {
     next();
 });
 
-if (!Vue.config.debug) {
-    Vue.use(VueGtag, { 
-        //pageTrackerExcludedRotues: ['route_path_value', 'route_name_value'],
-        config: { id: process.env.GTAG }
-    }, router)
-} else {
-    console.log("it's running on debug.. skipping using gtag", process.env.GTAG);
-}
+Vue.use(VueGtag, { 
+    //pageTrackerExcludedRotues: ['route_path_value', 'route_name_value'],
+    appName: "brainlife.io",
+    config: { 
+        id: process.env.GTAG,
+        //send_page_view: true,
+     }
+}, router)
 
 const soundHost = "https://raw.githubusercontent.com/brainlife/warehouse/master/ui/sounds/";
 

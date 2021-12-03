@@ -42,7 +42,7 @@
                 </b-container>
             </div>
         </div>
-        <b-button v-if="config.has_role('datatype.create')" class="button-fixed" @click="newdatatype">
+        <b-button v-if="config.hasRole('datatype.create')" class="button-fixed" @click="newdatatype">
             New Datatype
         </b-button>
     </div>

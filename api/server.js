@@ -30,14 +30,19 @@ app.use('/', require('./controllers'));
 //app.use(expressWinston.errorLogger(config.logger.winston)); 
 app.use(function(err, req, res, next) {
     if(typeof err == "string") err = {message: err};
+    if(err instanceof Error) err = {message: err.toString()};
 
-    if(!err.name || err.name != "UnauthorizedError") {
-        console.error(err);
+    //log this error
+    console.error(err);
+
+    if(err.name) switch(err.name) {
+    case "UnauthorizedError":
+        console.log(req.headers); //dump headers for debugging purpose..
+        break;
     }
-
     if(err.stack) err.stack = "hidden"; //don't sent call stack to UI - for security reason
-    res.status(err.status || 500);
-    res.json(err);
+    res.status(500).json(err);
+    console.log("sending json", err);
 });
 
 process.on('uncaughtException', function (err) {

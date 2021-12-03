@@ -16,10 +16,10 @@
     <p v-if="release.desc" style="margin-bottom: 0px;"><small>{{release.desc}}</small></p>
     <a :name="'release.'+release.name+'.data'" class="anchor"></a>
     <div v-if="release.sets && release.sets.length">
+        <b-button @click="downloadDataset(release.set)" style="float: right;" size="sm" variant="outline-secondary">
+            <icon name="download"/>&nbsp;&nbsp;Download
+        </b-button>
         <span class="subheader">Data</span>
-        <b-badge pill class="bigpill clickable" @click="downloadDataset(release.set)" style="float: right; background-color: #2693ff;  color: white;">
-            <icon name="download" style="opacity: 0.4;"/>&nbsp;&nbsp;&nbsp;<small>Dowload</small>
-        </b-badge>
         <p style="margin-bottom: 5px;"><small>The following data objects are published as part of this release.</small></p>
         <div style="border-top: 1px solid #eee; padding: 3px 0;" v-for="(set, idx) in release.sets" :key="idx">
             <b-row>
@@ -39,9 +39,9 @@
     <div v-if="release.apps && release.apps.length">
         <span class="subheader">Preprocessing</span>
         <small>The following Apps were used to generate the data in this release.</small>
-        <div v-for="rec in release.apps" :key="rec._id" style="margin-top: 10px; border-left: 3px solid #f0f0f0; border-bottom: 1px solid #eee;">
+        <div v-for="rec in release.apps" :key="rec._id" style="margin-top: 10px; padding: 10px; box-shadow: 1px 1px 4px #0003; border-radius: 5px;">
             <app :appid="rec.app" :branch="rec.task.service_branch" :compact="true" :showDoi="true">
-                <taskconfig :task="rec.task" style="margin: 10px;"/>
+                <taskconfig :task="rec.task" style="margin: 10px; margin-right: 100px;"/>
             </app>
         </div>
         <br>
@@ -148,7 +148,6 @@ export default {
     padding-bottom: 5px;
     line-height: 100%;
     color: #2693ff;
-    border-bottom: 2px solid #2693ff66;
 }
 .anchor { 
     position:relative;
