@@ -286,7 +286,7 @@
 
                             <div v-if="resource_usage && total_walltime > 3600*1000">
                                 <span class="form-header">Resource Usage</span>
-                                <p><small>Data-objects on this project has been computed using the following apps/resources.</small></p>             
+                                <p><small>Data-objects on this project has been computed using the following apps/resources.</small></p>
                                 <ExportablePlotly :data="resource_usage.data"
                                         :layout="resource_usage.layout"
                                         :autoResize="true"
@@ -301,7 +301,7 @@
                                 <p><small>Please use the following citations to cite the Apps/resources used by this project.</small></p>
                                 <p v-for="app in selected.stats.apps" :key="app._id">
                                     <icon name="robot" style="opacity: 0.5;"/> <b>{{app.app.name}}</b><br>
-                                    <citation :doi="app.app.doi"/> 
+                                    <citation :doi="app.app.doi"/>
                                 </p>
 
                                 <div v-if="resource_citations.length > 0">
@@ -469,13 +469,13 @@ export default {
         VueMarkdown,
         projectavatar,
         license,
-        pubcard, 
+        pubcard,
         datasets,
-        processes, 
-        publications, 
+        processes,
+        publications,
         pipelines,
-        agreements, 
-        datatypetag, 
+        agreements,
+        datatypetag,
         participants,
         mag,
         doibadge,
@@ -484,12 +484,12 @@ export default {
 
         'groupAnalysis': ()=> import('@/components/groupanalysis'),
 
-        //noprocess, 
-        resource, 
+        //noprocess,
+        resource,
         ExportablePlotly: ()=>import('@/components/ExportablePlotly'),
 
-        newtaskModal, 
-        datatypeselecterModal, 
+        newtaskModal,
+        datatypeselecterModal,
         stateprogress,
         citation,
     },
@@ -562,6 +562,29 @@ export default {
                     project : this.selected._id
                 }}).then(res=>{
                     console.log(res.data);
+                    var url = Vue.config.event_ws+"/subscribe?jwt="+Vue.config.jwt;
+                    console.log(url);
+                    this.ws = new ReconnectingWebSocket(url, null, {reconnectInterval: 3000});
+                    this.ws.onopen = (e)=>{
+                        this.ws.send(JSON.stringify({
+                            bind: {
+                                ex: "warehouse",
+                                key: "comment_project.update.*."+this.selected._id,
+                            }
+                        }));
+                        this.ws.onmessage = (json)=>{
+                            let event = JSON.parse(json.data);
+                            console.log(event);
+                            let index = this.comments.findIndex(comment=>
+                                comment._id == event.msg._id);
+                            if(!event.msg.removed) {
+                                // console.log("Updating",event.msg);
+                                // console.log("Updating comment at",index,event.msg);
+                                this.comments.splice(index, 1, event.msg);
+                                // console.log("now it is", this.comments[index]);
+                            } else this.comments.splice(index, 1);
+                        };
+                };
                     this.comments = res.data.comments;
                 }).catch(err=>{
                     console.error(err);
@@ -744,14 +767,15 @@ export default {
                     };
                 };
 
+
                 //optionally.. load participant info
                 //TODO - maybe I should expose it if publishParticipantsInfo is true
                 if(this.isadmin() || this.ismember()) {
                     this.participants = null;
                     this.axios.get("/participant/"+projectId).then(res=>{
                         if(res.data) {
-                            this.participants = res.data.subjects||{}; 
-                            this.participants_columns = res.data.columns||{}; 
+                            this.participants = res.data.subjects||{};
+                            this.participants_columns = res.data.columns||{};
                         }
                     });
                 }
@@ -810,7 +834,7 @@ export default {
                         let resource = res.data.resources.find(r=>r._id == stat.resource_id);
                         if(!resource) return; //no such resource?
                         let resource_citations = this.resource_citations.find(r=>r.resource._id == stat.resource_id);
-                        if(!resource_citations) this.resource_citations.push({resource, citation: stat.citation});    
+                        if(!resource_citations) this.resource_citations.push({resource, citation: stat.citation});
                     });
 
                     //create plotly graph
@@ -820,7 +844,7 @@ export default {
                             //title: 'Apps'
                         },
                         xaxis: {
-                            title: 'Total Walltime (hour)',  
+                            title: 'Total Walltime (hour)',
                             type: 'log',
                             //autorange: true
                             showgrid: true,
@@ -843,7 +867,7 @@ export default {
                             width: 1200,
                             height: 600,
                         },
-                        
+
                         modeBarButtonsToAdd: [{
                             name: 'SVG',
 
@@ -891,17 +915,17 @@ export default {
 
 <style scoped>
 .page-header {
-    padding: 10px 20px;    
+    padding: 10px 20px;
 }
 .page-header h4 {
-    margin-right: 150px; 
+    margin-right: 150px;
 }
 .page-content {
     overflow-x: hidden;
     top: 95px;
 }
 .project-header {
-    padding: 20px; 
+    padding: 20px;
     box-shadow: 0 0 2px #ccc;
     background-color: white;
     top: 0px;
@@ -911,7 +935,7 @@ export default {
 .top-tabs {
     top: 50px;
     height: 45px;
-    background-color: white; 
+    background-color: white;
     box-shadow: 0px 0px 2px #ccc;
     z-index: 1;
     overflow: hidden;
@@ -937,8 +961,8 @@ export default {
     background-color: #eee;
 }
 .box {
-    background-color: #fff; 
-    padding: 20px; 
+    background-color: #fff;
+    padding: 20px;
     margin-bottom: 20px;
     box-shadow: 0 0 3px #0002;
     border-radius: 4px;
@@ -965,11 +989,11 @@ p.info .fa-icon {
     margin-bottom: 10px;
 }
 .datatypes .datatypes-header {
-    opacity: 0.5; 
-    font-weight: bold; 
+    opacity: 0.5;
+    font-weight: bold;
     font-size: 85%;
-    margin-bottom: 5px; 
-    text-transform: uppercase;    
+    margin-bottom: 5px;
+    text-transform: uppercase;
 }
 .bigpill {
     padding: 5px 10px;
@@ -982,11 +1006,11 @@ p.info .fa-icon {
 }
 
 .side {
-    float: right; 
-    width: 280px; 
-    padding: 20px; 
+    float: right;
+    width: 280px;
+    padding: 20px;
     /* we need scrollbar..
-    position: sticky; 
+    position: sticky;
     top: 0px;
     */
     padding-top: 40px;
@@ -1011,7 +1035,6 @@ p.info .fa-icon {
 }
 .commentbox {
     background-color: #ffffff;
-    border: 1px solid #d0d7de;
     border-radius: 6px;
     margin: 5px;
 }
