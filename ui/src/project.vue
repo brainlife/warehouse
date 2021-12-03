@@ -9,7 +9,7 @@
                 </div>
             </div>
             <h4>
-                <projectaccess :access="selected.access" style="position: relative; top: -3px;"/> 
+                <projectaccess :access="selected.access" style="position: relative; top: -3px;"/>
                 {{selected.name}}
             </h4>
         </div>
@@ -25,9 +25,9 @@
                         </span>
 
                         <span v-if="tabinfo.id == 'dataset'" style="opacity: 0.6; font-size: 80%;">
-                            <span title="Number of subjects stored in archive" 
+                            <span title="Number of subjects stored in archive"
                                 v-if="selected.stats && selected.stats.datasets && selected.stats.datasets.subject_count">
-                               &nbsp;<icon name="user-friends" scale="0.8"/>&nbsp;&nbsp;{{selected.stats.datasets.subject_count}} 
+                               &nbsp;<icon name="user-friends" scale="0.8"/>&nbsp;&nbsp;{{selected.stats.datasets.subject_count}}
                             </span>
                             <span title="Number of data-objects stored in archive"
                                 v-if="selected.stats && selected.stats.datasets && selected.stats.datasets.count">
@@ -35,18 +35,18 @@
                             </span>
                         </span>
 
-                        <span v-if="tabinfo.id == 'process'" title="Number of tasks" style="opacity: 0.8;"> 
+                        <span v-if="tabinfo.id == 'process'" title="Number of tasks" style="opacity: 0.8;">
                             <div v-if="selected.stats && get_total(selected.stats.instances) > 0" style="display: inline-block; width: 75px;">
                                 <stateprogress :states="selected.stats.instances"/>
                             </div>
                         </span>
 
-                        <span v-if="tabinfo.id == 'pipeline' && selected.stats && selected.stats.rules && (selected.stats.rules.active||selected.stats.rules.inactive)" 
+                        <span v-if="tabinfo.id == 'pipeline' && selected.stats && selected.stats.rules && (selected.stats.rules.active||selected.stats.rules.inactive)"
                             title="Number of pipeline rules" style="opacity: 0.6; font-size: 80%;">
                             &nbsp;{{selected.stats.rules.active}} <small>/ {{selected.stats.rules.active + selected.stats.rules.inactive}}</small>
                         </span>
 
-                        <span v-if="tabinfo.id == 'groupanalysis' && selected.stats && selected.stats.groupanalysis && selected.stats.groupanalysis.sessions.length > 0" 
+                        <span v-if="tabinfo.id == 'groupanalysis' && selected.stats && selected.stats.groupanalysis && selected.stats.groupanalysis.sessions.length > 0"
                             title="Number of analysis sessions" style="opacity: 0.6; font-size: 80%;">
                             &nbsp;{{selected.stats.groupanalysis.sessions.length}}
                         </span>
@@ -492,6 +492,7 @@ export default {
         datatypeselecterModal,
         stateprogress,
         citation,
+        Picker
     },
 
     data () {
