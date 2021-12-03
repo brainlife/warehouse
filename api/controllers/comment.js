@@ -57,6 +57,7 @@ router.post('/', common.jwt(), function(req, res, next) {
     comment.save((err)=>{
         if(err) return next(err);
         // comment = JSON.parse(JSON.stringify(comment));
+        common.publish("comment_project.create."+comment.user_id+"."+comment.project_id,);
         res.json(comment);
     })
 });
@@ -81,6 +82,7 @@ router.patch('/:id', common.jwt(), (req, res, next) =>{
         comment.comment = updatedComment;
         comment.save((err, comment)=>{
             if(err) return next(err);
+            common.publish("comment_project.update."+comment.user_id+"."+comment.project, comment);
             res.json(comment);
         })
     })
@@ -104,6 +106,7 @@ router.delete('/:id', common.jwt(), (req, res)=>{
         comment.removed = true;
         comment.save((err, comment)=>{
             if(err) return next(err);
+            common.publish("comment_project.update."+comment.user_id+"."+comment.project_id, comment);
             res.json("removed comment");
         })
     })
