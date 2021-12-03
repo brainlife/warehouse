@@ -331,13 +331,10 @@
                                 Please login to Comments.
                             </b-alert>
                             <div v-else>
-                                <vue-editor id="commentEditor" :editorToolbar="customToolbar" v-model="comment"></vue-editor>
-                                <br/>
-                                <b-button v-if="comment.length" @click="submitComment()">Comment</b-button>
                                 <div v-if="comments && comments.length">
                                     <div v-for="comment in comments" :key="comment._id">
                                         <div class="commentbox">
-                                            <div class="comcontent">
+                                            <div class="comment-header">
                                                 <contact :id="comment.user_id" size="small"
                                                 style="line-height: 150%;"/>
                                                 <div style="float: right">
@@ -359,14 +356,19 @@
                                                         <icon name="trash" scale="1.25"/>
                                                     </div>
                                                 </div>
-                                                <br/>
+                                            </div>
+                                            <div class="comcontent">
                                                 <p>
                                                     <span v-html="comment.comment"></span>
                                                 </p>
                                             </div>
                                         </div>
+                                        </div>
                                     </div>
                                 </div>
+                                 <vue-editor id="commentEditor" :editorToolbar="customToolbar" v-model="comment"></vue-editor>
+                                <br/>
+                                <b-button v-if="comment.length" @click="submitComment()">Comment</b-button>
                                 <div v-if="!comments.length">
                                     <p>Be the first one to comment !</p>
                                 </div>
