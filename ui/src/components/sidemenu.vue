@@ -53,7 +53,6 @@
             <h4>Datatypes</h4>
         </li>
 
-
         <li v-if="config.user" 
             @click="go('/resources')" :class="{active: active == 'resource'}">
             <icon name="server" scale="1.2"/>
@@ -217,17 +216,19 @@ export default {
 <style scoped>
 
 .sidemenu {
-position: fixed;
-top: 0px;
-left: 0px;
-width: 40px;
-bottom: 0px;
-color:  rgba(255,255,255,200);
-font-size: 8pt;
-background-image: linear-gradient(0deg, #159957, #2693ff);
-z-index: 2;
-box-shadow: inset -3px 0 2px rgba(33,33,33,0.1);
-transition: width 0.2s;
+    position: fixed;
+    top: 0px;
+    left: 0px;
+    width: 40px;
+    bottom: 0px;
+    color:  rgba(255,255,255,200);
+    font-size: 8pt;
+    background-image: linear-gradient(0deg, #159957, #2693ff);
+    /*background-image: url('~@/assets/images/christmastree.jpg'); - show up as just white image*/
+
+    z-index: 2;
+    box-shadow: inset -3px 0 2px rgba(33,33,33,0.1);
+    transition: width 0.2s;
 }
 .sidewide .sidemenu {
 width: 180px;
@@ -354,66 +355,40 @@ box-shadow: inset 0px 2px 2px rgba(0,0,0,0.05);
 }
 
 .logo {
-cursor: pointer;
-background-color: rgba(255,255,255,0.3);
-box-shadow: 0 0 5px rgba(0,0,0,0.2);
-height: 50px;
-margin-bottom: 10px;
-position: relative;
-overflow: hidden;
+    cursor: pointer;
+    background-color: rgba(255,255,255,0.3);
+    box-shadow: 0 0 5px rgba(0,0,0,0.2);
+    height: 50px;
+    margin-bottom: 10px;
+    position: relative;
+    overflow: hidden;
 }
 .logo h3 {
-padding: 8px 4px;
-color: #fff;
-font-size: 20pt;
-display: inline-block;
-}
-.panel-content {
-position: fixed;
-top: 0px;
-left: 40px;
-width: 500px;
-transition: opacity 0.2s;
-background-color: #fcfcfc;
-z-index: 3;
-box-shadow: 0 0 8px rgba(0,0,0,0.4);
-font-size: 0.9rem;
-}
-.panel-content .title {
-padding-top: 10px;
-margin-bottom: 0px;
-color: #999;
-}
-.panel-content p {
-color: #bbb;
-padding: 0px 10px;
-}
-.logo .panel-content img {
-background-color: #eee;
-opacity: 0.8;
-border-top-left-radius: 50%;
-border-top-right-radius: 50%;
-padding: 10px;
-padding-bottom: 0px;
+    padding: 8px 4px;
+    color: #fff;
+    font-size: 20pt;
+    display: inline-block;
 }
 .toggle {
-position: absolute;
-top: 0px;
-padding: 17px;
-right: 0px;
-opacity: 0;
-cursor: pointer;
-z-index: 1;
-transition: opacity 0.5s;
-display: none;
+    position: absolute;
+    top: 0px;
+    padding: 17px;
+    right: 0px;
+    opacity: 0;
+    cursor: pointer;
+    z-index: 1;
+    transition: opacity 0.5s;
+    display: none;
 }
 .sidewide .toggle {
-opacity: 0.5;
+    opacity: 0.5;
 }
 .toggle:hover {
-opacity: 1;
+    opacity: 1;
 }
 .sidewide .toggle {
-display: inherit;
+    display: inherit;
 }
 </style>
+
+

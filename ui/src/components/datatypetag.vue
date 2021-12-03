@@ -19,7 +19,6 @@ export default {
     mixins: [ datatypecache ],
     props: {
         datatype: [String, Object],
-
         tags: { type: Array, }, 
         trimname: { type: Boolean, default: true, },
         clickable: { type: Boolean, default: true, },

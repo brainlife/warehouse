@@ -39,15 +39,17 @@
                     <br>
                 </div>
 
-                <div v-if="pub.releases.length" class="releases">
+                <div v-if="pub.releases.length">
                     <!--
                     <div class="content-subheader border-bottom">Releases</div>
                     -->
                     <div v-for="release in pub.releases" :key="release._id" class="content-item">
-                        <small style="float: right">
-                            {{new Date(release.create_date).toLocaleDateString()}}
-                        </small>
-                        <div @click="jump('release.'+release.name)" class="clickable border-bottom">Release <b>{{release.name}}</b></div>
+                        <div style="background-color: #eee; padding: 5px 10px; margin-bottom: 5px;">
+                            <small style="float: right">
+                                {{new Date(release.create_date).toLocaleDateString()}}
+                            </small>
+                            <div @click="jump('release.'+release.name)" class="clickable">Release <b>{{release.name}}</b></div>
+                        </div>
                         <p v-if="release.desc">
                             <small>{{release.desc}}</small>
                         </p>
@@ -83,9 +85,10 @@
                     <div class="content-subheader border-bottom">Project</div>
                     <small class="text-muted">This publication was processed in the following brainlife.io project</small>
                     <br>
-                    <div @click="openproject(pub.project._id)" class="clickable" style="background-color: #eee; padding: 5px 10px; border-left: 2px solid #999;">
-                        <b>{{pub.project.name}}</b><br>
-                        <small>{{pub.project.desc}}</small>
+                    <br>
+                    <div @click="openproject(pub.project._id)" class="clickable" style="padding: 10px; border: 1px solid #0004; border-radius: 5px;">
+                        <p><b class="serif">{{pub.project.name}}</b></p>
+                        <small class="serif">{{pub.project.desc}}</small>
                     </div>
                     <br>
                 </div>
@@ -137,22 +140,26 @@
 
             <!--main content-->
             <div class="main">
-                <h4 style="color: #666; padding-top: 15px; padding-bottom: 5px; ">
+                <br>
+                <br>
+                <h4 class="serif" style="color: #666; padding-bottom: 5px;">
                     {{pub.name}} 
                 </h4>
                 <p>
                     <doibadge :doi="pub.doi"/>
+                    &nbsp;
                     <b-badge pill class="bigpill">
                         <icon name="calendar" style="opacity: 0.4;"/>&nbsp;&nbsp;&nbsp;<small>Published</small>&nbsp;&nbsp;<time>{{new Date(pub.create_date).toLocaleDateString()}}</time>
                     </b-badge>
                 </p>
-                <p>{{pub.desc}}</p>
+                <br>
+                <p class="serif">{{pub.desc}}</p>
                 <p>
                     <span v-for="contact in pub.authors" :key="contact._id">
                         <contact :fullname="contact.fullname" :email="contact.email"></contact>
                     </span>
                 </p>
-                <hr>
+                <br>
                 <div v-if="pub.readme" class="readme" style="margin-bottom: 20px;">
                     <vue-markdown :source="pub.readme"/>
                 </div>
@@ -216,8 +223,8 @@
 
                     <b-row v-if="pub.contributors.length > 0">
                         <b-col cols="2">
-                            <a name="contributors"/>
                             <span class="form-header">Contributors</span>
+                            <a name="contributors"/>
                         </b-col>
                         <b-col cols="10">
                             <p>
@@ -248,8 +255,8 @@
 
                     <b-row v-if="pub.project.importedDLDatasets && pub.project.importedDLDatasets.length">
                         <b-col cols="2">
-                            <a name="datasource"/>
                             <span class="form-header">Data Sources</span>
+                            <a name="datasource"/>
                         </b-col>
                         <b-col>
                             <small class="text-muted" style="margin-bottom: 5px;">The following data sources are used for this project</small>
@@ -269,8 +276,8 @@
 
                     <b-row v-if="pub.fundings.length > 0">
                         <b-col cols="2">
-                            <a name="fundings"/>
                             <span class="form-header">Funded By</span>
+                            <a name="fundings"/>
                         </b-col>
                         <b-col>
                             <div v-for="funding in pub.fundings" :key="funding._id" class="funder">
@@ -288,8 +295,8 @@
 
                     <b-row>
                         <b-col cols="2">
-                            <a name="license"/>
                             <span class="form-header" name="license">License</span>
+                            <a name="license"/>
                         </b-col>
                         <b-col>
                             <p><small class="text-muted">Published data is released under the following license.</small></p>
@@ -300,8 +307,8 @@
                     
                     <b-row v-if="pub.relatedPapers && pub.relatedPapers.length > 0">
                         <b-col cols="2">
-                            <a name="related"/>
                             <span class="form-header">Related Articles</span>
+                            <a name="related"/>
                         </b-col>    
                         <b-col>
                             <mag v-for="paper in sortedPapers.slice(0, relatedPaperLimit)" :key="paper.Id" :paper="paper"/>
@@ -508,30 +515,30 @@ export default {
 
 <style>
 .social-buttons span[data-link] {
-background-color: white;
-border-radius: 10px;
-padding: 10px;
-margin: 5px;
-display: inline-block;
-width: 140px;
-transition: 0.5s background-color, 0.5s color;
+    background-color: white;
+    border-radius: 10px;
+    padding: 10px;
+    margin: 5px;
+    display: inline-block;
+    width: 140px;
+    transition: 0.5s background-color, 0.5s color;
 }
 .social-buttons span[data-link]:hover {
-background-color: #007bff;
-color: white;
-cursor: pointer;
+    background-color: #007bff;
+    color: white;
+    cursor: pointer;
 }
 .social-buttons svg {
-position: relative;
-top: 2px;
-height: 15px;
-width: 15px;
-margin: 0 5px;
-color: #999;
-transition: 0.5s color;
+    position: relative;
+    top: 2px;
+    height: 15px;
+    width: 15px;
+    margin: 0 5px;
+    color: #999;
+    transition: 0.5s color;
 }
 .social-buttons span[data-link]:hover svg {
-color: white;
+    color: white;
 }
 </style>
 
@@ -668,12 +675,13 @@ color: white;
 .clickable:hover {
     color: #2693ff;
 }
-
-.releases {
-    border: 1px solid #e0e0e0; 
-    border-radius: 5px; 
-    padding: 7px; 
+@media (max-width: 800px) {
+    .rightside {
+        display: none;
+    }
+    .main {
+        margin-right: 0;
+    }
 }
-
 </style>
 

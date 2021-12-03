@@ -257,6 +257,7 @@
                         </div>
                     </div><!--dataset-detail-->
                 </b-tab>
+                <!--
                 <b-tab title="Provenance(old)">
                     <div v-if="prov" class="dataset-provenance">
                         <div v-if="prov.edges.length == 0">
@@ -270,6 +271,7 @@
                         </div>
                     </div>
                 </b-tab>
+                -->
                 <b-tab title="Provenance">
                     <h5 style="padding: 20px; opacity: 0.5;" v-if="!prov2">Loading ...</h5>
                     <div class="dataset-provenance" v-if="prov2">
@@ -287,15 +289,10 @@
                 </b-tab>
                 <b-tab title="Metadata/Sidecar">
                     <div class="dataset-meta">
-                        <div>
-                            <span class="form-header metadata">Metadata / sidecar <small v-if="dataset._canedit">(editable)</small></span>
-                            <div style="margin-right: 30px">
-                                <editor v-model="dataset._meta" @init="editorInit" @input="update_meta_json()" lang="json" height="450"/>
-                                <div v-if="dataset._canedit" style="margin: 5px 0;">
-                                    <b-button v-if="dataset._meta_dirty" variant="primary" @click="save_meta()" style="float: right;">Save Metadata</b-button>
-                                    <br clear="both">
-                                </div>
-                            </div>
+                        <editor v-model="dataset._meta" @init="editorInit" @input="update_meta_json()" lang="json" height="100%"/>
+                        <div v-if="dataset._canedit" style="position: absolute; bottom: 10px; right: 30px;">
+                            <b-button v-if="dataset._meta_dirty" variant="primary" @click="save_meta()" style="float: right;">Save Metadata</b-button>
+                            <br clear="both">
                         </div>
                     </div>
                 </b-tab>
@@ -367,7 +364,7 @@ export default {
         return {
             dataset: null,
             apps: null,
-            prov: null, 
+            //prov: null, 
             prov2: null, 
             product: null,
 
@@ -393,9 +390,7 @@ export default {
     },
 
     mounted() {
-        console.log("registering callback for dataset.view");
         this.$root.$on("dataset.view", opt=>{
-            console.log("opening data object view", opt);
             this.load(opt.id);
         });
 
@@ -420,10 +415,7 @@ export default {
     
     watch: {
         tab_index: function() {
-            if(this.tab_index == 1 && this.prov == null) {
-                this.load_prov();
-            }
-            if(this.tab_index == 2) this.load_prov2();
+            if(this.tab_index == 1) this.load_prov2();
         },
         '$route': function() {
             if (this.dataset) {
@@ -458,6 +450,7 @@ export default {
             }, 500);
         },
 
+        /*
         load_prov() {
             //load provenance
             this.$http.get('dataset/prov/'+this.dataset._id).then(res=>{
@@ -596,6 +589,7 @@ export default {
                 }
             });
         },
+        */
 
         load_prov2() {
             //load provenance
@@ -637,8 +631,6 @@ export default {
         },
 
         load_secondary() {
-            console.log("loading secondary");
-
             //if follow_task_id is set, that means this data object came from _dtv
             //_dtv may produces secondary archive, so wait for that
             //see the secondary output archive diagram to understand this
@@ -671,7 +663,7 @@ export default {
                             else {
                                 this.secondary = secondary;
                             }
-                        });                        
+                        });
                     }
                 });
             }
@@ -853,7 +845,7 @@ export default {
                             path: "uis",
                             model: "UIs",
                         }
-                    }, 
+                    },
                     {
                         path: "project"
                     },
@@ -873,7 +865,7 @@ export default {
             if(this.dataset.status == "storing") {
                 this.tm_load_status = setTimeout(()=>{ this.load_status(id); }, 5000);
             }
-            this.load_archive_task(); 
+            this.load_archive_task();
             this.load_product();
 
             Vue.set(this.dataset, '_meta',  JSON.stringify(this.dataset.meta, null, 4));
@@ -892,7 +884,7 @@ export default {
                     this.load_resource();
                     this.load_secondary();
                 }
-            } 
+            }
 
             /////////////////////////////////////////////////////////////////////////////
 
@@ -1099,11 +1091,11 @@ export default {
 .dataset-apps,
 .dataset-provenance,
 .dataset-meta {
-position: absolute;
-top: 105px;
-left: 0;
-right: 0;
-bottom: 0px;
+    position: absolute;
+    top: 105px;
+    left: 0;
+    right: 0;
+    bottom: 0;
 }
 .dataset-provenance {
 background-color: #f9f9f9;

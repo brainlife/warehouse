@@ -900,7 +900,7 @@ exports.update_dataset_stats = async function(project_id, cb) {
         }
         inventory.forEach(item=>{
             subjects.add(item._id.subject);
-            
+
             //some project contains dataset without datatype??
             if(item._id.datatype) {
                 let type = item._id.datatype;
@@ -919,6 +919,8 @@ exports.update_dataset_stats = async function(project_id, cb) {
             stats.size += item.size;
         });
         stats.subject_count = subjects.size;
+        console.log("publishing project update", project_id);
+        console.dir(stats);
         exports.publish("project.update.warehouse."+project_id, {stats: {
             datasets: stats
         }})
@@ -1044,22 +1046,6 @@ exports.update_project_stats = async function(project, cb) {
         let groupanalysis = {
             sessions: [],
         }
-        /*
-        let gaInstanceRes = await axios(config.amaretti.api+"/instance", {
-            params: {
-                find: JSON.stringify({
-                    //status: {$in: ["running", "stopped"]}, //this is for instance!
-                    group_id: project.group_id,
-                    name: "ga-launchers", //must match from ui' components[groupanslysis.vue]
-                }),
-            },
-            headers: { authorization: "Bearer "+config.warehouse.jwt, },
-        });
-        let gaInstances = gaInstanceRes.data.instances;
-
-        if(gaInstances.length > 0) {
-        let instance = gaInstances[0]; //there should be only 1
-        */
 
         //load existing sessions
         let sessionsRes = await axios(config.amaretti.api+"/task", {
@@ -1084,24 +1070,17 @@ exports.update_project_stats = async function(project, cb) {
         });
         
         //app stats -------------------------------------------------------------
-        let recs = await exports.aggregateDatasetsByApps({project:project._id})
-        let app_stats = [];
+        const recs = await exports.aggregateDatasetsByApps({project:project._id})
+        const app_stats = [];
         recs.forEach(rec=>{
             app_stats.push({
                 count: rec.count,
                 app: rec.app,
                 task: rec.task,
-                /*
-                name: rec.app.name,
-                doi: rec.app.doi,
-
-                service: rec.service,
-                service_branch: rec.service_branch,
-                */
             });
         })
 
-        //TODO query task/resource_service_count api
+        //resource / service counts --------------------------------------------
         let resource_usage = await rp.get({
             url: config.amaretti.api+"/task/resource_usage", json: true,
             qs: {
@@ -1109,22 +1088,21 @@ exports.update_project_stats = async function(project, cb) {
             },
             headers: { authorization: "Bearer "+config.warehouse.jwt, },
         });
-
-        //TODO resource_usage api returns group with no resource_id attached.. (bug?) let's filter them out for now
+        //resource_usage api returns group with no resource_id attached.. (bug?) let's filter them out for now
         resource_usage = resource_usage.filter(r=>r._id.resource_id !== undefined);
 
         //load resource details to be merged into the resource_usage info
         let resource_ids = resource_usage.map(raw=>raw._id.resource_id);
-
-        //dedupe resource_ids
-        resource_ids = [...new Set(resource_ids)];
-        let {resources} = await rp.get({
+        resource_ids = [...new Set(resource_ids)]; //dedupe resource_ids
+        const {resources} = await rp.get({
             url: config.amaretti.api+"/resource", json: true,
             qs: {
                 find: JSON.stringify({_id: {$in: resource_ids}, user_id: null}),
             },
             headers: { authorization: "Bearer "+config.warehouse.jwt, },
         });
+        const resource_stats = [];
+        /*
         let resource_stats = resource_usage.map(raw=>{
             let resource = resources.find(r=>r._id == raw._id.resource_id);
             return {
@@ -1133,13 +1111,36 @@ exports.update_project_stats = async function(project, cb) {
 
                 //resource detail for quick reference
                 name: resource.name,
-                desc: resource.config.desc,
-                citation: resource.citation,
+
+                //we could have hundreds of records for resource_stats as we group by service/resource.
+                //adding desc/citation here is not appropriate ..
+                //desc: resource.config.desc,
+                //citation: resource.citation,
 
                 count: raw.count,
                 total_walltime: raw.total_walltime,
             }
         });
+        */
+        resources.forEach(resource=>{
+            let count = 0;
+            let total_walltime = 0;
+            let services = [];
+            resource_usage.filter(r=>r._id.resource_id == resource._id).forEach(raw=>{
+                count+=raw.count;
+                total_walltime+=raw.total_walltime;
+                if(!services.includes(raw._id.service)) services.push(raw._id.service);
+            });
+            console.dir(services);
+            resource_stats.push({
+                resource_id: resource._id,
+                name: resource.name,
+                count,
+                total_walltime,
+                services,
+            });
+        });
+        console.log("---resource_stats---");
 
         //lad number of publications
         let publications = await db.Publications.countDocuments({project});
@@ -1158,10 +1159,8 @@ exports.update_project_stats = async function(project, cb) {
         exports.publish("project.update.warehouse."+project._id, {stats: {
             rules,
             instances: instance_counts,
-            //groupanalysis,
         }})
 
-        console.log("all done!!!!!!!!!!!!!!");
         if(cb) cb(null, newproject);
 
     } catch (err) {
@@ -1178,7 +1177,7 @@ exports.update_rule_stats = function(rule_id, cb) {
             limit: 3000,
         },
         headers: { authorization: "Bearer "+config.warehouse.jwt, },
-    }).then(res=>{
+    }).then(async res=>{
         let tasks = res.data.tasks;
         if(!tasks) return cb(body);
         let stats = {}
@@ -1186,11 +1185,21 @@ exports.update_rule_stats = function(rule_id, cb) {
             if(stats[task.status] === undefined) stats[task.status] = 0;
             stats[task.status]+=1;
         });
+        /*
         db.Rules.findOneAndUpdate({_id: rule_id}, {$set: {"stats.tasks": stats}}, {new: true}, (err, rule)=>{
             if(cb) cb(err, rule);
             let sub = "warehouse";
             exports.publish("rule.update."+sub+"."+rule.project+"."+rule._id, rule)
         });
+        */
+        const rule = await db.Rules.findById(rule_id);
+        if(!rule) return cb("can't find the rule:"+rule_id);
+        if(!rule.stats) rule.stats = {};
+        rule.stats.tasks = stats;
+        await rule.save();
+        let sub = "warehouse";
+        exports.publish("rule.update."+sub+"."+rule.project+"."+rule._id, rule)
+        cb(null, rule);
     }).catch(cb);
 }
 

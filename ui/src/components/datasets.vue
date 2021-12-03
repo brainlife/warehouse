@@ -13,12 +13,17 @@
             </div>
 
             <b-row class="table-column">
-                <b-col cols="2"><h4>Subject <small style="opacity: 0.5">/ Ses</small></h4></b-col>
+                <b-col cols="2"><h4>Subject <small>/ Ses</small></h4></b-col>
                 <b-col cols="10">
                     <b-row>
                         <b-col cols="3"><h4>Datatype</h4></b-col>
                         <b-col cols="3"><h4>App/Description</h4></b-col>
-                        <b-col cols="3"><h4>Create&nbsp;Date</h4></b-col>
+                        <b-col cols="3">
+                            <h4>
+                                Create&nbsp;Date
+                                <small style="float: right">Size</small>
+                            </h4>
+                        </b-col>
                         <b-col cols="3"><h4>Tags</h4></b-col>
                     </b-row>
                 </b-col>
@@ -29,9 +34,9 @@
             <div v-if="!loading && total_datasets == 0" style="margin: 20px; opacity: 0.8;">
                 Please upload data by clicking the button on the right bottom corner of the page. You can also copy data from another project.
             </div>
-            
-            <!--start of dataset list-->
-            <div v-for="(page, page_idx) in pages" v-if="datatypes" :key="page_idx" style="font-size: 12px;">
+
+            <!--the list-->
+            <div v-for="(page, page_idx) in pages" v-if="datatypes" :key="page_idx" style="font-size: 11px;">
                 <div v-if="page_info[page_idx] && !page_info[page_idx].visible" :style="{'height': page_info[page_idx].height+'px'}">
                 </div>
                 <b-row class="subjects" v-for="group in Object.keys(page).sort()" :key="group" :ref="'sub-'+group" v-else>

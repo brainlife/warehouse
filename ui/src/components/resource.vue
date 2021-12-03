@@ -1,48 +1,96 @@
 <template>
-<div class="resource" v-if="resource_obj" @click="open" :class="{'resource-inactive': !resource_obj.active}" :title="resource_obj.config.desc">
-    <small style="float: right; opacity: 0.3; z-index: 1; position: relative; top: px; right: 10px;">24h</small>
-    <div style="padding: 10px 15px;">
-        <div style="display: inline-block;">
+<div class="resource" 
+    v-if="resource_obj" 
+    @click="open" 
+    :class="{'resource-inactive': !resource_obj.active}" 
+    :title="resource_obj.config.desc">
 
+    <b-row>
+        <b-col>
+            <p>
+                <b-badge v-if="!resource.gids || resource.gids.length == 0" variant="secondary" title="Private resource that's not shared with anyone.">
+                    <icon name="lock" scale="0.8"/>
+                </b-badge>
+                <b>{{resource_obj.name}}</b>
+            </p>
+            <p class="desc">
+                <small>{{trim(resource_obj.config.desc)}}</small>
+            </p>
+            <p style="opacity: 0.8;">
+                <b-badge pill class="bigpill">
+                    <icon name="th-large"/>&nbsp;
+                    {{Object.keys(resource_obj.stats.services).length}} <span style="opacity: 0.5">Apps</span>
+                </b-badge>
+                <b-badge pill class="bigpill">
+                    <icon name="check"/>&nbsp;
+                    {{resource_obj.stats.total.finished|formatNumber}} <span style="opacity: 0.5">Finished</span>
+                </b-badge>
+                <!--
+                <b-badge pill class="bigpill">
+                    <icon name="th-large"/>&nbsp;
+                    {{resource_obj.stats.total.running}} Running
+                </b-badge>
+                -->
+                <b-badge pill class="bigpill">
+                    <icon name="exclamation-circle"/>&nbsp;
+                    {{resource_obj.stats.total.failed|formatNumber}} <span style="opacity: 0.5">Failed</span>
+                </b-badge>
+            </p>
+        </b-col>
+
+        <b-col cols="1">
+            <!--
             <span :title="resource_obj.status">
                 <icon v-if="resource_obj.status == 'ok'" name="check-circle" style="color: #28a745;"/>
                 <icon v-else name="exclamation-circle" style="color: #dc3545"/>
             </span>
+            -->
+            <statustag :status="resource_obj.status"/>
+        </b-col>
 
-            <b-badge v-if="!resource.gids || resource.gids.length == 0" variant="secondary" title="Private resource that's not shared with anyone."><icon name="lock" scale="0.8"/></b-badge>
-
-            <span>{{resource_obj.name}}</span><br>
-        </div>
-
-        <div>
-            <span>
-                <small style="opacity: 0.7;">RUNNING</small>
-                <b style="font-size: 125%;">{{running}}</b>
-            </span>
-            <span style="opacity: 0.7">
-                / {{resource_obj.config.maxtask}}      
-                <small style="opacity: 0.5; text-transform: uppercase;">max</small>         
-            </span>
-        </div>
-    </div>
-    <svg viewBox="0 0 200 100" style="position: absolute; bottom: 10px; height: 50px; width: 200px; right: 10px;" preserveAspectRatio="none">
-        <linearGradient id="grad1" x1="0%" y1="0%" x2="0%" y2="100%">
-            <stop offset="20%" style="stop-color:#2693ff;stop-opacity:0.2" />
-            <stop offset="60%" style="stop-color:#00f;stop-opacity:0.0" />
-        </linearGradient>
-        <path :d="usage_path" fill="url(#grad1)" stroke="rgba(26,93,255,0.7)" stroke-width="1"/>
-    </svg>
+        <b-col cols="3">
+            <!--small chart to show the recent execution-->
+            <div style="position: relative; height: 100px;">
+                <div style="position: absolute; top: 0">
+                    <span>
+                        <small style="opacity: 0.7;">RUNNING</small>
+                        <b style="font-size: 125%;">{{running}}</b>
+                    </span>
+                    <span style="opacity: 0.7">
+                        / {{resource_obj.config.maxtask}}      
+                        <small style="opacity: 0.5; text-transform: uppercase;">max</small>         
+                    </span>
+                    <br>
+                </div>
+                <small style="float: right; opacity: 0.3; z-index: 1; position: absolute; bottom: -8px; right: 10px;">24h</small>
+                <svg viewBox="0 0 200 100" style="position: absolute; bottom: 10px; height: 50px; width: 100%; left: 0;" 
+                    preserveAspectRatio="none">
+                    <linearGradient id="grad1" x1="0%" y1="0%" x2="0%" y2="100%">
+                        <stop offset="20%" style="stop-color:#2693ff;stop-opacity:0.2" />
+                        <stop offset="60%" style="stop-color:#00f;stop-opacity:0.0" />
+                    </linearGradient>
+                    <path :d="usage_path" fill="url(#grad1)" stroke="rgba(26,93,255,0.7)" stroke-width="1"/>
+                </svg>
+            </div>
+        </b-col>
+        <b-col cols="1">
+            <b-img v-if="resource_obj.avatar" :src="resource_obj.avatar" fluid/>
+        </b-col>
+    </b-row>
 </div>
 </template>
 
 <script>
 import Vue from 'vue'
 
-//import group from '@/components/group'
 import resource_cache from '@/mixins/resource_cache'
+import statustag from '@/components/statustag'
 
 export default {
     mixins: [ resource_cache ],
+    components: {
+        statustag,
+    },
     props: {
         id: String, //resource id
         resource: Object,
@@ -165,34 +213,53 @@ export default {
         open() {
             this.$router.push('/resource/'+this.resource._id);
         },
+        trim(s) {
+            if(!s) return;
+            if(s.length < 400) return s;
+            return s.substring(0, 400)+"...";
+        },
     },
 }
 </script>
 
 <style scoped>
+.desc {
+    line-height: 180%;
+}
 .alert {
-padding: 2px 5px;
+    padding: 2px 5px;
 }
 .resource {
-height: 75px;
-position: relative;
-background-color: white;
-cursor: pointer;
-transition: box-shadow 0.5s;
+    padding: 10px 15px;
+    background-color: white;
+    cursor: pointer;
+    transition: 0.3s all;
 }
 .resource-tags {
-float: left;
-font-size: 125%; 
-padding: 10px;
-text-transform: uppercase; 
-overflow: hidden;
-}
-.resource:hover {
-box-shadow: 2px 2px 8px rgba(0,0,0,0.2);
+    float: left;
+    font-size: 125%; 
+    padding: 10px;
+    text-transform: uppercase; 
+    overflow: hidden;
 }
 .resource.resource-inactive {
-opacity: 0.5;
-background-color: #f6f6f6;
-color: #666;
+    opacity: 0.5;
+    background-color: #f6f6f6;
+    color: #666;
+}
+.resource:hover {
+    background-color: #0001;
+    opacity: inherit;
+    color: inherit;
+}
+.bigpill {
+    position: relative;
+    left: -10px;
+}
+p {
+margin-bottom: 5px;
+}
+p:last-child {
+margin-bottom: 0;
 }
 </style>

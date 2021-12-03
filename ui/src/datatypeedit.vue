@@ -1,5 +1,5 @@
 <template>
-<div>
+<div v-if="datatype">
     <div class="page-header">
         <b-container>
             <!--
@@ -54,7 +54,7 @@
                     <span class="form-header">Administrators</span>
                 </b-col> 
                 <b-col cols="9">
-                    <contactlist v-model="datatype.admins"></contactlist>
+                    <contactlist v-model="datatype.admins"/>
                     <p class="text-muted"><small>Users who can update the datatype</small></p>
                 </b-col>
             </b-row>
@@ -248,22 +248,7 @@ export default {
     components: { contactlist, pageheader, VueMarkdown },
     data () {
         return {
-            datatype: {
-                _id: null, 
-                name: "neuro/whatever",
-                desc: "",
-                admins: [Vue.config.user.sub],
-
-                _bids: "",
-                datatype_tags: [],
-                files: [],
-                samples: [],
-                uis: [ "5be75b31e15a02914a4be8f0" ], //(show fileviewer by default)
-                validator: "",
-                validator_branch: "",
-
-                groupAnalysis: false,
-            },
+            datatype: null,
 
             uis: [], //list of all UIs
 
@@ -296,12 +281,31 @@ export default {
                 } else {
                     this.datatype._bids = "";
                 }
-		if(!this.datatype.validator) this.datatype.validator = "";
+                if(!this.datatype.validator) this.datatype.validator = "";
 
                 //unpopulate uis
                 this.datatype.uis = this.datatype.uis.map(ui=>ui._id);
             });
-        } 
+        } else {
+            //new datatype
+            this.datatype = {
+                _id: null, 
+                name: "neuro/untitled",
+                desc: "",
+                admins: [Vue.config.user.sub],
+
+                _bids: "",
+                datatype_tags: [],
+                files: [],
+                samples: [],
+                uis: [ "5be75b31e15a02914a4be8f0" ], //(show fileviewer by default)
+                validator: "",
+                validator_branch: "",
+
+                groupAnalysis: false,
+            };
+
+        }
     },
 
     destroyed() {
@@ -421,16 +425,16 @@ export default {
 
 <style scoped>
 .page-header {
-padding: 10px 20px;    
+    padding: 10px 20px;    
 }
 .page-header h4 {
-opacity: 0.8;
+    opacity: 0.8;
 }
 .readme {
-background-color: white;
-max-height: 500px;
-overflow: auto;
-padding: 20px;
+    background-color: white;
+    max-height: 500px;
+    overflow: auto;
+    padding: 20px;
 }
 </style>
 

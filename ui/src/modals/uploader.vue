@@ -150,6 +150,8 @@ import datatypetag from '@/components/datatypetag'
 
 import datatypesMixin from '@/mixins/datatypes'
 
+const lib = require('@/lib');
+
 export default {
     mixins: [
         datatypesMixin,
@@ -578,9 +580,9 @@ export default {
         },
 
         editorInit(editor) {
-            require('brace/mode/json')
-            editor.container.style.lineHeight = 1.25;
-            editor.renderer.updateFontSize();
+            lib.editorInit(editor, ()=>{
+                //anothing to add?
+            });
         },
 
         ezbids() {

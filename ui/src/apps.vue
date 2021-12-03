@@ -173,7 +173,7 @@ export default {
                 //organize apps into various tags
                 this.apps.forEach(app=>{
                     var tags = [ 'miscellaneous' ];
-                    if(app.tags && app.tags.length > 0) tags = app.tags;
+                    if(app.tags && app.tags.length > 0) tags = [ app.tags[0] ]; //only use the first one
                     tags.forEach(tag=>{
                         if(!this.app_groups[tag]) Vue.set(this.app_groups, tag, []);
                         if(!~this.sorted_tags.indexOf(tag)) this.sorted_tags.push(tag);
@@ -347,13 +347,13 @@ export default {
     transition: box-shadow 0.3s ease;
 }
 .app:hover {
-box-shadow: 2px 2px 6px rgba(0,0,0,0.2);
+    box-shadow: 2px 2px 6px rgba(0,0,0,0.2);
 }
 .button-fixed {
-margin-right: 280px;
+    margin-right: 280px;
 }
 .search-box .clear-search {
-right: 260px;
+    right: 260px;
 }
 </style>
 

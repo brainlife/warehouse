@@ -1,32 +1,30 @@
 <template>
-<div>
-    <div class="page-content">
-        <div class="header">
-            <b-container>
-                <b-tabs class="brainlife-tab" v-model="tab">
-                    <b-tab title="Profile"/>
-                    <b-tab title="Account"/>
-                    <b-tab title="Notification"/>
-                    <b-tab v-if="config.hasRole('admin')" title="Users"/>
-                    <b-tab v-if="config.hasRole('admin')" title="Groups"/>
-                </b-tabs>
-            </b-container>
-        </div>
-
+<div class="page-content">
+    <div class="header">
         <b-container>
-            <!--user settings-->
-            <settingsProfile v-if="tab == 0"/>
-            <settingsAccount v-if="tab == 1"/>
-            <settingsNotification v-if="tab == 2"/>
-
-            <!--administrative settings-->
-            <settingsUsers v-if="tab == 3"/>
-            <settingsGroups v-if="tab == 4"/>
+            <b-tabs class="brainlife-tab" v-model="tab">
+                <b-tab title="Profile"/>
+                <b-tab title="Account"/>
+                <b-tab title="Notification"/>
+                <b-tab v-if="config.hasRole('admin')" title="Users"/>
+                <b-tab v-if="config.hasRole('admin')" title="Groups"/>
+            </b-tabs>
         </b-container>
-        <br>
-        <br>
-    </div><!--page-content-->
-</div>
+    </div>
+
+    <b-container>
+        <!--user settings-->
+        <settingsProfile v-if="tab == 0"/>
+        <settingsAccount v-if="tab == 1"/>
+        <settingsNotification v-if="tab == 2"/>
+
+        <!--administrative settings-->
+        <settingsUsers v-if="tab == 3"/>
+        <settingsGroups v-if="tab == 4"/>
+    </b-container>
+    <br>
+    <br>
+</div><!--page-content-->
 </template>
 
 <script>
@@ -107,6 +105,9 @@ export default {
     margin-bottom: 20px;
     background-color: white;
     border-bottom: 1px solid #eee;
+    position: sticky;
+    top: 0;
+    z-index: 4;
 }
 
 /deep/ .container h5 {

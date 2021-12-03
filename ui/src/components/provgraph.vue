@@ -242,7 +242,8 @@ export default {
                 let service = "";
                 if(node.service) service += node.service;
                 if(node.serviceBranch) service += ":"+node.serviceBranch;
-                tooltip += "<pre>"+service+"</pre><br>";
+                tooltip += "<pre>"+service+"</pre>";
+                if(node.desc) tooltip += "<p>"+node.desc+"</p>";
                 if(node._config) {
                     //node.label += "\n";
                     let recs = [];
@@ -266,7 +267,6 @@ export default {
                         tooltip += "</table>";
                     }
                 }
-                if(node.desc) tooltip += "<p>desc:"+node.desc+"</p>";
                 if(node.datasetId) tooltip += "<p>datasetid:"+node.datasetId+"</p>";
                 if(node.user) {
                     tooltip += "<p>"+node.user.fullname+" &lt;"+node.user.email+"&gt;</p>" ;
@@ -461,5 +461,11 @@ export default {
 /deep/ .table-sm td {
     line-height: 150%;
     padding: 0 5px;
+}
+/deep/ .vis-tooltip {
+    max-width: 500px;
+}
+/deep/ .vis-tooltip p {
+    white-space: pre-wrap;
 }
 </style>

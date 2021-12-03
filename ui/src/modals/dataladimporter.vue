@@ -66,7 +66,6 @@ export default {
 
     mounted() {
         this.$root.$on("importer.open", opt=>{
-            //console.dir(opt);
             this.dataset = opt.dataset;
             this.subjects = opt.subjects;
 
@@ -82,23 +81,6 @@ export default {
     },
 
     methods: {
-        /*
-        get_meta() {
-            if(!this.dataset.participants) return null;
-            let meta = {};
-            this.dataset.participants.forEach(rec=>{
-                if(!rec.subject) return; //just in case.
-                meta[rec.subject] = rec;
-            });
-            
-            for(let sub in meta) {
-                delete meta[sub].subject;
-            }
-            
-            return meta;
-        },
-        */
-
         submit(evt) {
             if(!this.createnew) return this.submit_import();
             if(this.datatypes.length == 0) {

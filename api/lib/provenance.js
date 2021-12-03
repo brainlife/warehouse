@@ -5,8 +5,8 @@ const config = require('../config');
 const db = require('../models');
 const mongoose = require('mongoose');
 const common = require('../common');
+const dbscan = require('@cdxoo/dbscan');
 
-const mc = require('markov-clustering');
 const math = require('mathjs');
 
 exports.traverseProvenance = async (startTaskId) => {
@@ -146,12 +146,18 @@ exports.traverseProvenance = async (startTaskId) => {
             if(!task.config) task.config = {};
             if(!task.config._outputs) {
                 console.log("noop task", task._id, "doesn't have config set.. faking");
-                task.config._outputs = [{
+                const output = {
                     id: "noop",
                     datatype: "59c3eae633fc1cf9ead71679", //raw?
                     datatypeTags: [],
                     tags: [],
-                }];
+                }
+
+                //we started storing under "upload" directory around march
+                if(task.service == "brainlife/app-noop" && new Date(task.finish_date) > new Date("2021-03-01")) {
+                    output.subdir = "upload";
+                }
+                task.config._outputs = [output];
             }
         }
 
@@ -179,9 +185,10 @@ exports.traverseProvenance = async (startTaskId) => {
         };
 
         if(task.config._app) {
-            const app = await db.Apps.findById(task.config._app).select({config: 1}).exec();//.lean();
+            const app = await db.Apps.findById(task.config._app).select({config: 1, desc: 1}).exec();//.lean();
             node._config = filterConfig(task.config, app.config);
             node.appId = task.config._app;
+            node.desc = app.desc;
         }
         if(task.service.startsWith("brainlife/validator-") ||
            task.service.startsWith("brain-life/validator-")) node.validator = true;
@@ -259,11 +266,10 @@ exports.traverseProvenance = async (startTaskId) => {
                     //dataset removed!? .. let's fake a dataset using information from the output
                     if(task.config._outputs) {
                         dataset = task.config._outputs.find(o=>o.subdir == datasetConfig.dir);
+                        if(!dataset) continue;
                         dataset._id = datasetConfig.dir;
                         //dataset.storage = "guess";
                     }
-
-                    if(!dataset) continue;
                 }
 
                 if(dataset.archive_task_id) tasks.push(dataset.archive_task_id);
@@ -292,11 +298,11 @@ exports.traverseProvenance = async (startTaskId) => {
                     //let's fake a dataset using information from the output (maybe removed?)
                     if(task.config._outputs) {
                         dataset = task.config._outputs.find(o=>o.subdir == datasetConfig.dir);
+                        if(!dataset) continue;
                         dataset._id = datasetConfig.dir;
                         //dataset.storage = "guess";
                     }
 
-                    if(!dataset) continue;
                 }
 
                 if(dataset.archive_task_id) tasks.push(dataset.archive_task_id);
@@ -376,14 +382,6 @@ exports.traverseProvenance = async (startTaskId) => {
                 tags: output.tags,
             }
 
-            //fake archiver expect subdir to be set to output_id but old task didn't do this sometimes
-            //if(!outputNode.subdir) outputNode.subdir = output.id;
-
-            /*
-            if(task.service == "brainlife/app-stage") {
-                outputNode._datasetId = output.dataset_id;
-            }
-            */
             nodes.push(outputNode);
             edges.push({ 
                 idx: edges.length,
@@ -900,6 +898,8 @@ exports.cluster = (provs)=>{
         }
         return dist;
     }
+
+    /*
     const matrix = [];
     provs.forEach((p1, p1idx)=>{
         matrix[p1idx] = [];
@@ -913,7 +913,6 @@ exports.cluster = (provs)=>{
     //console.log("similarity matrix...");
     //console.dir(matrix);
 
-    /*
     //convert it to transition probability matrix
     //see page 10 https://sites.cs.ucsb.edu/~xyan/classes/CS595D-2009winter/MCL_Presentation2.pdf
     provs.forEach((p1, col)=>{
@@ -929,7 +928,6 @@ exports.cluster = (provs)=>{
             matrix[row][col] = v/sum;
         }); 
     });
-    */
 
     console.log("probability matrix...");
     console.dir(matrix);
@@ -954,7 +952,16 @@ exports.cluster = (provs)=>{
 
     console.dir("(deduped) clusters..");
     console.dir(dedupedClusters);
-    return dedupedClusters;
+    */
+
+    console.log("clustering with dbscan");
+    const clusters = dbscan({
+        dataset: provs,
+        epsilon: 1.1,
+        distanceFunction: computeDistance,
+    });
+    console.dir(clusters);
+    return clusters.clusters;
 }
 
 //populate datatype / project info

@@ -1,12 +1,12 @@
 <template>
 <div>
-        <div class="page-header">
-            <div class="search-box onRight">
-                    <b-form-input v-model="query" type="text" placeholder="Search Publications" @input="changeQueryDebounce" class="input"/>
-                    <icon name="search" class="search-icon" scale="1.5"/>
-                    <icon name="times" class="clear-search" scale="1.5" @click="clearQuery()" v-if="query"/>
-            </div>
+    <div class="page-header">
+        <div class="search-box onRight">
+                <b-form-input v-model="query" type="text" placeholder="Search Publications" @input="changeQueryDebounce" class="input"/>
+                <icon name="search" class="search-icon" scale="1.5"/>
+                <icon name="times" class="clear-search" scale="1.5" @click="clearQuery()" v-if="query"/>
         </div>
+    </div>
     <div class="page-content">
         <b-container>
             <div v-if="!pubs" style="margin: 40px;"><h3>Loading ..</h3></div>
@@ -14,8 +14,9 @@
                 <p style="opacity: 0.5; margin: 20px; font-size: 120%;">No matching publications</p>
             </div>
             <div v-else style="margin: 10px 0px;">
-                <div v-for="pub in pubs" :key="pub._id" style="margin-bottom: 30px; box-shadow: 1px 1px 4px #9996">
+                <div v-for="pub in pubs" :key="pub._id">
                     <pubcard :pub="pub"/>
+                    <br>
                 </div>
             </div>
         </b-container>
@@ -75,6 +76,13 @@ export default {
                 q: this.query,
             }}).then(res=>{
                 this.pubs = res.data.pubs;
+
+                //sort in reverse chronological order
+                this.pubs.sort((a,b)=>{
+                    if(a.create_date < b.create_date) return 1;
+                    if(a.create_date > b.create_date) return -1;
+                    return 0;
+                });
                 Vue.nextTick(()=>{
                     console.log("initializing altmetric embed")
                     _altmetric_embed_init(this.$el);
@@ -106,7 +114,7 @@ export default {
 <style scoped>
 .page-content {
 top: 50px;
-background-color: white;
+background-color: #eee;
 }
 .page-content h3 {
 margin-bottom: 0px;

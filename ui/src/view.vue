@@ -30,9 +30,8 @@ import wait from '@/mixins/wait'
 
 export default {
     mixins: [ wait ],
-    props: [ 'taskid', 'type', 'datatype64', 'subdir' ], //deprecated - use uiconfig
+    props: [ 'taskid', 'type', 'datatype64', 'subdir' ], 
     components: { 
-        //data UIs
         dtiinit: () => import('@/datauis/dtiinit'), 
         freesurfer: () => import('@/datauis/freesurfer'), 
         tractview: () => import('@/datauis/tractview'), 

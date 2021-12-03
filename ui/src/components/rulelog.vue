@@ -1,14 +1,11 @@
 <template>
-<div style="min-height: 35px;">
-    <div style="opacity: 0.5; margin: 10px; position: relative; top: -45px;">
-        <div style="float: right;">
-            <div class="button" @click="load"><icon name="sync-alt"/></div>
-            <span v-if="err">No log</span>
-            <span v-if="stats"><timeago :datetime="stats.mtime" :auto-update="10"/></span>
-        </div>
-        <!--<b>{{taskcount}} Active Tasks</b>-->
+<div style="height: 500px; position: relative;">
+    <div style="position: absolute; top: 10px; right: 30px; z-index: 1; text-align: right;">
+        <b-btn size="sm" @click="load"><icon name="sync-alt"/> Reload Logs</b-btn>
+        <span v-if="err">No log</span>
+        <br>
+        <small v-if="stats">Log Updated <timeago :datetime="stats.mtime" :auto-update="10"/></small>
     </div>
-    <!-- <pre v-if="logs" v-highlightjs="logs"><code class="plaintext hljs"></code></pre> -->
     <editor v-if="logs" v-bind:value="logs" @init="editorInit" lang="text" theme="chrome"></editor>
 </div>
 </template>

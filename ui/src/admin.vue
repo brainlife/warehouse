@@ -1,11 +1,19 @@
 <template>
 <div class="page-content">
-    <div class="page-header">
-        <h4>Administration</h4>
+    <div class="header">
+        <b-container>
+            <b-tabs class="brainlife-tab" v-model="tab">
+                <b-tab title="Task"/>
+                <b-tab title="Switch User"/> 
+                <b-tab title="Analytics"/>
+                <b-tab title="Projects"/>
+            </b-tabs>
+        </b-container>
     </div>
-    <b-tabs class="brainlife-tab" v-model="tab">
-        <b-tab title="Task"> 
-            <br>
+
+    <b-container>
+        <!--switch user-->
+        <div v-if="tab == 0">
             <b-form inline style="margin: 0 15px;">
                 <b-input-group prepent="Task ID">
                     <b-form-input v-model="task_id" placeholder="Task ID" style="width: 300px;"/>
@@ -42,25 +50,25 @@
                 <b>Task Dump</b>
                 <pre>{{task}}</pre>
             </div>
-        </b-tab>
-        <b-tab title="Switch User"> 
-            <br>
-            <div style="margin: 0 15px">
-                <p>
-                    <v-select 
-                        @search="get_sulist" 
-                        @input="su" 
-                        :debounce="250" 
-                        :options="su_options" placeholder="search user to become" label="fullname"/>
-                </p>
+        </div> <!--end task tab-->
+        
+        <!--switch user-->
+        <div v-if="tab == 1">
+            <p>
+                <v-select 
+                    @search="get_sulist" 
+                    @input="su" 
+                    :debounce="250" 
+                    :options="su_options" placeholder="search user to become" label="fullname"/>
+            </p>
 
-                <p>
-                    <b-button @click="refresh">Update Token</b-button>
-                </p>
-            </div>
-        </b-tab>
-        <b-tab title="Analytics">
-            <br>
+            <p>
+                <b-button @click="refresh">Update Token</b-button>
+            </p>
+        </div>
+
+        <!--analytics-->
+        <div v-if="tab == 2">
             <div style="margin: 0 15px" v-if="posCountData">
                 <span class="form-header">User Categories</span>
                 <small>This plot show groups of user private profile position for each users.</small>
@@ -81,9 +89,10 @@
                     </template>
                 </b-table>
             </div>
-        </b-tab>
+        </div>
 
-        <b-tab title="Projects">
+        <!--projects-->
+        <div v-if="tab == 3">
             <div style="background-color: #f8f8f8; padding: 10px">
                 <div style="width: 400px">
                     <b-input-group>
@@ -93,8 +102,7 @@
                     </b-input-group>
                 </div>
             </div>
-            <b-table 
-                sort-by="size" :small="true" :items="projectRecords" :fields="projectFields" selectable @row-selected="projectSelected">
+            <b-table sort-by="size" :small="true" :items="projectRecords" :fields="projectFields" selectable @row-selected="projectSelected">
                 <template #cell(admins)="data">
                     <contact v-for="c in data.item.admins" size="small" :key="c._id" :id="c"/>
                 </template>
@@ -121,8 +129,9 @@
                     <span v-if="data.item.size">{{data.item.size|filesize}}</span>
                 </template>
             </b-table>
-        </b-tab>
-    </b-tabs>
+        </div>
+
+    </b-container>
 </div>
 </template>
 
@@ -395,13 +404,19 @@ export default {
 </script>
 
 <style scoped>
-.page-header {
-height: 50px;
-padding: 10px;
+.page-content {
+    top: 0px;
+    background-color: #f9f9f9;
 }
-.brainlife-tab {
-padding-top: 0;
-overflow: auto;
+.header {
+    padding-top: 5px;
+    padding-bottom: 0px;
+    margin-bottom: 20px;
+    background-color: white;
+    border-bottom: 1px solid #eee;
+    position: sticky;
+    top: 0;
+    z-index: 4;
 }
 .tab-content {
 position: fixed;
