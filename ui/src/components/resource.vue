@@ -16,7 +16,7 @@
             <p class="desc">
                 <small>{{trim(resource_obj.config.desc)}}</small>
             </p>
-            <p style="opacity: 0.8;">
+            <p style="opacity: 0.8;" v-if="resource_obj.stats">
                 <b-badge pill class="bigpill">
                     <icon name="th-large"/>&nbsp;
                     {{Object.keys(resource_obj.stats.services).length}} <span style="opacity: 0.5">Apps</span>
@@ -48,7 +48,7 @@
             <statustag :status="resource_obj.status"/>
         </b-col>
 
-        <b-col cols="3">
+        <b-col cols="3" v-if="usage_path">
             <!--small chart to show the recent execution-->
             <div style="position: relative; height: 100px;">
                 <div style="position: absolute; top: 0">
@@ -93,6 +93,9 @@ export default {
     },
     props: {
         id: String, //resource id
+
+        //things you should populate
+        //name config.hostname config.desc stats status avatar active
         resource: Object,
     },
     data() {

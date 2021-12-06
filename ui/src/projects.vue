@@ -45,6 +45,9 @@
             <!--TODO - should refactor this.. similar to public y projects-->
             <div v-if="config.user" class="position: relative">
                 <h4 class="group-title">My Projects</h4>
+                <p v-if="my_projects.length == 0 && query == ''" style="margin: 20px; opacity: 0.5;">
+                    Please create your project by clicking the <b>New Project</b> button below.
+                </p>
                 <div style="padding: 10px;" v-if="mode == 'tile'">
                     <div v-for="project in my_projects" :key="project._id">
                         <projectcard :project="project" v-if="project._visible"/>
@@ -57,9 +60,6 @@
                         <div v-else style="height: 40px; color: white;" ref="project" :id="project._id"/> <!--placeholder-->
                     </div>
                 </div>
-                <p v-if="my_projects.length == 0 && query == ''" style="margin: 20px;">
-                    Please create your project by clicking on the button at the bottom left corner of this page.
-                </p>
                 <br v-if="my_projects.length > 0" clear="both">
             </div>
 

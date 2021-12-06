@@ -176,6 +176,7 @@
                 </b-card>
             </b-container>
         </b-tab>
+        <!--
         <b-tab v-if="rule.app">
             <template v-slot:title>
                 Logs 
@@ -186,6 +187,7 @@
             </template>
             <rulelog :id="rule._id"/>
         </b-tab>
+        -->
 
         <!--
         <b-tab title="Debug">
@@ -243,7 +245,7 @@ export default {
         app: ()=>import('@/components/app'),
         tageditor: ()=>import('@/components/tageditor'),
         configform: ()=>import('@/components/configform'),
-        rulelog: ()=>import('@/components/rulelog'),
+        //rulelog: ()=>import('@/components/rulelog'),
         stateprogress: ()=>import('@/components/stateprogress'),
     },
 

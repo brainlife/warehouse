@@ -36,7 +36,7 @@
             <span style="font-size: 90%">{{new Date(project.create_date).toLocaleDateString()}}</span>
         </b-col>
         <b-col md="1">
-            <stateprogress v-if="project.stats && project.stats.instances && !project.openneuro" 
+            <stateprogress v-if="project.stats && project.stats.instances" 
                 :states="project.stats.instances" height="26px"/>
         </b-col>
         <b-col md="1" v-if="config.user">

@@ -142,6 +142,8 @@
                             </span>
                             <small class="ioid" v-if="task.app">({{compose_desc(task.app.outputs, output.id)}})</small>
 
+                            <dtv v-if="task.status == 'finished' && output.dtv_task" :task="output.dtv_task" :output="output"/>
+
                             <div v-if="findarchived(task, output).length > 0">
                                 <ul class="archived">
                                     <li v-for="dataset in findarchived(task, output)" :key="dataset._id" 
@@ -176,8 +178,6 @@
                                     <pre style="max-height: 300px; background-color: #eee; padding: 5px 10px;">{{JSON.stringify(findProductMeta(task, output.id), null, 4)}}</pre>
                                 </p>
                             </b-collapse>
-
-                            <dtv v-if="task.status == 'finished' && output.dtv_task" :task="output.dtv_task" :output="output"/>
 
                             <div v-if="output.secondary_task" style="font-size: 90%; padding: 5px 10px; border: 2px solid #eee; border-radius: 5px; margin-top: 5px; color: #888;">
                                 <span v-if="output.secondary_task.finish_date">

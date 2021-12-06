@@ -1,14 +1,15 @@
 <template>
 <div>
-    <b-badge>{{group.id}}</b-badge>
+    <!-- <b-badge>{{group.id}}</b-badge>-->
     <b-badge variant="danger" v-if="!group.active">Inactive</b-badge>
 
-    <b class="serif">{{group.name}}</b>
+    <b>{{group.name}}</b>
+    <!--
     <br>
     <small>{{group.desc}}</small>
+    -->
 
     <p>
-        Admins:
         <span v-for="c in group.admins" :key="c._id">
             <contact :fullname="c.fullname" :email="c.email"/>
         </span>

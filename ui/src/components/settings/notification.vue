@@ -1,12 +1,39 @@
 <template>
 <div>
     <b-form @submit="submit_profile">
+        <b-row>
+            <b-col cols="3">
+                <span class="form-header">SMS address</span>
+            </b-col>
+            <b-col cols="7">
+                <b-form-input v-model="profile.private.notification.smsAddress"/>
+                <p style="opacity: 0.8;font-size: 90%; padding: 10px 0;">
+                    We send SMS messages through this email2SMS gateway. 
+                    For example, for AT&T, please use address such as <i>1234560000@mms.att.net</i>. 
+                    For other cariers, please refer to the <a href="https://en.wikipedia.org/wiki/SMS_gateway" target="gateway">SMS Gateway for major cariers.</a>
+                </p>
+            </b-col>
+        </b-row>
+
+        <h5>Notification Events</h5>
+        <b-row>
+            <b-col cols="3">
+                <span class="form-header">New Comments</span>
+            </b-col>
+            <b-col cols="7">
+                check box..  
+            </b-col>
+        </b-row>
+        <br>
+        <br>
+        <br>
+        
         <h5>Sounds</h5>
         <b-row>
-            <b-col cols="4">
+            <b-col cols="3">
                 <span class="form-header">Job Status Change</span>
             </b-col>
-            <b-col cols="6">
+            <b-col cols="7">
                 <!--
                 <b-form-checkbox name="aup" v-model="profile.private.notification.newsletter_general">
                     Receive brainlife.io general newsletters (about once a month).

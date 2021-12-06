@@ -239,7 +239,7 @@
                 </b-col> 
             </b-row>
 
-            <h5>Resource Restriction</h5>
+            <h5>Compute Restriction</h5>
             <b-form-checkbox v-model="project.limitResource">
                 Only submit jobs on private resources shared for this project<br>
                 <small>Private resources can be shared among members of other projects. By selecting this option, jobs submitted on this project will only run on those resources. Please make sure that Apps you are trying to submit are enabled on specified resources.</small>
@@ -247,7 +247,7 @@
             <br>
             <div style="margin-left: 20px">
                 <span class="form-header">Shared Resources</span>
-                <b-alert variant="secondary" :show="sharedResources && sharedResources.length == 0">There are no resources assigned to this project.</b-alert>
+                <b-alert variant="secondary" :show="!sharedResources || sharedResources.length == 0">There are no resources assigned to this project.</b-alert>
                 <resource v-for="resource in sharedResources" :key="resource._id" :resource="resource"/>
             </div>
 

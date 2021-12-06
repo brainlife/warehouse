@@ -10,7 +10,6 @@ const amqp = require('amqp');
 const mongoose = require("mongoose");
 
 const config = require('../api/config');
-const logger = createLogger(config.logger.winston);
 const db = require('../api/models');
 const common = require('../api/common');
 
@@ -103,14 +102,59 @@ function isalive(task) {
     return true;    
 }
 
+function createRuleLogger(rule) {
+    const groups = {};
+    const root = {state: null, logs: []};
+
+    function getGroup(groupkey) {
+        if(!groupkey) return root;
+        if(!groups[groupkey]) groups[groupkey] = {state: null, logs: []};
+        return groups[groupkey];
+    }
+
+    function add(type, groupkey, message) {
+        const group = getGroup(groupkey);
+        group.logs.push({type, message, /*time: new Date().getTime()*/});
+    }
+
+    //group - group key that this log belongs to set it to null if it's for the entire rule
+    //message: string
+    return {
+        info(message, groupkey) {
+            add('info', groupkey, message);
+        },
+        debug(message, groupkey) {
+            add('debug', groupkey, message);
+        },
+        warning(message, groupkey) {
+            add('debug', groupkey, message);
+        },
+        error(message, groupkey) {
+            add('debug', groupkey, message);
+        },
+
+        set(obj, groupkey) {
+            const group = getGroup(groupkey);
+            Object.assign(group, obj);
+        },
+
+        //save logs to disk
+        close(cb) {
+            const logpath = config.warehouse.rule_logdir+"/"+rule._id.toString()+".json";
+            fs.writeFile(logpath, JSON.stringify({root, groups}), cb);
+        },
+    }
+}
+
 function handle_rule(rule, cb) {
     _counts.rules++;
 
     let jwt = null;
     let groups = null; //[{subject: .. session: }]
-    //let running = null; //number of currently running tasks for this rule
     let rule_tasks = null; //tasks submitted for this rule (grouped by subject name)
-    let rlogger = logger;
+    //let rlogger = null;
+
+    const log = createRuleLogger(rule);
 
     if(!rule.input_tags) rule.input_tags = {};
     if(!rule.input_subject) rule.input_subject = {};
@@ -118,13 +162,13 @@ function handle_rule(rule, cb) {
 
     const counts = {
         waiting: 0, //waiting for inputs
-        running: 0, //running jobs to produce the output
-        finished: 0, //outpus already exists
+        running: 0, //running jobs to produce the output ("submitted" is a better name?)
+        archived: 0, //outpus already archived
     };
-   
+
     //prepare for stage / app / archive
     async.series([
-        
+
         //validate
         next=>{
             if(!rule.project) return next("project not specified");
@@ -135,7 +179,7 @@ function handle_rule(rule, cb) {
 
             next();
         },
-        
+
         //see if we need to process this rule or not
         //by finding the latest update_date of all input datasets
         next=>{
@@ -151,7 +195,7 @@ function handle_rule(rule, cb) {
                 for(const input_id in rule.input_project_override) {
                     projects.push(rule.input_project_override[input_id]); 
                 }
-            }                
+            }
             db.Datasets.findOne({
                 project: { $in: projects }, 
                 update_date: { $exists: true } , 
@@ -189,7 +233,8 @@ function handle_rule(rule, cb) {
             });
         },
 
-        //initialize rlogger
+        /*
+        //initialize rlogger (deprecated by json log)
         next=>{
             if(config.warehouse.rule_logdir) {
                 let logpath = config.warehouse.rule_logdir+"/"+rule._id.toString()+".log";
@@ -200,7 +245,6 @@ function handle_rule(rule, cb) {
                 }
                 rlogger = createLogger({
                     format: combine(
-                        //label({ label: 'warehouse-dev' }),
                         timestamp(),
                         format.splat(),
                         format.printf(info=>{
@@ -217,6 +261,7 @@ function handle_rule(rule, cb) {
             }
             next();
         },
+        */
 
         //get all tasks submitted for this rule
         next=>{
@@ -237,14 +282,13 @@ function handle_rule(rule, cb) {
                 if(err) return next(err);
                 if(res.statusCode != "200") return next(res.statusCode);
                 rule_tasks = {};
-                //running = 0;
                 body.tasks.forEach(task=>{
-                    //if(task.status == "running" || task.status == "requested") running++;
                     rule_tasks[get_group_id(task.config._rule)] = task;
                 });
 
-                rlogger.debug(body.tasks.length+" tasks submitted for this rule");
+                log.debug(body.tasks.length+" tasks submitted for this rule");
                 if(body.tasks.length == limit) {
+                    log.set({state:"toomanytasks"});
                     return next("too many tasks submitted for this rule");
                 }
 
@@ -259,10 +303,10 @@ function handle_rule(rule, cb) {
                 for(const input_id in rule.input_project_override) {
                     projects.push(mongoose.Types.ObjectId(rule.input_project_override[input_id])); 
                 }
-            }                
+            }
 
             let find = {
-                project: { $in: projects }, 
+                project: { $in: projects },
                 removed: false,
             };
 
@@ -276,14 +320,15 @@ function handle_rule(rule, cb) {
                 if(err) return next(err);
                 groups = _groups.map(group=>{
                     return group._id;
-                }).sort((a,b)=>{
+                }).filter(g=>!!g.subject).sort((a,b)=>{
                     if(a.subject > b.subject) return 1;
                     if(a.subject < b.subject) return -1;
                     if(a.session > b.session) return 1;
                     if(a.session < b.session) return -1;
                     return 0;
                 });
-                rlogger.debug(["number of subject/sessions to process:"+groups.length]);
+                log.debug("number of subject/sessions to process:"+groups.length);
+                log.set({state:"processing", groupCount: groups.length});
                 next();
             });
         },
@@ -299,7 +344,7 @@ function handle_rule(rule, cb) {
                     //I thought this could cause duplicate submission if there is an output dataset that's currently archived?
                     //but I think already submitted task should prevent it from re-submitted.. so it's ok?
                     //if I do remove this, remove it from ui>components/ruleform also.
-                    storage: { $exists: true }, 
+                    storage: { $exists: true },
 
                     removed: false,
                 }
@@ -308,7 +353,7 @@ function handle_rule(rule, cb) {
                 if(tags && tags.length > 0) query.tags = { $all: tags };
 
                 db.Datasets.find(query)
-                .select('meta') 
+                .select('meta')
                 .lean()
                 .exec((err, datasets)=>{
                     if(err) return next_output(err);
@@ -336,12 +381,12 @@ function handle_rule(rule, cb) {
                 //allow user to override which project to load input datasets from
                 if(rule.input_project_override && rule.input_project_override[input.id]) {
                     query.project = rule.input_project_override[input.id];
-                } 
+                }
 
                 let tag_query = [];
                 let pos_tags = [];
                 let neg_tags = [];
-                
+
                 //handle dataset tags
                 if(rule.input_tags[input.id]) {
                     rule.input_tags[input.id].forEach(tag=>{
@@ -410,15 +455,19 @@ function handle_rule(rule, cb) {
                 //store counts
                 console.log("done handling");
                 console.dir(counts);
-                rlogger.info(JSON.stringify(counts, null, 4));
                 db.Rules.findOneAndUpdate({_id: rule._id}, {$set: {"stats.counts": counts}}).exec(next);
             });
         },
 
     ], err=>{
-        if(err) return cb(err);
-        rlogger.debug("done processing rule");
-        cb();
+        if(err) {
+            log.set({state: "failed"});
+            log.error(err);
+        }
+        log.debug("done processing rule");
+        log.close(()=>{
+            cb(err);
+        });
     });
 
     function get_group_id(obj) {
@@ -428,39 +477,50 @@ function handle_rule(rule, cb) {
     }
 
     function handle_group(group, next_group) {
-        let group_id = get_group_id(group);
-        rlogger.debug("");//empty
-        rlogger.debug(group_id+" --------------------------------");
+        const group_id = get_group_id(group);
+        log.debug("handling group", group_id);
 
-        if(rule_tasks[group_id]) {
-            rlogger.debug("task already submitted for group:"+group_id+" "+rule_tasks[group_id]._id+" "+rule_tasks[group_id].status);
-            counts.running++;
-            return next_group();
-        }
-        
         //find all outputs from the app with tags specified in rule.output_tags[output_id]
         let output_missing = false;
         rule.app.outputs.forEach(output=>{
             //I should ignore missing output if user doesn't want to archive it?
             if(!rule.archive || !rule.archive[output.id] || !rule.archive[output.id].do) {
-                rlogger.debug(output.id+" not archvied - skip");
+                log.debug(output.id+" not archvied - skip", group_id);
                 return;
             }
 
             if(!~output._groups.indexOf(group_id)) {
-                rlogger.debug("output dataset not yet created for id:"+output.id);
+                log.debug("output dataset not yet created for id:"+output.id, group_id);
                 output_missing = true;
             }
         });
         if(!output_missing) {
-            rlogger.info("all datasets accounted for.. skipping to next group");
-            counts.finished++;
+            log.info("all datasets accounted for.. skipping to next group", group_id);
+            counts.archived++;
+            log.set({
+                state: "archived",
+            }, group_id);
+
+            return next_group();
+        }
+
+        //if we are already running task.. then leave it alone
+        if(rule_tasks[group_id]) {
+            const t = rule_tasks[group_id];
+            log.debug("task already submitted for group:"+group_id+" "+t._id+" "+t.status, group_id);
+            counts.running++;
+            log.set({
+                state: "submitted",
+                taskStatus: t.status,
+                taskId: t._id,
+            }, group_id);
             return next_group();
         }
 
         //make sure we have all input datasets we need
         let inputs = {};
         let missing = false;
+        let ambiguous = false;
         rule.app.inputs.forEach(input=>{
             if(rule.input_selection && rule.input_selection[input.id]) {
                 let selection_method = rule.input_selection[input.id];
@@ -477,36 +537,44 @@ function handle_rule(rule, cb) {
             let input_group_id = get_group_id(input_group);
             if(!input._datasets[input_group_id]) {
                 missing = true;
-                rlogger.info("missing input for "+input.id);
+                log.info("Found the output datasets that need to be generated, but we can't identify all required inputs and can't submit the app. missing input for "+input.id, group_id);
             } else {
                 const candidates = input._datasets[input_group_id]; 
 
                 //let's not submit jobs if there are more than 1 candidates
                 //TODO for multi-input, we could grab all?
                 if(candidates.length > 1) {
-                    rlogger.info("We found "+candidates.length +" candidates objects for input:"+input.id+". Please increase input specificity by adding tags.");
-                    missing = true;
+                    log.info("We found "+candidates.length +" candidates objects for input:"+input.id+". Please increase input specificity by adding tags.", group_id);
+                    ambiguous = true;
                 }
                 inputs[input.id] = candidates[0];
                 inputs[input.id]._inputSpec = input;
             }
         });
-
         if(missing) {
-            rlogger.info("Found the output datasets that need to be generated, but we can't identify all required inputs and can't submit the app.");
             counts.waiting++;
+            log.set({state: "waiting"}, group_id);
+            return next_group();
+        }
+        if(ambiguous) {
+            counts.waiting++; //it's not really waiting here.. but don't have a better state to mark it
+            log.set({state: "ambiguous"}, group_id);
             return next_group();
         }
 
-        //we need to submit new task!
-        rlogger.info("Found the output datasets that need to be generated, and we have all the inputs also! submitting tasks");
+        //we need to and can submit new task!
+        log.info("Found the output datasets that need to be generated, and we have all the inputs also! submitting tasks", group_id);
         submit_tasks(group, inputs, err=>{
-            if(!err) counts.running++;
+            if(!err) {
+                counts.running++;
+            }
             next_group(err);
         });
     }
 
     function submit_tasks(group, inputs, cb) {
+        let group_id = get_group_id(group);
+
         let instance = null;
         let task_stage = null;
         let task_app = null;
@@ -545,7 +613,7 @@ function handle_rule(rule, cb) {
                     }
                     instance = body.instances[0];
                     if(instance) {
-                        rlogger.debug("using instance id:"+instance._id);
+                        log.debug("using instance id:"+instance._id, group_id);
                     }
                     next();
                 });
@@ -554,7 +622,7 @@ function handle_rule(rule, cb) {
             //if we don't have the instance, create one
             next=>{
                 if(instance) return next();
-                rlogger.debug("creating a new instance");
+                log.debug("creating a new instance", group_id);
                 request.post({
                     url: config.amaretti.api+'/instance', json: true, 
                     headers: { authorization: "Bearer "+jwt },
@@ -621,7 +689,7 @@ function handle_rule(rule, cb) {
                 let subdirs = [];
                 for(let input_id in inputs) {
                     let input = inputs[input_id];
-                    rlogger.debug("looking for source/staged dataset "+input._id+" for input "+input_id);
+                    log.debug("looking for source/staged dataset "+input._id+" for input "+input_id, group_id);
 
                     //although we need to construct _outputs for product_raw, we are reusing most of the info
                     //for the main app's input. since product-raw doesn't really have id anyway, so let's just use
@@ -639,7 +707,7 @@ function handle_rule(rule, cb) {
                         if(input.prov && input.prov.task && input.prov.task._id) task = tasks[input.prov.task._id];
                         if(!isalive(task)) return false;
 
-                        rlogger.debug("found the task generated the input dataset for output:"+input.prov.output_id);
+                        log.debug("found the task generated the input dataset for output:"+input.prov.output_id, group_id);
                         //find output from task
                         let output_detail = task.config._outputs.find(it=>it.id == input.prov.output_id);
                         let dep_config = {task: task._id};
@@ -678,7 +746,7 @@ function handle_rule(rule, cb) {
                         }
                         if(!output) return false;
 
-                        rlogger.debug("found the input dataset already staged previously");
+                        log.debug("found the input dataset already staged previously", group_id);
 
                         let dep_config = {task: task._id};
                         if(output.subdir) {  //most app should use subdir by now..
@@ -702,7 +770,7 @@ function handle_rule(rule, cb) {
                     
                     if(!canuse_source() && !canuse_staged()) {
                         //we don't have it.. we need to stage from warehouse
-                        rlogger.debug("couldn't find source task/staged dataset.. need to load from warehouse");
+                        log.debug("couldn't find source task/staged dataset.. need to load from warehouse", group_id);
                         downloads.push(input);
 
                         //handle subdirs
@@ -742,23 +810,12 @@ function handle_rule(rule, cb) {
                         if(!_input.task_id) _input.task_id = task_stage._id;
                     });
 
-                    /*
-                    //join all required subdirs together
-                    let subdirs = [];
-                    downloads.forEach(download=>{
-                        console.log("handling download", download._id);
-                        console.dir(input);
-                        if(input._inputSpec.includes) subdirs = [...subdirs, ...appendIncludes(download._id, input._inputSpec.includes)];
-                        else subdirs.push(download._id);
-                    });
-                    */
-
                     deps_config.push({
                         task: task_stage._id,
                         subdirs,
                     });
 
-                    rlogger.debug("submitted staging task");
+                    log.debug("submitted staging task", group_id);
                     next();
                 });
             },
@@ -878,8 +935,12 @@ function handle_rule(rule, cb) {
                     }
                 }, (err, res, _body)=>{
                     task_app = _body.task;
-                    rlogger.debug("submitted app task "+task_app._id);
-                    console.log("calling next-----");
+                    log.debug("submitted app task "+task_app._id, group_id);
+                    log.set({
+                        state: "submitted", 
+                        taskStatus: "requested",
+                        taskId: task_app._id,
+                    }, group_id);
                     next(err);
                 });
             },

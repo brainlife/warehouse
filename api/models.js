@@ -63,6 +63,9 @@ var projectSchema = mongoose.Schema({
     //list of agreemenets that user must agree before accessing datasets
     agreements: [ new mongoose.Schema({agreement: String}) ], 
 
+    //if set to true, jobs submitted on this project will only run on those resources that are assigned to this project
+    limitResource: {type: Boolean, default: false},
+
     publishParticipantsInfo: { type: Boolean, default: false }, //publish participants info as part of publications
     
     //basic stats for this app (aggregated by bin/projectinfo.js)
@@ -776,7 +779,7 @@ var ruleSchema = mongoose.Schema({
         counts: {
             waiting: Number,
             running: Number, //number of tasks existing - including failed, requested, etc
-            finished: Number, 
+            archived: Number,  //used to be "finished",
         },
     },
 

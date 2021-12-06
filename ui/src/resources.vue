@@ -23,7 +23,7 @@
         <h4 class="header-sticky"><b-container>Shared Resources</b-container></h4> 
         <b-container>
             <br>
-            <p>
+            <p style="opacity: 0.7">
                 The following resources are shared among all Brainlife users.
             </p>
             <resource v-for="resource in shared_resources" :key="resource._id" class="resource" :resource="resource"/>
@@ -89,11 +89,10 @@ export default {
     },
 
     mounted() {
-        let find = JSON.stringify({
-            status: {$ne: "removed"},
-        });
         this.$http.get(Vue.config.amaretti_api+'/resource', {params: {
-            find, 
+            find: JSON.stringify({
+                status: {$ne: "removed"},
+            }),
             select: 'resource_id config.desc config.maxtask name citation status status_msg lastok_date active gids stats avatar'
         }}).then(res=>{
             this.resources = res.data.resources;
