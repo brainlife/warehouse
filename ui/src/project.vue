@@ -330,16 +330,6 @@
                                 Please login to Comments.
                             </b-alert>
                             <div v-else>
-                                <div style="position: relative">
-                                    <span @click="showMart = true" style="position:absolute;top: 10px; right: 10px; cursor: pointer;">😋</span>
-                                    <b-form-textarea v-model="comment" placeholder="Enter comment here" required/>
-                                    <emojimart v-if="showMart" @select="addEmojiToComment" style="position: absolute; z-index: 1; right: 0;"/>
-                                </div>
-                                <br>
-                                <b-button v-if="comment.length" @click="submitComment()">Comment</b-button>
-                                <div v-if="!comments.length">
-                                    <p>Be the first one to comment !</p>
-                                </div>
                                 <div v-if="comments && comments.length">
                                     <div v-for="comment in comments" :key="comment._id">
                                         <div class="commentbox">
@@ -374,13 +364,22 @@
                                         </div>
                                         </div>
                                     </div>
+                                <div style="position: relative">
+                                    <span @click="toggleEmojiMart()" style="position:absolute;top: 10px; right: 10px; cursor: pointer;">😋</span>
+                                    <b-form-textarea v-model="comment" placeholder="Enter comment here" required/>
+                                    <emojimart v-if="showMart" @select="addEmojiToComment" style="position: absolute; z-index: 1; right: 0; height:250px"/>
+                                </div>
+                                <br>
+                                <b-button v-if="comment.length" @click="submitComment()">Comment</b-button>
+                                <div v-if="!comments.length" style="height:120px">
+                                    <p>Be the first one to comment !</p>
+                                </div>
+                                <br>
                                 </div>
                                  <!-- <vue-editor id="commentEditor" :editorToolbar="customToolbar" v-model="comment"></vue-editor> -->
                             </div>
-
                     </div><!-- main content-->
                 </div><!--project header-->
-
                 <div v-if="config.debug">
                     <pre>{{selected.mag}}</pre>
                     <pre>{{selected}}</pre>
@@ -568,28 +567,25 @@ export default {
                 this.axios.get("/comment",{params : {
                     project : this.selected._id
                 }}).then(res=>{
-                    console.log(res.data);
                     var url = Vue.config.event_ws+"/subscribe?jwt="+Vue.config.jwt;
-                    console.log(url);
                     this.ws = new ReconnectingWebSocket(url, null, {reconnectInterval: 3000});
+                    /* for updating comments */
                     this.ws.onopen = (e)=>{
                         this.ws.send(JSON.stringify({
                             bind: {
                                 ex: "warehouse",
-                                key: "comment_project.update.*."+this.selected._id,
-                            }
+                                key: "comment_project.*.*."+this.selected._id,
+                            },
                         }));
                         this.ws.onmessage = (json)=>{
                             let event = JSON.parse(json.data);
-                            console.log(event);
                             let index = this.comments.findIndex(comment=>
                                 comment._id == event.msg._id);
-                            if(!event.msg.removed) {
-                                // console.log("Updating",event.msg);
-                                // console.log("Updating comment at",index,event.msg);
-                                this.comments.splice(index, 1, event.msg);
-                                // console.log("now it is", this.comments[index]);
-                            } else this.comments.splice(index, 1);
+                            if(index == -1) this.comments.push(event.msg);
+                            else {
+                                if(!event.msg.removed) this.comments.splice(index, 1, event.msg);
+                                else this.comments.splice(index, 1);
+                            }
                         };
                 };
                     this.comments = res.data.comments;
@@ -623,11 +619,15 @@ export default {
             this.comment += emoji.native;
             this.showMart = false;
         },
+        toggleEmojiMart (){
+            if(this.showMart) this.showMart = false;
+            else this.showMart = true;
+        }
+        ,
         deleteComment(comment) {
             this.$http.delete('comment/'+comment._id, {
             }).then(res=>{
-                console.log(res.data);
-                this.comments.splice(this.comments.indexOf(comment), 1);
+                // this.comments.splice(this.comments.indexOf(comment), 1);
                 }).catch(err=>{
                 console.error(err);
                 this.$notify({ text: err.response.data.message, type: 'error'});
@@ -704,12 +704,12 @@ export default {
         },
 
         submitComment() {
-            console.log(this.comment);
             if(this.editcommentID) {
                 this.$http.patch('comment/'+this.editcommentID, {commentString: this.comment})
                 .then(res=>{
                     console.log(res.data);
-                    this.comments[this.editcommentIndex] = res.data;
+                    /* events api will update*/
+                    // this.comments[this.editcommentIndex] = res.data;
                     this.comment = "";
                     this.editcommentID = null;
                 })
@@ -720,7 +720,7 @@ export default {
                         comment : this.comment
                 }).then(res=>{
                     console.log(res.data);
-                    Vue.set(this.comments, this.comments.length, res.data);
+                    // Vue.set(this.comments, this.comments.length, res.data);
                     this.comment = "";
                 }).catch(err=>{
                     console.error(err);
@@ -938,7 +938,7 @@ export default {
     background-color: white;
     top: 0px;
     z-index: 7;
-    overflow: hidden;
+    /* overflow: hidden; */
 }
 .top-tabs {
     top: 50px;
