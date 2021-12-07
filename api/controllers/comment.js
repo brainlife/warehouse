@@ -26,9 +26,9 @@ router.get('/', common.jwt({credentialsRequired: true}), (req, res, next) =>{
     if(project) {
         const find = {"project": project, "removed" : false};
         db.Comments.find(find).exec((err, recs)=>{
-            console.log(recs);
+            // console.log(recs);
             if(err) return next(err);
-            console.log(recs);
+            // console.log(recs);
             db.Comments.countDocuments(find).exec((err, count)=>{
                 if(err) return next(err);
                 res.json({
@@ -57,7 +57,8 @@ router.post('/', common.jwt(), function(req, res, next) {
     comment.save((err)=>{
         if(err) return next(err);
         // comment = JSON.parse(JSON.stringify(comment));
-        common.publish("comment_project.create."+comment.user_id+"."+comment.project_id,);
+        // console.log(comment);
+        common.publish("comment_project.create."+comment.user_id+"."+comment.project,comment);
         res.json(comment);
     })
 });
