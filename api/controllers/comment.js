@@ -107,7 +107,7 @@ router.delete('/:id', common.jwt(), (req, res)=>{
         comment.removed = true;
         comment.save((err, comment)=>{
             if(err) return next(err);
-            common.publish("comment_project.update."+comment.user_id+"."+comment.project_id, comment);
+            common.publish("comment_project.update."+comment.user_id+"."+comment.project, comment);
             res.json("removed comment");
         })
     })
