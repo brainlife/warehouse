@@ -1,7 +1,7 @@
 <template>
 <div class="mag">
     <div style="margin-bottom: 8px;">
-        <h5 class="paper-title">{{paper.title}}</h5>
+        <h5 class="paper-title serif">{{paper.title}}</h5>
         <p class="mag-venue">
             {{ paper.venue }} | {{ new Date(paper.publicationDate).getFullYear() }}
         </p>
@@ -10,7 +10,7 @@
             <icon name="calendar" style="opacity: 0.4" />&nbsp;{{ new Date(paper.publicationDate).toLocaleDateString() }}
         </b-badge>
     </div>
-    <p style="margin-bottom: 5px;">
+    <p style="margin-bottom: 5px;" class="serif">
         <!--first 100 words-->
         <span>{{abstract100.join(" ")}}</span>
         <!--after 100 words-->
@@ -62,16 +62,14 @@ export default {
 .mag:not(:last-child) {
     border-bottom: 1px solid #ddd;
 }
-h5 {
-    margin-bottom: 0;
-}
 .paper-title {
     text-transform: capitalize;
-    color: #333;
+    color: #666;
     padding: 0px;
     transition: color 0.3s;
-    font-size: 120%;
-    line-height: 200%;
+    font-size: 100%;
+    line-height: 180%;
+    margin-bottom: 0;
 }
 
 .mag-venue {

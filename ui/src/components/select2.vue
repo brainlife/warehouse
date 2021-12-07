@@ -1,4 +1,3 @@
-<!-- deprecated ... use v-select instead-->
 <template>
 <select style="width: 100%;">
     <slot></slot>
@@ -34,7 +33,7 @@ export default {
     },
 
     mounted: function() {
-        console.error("select2 component is deprecated by vue-select");
+        console.error("select2 component is deprecated by v-select");
         
         this.opts = {
             data: this.options, 
@@ -151,9 +150,7 @@ export default {
             if(data.tags)  {
                 result.innerHTML += data.tags.filter(this.ascii_escape).join(" | ");
             }
-            // if there's a date, add it (too long for appsubmit)
-            //if (data.date) result.innerHTML += "<time>"+new Date(data.date).toLocaleString()+"</time>";
-            
+
             return result;
         },
 

@@ -49,33 +49,32 @@
 
         <div class="page-content instances-list scroll-shadow" ref="instances-list" :style="{width: listWidth+'px'}">
             <!--no instances show help doc-->
-            <p v-if="instances.length == 0" class="text-muted" style="padding: 10px;">
+            <p v-if="!sorted_and_filtered_instances.length" class="text-muted" style="padding: 10px; margin: 10px;">
                 Please create a new process.
             </p>
 
             <!--show list-->
-            <div v-if="instances.length > 0">
-                <div v-for="instance in sorted_and_filtered_instances" :key="instance._id" :id="instance._id" v-if="instance.config && !instance.config.removing">
-                    <div class="instance-header" :class="instance_class(instance)" @click="toggle_instance(instance)" :id="instance._id+'-header'">
+            <div v-for="instance in sorted_and_filtered_instances" :key="instance._id" :id="instance._id" v-if="instance.config && !instance.config.removing">
+                <div class="instance-header" :class="instance_class(instance)" @click="toggle_instance(instance)" :id="instance._id+'-header'">
 
-                        <timeago :datetime="instance.update_date" :auto-update="10" class="date"/>
-                        <timeago :datetime="instance.create_date" :auto-update="10" class="date"/>
-                        <div class="instance-desc">
-                            <icon name="robot" v-if="instance.config.rule_subject" style="opacity: 0.5"/>
-                            {{instance.desc}}
-                            <span v-if="!instance.desc" style="opacity: 0.3; font-size: 75%;">{{instance._id}}</span>
-                            &nbsp;
-                            <div v-if="instance.config && instance.config.summary" style="display: inline-block;">
-                                <span v-for="summary in get_nonstaging_summary(instance)" 
-                                    :class="summary_class(summary)" :title="summary.name+' (t.'+summary.tid+')'" 
-                                    @click.stop="select_task(instance, summary)" :key="summary.task_id">
-                                    {{summary.name.substring(0,4).trim()}}
-                                </span>
-                            </div>
+                    <timeago :datetime="instance.update_date" :auto-update="10" class="date"/>
+                    <timeago :datetime="instance.create_date" :auto-update="10" class="date"/>
+                    <div class="instance-desc">
+                        <icon name="robot" v-if="instance.config.rule_subject" style="opacity: 0.5"/>
+                        {{instance.desc}}
+                        <span v-if="!instance.desc" style="opacity: 0.3; font-size: 75%;">{{instance._id}}</span>
+                        &nbsp;
+                        <div v-if="instance.config && instance.config.summary" style="display: inline-block;">
+                            <span v-for="summary in get_nonstaging_summary(instance)" 
+                                :class="summary_class(summary)" :title="summary.name+' (t.'+summary.tid+')'" 
+                                @click.stop="select_task(instance, summary)" :key="summary.task_id">
+                                {{summary.name.substring(0,4).trim()}}
+                            </span>
                         </div>
                     </div>
                 </div>
             </div>
+
             <!--prevent list to hide add process list -->
             <br>
             <br>

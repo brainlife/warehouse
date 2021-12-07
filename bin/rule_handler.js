@@ -22,7 +22,7 @@ db.init(function(err) {
 
     common.connectAMQP((err, conn)=>{
         acon = conn;
-        logger.info("connected to amqp.. now setting up warehouse.rule exchange");
+        console.log("connected to amqp.. now setting up warehouse.rule exchange");
         acon.exchange("warehouse.rule", {autoDelete: false, durable: true, type: 'topic', confirm: true}, (ex)=>{
             rule_ex = ex; 
         });
@@ -31,7 +31,7 @@ db.init(function(err) {
     rcon = redis.createClient(config.redis.port, config.redis.server);
     rcon.on('error', err=>{throw err});
     rcon.on('ready', ()=>{
-        logger.info("connected to redis");
+        console.log("connected to redis");
         setInterval(health_check, 1000*60*2); //start checking health 
         run();
     });
@@ -75,19 +75,18 @@ function run() {
         removed: false,
     })
     .populate('app project')
-    //.sort('-create_date')  //I have to go through all rules for each loops anyway..
     .exec((err, rules)=>{
         if(err) throw err;
 
         if(!rules || rules.length == 0) {
-            logger.debug("no rules to handle - sleeping for a while (10sec)");
-            setTimeout(run, 1000*10);
+            console.debug("no rules to handle - sleeping for a bit");
+            setTimeout(run, 1000*5);
         } else {
             async.eachSeries(rules, handle_rule, err=>{
-                if(err) logger.error(err);
-                logger.debug("done handling "+rules.length+" rules - sleeping for a while (10sec)");
-                rule_ex.publish("done", {count: rules.length});    
-                setTimeout(run, 1000*10);
+                if(err) console.error(err);
+                console.debug("done handling "+rules.length+" rules - sleeping for a bit");
+                rule_ex.publish("done", {count: rules.length});
+                setTimeout(run, 1000*5);
             });
         }
     });
@@ -109,13 +108,19 @@ function handle_rule(rule, cb) {
 
     let jwt = null;
     let groups = null; //[{subject: .. session: }]
-    let running = null; //number of currently running tasks for this rule
+    //let running = null; //number of currently running tasks for this rule
     let rule_tasks = null; //tasks submitted for this rule (grouped by subject name)
     let rlogger = logger;
 
     if(!rule.input_tags) rule.input_tags = {};
     if(!rule.input_subject) rule.input_subject = {};
     if(!rule.output_tags) rule.output_tags = {};
+
+    const counts = {
+        waiting: 0, //waiting for inputs
+        running: 0, //running jobs to produce the output
+        finished: 0, //outpus already exists
+    };
    
     //prepare for stage / app / archive
     async.series([
@@ -131,7 +136,8 @@ function handle_rule(rule, cb) {
             next();
         },
         
-        //find the latest update_date of all input datasets
+        //see if we need to process this rule or not
+        //by finding the latest update_date of all input datasets
         next=>{
             //if not handled yet, go ahead and handle it
             if(!rule.handle_date) return next();
@@ -151,7 +157,7 @@ function handle_rule(rule, cb) {
                 update_date: { $exists: true } , 
                 removed: false, //don't care about removed ones
             })
-            .sort("-update_date") //give me the max
+            .sort("-update_date") //we need to find the max update_date
             .select("update_date")
             .exec((err, dataset)=>{
                 if(err) return next(err);
@@ -165,8 +171,8 @@ function handle_rule(rule, cb) {
             
         //update handle_date
         next=>{
-            logger.info("handling project:"+rule.project.name+" rule:"+rule.name+" "+rule._id.toString());
-            //I can't use save() as it will unpopulate app I need to make separee mongo call
+            console.log("handling project:"+rule.project.name+" rule:"+rule.name+" "+rule._id.toString());
+            //I can't use save() as it will unpopulate app (why does it do that!?)
             db.Rules.findOneAndUpdate({_id: rule._id}, {$set: {handle_date: new Date()}}).exec(next);
         },
 
@@ -190,7 +196,7 @@ function handle_rule(rule, cb) {
                 try {
                     fs.truncateSync(logpath);
                 } catch (err) {
-                    logger.info("failed to truncate.. maybe first time "+logpath);
+                    console.log("failed to truncate.. maybe first time "+logpath);
                 }
                 rlogger = createLogger({
                     format: combine(
@@ -231,9 +237,9 @@ function handle_rule(rule, cb) {
                 if(err) return next(err);
                 if(res.statusCode != "200") return next(res.statusCode);
                 rule_tasks = {};
-                running = 0;
+                //running = 0;
                 body.tasks.forEach(task=>{
-                    if(task.status == "running" || task.status == "requested") running++;
+                    //if(task.status == "running" || task.status == "requested") running++;
                     rule_tasks[get_group_id(task.config._rule)] = task;
                 });
 
@@ -242,7 +248,6 @@ function handle_rule(rule, cb) {
                     return next("too many tasks submitted for this rule");
                 }
 
-                rlogger.debug(["running/requested tasks:"+running]);
                 next();
             });
         },
@@ -278,6 +283,7 @@ function handle_rule(rule, cb) {
                     if(a.session < b.session) return -1;
                     return 0;
                 });
+                rlogger.debug(["number of subject/sessions to process:"+groups.length]);
                 next();
             });
         },
@@ -315,7 +321,9 @@ function handle_rule(rule, cb) {
         //find all input datasets that this rule can use
         next=>{
             async.eachSeries(rule.app.inputs, (input, next_input)=>{
-                input._datasets = {}; //keyed by subject array of matchind datasets (should be sorted by "selection_method")
+                //keyed by subject array of matchind datasets 
+                //(should be sorted by "selection_method")
+                input._datasets = {};
 
                 //defaults
                 const query = {
@@ -373,13 +381,15 @@ function handle_rule(rule, cb) {
                 .exec((err, datasets)=>{
                     if(err) return next_input(err);
 
+                    /* we don't need to sort this anymore (we no longer pick the "latest")
                     //sorting myself is *much* faster than letting mongo do it.. I am not sure why.. maybe -create_date index was broken?
                     datasets.sort((a,b)=>{
                         if(a.create_date > b.create_date) return -1;
                         if(a.create_date < b.create_date) return 1;
                         return 0;
                     })
-                    
+                    */
+
                     //group by group_id
                     datasets.forEach(dataset=>{
                         let group_id = get_group_id(dataset.meta);
@@ -387,14 +397,22 @@ function handle_rule(rule, cb) {
                         input._datasets[group_id].push(dataset);
                     });
 
-                    next_input(); 
+                    next_input();
                 });
             }, next);
         },
 
         //now handle all subjects
         next=>{
-            async.eachSeries(groups, handle_group, next);
+            async.eachSeries(groups, handle_group, err=>{
+                if(err) return next(err);
+
+                //store counts
+                console.log("done handling");
+                console.dir(counts);
+                rlogger.info(JSON.stringify(counts, null, 4));
+                db.Rules.findOneAndUpdate({_id: rule._id}, {$set: {"stats.counts": counts}}).exec(next);
+            });
         },
 
     ], err=>{
@@ -416,6 +434,7 @@ function handle_rule(rule, cb) {
 
         if(rule_tasks[group_id]) {
             rlogger.debug("task already submitted for group:"+group_id+" "+rule_tasks[group_id]._id+" "+rule_tasks[group_id].status);
+            counts.running++;
             return next_group();
         }
         
@@ -435,6 +454,7 @@ function handle_rule(rule, cb) {
         });
         if(!output_missing) {
             rlogger.info("all datasets accounted for.. skipping to next group");
+            counts.finished++;
             return next_group();
         }
 
@@ -459,19 +479,31 @@ function handle_rule(rule, cb) {
                 missing = true;
                 rlogger.info("missing input for "+input.id);
             } else {
-                inputs[input.id] = input._datasets[input_group_id][0]; //(TODO for multiinput, we could grab all?)
+                const candidates = input._datasets[input_group_id]; 
+
+                //let's not submit jobs if there are more than 1 candidates
+                //TODO for multi-input, we could grab all?
+                if(candidates.length > 1) {
+                    rlogger.info("We found "+candidates.length +" candidates objects for input:"+input.id+". Please increase input specificity by adding tags.");
+                    missing = true;
+                }
+                inputs[input.id] = candidates[0];
                 inputs[input.id]._inputSpec = input;
             }
         });
 
         if(missing) {
-            rlogger.info("Found the output datasets that need to be generated, but some required inputs are missing and can't submit the app.");
+            rlogger.info("Found the output datasets that need to be generated, but we can't identify all required inputs and can't submit the app.");
+            counts.waiting++;
             return next_group();
         }
 
-        //all good! 
+        //we need to submit new task!
         rlogger.info("Found the output datasets that need to be generated, and we have all the inputs also! submitting tasks");
-        submit_tasks(group, inputs, next_group);
+        submit_tasks(group, inputs, err=>{
+            if(!err) counts.running++;
+            next_group(err);
+        });
     }
 
     function submit_tasks(group, inputs, cb) {
@@ -487,7 +519,7 @@ function handle_rule(rule, cb) {
         const deps_config = [];
         const tasks = {};
 
-        running++;
+        //running++;
 
         //prepare for stage / app / archive
         async.series([
@@ -758,6 +790,7 @@ function handle_rule(rule, cb) {
             //cli
             //submit the app task!
             next=>{
+
                 const _config = Object.assign(
                     rule.config||{}, 
                     process_input_config(rule.app, inputs, _app_inputs), 
@@ -809,7 +842,11 @@ function handle_rule(rule, cb) {
                     if(output.datatype_tags_pass) {
                         //TODO - how is multi input handled here?
                         const dataset = inputs[output.datatype_tags_pass];
-                        if(!dataset) logger.error("datatype_tags_pass set but can't find the input:"+output.datatype_tags_pass);
+                        if(!dataset) {
+                            console.error("datatype_tags_pass set but can't find the input:"+output.datatype_tags_pass);
+                            console.log("inputs dump");
+                            console.dir(inputs);
+                        }
                         if(dataset && dataset.datatype_tags) {
                             tags = dataset.datatype_tags; //could be null?
                         }
@@ -842,6 +879,7 @@ function handle_rule(rule, cb) {
                 }, (err, res, _body)=>{
                     task_app = _body.task;
                     rlogger.debug("submitted app task "+task_app._id);
+                    console.log("calling next-----");
                     next(err);
                 });
             },

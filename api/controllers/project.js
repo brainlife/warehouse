@@ -228,7 +228,7 @@ router.post('/', common.jwt(), function(req, res, next) {
  */
 router.put('/:id', common.jwt(), (req, res, next)=>{
     var id = req.params.id;
-    db.Projects.findById(id, (err, project)=>{
+    db.Projects.findById(id, async (err, project)=>{
         if(err) return next(err);
         if(!project) return res.status(404).end();
         if(!common.isadmin(req.user, project)) return res.status(401).end("you are not an administartor of this project");
@@ -239,26 +239,23 @@ router.put('/:id', common.jwt(), (req, res, next)=>{
         delete req.body.group_id;
         for(var k in req.body) project[k] = req.body[k];
 
-        logger.debug("update existing group on auth service");
-        logger.debug(req.body.admins);
-        logger.debug(req.body.members);
-        request.put({ url: config.auth.api+"/group/"+project.group_id, headers: { authorization: req.headers.authorization }, json: true,
-            body: {
+        if(req.body.admins && req.body.members) {
+            await axios.put(config.auth.api+"/group/"+project.group_id, {
                 name: req.body.name,
                 desc: "For project "+project._id,
                 admins: req.body.admins,
                 members: req.body.members,
-                guests: req.body.guests,
-                agreemenets: req.body.agreements,
-            }
-        }, (err, _res, group)=>{
+                //active: true //TODO should I deactivate group if project is removed?
+                //guests: req.body.guests,
+                //agreemenets: req.body.agreements,
+            }, { headers: { authorization: req.headers.authorization }});
+        }
+
+        //then update the project
+        project.save((err)=>{
             if(err) return next(err);
-            logger.debug("done updating group");
-            project.save((err)=>{
-                if(err) return next(err);
-                common.publish("project.update."+req.user.sub+"."+project._id, project)
-                res.json(project);
-            });
+            common.publish("project.update."+req.user.sub+"."+project._id, project)
+            res.json(project);
         });
     });
 });

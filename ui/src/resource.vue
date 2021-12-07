@@ -10,14 +10,17 @@
                         <b-btn size="sm" v-if="testing" title="Test" disabled><icon name="cog" :spin="true"/> Testing ... </b-btn>
                         <b-btn @click="edit" v-if="resource._canedit" variant="secondary" size="sm"><icon name="edit"/> Edit</b-btn>
                     </div>
-                    <h5>
-                        <b-badge v-if="!resource.active">Inactive</b-badge>
-                        <b-badge v-if="!resource.gids || resource.gids.length == 0" variant="secondary" title="Private resource"><icon name="lock" scale="0.9"/></b-badge>
-                        {{resource.name}}
-                    </h5>
-                    <h6 style="opacity: 0.5;">
-                        {{resource.config.username}}@{{resource.config.hostname}}
-                    </h6>
+
+                    <div style="padding-left: 15px">
+                        <h5>
+                            <b-badge v-if="!resource.active">Inactive</b-badge>
+                            <b-badge v-if="!resource.gids || resource.gids.length == 0" variant="secondary" title="Private resource"><icon name="lock" scale="0.9"/></b-badge>
+                            {{resource.name}}
+                        </h5>
+                        <h6 style="opacity: 0.5;">
+                            {{resource.config.username}}@{{resource.config.hostname}}
+                        </h6>
+                    </div>
 
                     <b-tabs class="brainlife-tab" v-model="tab">
                         <b-tab>
@@ -49,13 +52,29 @@
                         <img v-if="resource.avatar" :src="resource.avatar" style="float: right; position: relative; top: -15px; margin-left: 15px;" width="150px" height="150px">
                         <p>
                             <b-badge pill class="bigpill">
-                                <icon name="calendar" style="opacity: 0.4;"/> <small>Registered</small>&nbsp;&nbsp;{{new Date(resource.create_date).toLocaleDateString()}}
+                                <icon name="calendar"/> <small>Registered</small>&nbsp;&nbsp;{{new Date(resource.create_date).toLocaleDateString()}}
                             </b-badge>
                             <b-badge pill class="bigpill" title="Number of tasks currently running on this resource" v-if="tasksRunning">
-                                <icon name="play" style="opacity: 0.4;"/>&nbsp;&nbsp;&nbsp;{{tasksRunning.length}}&nbsp;&nbsp;<small>Running / {{resource.config.maxtask}} max</small>
+                                <icon name="play"/>&nbsp;&nbsp;&nbsp;{{tasksRunning.length}}&nbsp;&nbsp;<small>Running / {{resource.config.maxtask}} max</small>
                             </b-badge>
+
+                            <b-badge pill class="bigpill">
+                                <icon name="check"/>&nbsp;
+                                {{resource.stats.total.finished|formatNumber}} <span style="opacity: 0.5">Finished</span>
+                            </b-badge>
+                            <!--
+                            <b-badge pill class="bigpill">
+                                <icon name="th-large"/>&nbsp;
+                                {{resource.stats.total.running}} Running
+                            </b-badge>
+                            -->
+                            <b-badge pill class="bigpill">
+                                <icon name="exclamation-circle"/>&nbsp;
+                                {{resource.stats.total.failed|formatNumber}} <span style="opacity: 0.5">Failed</span>
+                            </b-badge>
+    
                         </p>
-                        <p style="line-height: 180%">{{resource.config.desc||'no description'}}</p>
+                        <p class="desc">{{resource.config.desc||'no description'}}</p>
                         <p style="margin-bottom: 0;">
                             <statustag :status="resource.status" style="font-size: 150%"/>
                             <span style="padding-left: 15px; opacity: 0.7;">
@@ -86,10 +105,13 @@
                             <span class="form-header">Owner</span>
                         </b-col>
                         <b-col>
-                            <small>User who registered this resource and can administer this resource</small>
+                            <p>
+                                <small>User who registered this resource and can administer this resource</small>
+                            </p>
                             <p>
                                 <contact :id="resource.user_id"/>
                             </p>
+                            <br>
                         </b-col>
                     </b-row>
 
@@ -98,10 +120,13 @@
                             <span class="form-header">Admins</span>
                         </b-col>
                         <b-col>
-                            <small>Users who can edit this resource</small>
+                            <p>
+                                <small>Users who can administer this resource</small>
+                            </p>
                             <p v-for="c in resource.admins" :key="c._id">
                                 <contact :id="c"/>
                             </p>
+                            <br>
                         </b-col>
                     </b-row>
 
@@ -133,9 +158,6 @@
                             <span class="form-header">Groups</span>
                         </b-col>
                         <b-col>
-                            <!--
-                            <tags :tags="resource.gids"/><br>
-                            --->
                             <p>
                                 <small>Members of the following groups can run jobs on this resource</small>
                             </p>
@@ -183,7 +205,7 @@
                     </p>
                 </b-container>
             </div>
-            <div v-if="tab == 1">
+            <div v-if="tabID == 'apps'">
                 <!--apps-->
                 <b-container>
                     <br>
@@ -217,7 +239,7 @@
                     </table>
                 </b-container>
             </div>
-            <div v-if="tab == 2">
+            <div v-if="tabID == 'jobs'">
                 <!--recent jobs-->
                 <b-container>
                     <br>
@@ -244,7 +266,7 @@
                     </table>
                 </b-container>
             </div>
-            <div v-if="tab == 3">
+            <div v-if="tabID == 'projects'">
                 <!--projects-->
                 <b-container>
                     <br>
@@ -262,7 +284,7 @@
                             <b-row v-if="projects[project._id] && project.total_walltime > 3600*1000*10" style="border-top: 1px solid #eee; padding: 2px 0px">
                                 <b-col cols="6">
                                     <b>{{projects[project._id].name}}</b><br>
-                                    <small>{{projects[project._id].desc}}</small>
+                                    <small class="desc">{{projects[project._id].desc}}</small>
                                 </b-col>
                                 <b-col>
                                     <small><contact v-for="id in projects[project._id].admins" size="small" :key="id" :id="id"/></small>
@@ -296,6 +318,8 @@ import statustag from '@/components/statustag'
 import stateprogress from '@/components/stateprogress'
 import taskRecord from '@/components/taskrecord'
 
+const lib = require('@/lib');
+
 export default {
     components: { 
         pageheader, 
@@ -323,16 +347,25 @@ export default {
             usage_layout: null, 
 
             tab: 0,
-
+            tabs : [
+                {id: "detail", label: "Detail"},
+                {id: "apps", label: "Apps"},
+                {id: "jobs", label: "Jobs"},
+                {id: "projects", label: "Projects"}
+            ],
             testing: false,
             config: Vue.config,
         }
     },
 
     computed: {
+        tabID() {
+            return this.tabs[this.tab].id; 
+        }
     },
 
     mounted() {
+        this.handleRouteParams();
         this.load();
     },
 
@@ -343,6 +376,10 @@ export default {
             if(!stat || !stat.finished || !stat.failed) return null;
             let p = stat.finished / (stat.finished + stat.failed);
             return (p*100).toFixed(1)+ "%";
+        },
+        handleRouteParams() {
+            const tab_id = this.$route.params.tab;
+            if(tab_id) this.tab = this.tabs.findIndex(tab=>tab.id == tab_id); 
         },
         load() {
             //not using resource_cache mixin because we want the latest content?
@@ -430,8 +467,8 @@ export default {
                         },
                     },
                     //font: Vue.config.plotly.font,
-                    plot_bgcolor: "#fff0",
-                    paper_bgcolor: "#fff0",
+                    //plot_bgcolor: "#fff",
+                    //paper_bgcolor: "#fff",
                 };
             }).catch(console.error);
         },
@@ -459,10 +496,9 @@ export default {
         },
 
         editorInit(editor) {
-            require('brace/mode/json')
-            editor.container.style.lineHeight = 1.25;
-            editor.renderer.updateFontSize();
-            editor.setReadOnly(true);
+            lib.editorInit(editor, ()=>{
+                editor.setReadOnly(true);
+            });
         },
 
         edit() {
@@ -473,45 +509,53 @@ export default {
 
     watch: {
         '$route': function() {
-            load();
+            this.handleRouteParams();
         },
+        tab: function() {
+            if(this.$route.params.tab != this.tabs[this.tab].id) {
+                this.$router.replace("/resource/"+this.resource._id+"/"+this.tabs[this.tab].id);
+            }
+        }
     }
 }
 </script>
 
 <style scoped>
+.desc {
+    line-height: 180%;
+}
 .page-content {
-top: 0px;
-background-color: #f9f9f9;
+    top: 0px;
+    background-color: #f9f9f9;
 }
 .page-content h2 {
-margin-bottom: 0px;
-padding: 10px 0px;
-font-size: 20pt;
+    margin-bottom: 0px;
+    padding: 10px 0px;
+    font-size: 20pt;
 }
 .page-content h3 {
-background-color: white;
-color: gray;
-padding: 20px;
-margin-bottom: 0px;
+    background-color: white;
+    color: gray;
+    padding: 20px;
+    margin-bottom: 0px;
 }
 .page-content h4 {
-padding: 15px 20px;
-background-color: white;
-opacity: 0.8;
-color: #999;
-font-size: 17pt;
-font-weight: bold;
+    padding: 15px 20px;
+    background-color: white;
+    opacity: 0.8;
+    color: #999;
+    font-size: 17pt;
+    font-weight: bold;
 }
 .header {
-background-color: white;
-padding: 15px 0 0 0;
-border-bottom: 1px solid #ddd;
+    background-color: white;
+    padding: 15px 0 0 0;
+    border-bottom: 1px solid #ddd;
 }
 .header-sticky {
-position: sticky;
-top: 0px;
-z-index: 5; /*to clear editor linenumbers*/
+    position: sticky;
+    top: 0px;
+    z-index: 5; /*to clear editor linenumbers*/
 }
 code.json {
 background-color: white;

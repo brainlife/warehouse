@@ -8,10 +8,10 @@
                     <icon name="edit" scale="1.25"/>
                 </div>
             </div>
-            <h4>
+            <h5 style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
                 <projectaccess :access="selected.access" style="position: relative; top: -3px;"/> 
                 {{selected.name}}
-            </h4>
+            </h5>
         </div>
         <div class="page-content top-tabs">
             <b-tabs class="brainlife-tab" v-model="tab">
@@ -25,9 +25,9 @@
                         </span>
 
                         <span v-if="tabinfo.id == 'dataset'" style="opacity: 0.6; font-size: 80%;">
-                            <span title="Number of subjects stored in archive" 
+                            <span title="Number of subjects stored in archive"
                                 v-if="selected.stats && selected.stats.datasets && selected.stats.datasets.subject_count">
-                               &nbsp;<icon name="user-friends" scale="0.8"/>&nbsp;&nbsp;{{selected.stats.datasets.subject_count}} 
+                               &nbsp;<icon name="user-friends" scale="0.8"/>&nbsp;&nbsp;{{selected.stats.datasets.subject_count}}
                             </span>
                             <span title="Number of data-objects stored in archive"
                                 v-if="selected.stats && selected.stats.datasets && selected.stats.datasets.count">
@@ -46,7 +46,7 @@
                             &nbsp;{{selected.stats.rules.active}} <small>/ {{selected.stats.rules.active + selected.stats.rules.inactive}}</small>
                         </span>
 
-                        <span v-if="tabinfo.id == 'groupanalysis' && selected.stats && selected.stats.groupanalysis && selected.stats.groupanalysis.sessions.length > 0" 
+                        <span v-if="tabinfo.id == 'groupanalysis' && selected.stats && selected.stats.groupanalysis && selected.stats.groupanalysis.sessions.length > 0"
                             title="Number of analysis sessions" style="opacity: 0.6; font-size: 80%;">
                             &nbsp;{{selected.stats.groupanalysis.sessions.length}}
                         </span>
@@ -79,16 +79,10 @@
                                 <small>Group ID</small>
                             </b-badge>
                         </p>
-
-
                         <div v-if="selected.importedDLDatasets && selected.importedDLDatasets.length">
                             <span class="form-header">Data Source</span>
                             <p style="margin-bottom: 5px;"><small>This project contains data imported from the following sources.</small></p>
                             <p v-for="rec in selected.importedDLDatasets" :key="rec._id" style="margin-bottom: 3px">
-                                <!--
-                                <small>{{rec.dataset_description}}</small>
-                                <small>{{rec.stats}}</small>
-                                -->
                                 <b style="font-size: 85%">{{rec.dataset_description.DatasetDOI||rec.path}}</b><br>
                                 <small>{{rec.dataset_description.Name}}</small>
                             </p>
@@ -130,7 +124,7 @@
                             </b-badge>
                         </p>
 
-                        <p style="opacity: 0.8; margin-bottom: 0; line-height: 180%;">
+                        <p class="desc">
                             {{selected.desc||'no description.'}}
                         </p>
                         <br>
@@ -150,7 +144,6 @@
                                 <p v-else>
                                     <contact v-for="c in selected.admins" :key="c._id" :id="c" size="small" style="line-height: 150%;"/>
                                 </p>
-
                             </b-col>
 
                             <b-col lg>
@@ -160,13 +153,11 @@
                                 <p v-else>
                                     <contact v-for="c in selected.members" :key="c._id" :id="c" size="small" style="line-height: 150%;"/>
                                 </p>
-
                             </b-col>
 
                             <b-col lg v-if="config.user && selected.access == 'private' && selected.guests && selected.guests.length > 0">
                                 <span class="form-header" title="has read access to data.">Guests</span>
                                 <contact v-for="c in selected.guests" :key="c._id" :id="c" size="small" style="line-height: 150%;"/>
-
                             </b-col>
                         </b-row>
                         <br>
@@ -258,9 +249,16 @@
 
                         <!--participants-->
                         <div v-if="detailTab == 1">
-                            <p><small>Participants info provides information for each subject and can be used for the group analysis.</small></p>
-                            <b-alert variant="secondary" :show="selected.publishParticipantsInfo" style="margin-bottom: 15px;">This information will be published as part of all publications made from this project.</b-alert>
-                            <participants v-if="participants && Object.keys(participants).length" :rows="participants" :columns="participants_columns" style="overflow: auto; max-height: 500px;"/>
+                            <p><small>Participants info provides information for each subject and can be used for the group analysis.</small></p>                        
+                            <b-alert variant="secondary" :show="selected.publishParticipantsInfo" style="margin-bottom: 15px;">
+                                This information will be published as part of all publications made from this project.
+                            </b-alert>
+
+                            <participants v-if="participants && Object.keys(participants).length" 
+                                :rows="participants" 
+                                :columns="participants_columns" 
+                                style="overflow: auto; max-height: 500px;"/>
+
                         </div>
 
                         <!--app info-->
@@ -268,15 +266,15 @@
 
                             <div v-if="selected.stats.apps && selected.stats.apps.length > 0">
                                 <span class="form-header">App Usage</span>
-                                <p><small>The following Apps were used to generate the data in this project</small></p>
-                                <b-row style="border-bottom: 1px solid #eee; margin-bottom: 10px;">
-                                    <b-col cols="10"><!--<small>Apps</small>--></b-col>
+                                <p><small>The following Apps were used to generate the data in this project.</small></p>                        
+                                <b-row style="border-bottom: 1px solid #0003; margin-bottom: 10px; opacity: 0.7">
+                                    <b-col cols="10">App</b-col>
                                     <b-col cols="2">Execution Count</b-col>
                                 </b-row>
                                 <b-row v-for="rec in selected.stats.apps" :key="rec._id">
                                     <b-col cols="10">
-                                        <div style="margin-bottom: 10px; border-left: 3px solid #f0f0f0; border-bottom: 1px solid #eee;">
-                                            <app v-if="rec.app._id" :app="rec.app" :branch="rec.task.service_branch" :compact="true" :showDoi="true"/>
+                                        <div style="margin-bottom: 20px;">
+                                            <app v-if="rec.app._id" :app="rec.app" :branch="rec.task.service_branch" :showDoi="true"/>
                                         </div>
                                     </b-col>
                                     <b-col cols="2"> <small>{{rec.count}}</small> </b-col>
@@ -286,10 +284,10 @@
 
                             <div v-if="resource_usage && total_walltime > 3600*1000">
                                 <span class="form-header">Resource Usage</span>
-                                <p><small>Data-objects on this project has been computed using the following apps/resources.</small></p>
-                                <ExportablePlotly :data="resource_usage.data"
-                                        :layout="resource_usage.layout"
-                                        :autoResize="true"
+                                <p><small>Data-objects on this project has been computed using the following resources.</small></p>             
+                                <ExportablePlotly :data="resource_usage.data" 
+                                        :layout="resource_usage.layout" 
+                                        :autoResize="true" 
                                         :watchShallow="true"/>
                                 <br>
                             </div>
@@ -325,12 +323,23 @@
                             </div>
                         </div>
 
+
                         <div v-if="detailTab == 4">
-                            <!-- <vue-disqus ref="disqus" shortname="brain-life" :identifier="selected._id"/> -->
+                            <!--<vue-disqus ref="disqus" shortname="brain-life" :identifier="selected._id"/> -->
                             <b-alert show variant="secondary" v-if="!config.user">
                                 Please login to Comments.
                             </b-alert>
                             <div v-else>
+                                <div style="position: relative">
+                                    <span @click="showMart = true" style="position:absolute;top: 10px; right: 10px; cursor: pointer;">😋</span>
+                                    <b-form-textarea v-model="comment" placeholder="Enter comment here" required/>
+                                    <emojimart v-if="showMart" @select="addEmojiToComment" style="position: absolute; z-index: 1; right: 0;"/>
+                                </div>
+                                <br>
+                                <b-button v-if="comment.length" @click="submitComment()">Comment</b-button>
+                                <div v-if="!comments.length">
+                                    <p>Be the first one to comment !</p>
+                                </div>
                                 <div v-if="comments && comments.length">
                                     <div v-for="comment in comments" :key="comment._id">
                                         <div class="commentbox">
@@ -366,14 +375,8 @@
                                         </div>
                                     </div>
                                 </div>
-                                 <vue-editor id="commentEditor" :editorToolbar="customToolbar" v-model="comment"></vue-editor>
-                                <br/>
-                                <b-button v-if="comment.length" @click="submitComment()">Comment</b-button>
-                                <div v-if="!comments.length">
-                                    <p>Be the first one to comment !</p>
-                                </div>
+                                 <!-- <vue-editor id="commentEditor" :editorToolbar="customToolbar" v-model="comment"></vue-editor> -->
                             </div>
-                        </div>
 
                     </div><!-- main content-->
                 </div><!--project header-->
@@ -458,6 +461,8 @@ import datatypeselecterModal from '@/modals/datatypeselecter'
 import ReconnectingWebSocket from 'reconnectingwebsocket'
 import citation from '@/components/citation'
 import {VueEditor} from "vue2-editor"
+import { Picker } from 'emoji-mart-vue'
+
 
 let ps;
 
@@ -492,6 +497,7 @@ export default {
         datatypeselecterModal,
         stateprogress,
         citation,
+        emojimart: Picker,
     },
 
     data () {
@@ -500,6 +506,7 @@ export default {
             resource_usage: null,
             total_walltime: 0,
             editcommentID : null,
+            showMart: false,
             editcommentIndex: null,
 
             participants: null,
@@ -612,6 +619,10 @@ export default {
     },
 
     methods: {
+        addEmojiToComment(emoji) {
+            this.comment += emoji.native;
+            this.showMart = false;
+        },
         deleteComment(comment) {
             this.$http.delete('comment/'+comment._id, {
             }).then(res=>{
@@ -762,7 +773,10 @@ export default {
                         var event = JSON.parse(json.data);
                         for(let k in event.msg) {
                             if(this.selected[k] === undefined) this.selected[k] = event.msg[k];
-                            else Object.assign(this.selected[k], event.msg[k]);
+                            else {
+                                if(typeof this.selected[k] == 'object') Object.assign(this.selected[k], event.msg[k]);
+                                else this.selected[k] = event.msg[k];
+                            }
                         }
                     };
                 };
@@ -791,7 +805,10 @@ export default {
             if(this.selected.stats && this.selected.stats.resources) {
                 let resources = {};
                 this.total_walltime = 0;
-                let services = [];
+                //let services = [];
+                const names = [];
+                const walltimes = [];
+                const counts = [];
                 this.selected.stats.resources.forEach(stat=>{
                     if(stat.total_walltime == 0) return;
                     this.total_walltime += stat.total_walltime;
@@ -806,86 +823,72 @@ export default {
                         };
                     }
                     let d = resources[stat.resource_id];
-                    if(!services.includes(stat.service)) services.push(stat.service);
-                    if(!d.x.includes(stat.service)) {
+                    /*
+                    //if(!services.includes(stat.service)) services.push(stat.service);
+                    //if(!d.x.includes(stat.service)) {
                         d.x.push(stat.total_walltime/(3600*1000));
                         d.y.push(stat.service);
                         d.text.push(stat.count.toString()+" tasks");
-                    }
+                    //}
+                    */
+                    names.push(stat.name);
+                    walltimes.push(stat.total_walltime/(3600*1000));
+                    counts.push(stat.count.toString()+" jobs");
                 });
+                //create plotly graph
+                var data = [{
+                    y: names,
+                    x: walltimes,
+                    text: counts,
+                    //name: stat.resource_id+" (private)",
+                    type: "bar",
+                    orientation: 'h'
+                }];
+                var layout = {
+                    yaxis: {
+                        //title: 'Apps'
+                    },
+                    xaxis: {
+                        title: 'Total Walltime (hour)',  
+                        type: 'log',
+                        //autorange: true
+                        showgrid: true,
+                    },
+                    barmode: 'relative',
+                    margin: {
+                        t: 20,
+                        l: 240,
+                        pad: 10
+                    },
+                    //height: 17*services.length+120,
+                    height: 17*names.length+120,
+                    font: Vue.config.plotly.font,
+                    paper_bgcolor: "#fff0",
+                };
+                this.resource_usage = {data, layout};
 
-                //query resource info
+                //collection resource citation info
                 let resource_ids = Object.keys(resources);
                 this.$http.get(Vue.config.amaretti_api+"/resource", {params: {
                     find: JSON.stringify({
                         _id: {$in: resource_ids},
                     }),
-                    select: 'name config.desc',
+                    select: 'name config.desc citation',
                 }})
                 .then(res=>{
                     //set resource names
                     res.data.resources.forEach(resource=>{
                         resources[resource._id].name = resource.name;
                     });
-
-                    //collect resource citation
-                    this.selected.stats.resources.forEach(stat=>{
-                        if(!stat.citation) return; //don't show resources with no citations
-                        let resource = res.data.resources.find(r=>r._id == stat.resource_id);
-                        if(!resource) return; //no such resource?
-                        let resource_citations = this.resource_citations.find(r=>r.resource._id == stat.resource_id);
-                        if(!resource_citations) this.resource_citations.push({resource, citation: stat.citation});
+                    res.data.resources.forEach(resource=>{
+                        if(!resource.citation) return; //don't show resources with no citations
+                        //let resource = res.data.resources.find(r=>r._id == stat.resource_id);
+                        //if(!resource) return; //no such resource?
+                        //let resource_citations = this.resource_citations.find(r=>r.resource._id == stat.resource_id);
+                        //if(!resource_citations) this.resource_citations.push({resource, citation: stat.citation});    
+                        this.resource_citations.push({resource, citation: resource.citation});
                     });
 
-                    //create plotly graph
-                    var data = Object.values(resources);
-                    var layout = {
-                        yaxis: {
-                            //title: 'Apps'
-                        },
-                        xaxis: {
-                            title: 'Total Walltime (hour)',
-                            type: 'log',
-                            //autorange: true
-                            showgrid: true,
-                        },
-                        barmode: 'relative',
-                        margin: {
-                            t: 20,
-                            l: 240,
-                            pad: 10
-                        },
-                        height: 17*services.length+120,
-                        font: Vue.config.plotly.font,
-                        paper_bgcolor: "#fff0",
-                    };
-
-                    /*
-                    let options = {
-                        //until my PR gets accepted, we need to resize this ... https://github.com/statnett/vue-plotly/pull/18
-                        toImageButtonOptions: {
-                            width: 1200,
-                            height: 600,
-                        },
-
-                        modeBarButtonsToAdd: [{
-                            name: 'SVG',
-
-                            //TODO - I should find a better logo for svg export
-                            icon: {
-                                'width': 1792,
-                                'path': 'M1344 1344q0-26-19-45t-45-19-45 19-19 45 19 45 45 19 45-19 19-45zm256 0q0-26-19-45t-45-19-45 19-19 45 19 45 45 19 45-19 19-45zm128-224v320q0 40-28 68t-68 28h-1472q-40 0-68-28t-28-68v-320q0-40 28-68t68-28h465l135 136q58 56 136 56t136-56l136-136h464q40 0 68 28t28 68zm-325-569q17 41-14 70l-448 448q-18 19-45 19t-45-19l-448-448q-31-29-14-70 17-39 59-39h256v-448q0-26 19-45t45-19h256q26 0 45 19t19 45v448h256q42 0 59 39z',
-                                'ascent': 1792,
-                                'descent': 0,
-                            },
-                            click: ()=>{
-                                let plot = this.$refs.resource_usage;
-                                plot.downloadImage({format: 'svg'});
-                            }
-                        }],
-                    }
-                    */
-                    this.resource_usage = {data, layout};
                 });
             }
         },
@@ -914,8 +917,13 @@ export default {
 </script>
 
 <style scoped>
+.desc {
+    opacity: 0.8;
+    line-height: 180%;
+}
+
 .page-header {
-    padding: 10px 20px;
+    padding: 12px 15px;
 }
 .page-header h4 {
     margin-right: 150px;

@@ -3,7 +3,7 @@
     <b-badge>{{group.id}}</b-badge>
     <b-badge variant="danger" v-if="!group.active">Inactive</b-badge>
 
-    <b>{{group.name}}</b>
+    <b class="serif">{{group.name}}</b>
     <br>
     <small>{{group.desc}}</small>
 

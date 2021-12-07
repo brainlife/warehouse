@@ -1,6 +1,6 @@
 <template>
 <table width="100%">
-    <tr v-for="(v,k) in config" :key="k" class="config-row" :class="{ default: isDefault(k) }">
+    <tr v-for="(v,k) in config" :key="k" class="config-row" :class="{ default: isDefault(k), hideDefault: hideDefault }">
         <th>{{k}}</th>
 
         <!--value-->
@@ -31,6 +31,7 @@ export default {
     props: {
         config: Object,
         appconfig: Object,
+        hideDefault: Boolean,
     },
 
     methods: {
@@ -41,7 +42,6 @@ export default {
         getDefault: function(key) {
             if(!this.appconfig[key]) return "[removed?]";
             var d = this.appconfig[key].default;
-            //console.dir(d);
             if(d === undefined) {
                 return "[not set]";
             }
@@ -65,6 +65,9 @@ export default {
 <style scoped>
 tr.default {
 opacity:.7;
+}
+tr.default.hideDefault {
+display: none;
 }
 tr:hover {
 opacity: inherit; 

@@ -1,6 +1,13 @@
 
 <template>
-<Plotly :data="data" :layout="_layout" :toImageButtonOptions="toImageButtonOptions" :modeBarButtonsToAdd="modeBarButtonsToAdd" ref="plotly" :autoResize="true" :watchShallow="watchShallow"/>
+<Plotly 
+    :data="data" 
+    :layout="_layout" 
+    :toImageButtonOptions="toImageButtonOptions" 
+    :modeBarButtonsToAdd="modeBarButtonsToAdd" 
+    ref="plotly" 
+    :autoResize="true" 
+    :watchShallow="watchShallow"/>
 </template>
 
 <script>

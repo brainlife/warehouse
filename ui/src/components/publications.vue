@@ -10,60 +10,64 @@
             <pubform :pub="editing" :project="project" @submit="save" @cancel="cancel"/>
         </div>
         <div v-else>
-            <br>
-            <div class="margin20 text-muted" v-if="!pubs || pubs.length == 0">
-                <p>No publication registered for this project.</p>
-                <!--
-                <p>To learn about how to submit publications, please refer to our <a href="https://brainlife.io/docs/user/publication/" target="doc">Documentation</a>.</p>
-                -->
-            </div>
-            <div v-for="pub in pubs" :key="pub._id" :class="{'pub-removed': pub.removed, 'pub-editable': canedit()}" class="pub">
-                <div style="padding: 10px 15px">
-                    <div class="pub-action">
-                        <div class="button" @click="edit(pub)" v-if="canedit()" title="Edit publication detail"> <icon name="edit"/> </div>
-                        <div class="button" size="sm" @click="open(pub)" title="See in published page"> <icon name="eye"/> </div>
-                    </div>
-                    <b-badge v-if="pub.removed" variant="danger">Removed</b-badge>
-                    <h5>
-                        {{pub.name}}
-                    </h5>
-                    <p style="opacity: 0.7; margin-bottom: 5px;">
-                        {{pub.desc}}
-                    </p>
-                    <p style="line-height: 180%; margin-bottom: 5px;" v-if="pub.tags.length > 0">
-                        <small><tags :tags="pub.tags"/></small>
-                    </p>
-
-                    <b-alert show="pub.releases.length == 0" variant="danger">No Releases</b-alert>
-                    <div v-for="release in pub.releases.filter(r=>!r.removed)" :key="release._id" style="clear: both; padding: 5px 0; margin: 5px 0; border-top: 1px solid #eee; margin-bottom: 5px">
-                        <span style="float: right; margin-right: 10px; font-size: 85%;">
-                            <icon name="calendar" style="opacity: 0.4;" scale="0.8"/>&nbsp;&nbsp;
-                            {{new Date(release.create_date).toLocaleDateString()}}
-                        </span>
-
-                        <h6><span style="opacity: 0.5">Release</span> {{release.name}}</h6>
-                        <releaseset v-for="(set, idx) in release.sets" :key="idx" style="margin-right: 10px; display: inline-block;" :set="set"/>
-                        <p v-if="release.gaarchives && release.gaarchives.length" style="margin-bottom: 0;">
-                            <gaarchive v-for="(gaarchive, idx) in release.gaarchives" :key="idx" style="margin-right: 10px; margin-top: 10px;" :gaarchive="gaarchive"/>
+            <b-container>
+                <br>
+                <div class="margin20 text-muted" v-if="!pubs || pubs.length == 0">
+                    <p>No publication registered for this project.</p>
+                    <!--
+                    <p>To learn about how to submit publications, please refer to our <a href="https://brainlife.io/docs/user/publication/" target="doc">Documentation</a>.</p>
+                    -->
+                </div>
+                <div v-for="pub in pubs" :key="pub._id" :class="{'pub-removed': pub.removed, 'pub-editable': canedit()}">
+                    <div style="padding: 10px 15px" class="pub">
+                        <div class="pub-action">
+                            <div class="button" @click="edit(pub)" v-if="canedit()" title="Edit publication detail"> <icon name="edit"/> </div>
+                            <div class="button" size="sm" @click="open(pub)" title="See in published page"> <icon name="eye"/> </div>
+                        </div>
+                        <b-badge v-if="pub.removed" variant="danger">Removed</b-badge>
+                        <h5 class="serif name">
+                            {{pub.name}}
+                        </h5>
+                        <p>
+                            <doibadge :doi="pub.doi"/>
+                            <b-badge pill class="bigpill">
+                                <icon name="calendar" style="opacity: 0.4;"/>&nbsp;&nbsp;
+                                {{new Date(pub.create_date).toLocaleDateString()}}
+                            </b-badge>
+                        </p>
+                        <p class="serif desc">
+                            {{pub.desc}}
+                        </p>
+                        <p style="line-height: 180%; margin-bottom: 5px;" v-if="pub.tags.length > 0">
+                            <small><tags :tags="pub.tags"/></small>
                         </p>
                     </div>
-                </div>
+                    <div style="margin: 0 30px;">
+                        <!--<span style="float: right; opacity: 0.7;"><b>{{new Date(pub.publish_date||pub.create_date).toLocaleDateString()}}</b></span>-->
+                        <b-alert show="pub.releases.length == 0" variant="danger">No Releases</b-alert>
+                        <div v-for="release in pub.releases.filter(r=>!r.removed)" :key="release._id" style="clear: both; padding: 5px 0; margin: 5px 0; border-top: 1px solid #eee; margin-bottom: 5px">
+                            <span style="float: right; margin-right: 10px; font-size: 85%;">
+                                <icon name="calendar" style="opacity: 0.4;" scale="0.8"/>&nbsp;&nbsp;
+                                {{new Date(release.create_date).toLocaleDateString()}}
+                            </span>
 
-                <div style="background-color: #eee; padding: 10px 15px;">
-                    <doibadge :doi="pub.doi" style="float: right;"/>
-                    <b-badge pill class="bigpill" style="float: right; margin-right: 10px;">
-                        <icon name="calendar" style="opacity: 0.4;"/>&nbsp;&nbsp;
-                        {{new Date(pub.create_date).toLocaleDateString()}}
-                    </b-badge>
-                    <br clear="both">
+                            <p style="margin-bottom: 0px">
+                                <span class="form-header" style="opacity: 0.7; display: inline-block;">Release</span> <b>{{release.name}}</b>
+                            </p>
+
+                            <releaseset v-for="(set, idx) in release.sets" :key="idx" style="margin-right: 10px; display: inline-block;" :set="set"/>
+                            <p v-if="release.gaarchives && release.gaarchives.length" style="margin-bottom: 0;">
+                                <gaarchive v-for="(gaarchive, idx) in release.gaarchives" :key="idx" style="margin-right: 10px; margin-top: 10px; background-color: #fff7;" :gaarchive="gaarchive"/>
+                            </p>
+                        </div>
+                    </div>
                 </div>
-                <!--<span style="float: right; opacity: 0.7;"><b>{{new Date(pub.publish_date||pub.create_date).toLocaleDateString()}}</b></span>-->
-            </div>
-            <!--space to make sure add button won't overwrap the pub list-->
-            <p style="padding-top: 100px;">&nbsp;</p>
-            <b-button v-if="canedit()" @click="newpub" class="button-fixed">
-                New Publication
-            </b-button>
+                <!--space to make sure add button won't overwrap the pub list-->
+                <p style="padding-top: 100px;">&nbsp;</p>
+                <b-button v-if="canedit()" @click="newpub" class="button-fixed">
+                    New&nbsp;Publication
+                </b-button>
+            </b-container>
         </div><!--pubs-->
     </div>
 
@@ -225,30 +229,35 @@ export default {
 
 <style scoped>
 .info {
-top: 95px;
-padding: 10px 20px;
-color: #999;
-background-color: #f9f9f9;
-z-index: 1; /*needed to make sort order dropdown box to show up on top of page-content*/
+    top: 95px;
+    padding: 10px 20px;
+    color: #999;
+    background-color: #f9f9f9;
+    z-index: 1; /*needed to make sort order dropdown box to show up on top of page-content*/
 }
 .page-content {
-overflow-x: hidden; /*i can't figure out why there would be x scroll bar when a rule is active*/
-top: 95px;
+    overflow-x: hidden; /*i can't figure out why there would be x scroll bar when a rule is active*/
+    top: 95px;
+    background-color: #eee;
 }
 
 .pub:first-child {
-margin-top: 2px;
+    margin-top: 2px;
 }
 .pub {
     margin: 0px 20px;
     background-color: white;
-    box-shadow: 1px 1px 3px rgba(0,0,0,0.3);
-    font-size: 88%;
-    transition: background-color 0.3s;
-    margin-bottom: 20px;
+    border-radius: 10px;
 }
 .pub-action {
     float: right;
+}
+.name {
+    display: inline-block;
+    opacity: 0.8;
+}
+.desc {
+    line-height: 180%;
 }
 </style>
 

@@ -15,7 +15,7 @@
 
     <div ref="process" class="process onRight" :style="{left: splitter_pos+'px'}">
         <p class="loading" v-if="loading"><icon name="cog" scale="1.25" spin/> Loading...</p>
-        <b-alert variant="secondary" :show="!loading && tasks && tasks.length == 0">Please stage datasets by clicking "Stage Data" button below.</b-alert>
+        <b-alert variant="secondary" :show="!loading && tasks && tasks.length == 0">Please stage datasets by clicking &nbsp;&nbsp;<b-button size="sm" variant="outline-success"><icon name="cube"/> Stage Data</b-button>&nbsp;&nbsp;button below.</b-alert>
         <div v-if="!loading && tasks">
             <div class="task-area" v-for="task in tasks.filter(t=>Boolean(t.config._tid))" :key="task._id" :id="task._id">
                 <div v-if="!task.show" class="task-id" @click="toggle_task(task)">

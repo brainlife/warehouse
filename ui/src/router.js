@@ -186,6 +186,10 @@ export default new Router({
         {path: '/resource/:id/edit', component: resourceedit, meta: {
             sidemenu: "resource", 
         }},
+        {path: '/resource/:id/:tab?', component: resource, meta: {
+            public: true,
+            sidemenu: "resource",
+        }},
 
         {path: '/pubs', component: pubs, meta: {
             public: true,

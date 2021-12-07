@@ -1,4 +1,5 @@
 <template>
+<!--deprecated by modal/rule-->
 <b-form @submit="submit" v-if="ready">
     <div style="margin: 20px;">
         <h5 v-if="!rule._id">New Pipeline Rule</h5>
@@ -545,7 +546,7 @@ export default {
 
 <style scoped>
 .card:not(:first-of-type) {
-border-top: none;
+    border-top: none;
 }
 h5 {
     margin-bottom: 20px;

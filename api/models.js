@@ -37,6 +37,7 @@ var projectSchema = mongoose.Schema({
     //user who created this project 
     user_id: {type: String, index: true}, 
 
+    //auth service still uses number to store sub, we should eventually convert to string
     admins: [ String ], //list of users who can administer this project (co-PIs?)
     members: [ String ], //list of users who can read/write things under this project
     guests: [ String ], //(for private project) list of users who has read access to datasets
@@ -103,10 +104,12 @@ var projectSchema = mongoose.Schema({
 
             //for quick referncing the resource detail
             name: String,
-            desc: String,
-            citation: String,
 
-            service: String, //amaretti service (github)
+            //becomes too big
+            //desc: String,
+            //citation: String,
+
+            services: [String],//amaretti service (github) names
             count: Number, //number of time this app/resource pair appears for stored datasets
             total_walltime: Number, //msec for total walltime 
         }],
@@ -116,18 +119,6 @@ var projectSchema = mongoose.Schema({
             count: Number, //number of time this app was executed
             app: {type: mongoose.Schema.Types.ObjectId, ref: "Apps"},
             task: mongoose.Schema.Types.Mixed, //sample task (first find)
-            /*
-            //for quick reference
-            name: String,
-            doi: String,
-            
-            //service/branch used
-            service: String,
-            service_branch: String,
-
-            //TODO - does dataset prov store this somewhere?
-            //total_walltime: Number, //msec for total walltime spent for this app
-            */
         }],
 
         //count of pipeline rules (updated by common.update_project_stats)
@@ -159,13 +150,6 @@ var projectSchema = mongoose.Schema({
         fields: Array,
         abstract : String,     
     }],   
-    /*
-    //TODO - will be deprecated when datalad goes online
-    //for openneuro proxy project (not set if it's not openneuro)
-    openneuro: {
-        dataset_id: String,
-    },
-    */
 
     importedDLDatasets: [
         { 
@@ -221,8 +205,22 @@ var projectSchema = mongoose.Schema({
         ],
     },
 
-    //enable group_analysis UI (experimental)
-    //group_analysis: { type: Boolean, default: false },
+    //describes how all pipeline rules are organized
+    pipelines: mongoose.Schema.Types.Mixed,
+    /*
+    {
+        type: "group",
+        name: "Group Name", //root level group shouldn't have any name
+        items: [
+            { type: "comment", comment: "some string" },
+            { type: "rule", ruleId: <ruleSchema.id> }, //actual rule!
+            { type: "group", items: [] }, //can be nested
+            
+            //any rules that are not listed anywhere will be placed under root level group 
+            //for backward compatibility
+        ]
+    }
+    */
 
     create_date: { type: Date, default: Date.now },
     update_date: { type: Date, default: Date.now }, //added on 8/6/2021
@@ -240,7 +238,6 @@ exports.Projects = mongoose.model("Projects", projectSchema);
 
 var participantsSchema = mongoose.Schema({
     project: {type: mongoose.Schema.Types.ObjectId, ref: "Projects"},
-
 
     //from participants.json keyed by (column header)
     columns: mongoose.Schema.Types.Mixed, 
@@ -276,7 +273,7 @@ var participantsSchema = mongoose.Schema({
     //    }
 
     //deprecated - use subjects once we no longer need it
-    rows: mongoose.Schema.Types.Mixed, 
+    //rows: mongoose.Schema.Types.Mixed, 
 
     //from participants.tsv (keyed by subject)
     subjects: mongoose.Schema.Types.Mixed, 
@@ -312,8 +309,9 @@ var datatypeSchema = mongoose.Schema({
     desc: String, 
     readme: String,  //in markdown
 
+    //auth service still uses number to store sub, we should eventually convert to string
     admins: [ String ], //list of users who can administer this datatype
-    
+
     //file inventory for this datatype
     files: [ new mongoose.Schema({ //mongoose.Schema allows for *missing*
         id: String,
@@ -378,10 +376,6 @@ var releaseSchema = mongoose.Schema({
 
     //"dataset"
     sets: [
-        /*
-        counts: Number, //number of objects
-        size: Number, //total size of the data
-        */
         {
             datatype: {
                 //let's just store things we really need
@@ -421,26 +415,22 @@ var releaseSchema = mongoose.Schema({
 mongoose.model("Releases", releaseSchema);
 
 var publicationSchema = mongoose.Schema({
-    
-    //user who created this publication 
-    user_id: {type: String, index: true}, 
+
+    //user who created this publication
+    user_id: {type: String, index: true},
 
     license: String, //cc0, ccby.40, etc.
     doi: String, //doi for this dataset (we generate this)
     paper_doi: String, //doi for the paper (journal should publish this) TODO - is this used?t
 
-    fundings: [ new mongoose.Schema({funder: String, id: String}) ], 
-    
+    fundings: [ new mongoose.Schema({funder: String, id: String}) ],
+
     //project that this data belongs to
     project: {type: mongoose.Schema.Types.ObjectId, ref: "Projects"},
 
     authors: [ String ], //list of users who are the author/creator of this publicaions
     contributors: [ String ], //list of users who contributed (PI, etc..)
 
-    //publishParticipantsInfo: { type: Boolean, default: false }, //publish project participants info
-
-    //publisher: String, //NatureScientificData //TODO - is this used?
-    
     name: String, //title of the publication
     desc: String, 
     tags: [String], //software, eeg, mri, etc..
@@ -459,12 +449,10 @@ var publicationSchema = mongoose.Schema({
         venue : String, 
         authors : Array,
         fields: Array,
-        abstract : String,     
+        abstract : String,
     }],
-        
 });
 exports.Publications = mongoose.model("Publications", publicationSchema);
-
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 //
@@ -473,12 +461,9 @@ exports.Publications = mongoose.model("Publications", publicationSchema);
 //
 var datasetSchema = mongoose.Schema({
 
-    //experimental field to show that this dataset was created by copying another dataset.
-    //copied_from_id: {type: mongoose.Schema.Types.ObjectId, ref: "Datasets"},
-    
     //user who submitted this rule. task will run under this user
     user_id: String,
-    
+
     //project that this data belongs to
     project: {type: mongoose.Schema.Types.ObjectId, ref: 'Projects'},
 
@@ -488,7 +473,7 @@ var datasetSchema = mongoose.Schema({
 
     //meta fields as specified in the datatype.meta
     meta: mongoose.Schema.Types.Mixed,
-    
+
     //human readable name / desc
     //name: String, //deprecated
     desc: String, 
@@ -497,10 +482,10 @@ var datasetSchema = mongoose.Schema({
 
     //physical location of this crate (URI?)
     storage: String, //azure, dc2, sda?, jetstream-swift, etc.. (as configured in /config)
-    
+
     //any extra storage config (maybe like subdir needed to access the dataset)
     storage_config: mongoose.Schema.Types.Mixed, 
-    
+
     //size of datasets (when downloaded)
     size: Number,
 
@@ -615,6 +600,8 @@ exports.UIs = mongoose.model('UIs', UISchema);
 var appSchema = mongoose.Schema({
     user_id: String, //registrar of this application
     projects: [{type: mongoose.Schema.Types.ObjectId, ref: 'Projects'}], //projects that this app is members of
+
+    //auth service still uses number to store sub, we should eventually convert to string
     admins: [ String ], //list of users who can administer this app
     avatar: String, //url for app avatar
 
@@ -680,7 +667,7 @@ var appSchema = mongoose.Schema({
         files: mongoose.Schema.Types.Mixed, //(when output_on_root is true) optional output file/dir mapping to datatype file_id
         archive: { type: Boolean, default: true }, //archive output by default
     })],
-        
+
     //basic stats for this app (aggregated by bin/appinfo.js - most info comes from amaretti/service/info)
     stats: {
         success_rate: Number, //74.31192660550458,
@@ -690,7 +677,7 @@ var appSchema = mongoose.Schema({
         requested: Number, //234
 
         gitinfo: Object,
-        
+
         //list of shared resources (currently available)
         resources: [
             new mongoose.Schema({
@@ -699,23 +686,14 @@ var appSchema = mongoose.Schema({
             })
         ],
 
-        /*
-        //DEPRECTED - stats.serviceinfo / stats.gitinfo
-        requested: Number, //number of times this app was requested
-        users: Number, //number of users who used this app
-        stars: Number, //github stars
-        success_rate: Number, 
-        */
-
         examples: Number, //number of example workflows found
     },
-    
+
     removed: { type: Boolean, default: false} ,
     deprecated_by: {type: mongoose.Schema.Types.ObjectId, ref: 'Apps'}, //if set, this app is deprecated
 
     create_date: { type: Date, default: Date.now },
 }, {minimize: false}); //to keep empty config{} from disappearing
-//appSchema.index({'$**': 'text'}) //make all text fields searchable (not used according to accesses.ops)
 exports.Apps = mongoose.model('Apps', appSchema);
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -742,15 +720,9 @@ exports.Apprates = mongoose.model('Apprates', apprateSchema);
 var ruleSchema = mongoose.Schema({
 
     name: String,
-    //desc: String, 
 
     //user submitted this rule (all tasks will be submitted under this user)
     user_id: String,
-    
-    //project to look for missing datasets and to archive generated data
-    //input_project: {type: mongoose.Schema.Types.ObjectId, ref: 'Projects'},
-    //project to store generated dataset
-    //output_project: {type: mongoose.Schema.Types.ObjectId, ref: 'Projects'},
 
     //project to look for input datasets and store generated datasets to
     project: {type: mongoose.Schema.Types.ObjectId, ref: 'Projects'},
@@ -760,7 +732,7 @@ var ruleSchema = mongoose.Schema({
     input_session: mongoose.Schema.Types.Mixed,
     //any tags to look for each input id (object with key(output id)=>array(tags))
     input_tags: mongoose.Schema.Types.Mixed,
-    
+
     //if user wants to override where the input data comes from, specify projects IDs keyed by input id
     input_project_override: mongoose.Schema.Types.Mixed,
 
@@ -773,7 +745,7 @@ var ruleSchema = mongoose.Schema({
     //app to submit
     app: {type: mongoose.Schema.Types.ObjectId, ref: 'Apps'},
     branch: String, //branch to use (required for new rules)
-    
+
     //scalar configs (input configs are used to detect new datasets)
     config: mongoose.Schema.Types.Mixed, 
 
@@ -782,7 +754,7 @@ var ruleSchema = mongoose.Schema({
 
     //any tags to set for each output id (object with key(output id)=>array(tags))
     output_tags: mongoose.Schema.Types.Mixed,
-    
+
     //archive info (keyed by output id, then {do: Boolean, desc: ""}.
     archive: mongoose.Schema.Types.Mixed,
 
@@ -801,6 +773,11 @@ var ruleSchema = mongoose.Schema({
             stop_requested: Number,
             running_sync: Number,
         },
+        counts: {
+            waiting: Number,
+            running: Number, //number of tasks existing - including failed, requested, etc
+            finished: Number, 
+        },
     },
 
     //when the rule is first defined
@@ -814,13 +791,6 @@ var ruleSchema = mongoose.Schema({
     active: { type: Boolean, default: true } ,
 
 }, {minimize: false}); //to keep empty config{} from disappearing
-
-/*
-ruleSchema.post('save', exports.rule_event);
-ruleSchema.post('findOneAndUpdate', exports.rule_event);
-ruleSchema.post('findOneAndRemove', exports.rule_event);
-ruleSchema.post('remove', exports.rule_event);
-*/
 
 ruleSchema.pre('save', function(next) {
     this.update_date = new Date;
@@ -868,7 +838,7 @@ var dlDatasetSchema = mongoose.Schema({
     },
     import_count: { type: Number, default: 0}, //number of time this dataset was imported
 
-    //openneuro dataset can be removed.. if that happens, we need to flag it
+    create_date: { type: Date, default: Date.now },
     removed: { type: Boolean, default: false },
 });
 
@@ -878,39 +848,11 @@ exports.DLDatasets = mongoose.model('DLDatasets', dlDatasetSchema);
 
 //similar to brainlife "dataset"
 var dlItemSchema = mongoose.Schema({
-
     //dataset that this item is member of
     dldataset: {type: mongoose.Schema.Types.ObjectId, ref: 'DLDatasets'},
-
-    //path: String, //"/home/hayashis/dl/workshops/mind-2017/MotivationalT",
-
-    /*
-    author: [String], //["van der Meer"],
-    conformsto: String, //"http://specs.frictionlessdata.io/data-packages",
-    description: String, //"For a description of the experimental procedures, including the behavioral task, see van der Meer, Carey, Tanaka (2017) Optimizing for generalization in the decoding of internally generated activity in the hippocampus. Hippocampus 27(5), pp. 580--595",
-    license: [String], //["http://opendatacommons.org/licenses/pddl/"],
-    name: String, //"MotivationalT",
-    shortdescription: String, //"Extracellular tetrode recordings from the dorsal CA1 area of the hippocampus in behaving rats"
-    */
-
-    //metadata from dl
-    //meta: {},
-
-
     dataset: datasetSchema, //brainlife dataset record (as parsed by bids_walker)
-    
-    /*
-    dsid: String, 
-    metadata: {
-        dl_core: mongoose.Schema.Types.Mixed,
-        frictionless_datapackage: mongoose.Schema.Types.Mixed,
-    },
-    path: String,
-    status: String,
-    */
     create_date: { type: Date, default: Date.now },
     update_date: { type: Date, default: Date.now },
-
 });
 dlItemSchema.index({'dldataset': 1, 'dataset.datatype': 1, 'dataset.meta.subject': 1, 'dataset.meta.session': 1, 'dataset.meta.run': 1}); //importdatlad uses this as *key* for each item
 exports.DLItems = mongoose.model('DLItems', dlItemSchema);

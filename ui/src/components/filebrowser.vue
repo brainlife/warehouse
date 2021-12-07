@@ -323,10 +323,11 @@ export default {
 
 <style scoped>
 .fileitem {
-line-height: 150%;
-margin: 0px;
-padding: 2px 4px;
-font-size: 13px;
+    line-height: 140%;
+    margin: 0px;
+    padding: 2px 4px;
+    font-size: 13px;
+    font-family: Helvetica;
 }
 .fileitem:hover {
 cursor: pointer;

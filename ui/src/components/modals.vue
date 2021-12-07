@@ -18,6 +18,8 @@
         <participants/>
         <galauncher/>
         <gaarchiver/>
+        <rulemodal/>
+        <pipelinegroupmodal/>
 
         <dataladimporter/>
         <ezbidsimporter/>
@@ -47,6 +49,8 @@ export default {
         gaarchiver: ()=>import('@/modals/gaarchiver'),
         dataladimporter: ()=>import('@/modals/dataladimporter'),
         ezbidsimporter: ()=>import('@/modals/ezbidsimporter'),
+        rulemodal: ()=>import('@/modals/rule'),
+        pipelinegroupmodal: ()=>import('@/modals/pipelinegroup'),
     },
     data() {
         return {

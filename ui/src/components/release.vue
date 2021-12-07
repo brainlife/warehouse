@@ -5,7 +5,7 @@
             <span style="float: right; opacity: 0.8; font-size: 90%; padding-top: 4px;">
                 {{new Date(release.create_date).toLocaleDateString()}}
             </span>
-            <span style="font-size: 120%;"><small>Release /</small> <b>{{release.name}}</b></span>
+            <span style="font-size: 120%;"><small>Release</small> <b>{{release.name}}</b></span>
             <b-badge pill class="bigpill" v-if="release.subjects" style="margin-left: 10px; position: relative; top: -2px;">
                 <icon name="user-friends" style="opacity: 0.4;"/>&nbsp;&nbsp;{{release.subjects}} <small>subjects</small> 
                 <span v-if="release.sessions"><span style="opacity: 0.4"> | </span>{{release.sessions}} <small>sessions</small></span>
@@ -20,11 +20,13 @@
             <icon name="download"/>&nbsp;&nbsp;Download
         </b-button>
         <span class="subheader">Data</span>
-        <p style="margin-bottom: 5px;"><small>The following data objects are published as part of this release.</small></p>
+        <p style="margin-bottom: 5px;">
+            <small>The following data objects are published as part of this release.</small>
+        </p>
         <div style="border-top: 1px solid #eee; padding: 3px 0;" v-for="(set, idx) in release.sets" :key="idx">
             <b-row>
                 <b-col cols="5">
-                    <datatypetag :datatype="set.datatype" :tags="set.datatype_tags" :clickable="false"/>
+                    <datatypetag :datatype="set.datatype" :tags="set.datatype_tags" :clickable="false" style="font-size: 90%;"/>
                     <small v-if="set.subjects && set.subjects.length == 0">({{set.count||0}} obj <span style="opacity:0.5">|</span> {{(set.size||0)|filesize}})</small>
                 </b-col>
                 <b-col>
@@ -38,8 +40,10 @@
     <a :name="'release.'+release.name+'.preprocessing'" class="anchor"></a>
     <div v-if="release.apps && release.apps.length">
         <span class="subheader">Preprocessing</span>
-        <small>The following Apps were used to generate the data in this release.</small>
-        <div v-for="rec in release.apps" :key="rec._id" style="margin-top: 10px; padding: 10px; box-shadow: 1px 1px 4px #0003; border-radius: 5px;">
+        <p style="margin-bottom: 5px">
+            <small>The following Apps were used to generate the data in this release.</small>
+        </p>
+        <div v-for="rec in release.apps" :key="rec._id" class="box">
             <app :appid="rec.app" :branch="rec.task.service_branch" :compact="true" :showDoi="true">
                 <taskconfig :task="rec.task" style="margin: 10px; margin-right: 100px;"/>
             </app>
@@ -50,9 +54,11 @@
     <a :name="'release.'+release.name+'.analysis'" class="anchor"></a>
     <div v-if="release.gaarchives && release.gaarchives.length > 0">
         <span class="subheader">Analysis</span>
-        <small>The following jupyter notebook implements the post-processing and analysis step.</small>
-        <div v-for="ga in release.gaarchives" :key="ga._id">
-            <gaarchive :gaarchive="ga" style="margin: 5px 0;"/>
+        <p style="margin-bottom: 5px;">
+            <small>The following jupyter notebook implements the post-processing and analysis step.</small>
+        </p>
+        <div v-for="ga in release.gaarchives" :key="ga._id" class="box">
+            <gaarchive :gaarchive="ga"/>
             <p style="float: right; margin-bottom: 0px;">
                 <b-badge pill class="bigpill clickable" @click="downloadNotebook(ga)">
                     <icon name="download" style="opacity: 0.4;"/>&nbsp;&nbsp;&nbsp;<small>Dowload this notebook</small>
@@ -142,7 +148,7 @@ export default {
 .subheader {
     font-weight: bold;
     font-size: 16px;
-    display: block;
+    display: inline-block;
     margin: 5px 0;
     opacity: 0.7;
     padding-bottom: 5px;
@@ -152,5 +158,13 @@ export default {
 .anchor { 
     position:relative;
     top:-80px;
+}
+.box {
+    margin-top: 10px;
+    margin-left: -20px;
+    margin-right: -10px;
+    padding: 10px;
+    box-shadow: 1px 1px 4px #0003;
+    border-radius: 5px;
 }
 </style>
