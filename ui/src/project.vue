@@ -564,31 +564,29 @@ export default {
         },
         detailTab: function() {
             if(this.detailTab == 4) {
-                this.axios.get("/comment",{params : {
-                    project : this.selected._id
-                }}).then(res=>{
+                this.axios.get("/comment/project/"+this.selected._id).then(res=>{
                     var url = Vue.config.event_ws+"/subscribe?jwt="+Vue.config.jwt;
                     this.ws = new ReconnectingWebSocket(url, null, {reconnectInterval: 3000});
                     /* for updating comments */
-                    this.ws.onopen = (e)=>{
-                        this.ws.send(JSON.stringify({
-                            bind: {
-                                ex: "warehouse",
-                                key: "comment_project.*.*."+this.selected._id,
-                            },
-                        }));
-                        this.ws.onmessage = (json)=>{
-                            let event = JSON.parse(json.data);
-                            let index = this.comments.findIndex(comment=>
-                                comment._id == event.msg._id);
-                            if(index == -1) this.comments.push(event.msg);
-                            else {
-                                if(!event.msg.removed) this.comments.splice(index, 1, event.msg);
-                                else this.comments.splice(index, 1);
-                            }
-                        };
-                };
-                    this.comments = res.data.comments;
+                    // this.ws.onopen = (e)=>{
+                    //     this.ws.send(JSON.stringify({
+                    //         bind: {
+                    //             ex: "warehouse",
+                    //             key: "comment_project.*.*."+this.selected._id,
+                    //         },
+                    //     }));
+                    //     this.ws.onmessage = (json)=>{
+                    //         let event = JSON.parse(json.data);
+                    //         let index = this.comments.findIndex(comment=>
+                    //             comment._id == event.msg._id);
+                    //         if(index == -1) this.comments.push(event.msg);
+                    //         else {
+                    //             if(!event.msg.removed) this.comments.splice(index, 1, event.msg);
+                    //             else this.comments.splice(index, 1);
+                    //         }
+                    //     };
+                // };
+                    this.comments = res.data;
                 }).catch(err=>{
                     console.error(err);
                     this.$notify({text: err.response.data.message, type: 'error' });
@@ -713,9 +711,8 @@ export default {
                     this.comment = "";
                     this.editcommentID = null;
                 })
-            }else{
+            } else {
                 this.$http.post('comment/', {
-                        user_id : ""+Vue.config.user.sub,
                         project : this.selected._id,
                         comment : this.comment
                 }).then(res=>{
@@ -769,13 +766,31 @@ export default {
                             key: "project.update.*."+projectId,
                         }
                     }));
+                    this.ws.send(JSON.stringify({
+                        bind: {
+                                ex: "warehouse",
+                                key: "comment_project.*.*."+projectId,
+                        }
+                    }));
                     this.ws.onmessage = (json)=>{
                         var event = JSON.parse(json.data);
-                        for(let k in event.msg) {
-                            if(this.selected[k] === undefined) this.selected[k] = event.msg[k];
+                        console.log(event);
+                        if(event.msg.comment) {
+                            let index = this.comments.findIndex(comment=>
+                                comment._id == event.msg._id);
+                            if(index == -1) this.comments.push(event.msg);
                             else {
-                                if(typeof this.selected[k] == 'object') Object.assign(this.selected[k], event.msg[k]);
-                                else this.selected[k] = event.msg[k];
+                                if(!event.msg.removed) this.comments.splice(index, 1, event.msg);
+                                else this.comments.splice(index, 1);
+                            }
+                        } else {
+                            for(let k in event.msg) {
+                                if(this.selected[k] === undefined) this.selected[k] = event.msg[k];
+                                else {
+                                    if(typeof this.selected[k] == 'object') Object.assign(
+                                        this.selected[k], event.msg[k]);
+                                    else this.selected[k] = event.msg[k];
+                                }
                             }
                         }
                     };
