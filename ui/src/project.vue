@@ -688,7 +688,7 @@ export default {
 
         isauthor(sub) {
             if(!Vue.config.user) return false;
-            if(Vue.config.user.sub == sub) return true;
+            if(Vue.config.user.sub == sub || Vue.config.hasRole('admin')) return true;
         },
 
         remove() {
@@ -712,9 +712,8 @@ export default {
                     this.editcommentID = null;
                 })
             } else {
-                this.$http.post('comment/', {
-                        project : this.selected._id,
-                        comment : this.comment
+                this.$http.post('comment/project/'+this.selected._id, {
+                    comment : this.comment
                 }).then(res=>{
                     console.log(res.data);
                     // Vue.set(this.comments, this.comments.length, res.data);
