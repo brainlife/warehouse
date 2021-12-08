@@ -1232,10 +1232,27 @@ exports.isadmin = (user, rec)=>{
     return false;
 }
 
+exports.isguest = (user, rec)=> {
+    if(user) {
+        if(user.scopes.warehouse && ~user.scopes.warehouse.indexOf('admin')) return true;
+        if(rec.guests && ~rec.guests.indexOf(user.sub.toString())) return true;
+    }
+    return false;
+}
+
 exports.ismember = (user, rec)=>{
     if(user) {
         if(user.scopes.warehouse && ~user.scopes.warehouse.indexOf('admin')) return true;
         if(rec.members && ~rec.members.indexOf(user.sub.toString())) return true;
+    }
+    return false;
+}
+
+exports.isuserpartofProject = (user, rec) =>{
+    if(user) {
+        if(exports.ismember(user,rec) || 
+        exports.isadmin(user,rec) || 
+        exports.isguest(user,rec)) return true;
     }
     return false;
 }
