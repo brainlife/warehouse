@@ -2,47 +2,44 @@
 
 const express = require('express');
 const router = express.Router();
-const winston = require('winston');
-const request = require('request');
-const axios = require('axios');
 
 const config = require('../config');
-const logger = winston.createLogger(config.logger.winston);
 const db = require('../models');
 const common = require('../common');
 
 
 /**
  * @apiGroup Comment
- * @api {get} /comment  Get Comment List of Particular Project
+ * @api {get} /comment/project/:projectid  Get Comment List of Particular Project
  * @apiHeader {String} authorization 
  *                              A valid JWT token "Bearer: xxxxx"
  * @apiSuccess {Object}            List of Comments 
  */
 
-router.get('/', common.jwt({credentialsRequired: true}), (req, res, next) =>{
-    if(!req.query.project) return next("project not defined");
-    let project = req.query.project;
-    if(project) {
-        const find = {"project": project, "removed" : false};
-        db.Comments.find(find).exec((err, recs)=>{
+router.get('/project/:id', common.jwt(), (req, res, next) =>{
+    if(!req.params.id) return next("project id not defined");
+    let projectID = req.params.id;
+    let limit = req.query.limit || 100;
+    db.Projects.findById(projectID, async (err, project)=>{
+        if(err) return next(err);
+        if(!project) return res.status(404).end();
+        if(!common.ismember(req.user, project)) return res.status(401).end("you are not a member of this project");
+        const find = {"project": projectID, "removed" : false};
+        db.Comments.find(find).limit(+limit).exec((err, recs)=>{
             // console.log(recs);
             if(err) return next(err);
             // console.log(recs);
             db.Comments.countDocuments(find).exec((err, count)=>{
                 if(err) return next(err);
-                res.json({
-                    comments : recs, 
-                    count
-                });
+                res.json(recs);
             })
-        })
-    }
+        }); 
+    });
 });
 
 /**
  * @apiGroup Comments
- * @api {post} /comment Post comment on a Project
+ * @api {post} /comment/project/:id Post comment on a Project
  * @apiParam {user_id} userID 
  * @apiParam {String} comment
  * @apiParam {project} projectID
@@ -50,17 +47,23 @@ router.get('/', common.jwt({credentialsRequired: true}), (req, res, next) =>{
  */
 
 router.post('/', common.jwt(), function(req, res, next) {
-    if(!req.body.user_id) return next('user id missing');
     if(!req.body.comment) next("comment string missing");
     if(!req.body.project) next("project id missing");
-    let comment = new db.Comments(req.body);
-    comment.save((err)=>{
+    let projectID = req.body.project;
+    db.Projects.findById(projectID, async (err, project)=>{
+        if(err) return next(err);
+        if(!project) return res.status(404).end();
+
+        let comment = new db.Comments(req.body);
+        comment.user_id = req.user.sub;
+        comment.save((err)=>{
         if(err) return next(err);
         // comment = JSON.parse(JSON.stringify(comment));
         // console.log(comment);
-        common.publish("comment_project.create."+comment.user_id+"."+comment.project,comment);
+        common.publish("comment_project.create."+req.user.sub+"."+comment.project,comment);
         res.json(comment);
-    })
+        })
+    });
 });
 
 
@@ -83,7 +86,7 @@ router.patch('/:id', common.jwt(), (req, res, next) =>{
         comment.comment = updatedComment;
         comment.save((err, comment)=>{
             if(err) return next(err);
-            common.publish("comment_project.update."+comment.user_id+"."+comment.project, comment);
+            common.publish("comment_project.update."+req.user.sub+"."+comment.project, comment);
             res.json(comment);
         })
     })
@@ -107,7 +110,7 @@ router.delete('/:id', common.jwt(), (req, res)=>{
         comment.removed = true;
         comment.save((err, comment)=>{
             if(err) return next(err);
-            common.publish("comment_project.update."+comment.user_id+"."+comment.project, comment);
+            common.publish("comment_project.update."+req.user.sub+"."+comment.project, comment);
             res.json("removed comment");
         })
     })
