@@ -2,119 +2,165 @@
 <div class="appedit">
     <div class="page-header" v-if="ready">
         <b-container>
+            <!--
             <p style="float: right; color: #999;">
                 <b-button size="sm" variant="outline-secondary" href="https://brainlife.io/docs/apps/introduction" target="doc">
                     <icon name="book"/> Documentation
                 </b-button>
             </p>
-            <h4 style="margin-right: 150px" v-if="$route.params.id == '_'">New App</h4>
-            <h4 style="margin-right: 150px" v-else>{{app.name}}</h4>
+            -->
+            <h4 v-if="$route.params.id == '_'">New App</h4>
+            <h4 v-else>{{app.name}}</h4>
+            <b-tabs class="brainlife-tab" v-model="tab">
+                <b-tab title="Detail"/>
+                <b-tab title="Configurations"/>
+                <b-tab title="Inputs"/>
+                <b-tab title="Outputs"/>
+            </b-tabs>
         </b-container>
     </div>
 
-    <div class="page-content" v-if="ready">
-        <b-form>
+    <b-form class="page-content" v-if="ready">
         <b-container>
-            <h4>Detail</h4>
-            <b-row>
-                <b-col cols="3">
-                    <span class="form-header">Name *</span>
-                </b-col> 
-                <b-col>
-                    <b-form-input type="text" v-model="app.name" placeholder="Name of application" required/>
-                    <br>
-                </b-col> 
-            </b-row>
+            <br>
 
-            <b-row>
-                <b-col cols="3">
-                    <span class="form-header">Description Override</span>
-                </b-col> 
-                <b-col>
-                    <b-form-textarea v-model="app.desc_override" placeholder="(Leave empty to use github repo description)" :rows="3" :max-rows="6"></b-form-textarea>
-                    <p>
-                        <small class="text-muted">
-Normally, the App description is automatically pulled from github repo description that you specify below. If you'd like to use different description from the one used for your github repo, you can enter it here to override the github repo description.</small>
-                    </p>
-                </b-col>
-            </b-row>
+            <div v-if="tab == 0">
+                <b-row>
+                    <b-col cols="3">
+                        <span class="form-header">Name *</span>
+                    </b-col> 
+                    <b-col>
+                        <b-form-input type="text" v-model="app.name" placeholder="Name of application" required/>
+                        <br>
+                    </b-col> 
+                </b-row>
 
-            <b-row>
-                <b-col cols="3">
-                    <span class="form-header">Maintainers</span>
-                </b-col> 
-                <b-col>
-                    <contactlist v-model="app.admins"></contactlist>
-                    <p>
-                        <small class="text-muted">Users who are currently maintaining this App on brainlife.</small>
-                    </p>
-                </b-col>
-            </b-row>
+                <b-row>
+                    <b-col cols="3">
+                        <span class="form-header">Description Override</span>
+                    </b-col> 
+                    <b-col>
+                        <b-form-textarea v-model="app.desc_override" placeholder="(Leave empty to use github repo description)" :rows="3" :max-rows="6"></b-form-textarea>
+                        <p>
+                            <small class="text-muted">
+    Normally, the App description is automatically pulled from github repo description that you specify below. If you'd like to use different description from the one used for your github repo, you can enter it here to override the github repo description.</small>
+                        </p>
+                    </b-col>
+                </b-row>
 
-            <b-row>
-                <b-col cols="3">
-                    <span class="form-header">Avatar</span>
-                </b-col> 
-                <b-col>
-                    <b-form-input type="text" v-model="app.avatar" placeholder="Image URL of application avatar"/>
-                    <br>
-                </b-col>
-            </b-row>
+                <b-row>
+                    <b-col cols="3">
+                        <span class="form-header">Maintainers</span>
+                    </b-col> 
+                    <b-col>
+                        <contactlist v-model="app.admins"></contactlist>
+                        <p>
+                            <small class="text-muted">Users who are currently maintaining this App on brainlife.</small>
+                        </p>
+                    </b-col>
+                </b-row>
 
-            <b-row>
-                <b-col cols="3">
-                    <span class="form-header">Projects</span>
-                </b-col> 
-                <b-col cols="9">
-                    <multiprojectselecter v-model="app.projects" placeholder="(Leave it empty to make it available for all users)"/>
-                    <p>
-                        <small class="text-muted">If a private project is selected, only the member of the project can access this app</small>
-                    </p>
-                </b-col>
-            </b-row>
+                <b-row>
+                    <b-col cols="3">
+                        <span class="form-header">Avatar</span>
+                    </b-col> 
+                    <b-col>
+                        <b-form-input type="text" v-model="app.avatar" placeholder="Image URL of application avatar"/>
+                        <br>
+                    </b-col>
+                </b-row>
 
-            <b-row>
-                <b-col cols="3">
-                    <span class="form-header">Source Code</span>
-                </b-col> 
-                <b-col>
-                    <b-row>
-                        <b-col cols="7">
-                            <b-input-group prepend="https://github.com/">
-                                <b-form-input type="text" v-model="app.github" placeholder="github-org/app-name" required/>
-                            </b-input-group>
-                            <!--<small v-if="app.github" class="text-danger">No such repository found.</small>-->
-                        </b-col>
-                        <b-col>
-                            <!--
-                            <b-input-group prepend="Branch/Tag">
-                                <b-form-select v-model="app.github_branch">
-                                    <optgroup label="Branches" v-if="github_branches">
-                                        <option v-for="branch in github_branches" :key="branch" :value="branch">{{branch}}</option>
-                                    </optgroup>
-                                    <optgroup label="Tags" v-if="github_tags">
-                                        <option v-for="tag in github_tags" :key="tag" :value="tag">{{tag}}</option>
-                                    </optgroup>
-                                </b-form-select>
-                                
-                            </b-input-group>
-                            -->
-                            <branchselecter v-model="app.github_branch" :service="app.github"/>
-                        </b-col>
-                    </b-row>
-                    <br>
-                    <p v-if="app.github_branch == 'master' || app.github_branch == 'main'">
-                        <b-alert show variant="danger">You should avoid releasing an App with master/main branch. Please read <a href="https://brainlife.io/docs/apps/versioning/" target="doc">Versioning Tips</a></b-alert>
-                    </p>
-                </b-col>
-            </b-row>
+                <b-row>
+                    <b-col cols="3">
+                        <span class="form-header">Projects</span>
+                    </b-col> 
+                    <b-col cols="9">
+                        <multiprojectselecter v-model="app.projects" placeholder="(Leave it empty to make it available for all users)"/>
+                        <p>
+                            <small class="text-muted">If a private project is selected, only the member of the project can access this app</small>
+                        </p>
+                    </b-col>
+                </b-row>
 
-            <h4>
-                <a style="float: right;" href="https://brainlife.io/docs/apps/register/#configuration-parameters" target="doc"><icon name="book"/></a>
-                Configuration
-            </h4>
-            <div>
-                <div v-for="(param, idx) in config_params" v-if="param.pid" :key="param.pid" style="margin:5px;">
+                <b-row>
+                    <b-col cols="3">
+                        <span class="form-header">Source Code</span>
+                    </b-col> 
+                    <b-col>
+                        <b-row>
+                            <b-col cols="7">
+                                <b-input-group prepend="https://github.com/">
+                                    <b-form-input type="text" v-model="app.github" placeholder="github-org/app-name" required/>
+                                </b-input-group>
+                                <!--<small v-if="app.github" class="text-danger">No such repository found.</small>-->
+                            </b-col>
+                            <b-col>
+                                <!--
+                                <b-input-group prepend="Branch/Tag">
+                                    <b-form-select v-model="app.github_branch">
+                                        <optgroup label="Branches" v-if="github_branches">
+                                            <option v-for="branch in github_branches" :key="branch" :value="branch">{{branch}}</option>
+                                        </optgroup>
+                                        <optgroup label="Tags" v-if="github_tags">
+                                            <option v-for="tag in github_tags" :key="tag" :value="tag">{{tag}}</option>
+                                        </optgroup>
+                                    </b-form-select>
+                                    
+                                </b-input-group>
+                                -->
+                                <branchselecter v-model="app.github_branch" :service="app.github"/>
+                            </b-col>
+                        </b-row>
+                        <br>
+                        <p v-if="app.github_branch == 'master' || app.github_branch == 'main'">
+                            <b-alert show variant="danger">You should avoid releasing an App with master/main branch. Please read <a href="https://brainlife.io/docs/apps/versioning/" target="doc">Versioning Tips</a></b-alert>
+                        </p>
+                    </b-col>
+                </b-row>
+
+                <hr>
+                <b-row>
+                    <b-col cols="3">
+                        <span class="form-header">Deprecated By</span>
+                    </b-col> 
+                    <b-col>
+                        <small>This App has been deprecated(obsoleted) by the following App.</small>
+
+                        <v-select 
+                            v-model="app.deprecated_by" 
+                            label="name" 
+                            :filterable="false" 
+                            :options="search_apps" 
+                            @search="search_app" 
+                            placeholder="Please enter App name to search">
+                            <template slot="option" slot-scope="app">
+                                <app :app="app" :compact="true" :clickable="false"/>
+                            </template>
+                            <template slot="selected-option" slot-scope="app">
+                                {{app.name}}
+                            </template>
+                        </v-select>
+                        <app v-if="app.deprecated_by" :app="app.deprecated_by" :compact="true" :clickable="false" style="margin-top: 5px;"/>
+                    </b-col>
+                </b-row>
+
+                <br>
+                <b-form-group label="" horizontal>
+                    <b-form-checkbox v-if="app._id" v-model="app.removed">
+                        Removed <br>
+                        <small>This App won't be listed as available Apps, but users can still find it through a direct URL / DOI</small>
+                    </b-form-checkbox>
+                </b-form-group>
+            </div>
+
+            <div v-if="tab == 1"> <!--configuration-->
+                <!--
+                <h4>
+                    <a style="float: right;" href="https://brainlife.io/docs/apps/register/#configuration-parameters" target="doc"><icon name="book"/></a>
+                    Configuration
+                </h4>
+                -->
+                <div v-for="(param, idx) in config_params" v-if="param.pid" :key="param.pid" style="margin-bottom: 20px;">
                     <b-card>
                          <div class="right-buttons">
                             <div class="button" v-if="idx > 0 && config_params.length > 1" @click="move_param_up(idx)">
@@ -255,11 +301,11 @@ Normally, the App description is automatically pulled from github repo descripti
                                 </div>
                                 <b-row>
                                     <b-col cols="2">
-                                        <div class="text-muted">Value</div>
+                                        <div class="text-muted">Value *</div>
                                         <b-form-input type="text" v-model="option.value"></b-form-input>
                                     </b-col>
                                     <b-col>
-                                        <div class="text-muted">Label</div>
+                                        <div class="text-muted">Label *</div>
                                         <b-form-input type="text" v-model="option.label"></b-form-input>
                                     </b-col>
                                     <b-col>
@@ -272,24 +318,29 @@ Normally, the App description is automatically pulled from github repo descripti
                             <b-button @click="param.options.push({ desc: '', label: '', value: '' })" size="sm" variant="outline-secondary">Add Enum Option</b-button>
                         </div>
                     </b-card>
-                </div>
-            </div>
-            <p>
-                <b-dropdown size="sm" text="Add Configuration Parameter">
-                    <b-dropdown-item @click="add_param('string')">String</b-dropdown-item>
-                    <b-dropdown-item @click="add_param('number')">Number</b-dropdown-item>
-                    <b-dropdown-item @click="add_param('boolean')">Boolean</b-dropdown-item>
-                    <b-dropdown-item @click="add_param('enum')">Enum (Multiple Choice)</b-dropdown-item>
-                    <!--integer is deprecated-->
-                </b-dropdown>
-            </p>
+                </div><!--config-param loop-->
+
+                <p>
+                    <b-dropdown size="sm" text="Add Configuration Parameter" variant="success">
+                        <b-dropdown-item @click="add_param('string')">String</b-dropdown-item>
+                        <b-dropdown-item @click="add_param('number')">Number</b-dropdown-item>
+                        <b-dropdown-item @click="add_param('boolean')">Boolean</b-dropdown-item>
+                        <b-dropdown-item @click="add_param('enum')">Enum (Multiple Choice)</b-dropdown-item>
+                        <!--integer is deprecated-->
+                    </b-dropdown>
+                </p>
+
+            </div><!--configuration tab-->
             
-            <h4>
-                <a style="float: right;" href="https://brainlife.io/docs/apps/register/#input-datasets" target="doc"><icon name="book"/></a>
-                Input
-            </h4>
-            <div style="border-left: 4px solid #007bff; padding-left: 10px;">
-                <div v-for="(input, idx) in input_datasets" v-if="input.pid" :key="input.pid" style="margin-bottom: 10px;">
+            <!--input tab-->
+            <div v-if="tab == 2">
+                <!--
+                <h4>
+                    <a style="float: right;" href="https://brainlife.io/docs/apps/register/#input-datasets" target="doc"><icon name="book"/></a>
+                    Input
+                </h4>
+                -->
+                <div v-for="(input, idx) in input_datasets" v-if="input.pid" :key="input.pid" style="margin-bottom: 20px;">
                     <b-card style="position: relative;">
                         <b-row v-if="is_raw(input)">
                             <b-col>
@@ -376,7 +427,8 @@ Normally, the App description is automatically pulled from github repo descripti
                             <small>If your app only use part of this input data object, you can reduce the scratch disk usage and shorten the data transfer time by specifying file paths that you need for your app.</small>
                             <small>Enter each file paths required by your App in separate lines. You can use "*" to match wildcards. All path should be relative to the root of datatype hierarchy. </small>
                             <b-textarea v-model.trim="input.includes" placeholder="(leave it blank to transfer the entire data object)"/>
-                            <p style="background-color: #ddd; border-radius: 5px; padding: 10px; margin: 5px 0;">
+
+                            <p class="objectsub-hint">
                                 <small>For example, if you need to access neuro/freesurfer's stats directory and aparc parcellation files, enter something like the following.</small>
                                 <small><pre>output/stats
 output/mri/aparc* </pre></small>
@@ -387,16 +439,20 @@ output/mri/aparc* </pre></small>
                     </b-card>
                 </div>
                 <p>
-                    <b-button size="sm" @click="add_dataset(input_datasets)" variant="primary">Add Input</b-button>
+                    <b-button size="sm" @click="add_dataset(input_datasets)" variant="success">Add Input</b-button>
                 </p>
-            </div>
+            </div><!--input tab-->
             
+            <!--
             <h4>
                 <a style="float: right;" href="https://brainlife.io/docs/apps/register/#output-datasets" target="doc"><icon name="book"/></a>
                 Output
             </h4>
-            <div style="border-left: 4px solid #28a745; padding-left: 10px;">
-                <div v-for="(output, idx) in output_datasets" v-if="output.pid" :key="output.pid" style="margin-bottom: 10px; position: relative;">
+            -->
+
+            <!--output tab-->
+            <div v-if="tab == 3">
+                <div v-for="(output, idx) in output_datasets" v-if="output.pid" :key="output.pid" style="margin-bottom: 20px; position: relative;">
                     <b-card>
                          <div style="position: absolute; right: 20px; top: 5px;">
                             <div class="button" v-if="idx > 0 && output_datasets.length > 1" @click="swap_outputs(idx, idx - 1)">
@@ -457,32 +513,6 @@ output/mri/aparc* </pre></small>
                 </p>
             </div>
 
-            <hr>
-
-            <b-form-group label="Deprecated By" horizontal>
-                <small>This App has been deprecated(obsoleted) by the following App.</small>
-
-                <v-select 
-                    v-model="app.deprecated_by" 
-                    label="name" 
-                    :filterable="false" 
-                    :options="search_apps" 
-                    @search="search_app" 
-                    placeholder="Please enter App name to search">
-                    <template slot="option" slot-scope="app">
-                        <app :app="app" :compact="true" :clickable="false"/>
-                    </template>
-                    <template slot="selected-option" slot-scope="app">
-                        {{app.name}}
-                    </template>
-                </v-select>
-                <app v-if="app.deprecated_by" :app="app.deprecated_by" :compact="true" :clickable="false" style="margin-top: 5px;"/>
-            </b-form-group>
-            
-            <b-form-group label="" horizontal>
-                <b-form-checkbox v-if="app._id" v-model="app.removed">Removed <small>This App won't be listed as available Apps, but users can still find it through a direct URL / DOI</small></b-form-checkbox>
-            </b-form-group>
-
             <!--make sure submit area won't cover the Add Output button-->
             <br>
             <br>
@@ -493,7 +523,6 @@ output/mri/aparc* </pre></small>
             <br>
             <br>
         </b-container>
-        </b-form>
         
         <div class="page-footer">
             <b-container>
@@ -501,7 +530,7 @@ output/mri/aparc* </pre></small>
                 <b-button @click="submit" variant="primary" :disabled="submitting"><icon v-if="submitting" name="cog" spin/> Submit</b-button>
             </b-container>
         </div>
-    </div><!--page-content-->
+    </b-form>
 </div>
 </template>
 
@@ -549,6 +578,7 @@ export default {
             ready: false,  //ready to render form
             submitting: false,
 
+            tab: 0,
 
             config: Vue.config
         }
@@ -934,41 +964,65 @@ export default {
 
 <style scoped>
 .page-header {
-padding: 10px 0px;    
+    padding: 10px 0;
+    height: 85px;
 }
 .page-header h4 {
-opacity: 0.8;
+    opacity: 0.8;
+    margin-bottom: 1px;
 }
 .file-map {
-margin-bottom: 7px;
+    margin-bottom: 7px;
 }
+.page-content {
+    margin-top: 40px;
+}
+/*
 .page-content h4 {
-color: #999;
-border-bottom: 1px solid #ddd;
-margin: 10px 0px;
-padding: 10px 0px;
+    color: #999;
+    border-bottom: 1px solid #ddd;
+    margin: 10px 0px;
+    padding: 10px 0px;
 }
+*/
 
 .file-transition-enter-active {
-transition: all .45s;
+    transition: all .45s;
 }
 .file-transition-enter {
-opacity: 0;
-transform: translate(0, -100%);
+    opacity: 0;
+    transform: translate(0, -100%);
 }
 
 .move-item-enter-active, .move-item-leave-active {
-transition: none;
+    transition: none;
 }
 .move-item-move {
-transition: transform .45s;
+    transition: transform .45s;
 }
 .right-buttons {
-float: right;
-position: relative;
-z-index: 2;
+    float: right;
+    position: relative;
+    z-index: 2;
 }
+
 h5 {
-font-size: 18px;
+    font-size: 18px;
+    opacity: 0.7;
 }
+
+p.objectsub-hint {
+    background-color: #ddd;
+    border-radius: 5px;
+    padding: 10px;
+    margin: 5px 0;
+    display: none;
+}
+textarea:focus ~ .objectsub-hint {
+    position: absolute;
+    z-index: 3;
+    box-shadow: 1px 1px 3px #0003;
+    display: block;
+}
+
 </style>

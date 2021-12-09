@@ -2,199 +2,203 @@
 <div v-if="resource">
     <div class="page-header">
         <b-container>
-            <h4 style="margin-right: 150px">{{resource.name||'No name'}}</h4>
+            <h4>{{resource.name||'No name'}}</h4>
+            <b-tabs class="brainlife-tab" v-model="tab">
+                <b-tab title="Detail"/>
+                <b-tab title="Apps">
+                    <template v-slot:title>
+                        Apps
+                        <span style="opacity: 0.6; font-size: 80%">{{resource.config.services.length}}</span>
+                    </template>
+                </b-tab>
+            </b-tabs>
         </b-container>
     </div>
-    <div class="page-content">
-        <br>
-        <b-form>
+    <b-form class="page-content">
         <b-container>
-            <b-row>
-                <b-col cols="3">
-                    <span class="form-header"></span>
-                </b-col> 
-                <b-col cols="9">
+            <br>
+
+            <div v-if="tab == 0">
+                <div style="padding-bottom: 10px">
                     <b-form-checkbox v-model="resource.active">Active</b-form-checkbox>
                     <p>
                         <small>Uncheck this to temporarily disable this resource.</small>
                     </p>
-                </b-col>
-            </b-row>
+                </div>
 
-            <b-row>
-                <b-col cols="3">
-                    <span class="form-header">Name *</span>
-                </b-col> 
-                <b-col cols="9">
-                    <b-input type="text" v-model="resource.name" placeholder="Resource Name"/>
-                    <br>
-                </b-col>
-            </b-row>
-
-            <b-row v-if="resource.user_id">
-                <b-col cols="3">
-                    <span class="form-header">Owner</span>
-                </b-col> 
-                <b-col cols="9">
-                    <p>
-                        <contact :id="resource.user_id"/>
+                <b-row>
+                    <b-col cols="3">
+                        <span class="form-header">Name *</span>
+                    </b-col> 
+                    <b-col cols="9">
+                        <b-input type="text" v-model="resource.name" placeholder="Resource Name"/>
                         <br>
-                        <small class="text-muted">Users who registered this resource and administer this resource.</small>
-                    </p>
-                </b-col>
-            </b-row>
+                    </b-col>
+                </b-row>
 
-            <b-row>
-                <b-col cols="3">
-                    <span class="form-header">Administrators</span>
-                </b-col> 
-                <b-col>
-                    <contactlist v-model="resource.admins"></contactlist>
-                    <p>
-                        <small class="text-muted">Users who can administer this resource.</small>
-                    </p>
-                </b-col>
-            </b-row>
+                <b-row v-if="resource.user_id">
+                    <b-col cols="3">
+                        <span class="form-header">Owner</span>
+                    </b-col> 
+                    <b-col cols="9">
+                        <p>
+                            <contact :id="resource.user_id"/>
+                            <br>
+                            <small>Users who registered this resource and administer this resource.</small>
+                        </p>
+                    </b-col>
+                </b-row>
 
-            <b-row>
-                <b-col cols="3">
-                    <span class="form-header">Avatar *</span>
-                </b-col> 
-                <b-col cols="9">
-                    <b-input type="text" v-model="resource.avatar" placeholder="Avatar URL"/>
+                <b-row>
+                    <b-col cols="3">
+                        <span class="form-header">Administrators</span>
+                    </b-col> 
+                    <b-col>
+                        <contactlist v-model="resource.admins"></contactlist>
+                        <p>
+                            <small>Users who can administer this resource.</small>
+                        </p>
+                    </b-col>
+                </b-row>
+
+                <b-row>
+                    <b-col cols="3">
+                        <span class="form-header">Resource Sharing</span>
+                    </b-col> 
+                    <b-col cols="9">
+                        <v-select v-if="projects" 
+                            :options="projects" v-model="resource.gids" 
+                            :reduce="r=>r.group_id" label="name" multiple/>
+                        <p>
+                            <small>You can share this resource with other members of the projects that you are an administrator of.</small>
+                        </p>
+                    </b-col>
                     <br>
-                </b-col>
-            </b-row>
+                    <br>
+                </b-row>
 
-            <b-row>
-                <b-col cols="3">
-                    <span class="form-header">Description</span>
-                </b-col> 
-                <b-col cols="9">
-                    <p>
-                        <b-form-textarea :rows="4" v-model="resource.config.desc"/>
-                    </p>
-                </b-col>
-            </b-row>
+                <b-row>
+                    <b-col cols="3">
+                        <span class="form-header">Avatar</span>
+                    </b-col> 
+                    <b-col cols="9">
+                        <b-input type="text" v-model="resource.avatar" placeholder="Avatar URL"/>
+                        <br>
+                    </b-col>
+                </b-row>
 
-            <b-row>
-                <b-col cols="3">
-                    <span class="form-header">Apps</span>
-                </b-col> 
-                <b-col cols="9">
-                    <p>
-                        <b-input-group prepend="Max Jobs">
-                            <b-input type="text" v-model="resource.config.maxtask"/>
-                        </b-input-group>
-                        <small>Number of max jobs to be submitted concurrently on this resource. Set to a higher number (10?) for batch schedulers.</small>
-                    </p>
+                <b-row>
+                    <b-col cols="3">
+                        <span class="form-header">Description</span>
+                    </b-col> 
+                    <b-col cols="9">
+                        <p>
+                            <b-form-textarea :rows="4" v-model="resource.config.desc"/>
+                        </p>
+                    </b-col>
+                </b-row>
 
-                    <div v-for="(service, idx) in resource.config.services" :key="idx" style="margin-bottom: 5px;">
-                        <b-button @click="remove_service(service)" size="sm" text="Button" variant="danger" style="float: right;"><icon name="trash"/></b-button>
-                        <div style="padding-right: 50px;">
-                            <b-input-group prepend="Name">
-                                <b-form-input v-model="service.name" list="service_names" trim></b-form-input>
-                                <datalist id="service_names">
-                                    <option v-for="service in service_names">{{service}}</option>
-                                </datalist>
-                                <b-input-group-prepend is-text>Score</b-input-group-prepend>
-                                <b-form-input v-model="service.score"></b-form-input>
+                <b-row>
+                    <b-col cols="3">
+                        <span class="form-header">Citation</span>
+                    </b-col> 
+                    <b-col cols="9">
+                        <p>
+                            <b-form-textarea :rows="3" v-model="resource.citation"/>
+                            <small>Enter citation that should be used to acknowledge the use of this resource (in <a href="http://www.bibtex.org/Format/" target="bigtex">bibtex</a> format)</small>
+                        </p>
+                    </b-col>
+                </b-row>
+
+                <b-row>
+                    <b-col cols="3">
+                        <span class="form-header">Login Node</span>
+                    </b-col> 
+                    <b-col cols="9">
+                        <p>
+                            <b-input-group prepend="Username *">
+                                <b-form-input v-model="resource.config.username"></b-form-input>
+                                <b-input-group-prepend is-text>Hostname *</b-input-group-prepend>
+                                <b-form-input v-model="resource.config.hostname"></b-form-input>
                             </b-input-group>
-                        </div>
+                            <small>Login node used to access this resource</small>
+                        </p>
+                        <p>
+                            <b-input-group prepend="I/O Hostname">
+                                <b-form-input v-model="resource.config.io_hostname"></b-form-input>
+                            </b-input-group>
+                            <small>Optional hostname used to transfer data in and out of this resource</small>
+                        </p>
+                        <p>
+                            <b-input-group prepend="Workdir *">
+                                <b-form-input v-model="resource.config.workdir"></b-form-input>
+                            </b-input-group>
+                            <small>Shared directory to host instance and task directories.</small>
+                        </p>
+                        <p>
+                            <b-input-group prepend="ENV">
+                                <b-form-textarea :rows="3" v-model="envs_"/>
+                            </b-input-group>
+                            <small>Enter JSON dictionary with key/value pairs. The specified ENV will be set on all jobs running on this resource.</small>
+                        </p>
+                    </b-col>
+                </b-row>
+
+                <b-row>
+                    <b-col cols="3">
+                        <span class="form-header">SSH Key</span>
+                    </b-col> 
+                    <b-col cols="9">
+                        <p>
+                            <b>Public Key</b>
+                            <br>
+                            <small>The following ssh public key should be stored in ~/.ssh/authorized_keys on this resource.</small>
+                            <b-form-textarea :rows="6" v-model="resource.config.ssh_public"/>
+                        </p>
+                        <p>
+                            <b>Private Key</b>
+                            <br>
+                            <small>Brainlife will use the following private key to access this resource.</small>
+                            <b-form-checkbox v-if="resource.config.enc_ssh_private === true" v-model="resource.config.enc_ssh_private">Use the current private key</b-form-checkbox>
+                            <b-form-textarea v-if="resource.config.enc_ssh_private !== true" :rows="3" v-model="resource.config.enc_ssh_private"/>
+                        </p>
+                        <p>
+                            <b-btn @click="reset_sshkey" size="sm">Generate Keypair</b-btn>
+                        </p>
+
+                    </b-col>
+                </b-row>
+
+            </div><!--end of detail tab-->
+
+            <div v-if="tab == 1">
+                <p>
+                    <b-input-group prepend="Max Jobs">
+                        <b-input type="text" v-model="resource.config.maxtask"/>
+                    </b-input-group>
+                    <small>Number of max jobs that can be submitted concurrently on this resource. Set to a higher number (10?) for batch schedulers.</small>
+                </p>
+
+                <p>
+                    <small>The following Apps are allowed to run on this resource.</small>
+                </p>
+                <div v-for="(service, idx) in resource.config.services" :key="idx" style="margin-bottom: 5px;">
+                    <b-button @click="remove_service(service)" size="sm" text="Button" variant="danger" style="float: right;"><icon name="trash"/></b-button>
+                    <div style="padding-right: 50px;">
+                        <b-input-group prepend="Name">
+                            <b-form-input v-model="service.name" list="service_names" trim></b-form-input>
+                            <datalist id="service_names">
+                                <option v-for="service in service_names">{{service}}</option>
+                            </datalist>
+                            <b-input-group-prepend is-text>Score</b-input-group-prepend>
+                            <b-form-input v-model="service.score"></b-form-input>
+                        </b-input-group>
                     </div>
-                    <p>
-                        <b-btn @click="add_service" size="sm">Add App</b-btn>
-                    </p>
-                </b-col>
-            </b-row>
-
-
-            <b-row v-if="config.hasRole('admin')">
-                <b-col cols="3">
-                    <span class="form-header">Group Sharing</span>
-                </b-col> 
-                <b-col cols="9">
-                    <p>
-                        <!--
-                        <b-form-checkbox v-model="global">Allow all users to access this resource</b-form-checkbox>
-                        <b-form-checkbox v-model="archive_access">Archive access</b-form-checkbox>
-                        -->
-                        <tageditor v-model="resource.gids"/> 
-                        <small>Only the brainlife administrator can edit this</small>
-                    </p>
-                    
-                </b-col>
-            </b-row>
-
-            <b-row>
-                <b-col cols="3">
-                    <span class="form-header">Login Node</span>
-                </b-col> 
-                <b-col cols="9">
-                    <p>
-                        <b-input-group prepend="Username *">
-                            <b-form-input v-model="resource.config.username"></b-form-input>
-                            <b-input-group-prepend is-text>Hostname *</b-input-group-prepend>
-                            <b-form-input v-model="resource.config.hostname"></b-form-input>
-                        </b-input-group>
-                        <small>Login node used to access this resource</small>
-                    </p>
-                    <p>
-                        <b-input-group prepend="I/O Hostname">
-                            <b-form-input v-model="resource.config.io_hostname"></b-form-input>
-                        </b-input-group>
-                        <small>Optional hostname used to transfer data in and out of this resource</small>
-                    </p>
-                    <p>
-                        <b-input-group prepend="Workdir *">
-                            <b-form-input v-model="resource.config.workdir"></b-form-input>
-                        </b-input-group>
-                        <small>Shared directory to host instance and task directories.</small>
-                    </p>
-                    <p>
-                        <b-input-group prepend="ENV">
-                            <b-form-textarea :rows="3" v-model="envs_"/>
-                        </b-input-group>
-                        <small>Enter JSON dictionary with key/value pairs. The specified ENV will be set on all jobs running on this resource.</small>
-                    </p>
-                </b-col>
-            </b-row>
-
-            <b-row>
-                <b-col cols="3">
-                    <span class="form-header">SSH Key</span>
-                </b-col> 
-                <b-col cols="9">
-                    <p>
-                        <b>Public Key</b>
-                        <small>The following ssh public key should be stored in ~/.ssh/authorized_keys on this resource.</small>
-                        <b-form-textarea :rows="6" v-model="resource.config.ssh_public"/>
-                    </p>
-                    <p>
-                        <b>Private Key</b>
-                        <small>Brainlife will use the following private key to access this resource.</small>
-                        <b-form-checkbox v-if="resource.config.enc_ssh_private === true" v-model="resource.config.enc_ssh_private">Use the current private key</b-form-checkbox>
-                        <b-form-textarea v-if="resource.config.enc_ssh_private !== true" :rows="3" v-model="resource.config.enc_ssh_private"/>
-                    </p>
-                    <p>
-                        <b-btn @click="reset_sshkey" size="sm">Generate Keypair</b-btn>
-                    </p>
-
-                </b-col>
-            </b-row>
-
-            <b-row>
-                <b-col cols="3">
-                    <span class="form-header">Citation</span>
-                </b-col> 
-                <b-col cols="9">
-                    <p>
-                        <b-form-textarea :rows="3" v-model="resource.citation"/>
-                        <small>Enter citation that should be used to acknowledge the use of this resource (in bibtex format)</small>
-                    </p>
-                </b-col>
-            </b-row>
-
+                </div>
+                <p>
+                    <b-btn @click="add_service" variant="success" size="sm">Add App</b-btn>
+                </p>
+            </div>
             <div class="page-footer">
                 <b-container>
                     <b-button variant="danger" @click="remove" v-if="this.resource._id" style="float: left;"><icon name="trash"/> Remove</b-button>
@@ -206,12 +210,15 @@
             <br>
             <br>
             <br>
+            <br>
+            <br>
         </b-container>
+        <!--
         <div v-if="config.debug">
             <pre>{{JSON.stringify(resource, null, 4)}}</pre>
         </div>
-        </b-form>
-    </div><!--page-content-->
+        -->
+    </b-form>
 </div>
 </template>
 
@@ -236,6 +243,10 @@ export default {
     data () {
         return {
             resource: null,
+
+            projects: null,
+
+            tab: 0,
 
             envs_: "",
             //global: false, 
@@ -262,6 +273,25 @@ export default {
             this.service_names.sort();
         });
 
+        //load project that user can share this resource with
+        this.$http.get('project', {params: {
+            find: JSON.stringify({
+                removed: false,
+                admins: Vue.config.user.sub,
+            }),
+            select: 'name desc group_id',
+        }}).then(res=>{
+            this.projects = res.data.projects;
+
+            //brainlife admin can add global user (but only site admin can *add* it)
+            //if(this.config.hasRole('admin')) {
+            this.projects.push({
+                group_id: 1, 
+                name: "(Public Resource)", 
+                desc: "Share this resource with all brainlife users - only brainlife administrator can add this"
+            });
+        });
+
         if(this.$route.params.id !== '_') {
             //TODO use resource_cache mixin?
             this.$http.get(Vue.config.amaretti_api+'/resource', {params: {
@@ -282,6 +312,7 @@ export default {
                     services: [],
                     maxtask: 1,
                 },
+                gids: [],
             };
             this.reset_sshkey();
         }
@@ -378,10 +409,18 @@ export default {
 
 <style scoped>
 .page-header {
-    padding: 10px 20px;    
+    padding: 10px 0;
+    height: 85px;
 }
 .page-header h4 {
     opacity: 0.8;
+    margin-bottom: 1px;
+}
+.page-content {
+    margin-top: 40px;
+}
+small {
+    opacity: 0.5;
 }
 </style>
 

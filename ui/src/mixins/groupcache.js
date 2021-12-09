@@ -12,9 +12,10 @@ export default {
                 return this.$http.get(Vue.config.auth_api+'/groups?find='+where);
             }, (err, res)=>{
                 if(err) return cb(err);
+                if(!res.data.length) return cb("couldn't load group id:"+id);
                 cb(null, res.data[0]);
             });
-        },  
+        },
     }
 }
 

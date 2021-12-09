@@ -526,11 +526,10 @@ function handle_task(task, cb) {
                         deps_config: [ {task: task._id, subdirs} ],
                         config: {
                             requests, 
-                            
                             _public: task.config._public,
                         },
                         remove_date,
-
+                        gids: [config.archive.gid],
                         nice: task.nice, //mirror niceness of the parent
                     }),
                     headers: {

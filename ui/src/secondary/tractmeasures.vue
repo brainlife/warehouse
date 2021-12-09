@@ -1,7 +1,7 @@
 <template>
 <div>
     <small v-if="!mode">Loading..</small>
-    <small v-if="mode == 'unknown'">Unknown datatype tag {{datatype_tags}}</small>
+    <small v-if="mode == 'unknown'">Unknown datatype tag {{datatype_tags}}. It should be set to either macro or profiles</small>
     <div v-if="mode == 'profiles'">
         <ExportablePlotly v-if="profileGraph" :data="profileGraph" :layout="profileLayout"/>
         <br>
@@ -137,8 +137,6 @@ export default {
     methods: {
 
         async drawProfiles() {
-            console.log("drawing profiles");
-
             //load reference for selected structure
             const refdata = await fetch('https://raw.githubusercontent.com/brainlife/reference/master/neuro/tractmeasures/'+this.structure+'.json').then(res=>res.json());
 
@@ -259,24 +257,6 @@ export default {
                 //.forEach(async structure=>{
                 const structure = this.structures[i];
                 const refdata = await fetch('https://raw.githubusercontent.com/brainlife/reference/master/neuro/tractmeasures/'+structure+'.json').then(res=>res.json());
-                /*
-                StreamlineCount: {data: Array(99)}
-                StreamlineLengthTotal: {data: Array(99)}
-                TotalCountProportion: {data: Array(99)}
-                TotalVolumeProportion: {data: Array(99)}
-                TotalWiringProportion: {data: Array(99)}
-                ad: {mean: Array(50), min: Array(50), max: Array(50), sd: Array(50), 5_percentile: Array(50), …}
-                averageFullDisplacement: {data: Array(99)}
-                avgerageStreamlineLength: {data: Array(99)}
-                fa: {mean: Array(50), min: Array(50), max: Array(50), sd: Array(50), 5_percentile: Array(50), …}
-                fullDisplacementStdev: {data: Array(99)}
-                md: {mean: Array(50), min: Array(50), max: Array(50), sd: Array(50), 5_percentile: Array(50), …}
-                rd: {mean: Array(50), min: Array(50), max: Array(50), sd: Array(50), 5_percentile: Array(50), …}
-                source: "ping-siemens"
-                streamlineLengthStdev: {data: Array(99)}
-                structurename: "rightThalamicoCerebellar"
-                volume: {data: Array(100)}
-                */
                 refdata.forEach(ref=>{
                     if(!sources[ref.source]) sources[ref.source] = {x: [], y: []};
                     if(this.measure.id == "StreamlineCountProportion") {
@@ -362,7 +342,7 @@ export default {
         this.measures = [];
         for(let key in this.data[0]) {
             //?_mean should be treated as ?
-            if(key.includes("_mean")) key = key.split("_")[0];
+            //if(key.includes("_mean")) key = key.split("_")[0];
 
             if(!this.labels[key]) {
                 console.log("don't have label infor for", key);
@@ -384,7 +364,7 @@ export default {
 
         //split into different structures
         this.structures = {};
-        this.data.forEach(row=>{
+        this.data.forEach((row, idx)=>{
             if(!this.structures[row.structureID]) {
                 //initialize with empty arrays
                 this.structures[row.structureID] = {x: []};
@@ -397,6 +377,7 @@ export default {
                 this.structures[row.structureID][measure.id].push(row[measure.id]);
             });
         });
+
 
         //set graph mode based on datatype tags
         if(this.datatype_tags.includes("profiles")) {

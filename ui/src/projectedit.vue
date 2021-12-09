@@ -239,17 +239,36 @@
                 </b-col> 
             </b-row>
 
-            <h5>Resource Restriction</h5>
-            <b-form-checkbox v-model="project.limitResource">
+            <h5>Compute Resources</h5>
+            <span class="form-header">Public Resources</span>
+            <p>
+                <small>By default, data in this project will be computed on brainlife's public resources. Please see the Resources page for a list of public resources.</small>
+            </p>
+            <b-form-checkbox v-model="project.noPublicResource">
+                <p style="padding-left: 15px">Do not compute on brainlife public resources<br>
+                    <small>Please check this if you'd like to only process data on your private resources or shared resources.</small>
+                </p>
+            </b-form-checkbox>
+            <br>
+
+            <div v-if="sharedResources && sharedResources.length">
+                <span class="form-header">Shared Resources</span>
+                <small>The following resources are allowed to be used for this project.</small>
+                <resource v-for="resource in sharedResources" :key="resource._id" :resource="resource"/>
+            </div>
+
+            <!--
+            <b-form-checkbox v-model="project.resources">
                 Only submit jobs on private resources shared for this project<br>
                 <small>Private resources can be shared among members of other projects. By selecting this option, jobs submitted on this project will only run on those resources. Please make sure that Apps you are trying to submit are enabled on specified resources.</small>
             </b-form-checkbox>
             <br>
             <div style="margin-left: 20px">
                 <span class="form-header">Shared Resources</span>
-                <b-alert variant="secondary" :show="sharedResources && sharedResources.length == 0">There are no resources assigned to this project.</b-alert>
+                <b-alert variant="secondary" :show="!sharedResources || sharedResources.length == 0">There are no resources assigned to this project.</b-alert>
                 <resource v-for="resource in sharedResources" :key="resource._id" :resource="resource"/>
             </div>
+            -->
 
             <div class="page-footer">
                 <b-container>
@@ -306,7 +325,7 @@ export default {
         editor: require('vue2-ace-editor'),
     },
 
-    data () {
+    data() {
         return {
             xnatTestResult: null,
 
@@ -367,8 +386,6 @@ export default {
                     find: JSON.stringify({_id: this.$route.params.id})
                 }}).then(res=>{
                     this.project = res.data.projects[0];
-                    console.log("loaded project");
-                    console.dir(this.project);
 
                     //initialize missing fields (mainly for backward compatibility)
                     if(!this.project.agreements) Vue.set(this.project, "agreements", []); 
@@ -378,16 +395,15 @@ export default {
                     });
 
                     //load shared resources
-                    if(this.project.group_id) {
-                        this.$http.get(Vue.config.amaretti_api+'/resource', {params: {
-                            find: {
-                                gids: this.project.group_id,
-                            },
-                            select: 'name active config.hostname config.desc status avatar',
-                        }}).then(res=>{
-                            this.sharedResources = res.data.resources;
-                        });
-                    }
+                    this.$http.get(Vue.config.amaretti_api+'/resource', {params: {
+                        find: {
+                            gids: this.project.group_id,
+                            removed: false,
+                        },
+                        select: 'name active config.hostname config.desc status avatar',
+                    }}).then(res=>{
+                        this.sharedResources = res.data.resources;
+                    });
                 });
 
                 //load participant info

@@ -209,10 +209,10 @@
                             <span v-if="config.default" style="opacity: 0.5;"> = {{config.default}}</span><br>
 
                             <!-- for enum-->
-                            <div v-if="config.options">
+                            <div v-if="config.options" style="font-size: 90%;">
                                 <ul>
                                     <li v-for="(o, idx) in config.options" :key="idx">
-                                        {{o.label}}<small style="">({{o.value}})</small>
+                                        {{o.label}} <small style="font-size:80%;" v-if="o.value != o.label">({{o.value}})</small>
                                         <small>{{o.desc}}</small> <b-badge v-if="o.value == config.default">Default</b-badge>
                                     </li>
                                 </ul>

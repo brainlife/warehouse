@@ -75,8 +75,7 @@ export default {
     font-size: 14px;
     font-family: 'Merriweather Sans',Georgia,sans-serif;
 }
-.serif,
-.readme {
+.serif {
     font-family: Merriweather,Georgia,serif;
 }
 .readme {
@@ -482,9 +481,6 @@ small {
 
 .readme .table {
     font-size: 90%;
-    /*
-    table-layout: fixed;
-    */
     background-color: white;
 }
 .readme .table th {

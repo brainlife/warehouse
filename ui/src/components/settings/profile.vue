@@ -1,8 +1,8 @@
 <template>
 <div>
-    <!-- flickers
+    <!-- what is the point of this? We should redirect user who hasn't agreed to another page
     <b-alert :show="profile.private.aup === false" variant="danger" style="margin-bottom: 20px">
-        <icon name="exclamation-circle"/> Please agree to the brainlife.io acceptable use policy listed below.
+        Please agree to the brainlife.io acceptable use policy listed below.
     </b-alert>
     -->
 

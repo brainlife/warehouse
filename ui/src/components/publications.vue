@@ -61,6 +61,7 @@
                             </p>
                         </div>
                     </div>
+                    <br>
                 </div>
                 <!--space to make sure add button won't overwrap the pub list-->
                 <p style="padding-top: 100px;">&nbsp;</p>

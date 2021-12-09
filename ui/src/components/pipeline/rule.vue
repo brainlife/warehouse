@@ -73,7 +73,12 @@
     <b-row>
         <b-col :cols="4">
             <div>
-                <div class="button" @click="updateStats" style="float: right;" title="Reprocess this rule now"><icon name="sync-alt"/></div>
+                <div v-if="rule.handle_date" class="button" style="float: right;" @click="openlog">
+                    <icon name="list-alt"/>&nbsp;Detail
+                </div>
+                <div class="button" @click="updateStats" style="float: right;" title="Reprocess this rule now">
+                    <icon name="sync-alt"/>
+                </div>
                 &nbsp;
                 &nbsp;
                 <b-form-checkbox switch v-model="rule.active" size="lg" @change="flip" name="something" style="display: inline-block">
@@ -92,12 +97,14 @@
             <div style="height: 20px; margin-bottom: 3px">
                 <stateprogress v-if="(rule.active || numJobsRunning)" :states="rule.stats.tasks"/>
             </div>
-            <div v-if="numJobsRunning" class="button" style="float: right; position: relative; top: -3px;" @click="removeJobs"> <icon name="trash"/>&nbsp;&nbsp;Remove All Jobs </div>
+            <div v-if="numJobsRunning" class="button" style="float: right; position: relative; top: -3px;" @click="removeJobs"> 
+                <icon name="trash"/>&nbsp;&nbsp;Remove Jobs
+            </div>
             <span class="form-header" style="float: left;">Processing</span>
         </b-col>
         <b-col :cols="2" v-if="rule.stats && rule.stats.counts">
-            <h5 style="height: 20px; margin-bottom: 3px">{{rule.stats.counts.finished}}</h5>
-            <span class="form-header">Finished</span>
+            <h5 style="height: 20px; margin-bottom: 3px">{{rule.stats.counts.archived}}</h5>
+            <span class="form-header">Archived</span>
         </b-col>
     </b-row>
 </div>
@@ -188,6 +195,10 @@ export default {
             });;
         },
 
+        openlog() {
+            this.$root.$emit("rulelog.open", this.rule);
+        },
+
         //event_handler listens to task update (including task removal) but sometimes
         //status gets stuck (maybe something wrong with event not received, or debouncer has
         //has some issue? This allows user to force update_rule_stats
@@ -216,9 +227,10 @@ export default {
     border-radius: 4px;
     background-color: white;
     transition: 0.3s background-color;
+    border-left: 4px solid #007bff;
 }
 .rule-inactive {
-    opacity: 0.6;
+    border-left: 4px solid #0005;
 }
 hr {
     margin-top: 8px;

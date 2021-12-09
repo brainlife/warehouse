@@ -19,6 +19,7 @@
         <galauncher/>
         <gaarchiver/>
         <rulemodal/>
+        <rulelogmodal/>
         <pipelinegroupmodal/>
 
         <dataladimporter/>
@@ -50,6 +51,7 @@ export default {
         dataladimporter: ()=>import('@/modals/dataladimporter'),
         ezbidsimporter: ()=>import('@/modals/ezbidsimporter'),
         rulemodal: ()=>import('@/modals/rule'),
+        rulelogmodal: ()=>import('@/modals/rulelog'),
         pipelinegroupmodal: ()=>import('@/modals/pipelinegroup'),
     },
     data() {
