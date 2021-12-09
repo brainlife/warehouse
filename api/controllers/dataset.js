@@ -1113,6 +1113,7 @@ router.post('/stage', common.jwt({secret: config.express.pubkey}), (req, res, ne
                     service : "brainlife/app-stage",
                     instance_id : req.body.instance_id,
                     config: _config,
+                    gids: [config.archive.gid],
                     max_runtime: 1000*3600, //1 hour should be enough?
                 },
                 headers: {
@@ -1818,6 +1819,7 @@ router.post('/finalize-upload', common.jwt({secret: config.express.pubkey}), (re
             axios.post(config.amaretti.api+"/task", {
                 service: "brainlife/app-archive-secondary",
                 instance_id: task.instance_id,
+                gids: [config.archive.gids],
                 deps_config: [ {task: task._id} ],
                 config: {
                     requests: [request ], 

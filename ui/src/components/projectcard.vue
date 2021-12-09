@@ -30,7 +30,7 @@
         </b-row>
     </div>
     <div class="instances" v-if="showInstanceStats">
-        <stateprogress v-if="project.stats && project.stats.instances && !project.openneuro" 
+        <stateprogress v-if="project.stats && project.stats.instances" 
             :states="project.stats.instances" height="3px" :show_label="false"/>
         <div v-else style="height: 3px"></div>
     </div>

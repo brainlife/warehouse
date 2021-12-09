@@ -191,6 +191,7 @@ exports.wait_task = function(req, task_id, cb) {
 }
 
 //TODO - I should create more generic version of this
+//galauncher api does something similar
 exports.issue_archiver_jwt = async function(user_id) {
 
     //load user's gids so that we can add warehouse group id (authorized to access archive)
@@ -202,10 +203,10 @@ exports.issue_archiver_jwt = async function(user_id) {
             authorization: "Bearer "+config.warehouse.jwt,
         }
     });
-    
+
     ///add warehouse group that allows user to submit
     gids = gids.concat(config.archive.gid);  
-    
+
     //issue user token with added gids priviledge
     let {jwt: user_jwt} = await rp.get({
         url: config.auth.api+"/jwt/"+user_id,
@@ -327,6 +328,7 @@ exports.archive_task_outputs = async function(user_id, task, outputs, cb) {
                     service: "brainlife/app-archive",
                     //service_branch: "1.1", //why did we do this?
                     instance_id: task.instance_id,
+                    gids: [config.archive.gid],
                     config: {
                         datasets: dataset_configs,
                     },

@@ -2,9 +2,9 @@
 <div>
     <div class="page-header">
         <div class="search-box onRight">
-                <b-form-input v-model="query" type="text" placeholder="Search Publications" @input="changeQueryDebounce" class="input"/>
-                <icon name="search" class="search-icon" scale="1.5"/>
-                <icon name="times" class="clear-search" scale="1.5" @click="clearQuery()" v-if="query"/>
+            <b-form-input v-model="query" type="text" placeholder="Search Publications" @input="changeQueryDebounce" class="input"/>
+            <icon name="search" class="search-icon" scale="1.5"/>
+            <icon name="times" class="clear-search" scale="1.5" @click="clearQuery()" v-if="query"/>
         </div>
     </div>
     <div class="page-content">

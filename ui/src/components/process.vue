@@ -15,7 +15,7 @@
 
     <div ref="process" class="process onRight" :style="{left: splitter_pos+'px'}">
         <p class="loading" v-if="loading"><icon name="cog" scale="1.25" spin/> Loading...</p>
-        <b-alert variant="secondary" :show="!loading && tasks && tasks.length == 0">Please stage datasets by clicking &nbsp;&nbsp;<b-button size="sm" variant="outline-success"><icon name="cube"/> Stage Data</b-button>&nbsp;&nbsp;button below.</b-alert>
+        <b-alert variant="secondary" :show="!loading && tasks && tasks.length == 0">Please start by &nbsp;&nbsp;<b-button size="sm" variant="success" @click="newdataset"><icon name="cube"/> Staging Data</b-button> to process.</b-alert>
         <div v-if="!loading && tasks">
             <div class="task-area" v-for="task in tasks.filter(t=>Boolean(t.config._tid))" :key="task._id" :id="task._id">
                 <div v-if="!task.show" class="task-id" @click="toggle_task(task)">
@@ -142,6 +142,8 @@
                             </span>
                             <small class="ioid" v-if="task.app">({{compose_desc(task.app.outputs, output.id)}})</small>
 
+                            <dtv v-if="task.status == 'finished' && output.dtv_task" :task="output.dtv_task" :output="output"/>
+
                             <div v-if="findarchived(task, output).length > 0">
                                 <ul class="archived">
                                     <li v-for="dataset in findarchived(task, output)" :key="dataset._id" 
@@ -176,8 +178,6 @@
                                     <pre style="max-height: 300px; background-color: #eee; padding: 5px 10px;">{{JSON.stringify(findProductMeta(task, output.id), null, 4)}}</pre>
                                 </p>
                             </b-collapse>
-
-                            <dtv v-if="task.status == 'finished' && output.dtv_task" :task="output.dtv_task" :output="output"/>
 
                             <div v-if="output.secondary_task" style="font-size: 90%; padding: 5px 10px; border: 2px solid #eee; border-radius: 5px; margin-top: 5px; color: #888;">
                                 <span v-if="output.secondary_task.finish_date">
@@ -645,13 +645,14 @@ export default {
                             if(!t) {
                                 this.tasks.push(task); 
                                 this.set_dtv_task(task);
-                            }
-                            if(t.status != task.status && task.status == "finished") {
-                                this.loadProducts([task]);
-                            }
-                            for(var k in task) {
-                                if(k == "config") continue;
-                                t[k] = task[k]; //apply updates
+                            } else {
+                                if(t.status != task.status && task.status == "finished") {
+                                    this.loadProducts([task]);
+                                }
+                                for(var k in task) {
+                                    if(k == "config") continue;
+                                    t[k] = task[k]; //apply updates
+                                }
                             }
                         } else if(task.service == "brainlife/app-archive-secondary") {
                             this.set_secondary_task(task);
@@ -864,6 +865,12 @@ export default {
             //set last minutes stuff
             task.instance_id = this.instance._id;
             task.config._tid = this.next_tid();
+
+            //figure out which gids to use
+            task.gids = [this.project.group_id];
+            if(!this.project.noPublicResource) task.gids.push(1);
+            console.log("using gids", task.gids);
+
             this.$http.post(Vue.config.amaretti_api+'/task', task).then(res=>{
                 var _task = res.data.task;
             }).catch(this.notify_error);

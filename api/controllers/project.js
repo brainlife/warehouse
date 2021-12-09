@@ -67,6 +67,13 @@ router.get('/', common.jwt({credentialsRequired: false}), (req, res, next)=>{
     .lean()
     .exec((err, recs)=>{
         if(err) return next(err);
+        /*
+        console.log("query----");
+        console.debug(JSON.stringify(find, null, 4));
+        console.log("results----");
+        console.dir(recs);
+        */
+
         db.Projects.countDocuments(find).exec((err, count)=>{
             if(err) return next(err);
             res.json({
@@ -104,10 +111,8 @@ router.get('/query',common.jwt({credentialsRequired: false}), (req, res, next)=>
         if(err) return next(err);
         let projects = await db.Projects.find({
             removed: false, 
-            //openneuro: {$exists: false}
             _id: {$in: projectIds},
         })
-        //.select('-readme -mag -relatedPapers -stats.resources -stats.apps')
         .select(select)
         .populate('stats.datasets.datatypes_detail.type', 'name desc')
         .lean();

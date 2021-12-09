@@ -183,17 +183,10 @@ router.get('/:task_id/*', common.jwt({
  */
 router.post('/launchga', common.jwt(), (req, res, next)=>{
     if(!req.body.instance_id) return next("instance_id is not set");
-    /*
-    if(!req.body.container) return next("container name is not set");
-    if(!req.body.tag) return next("container tag is not set");
-    */
     if(!req.body.config) return next("please set config");
     if(!req.body.config.container) return next("please set contianer (with tag)");
 
     let _config = Object.assign({}, req.body.config);
-
-    //let task_config = {};
-    //Object.assign(task_config, req.body.config);
 
     let instance = null;
     let jwt = null;
@@ -245,24 +238,17 @@ router.post('/launchga', common.jwt(), (req, res, next)=>{
 
         //submit the launcher
         next=>{
-            /*
-            task_config.container = req.body.container+":"+req.body.tag;
-            task_config.group = instance.group_id;
-            task_config.app = req.body.app; //like.. soichih/ga-test
-            */
             _config.group = instance.group_id;
-
-
-            const future = new Date("2100-07-27");
-
+            const farfuture = new Date("2100-07-27");
             axios.post(config.amaretti.api+"/task", {
                 name: req.body.name,
                 desc: req.body.desc,
                 service : "brainlife/ga-launcher",
                 service_branch: "master", //TODO
                 instance_id : instance._id,
+                gids: [config.groupanalysis.gid],
                 max_runtime: 24*1000*3600, //auto stop after 24 hours .
-                remove_date: future, //set it far enough into future to prevent it from getting it removed
+                remove_date: farfuture, //set it far enough into future to prevent it from getting it removed
                 deps_config: req.body.deps_config,
                 config: _config,
             }, {

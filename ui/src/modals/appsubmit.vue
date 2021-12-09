@@ -417,7 +417,6 @@ export default {
                             desc: this.form.desc||this.app.name,
                             config: {
                                 brainlife: true,
-                                //type: "v2",
                             },
                         }).then(resolve);
                     });
@@ -430,7 +429,7 @@ export default {
                     instance_id: instance._id,
                     dataset_ids: all_dataset_ids,
                 });
-            }).then(res=>{
+            }).then(async res=>{
                 var download_task = res.data.task;
 
                 //start constructing config
@@ -442,7 +441,6 @@ export default {
                 });
 
                 for(let input_id in this.form.inputs) {
-
                     //find config.json key mapped to this input
                     let keys = []; 
                     for(var key in this.app.config) {
@@ -504,9 +502,22 @@ export default {
                     config._outputs.push(output_req);
                 });
 
+                //check to see if we need to include global resource
+                const resProjects = await this.$http.get('project', {params: {
+                    find: JSON.stringify({
+                        _id: this.project,
+                    }),
+                    select: "noPublicResource",
+                }});
+                const project = resProjects.data.projects[0];
+                const gids = [instance._group_id];
+                if(!project.noPublicResource) gids.push(1);
+                console.log("using gids", gids);
+                
                 //now submit the main task
                 let submissionParams = {
                     instance_id: instance._id,
+                    gids,
                     name: this.app.name,
                     service: this.app.github,
                     service_branch: this.app.github_branch,
@@ -518,8 +529,8 @@ export default {
                 };
                 if (this.form.advanced.resource) submissionParams.preferred_resource_id = this.form.advanced.resource;
                 if (this.form.advanced.branch) submissionParams.service_branch = this.form.advanced.branch;
-                
-                return this.$http.post(Vue.config.wf_api+'/task', submissionParams);
+
+                return this.$http.post(Vue.config.amaretti_api+'/task', submissionParams);
             }).then(res=>{
                 this.$router.push("/project/"+this.project+"/process/"+instance._id);
             }).catch(err=>{
@@ -527,27 +538,6 @@ export default {
                 this.$notify({ text: err, type: 'error' });
             });
         },
-
-        /*
-        request_notifications(instance, task_id) {
-            var url = document.location.origin+document.location.pathname+"/process/"+instance._id;
-
-            //for success
-            return this.$http.post(Vue.config.event_api+"/notification", {
-                event: "wf.task.finished",
-                handler: "email",
-                config: {
-                    task_id,
-                    subject: "[brainlife.io] Process Completed",
-                    message: "Hello!\n\nI'd like to inform you that your process has completed successfully.\n\nPlease visit "+url+" to view your result.\n\nBrain-life.org Administrator"
-                },
-            }).then(res=>{
-                console.log("requested notification");
-            }).catch(err=>{
-                console.error(err);
-            });
-        }
-        */
     }
 }
 </script>

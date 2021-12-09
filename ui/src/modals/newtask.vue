@@ -221,9 +221,6 @@ export default {
 
     created() {
         this.$root.$on("newtask.open", info=>{
-            //console.log("recieved from client");
-            //console.dir(info);
-
             //receive info from client
             this.datasets = info.datasets;
             this.project = info.project;
@@ -450,7 +447,7 @@ export default {
                             config[k] = "no such file_id:"+node.file_id;
                             return;
                         }
-                        
+
                         //use file.filename/dirname path, 
                         //unless filemapping from the input dataset is provided
                         var base = "../"+dataset.task._id;
@@ -480,9 +477,6 @@ export default {
                     });
                 }
             }
-
-            //console.log(config);
-            //throw "debug";
         },
 
         //select all datasets that meets datatype requirement of 'input', that comes from task with name:task_name

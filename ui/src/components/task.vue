@@ -29,7 +29,7 @@
                         <icon name="chart-area"/>
                     </div>
                     <b-popover :target="'popover'+task._id" triggers="hover">
-                        <template slot="title"><span class="text-muted"><small>ID</small> {{task._id}}</span></template>
+                        <template slot="title"><span class="text-muted"><small>ID: {{task._id}}</small></span></template>
                         <p>
                             <contact :id="task.user_id" size="small"/>
                         </p>

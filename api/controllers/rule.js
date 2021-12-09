@@ -8,7 +8,6 @@ const fs = require('fs');
 const request = require('request');
 
 const config = require('../config');
-const logger = winston.createLogger(config.logger.winston);
 const db = require('../models');
 const common = require('../common');
 const mongoose = require('mongoose');
@@ -63,11 +62,11 @@ router.get('/log/:ruleid', common.jwt(), (req, res, next)=>{
         if(!rule) return next("no such rule");
         check_access(req, rule, err=>{
             if(err) return next(err);
-            let logpath = config.warehouse.rule_logdir+"/"+rule._id.toString()+".log";
+            const logpath = config.warehouse.rule_logdir+"/"+rule._id.toString()+".json";
             fs.stat(logpath, (err, stats)=>{
                 if(err) return res.status(500).json({err});
-                let logs = fs.readFileSync(logpath, 'ascii');
-                res.json({stats, logs});
+                const log = fs.readFileSync(logpath, 'ascii');
+                res.json({stats, ...JSON.parse(log)});
             });
         });
     });

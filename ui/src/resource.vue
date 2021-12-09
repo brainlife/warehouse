@@ -58,26 +58,19 @@
                                 <icon name="play"/>&nbsp;&nbsp;&nbsp;{{tasksRunning.length}}&nbsp;&nbsp;<small>Running / {{resource.config.maxtask}} max</small>
                             </b-badge>
 
-                            <b-badge pill class="bigpill">
+                            <b-badge pill class="bigpill" v-if="resource.stats && resource.stats.total">
                                 <icon name="check"/>&nbsp;
                                 {{resource.stats.total.finished|formatNumber}} <span style="opacity: 0.5">Finished</span>
                             </b-badge>
-                            <!--
-                            <b-badge pill class="bigpill">
-                                <icon name="th-large"/>&nbsp;
-                                {{resource.stats.total.running}} Running
-                            </b-badge>
-                            -->
-                            <b-badge pill class="bigpill">
+                            <b-badge pill class="bigpill" v-if="resource.stats && resource.stats.total">
                                 <icon name="exclamation-circle"/>&nbsp;
                                 {{resource.stats.total.failed|formatNumber}} <span style="opacity: 0.5">Failed</span>
                             </b-badge>
-    
                         </p>
                         <p class="desc">{{resource.config.desc||'no description'}}</p>
                         <p style="margin-bottom: 0;">
                             <statustag :status="resource.status" style="font-size: 150%"/>
-                            <span style="padding-left: 15px; opacity: 0.7;">
+                            <span style="padding-left: 15px; opacity: 0.7;" v-if="resource.status_update">
                                 Tested <timeago :datetime="resource.status_update" :auto-update="1"/>
                             </span>
                             <pre v-if="resource.status != 'ok'" style="max-height: 300px; overflow: auto; color: #dc3545">{{resource.status_msg}}</pre>
@@ -134,7 +127,7 @@
                         <b-col cols="2">
                             <span class="form-header">Execution Counts</span>
                         </b-col>
-                        <b-col>
+                        <b-col cols="10">
                             <p>
                                 <ExportablePlotly v-if="usage_data" :data="usage_data" :layout="usage_layout"/>
                             </p>
@@ -155,13 +148,18 @@
 
                     <b-row v-if="resource.gids && resource.gids.length > 0">
                         <b-col cols="2">
-                            <span class="form-header">Groups</span>
+                            <span class="form-header">Resource Sharing</span>
                         </b-col>
                         <b-col>
                             <p>
-                                <small>Members of the following groups can run jobs on this resource</small>
+                                <small>Members of the following projects can run jobs on this resource</small>
                             </p>
-                            <group v-for="gid in resource.gids" :key="gid" :id="gid"/>
+                            <p v-if="resource.gids.includes(1)">
+                                <b>Publicly Shared</b><br>
+                                <small>This resource is shared publicly to all brainlife users.</small>
+                            </p>
+                            <group v-for="gid in resource.gids.filter(gid=>gid!=1)" :key="gid" :id="gid" style="margin-bottom: 10px;"/>
+                            <br>
                         </b-col>
                     </b-row>
 
@@ -228,9 +226,6 @@
                                 <td style="padding-right: 20px;">
                                     <div v-if="resource.stats && resource.stats.services && resource.stats.services[service.name]">
                                         <span>{{resource.stats.services[service.name].running}}</span>
-                                        <!--
-                                        <stateprogress :states="{'finished': resource.stats.services[service.name].finished, 'failed': resource.stats.services[service.name].failed}" style="margin-right: 125px;"/>
-                                        -->
                                         <small style="float: right;">{{success_rate(service.name)}}</small>
                                     </div>
                                 </td>

@@ -160,10 +160,7 @@
                     </span>
                 </p>
                 <br>
-                <div v-if="pub.readme" class="readme" style="margin-bottom: 20px;">
-                    <vue-markdown :source="pub.readme"/>
-                </div>
-                </b-col>
+                <vue-markdown :source="pub.readme" v-if="pub.readme" class="readme serif" style="margin-bottom: 20px;"/>
 
                 <release v-for="release in pub.releases" :key="release._id" :release="release" :project="pub.project"/>
                 <br>
