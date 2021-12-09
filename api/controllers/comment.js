@@ -52,9 +52,9 @@ router.post('/project/:id', common.jwt(), function(req, res, next) {
         if(err) return next(err);
         if(!project) return res.status(404).end();
         let comment = new db.Comments(req.body);
-        common.project = projectID;
+        comment.project = projectID;
         /* project is private, only let members,admins and guest comment */
-        if(project.access != "public" && !common.isuserpartofProject(req.user,project)) next("you can not comment to private project"); 
+        if(project.access == "private" && !common.isuserpartofProject(req.user,project)) next("you can not comment to private project"); 
         comment.user_id = req.user.sub;
         comment.save((err)=>{
         if(err) return next(err);
