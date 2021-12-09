@@ -171,8 +171,12 @@ function handle_rule(rule, cb) {
 
         //validate
         next=>{
-            if(!rule.project) return next("project not specified");
-            if(!rule.app) return next("app not specified");
+            if(!rule.project) {
+                return next("project not specified -- rule id:"+rule._id+" proj:"+rule.project);
+            }
+            if(!rule.app) {
+                return next("app not specified -- for rule id:"+rule._id);
+            }
 
             //TODO - load project and check to make sure it's not removed
             //I should probably do this check in some house keeping script somewhere else? go through remove project, and disable pipeline rules
@@ -914,12 +918,17 @@ function handle_rule(rule, cb) {
                     _config._outputs.push(output_req);
                 });
 
+                //figure out gids
+                const gids = [rule.project.group_id];
+                if(!rule.project.noPublicResource) gids.push(1);
+                
                 //now submit the app task!
                 request.post({
                     url: config.amaretti.api+'/task', json: true, 
                     headers: { authorization: "Bearer "+jwt },
                     body: {
                         instance_id: instance._id,
+                        gids, 
                         name: rule.app.name,
                         desc: "Submitted by pipeline rule: "+rule.app.name+" - "+rule.name,
                         service: rule.app.github,

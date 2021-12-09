@@ -38,7 +38,6 @@ router.get('/', common.jwt({credentialsRequired: false}), (req, res, next)=>{
     var select = null;
     if(req.query.select) select = req.query.select;
     
-    /*
     if(req.user && 
         req.user.scopes.warehouse && 
         ~req.user.scopes.warehouse.indexOf('admin') && 
@@ -58,7 +57,6 @@ router.get('/', common.jwt({credentialsRequired: false}), (req, res, next)=>{
     } else {
         find.access = "public"; //guest can only see public projects
     }
-    */
 
     db.Projects.find(find)
     .select(select)

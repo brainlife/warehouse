@@ -7,21 +7,25 @@
 
     <b-row>
         <b-col>
-            <p>
+            <p style="margin-bottom: 5px">
                 <b-badge v-if="!resource.gids || resource.gids.length == 0" variant="secondary" title="Private resource that's not shared with anyone.">
                     <icon name="lock" scale="0.8"/>
                 </b-badge>
+                <b-badge v-if="!resource_obj.active" variant="secondary">Inactive</b-badge>
                 <b>{{resource_obj.name}}</b>
             </p>
             <p class="desc">
                 <small>{{trim(resource_obj.config.desc)}}</small>
             </p>
+            <p>
+                <contact :id="resource_obj.user_id"/>
+            </p>
             <p style="opacity: 0.8;" v-if="resource_obj.stats">
-                <b-badge pill class="bigpill">
+                <b-badge pill class="bigpill" v-if="resource_obj.stats.services">
                     <icon name="th-large"/>&nbsp;
                     {{Object.keys(resource_obj.stats.services).length}} <span style="opacity: 0.5">Apps</span>
                 </b-badge>
-                <b-badge pill class="bigpill">
+                <b-badge pill class="bigpill" v-if="resource_obj.stats.total">
                     <icon name="check"/>&nbsp;
                     {{resource_obj.stats.total.finished|formatNumber}} <span style="opacity: 0.5">Finished</span>
                 </b-badge>
@@ -31,7 +35,7 @@
                     {{resource_obj.stats.total.running}} Running
                 </b-badge>
                 -->
-                <b-badge pill class="bigpill">
+                <b-badge pill class="bigpill" v-if="resource_obj.stats.total">
                     <icon name="exclamation-circle"/>&nbsp;
                     {{resource_obj.stats.total.failed|formatNumber}} <span style="opacity: 0.5">Failed</span>
                 </b-badge>
@@ -90,6 +94,7 @@ export default {
     mixins: [ resource_cache ],
     components: {
         statustag,
+        contact: ()=>import('@/components/contact'),
     },
     props: {
         id: String, //resource id
@@ -228,6 +233,7 @@ export default {
 <style scoped>
 .desc {
     line-height: 180%;
+    margin-bottom: 10px;
 }
 .alert {
     padding: 2px 5px;
@@ -259,10 +265,7 @@ export default {
     position: relative;
     left: -10px;
 }
-p {
-margin-bottom: 5px;
-}
 p:last-child {
-margin-bottom: 0;
+    margin-bottom: 0;
 }
 </style>

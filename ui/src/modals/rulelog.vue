@@ -159,8 +159,6 @@ export default {
                 this.stats = res.data.stats;
                 this.loading = false;
 
-                //console.dir(this.groups);
-
                 //organize groups into separate groups
                 this.stategroups.forEach(stategroup=>{
                     stategroup.groups = [];
@@ -263,7 +261,7 @@ export default {
     border: 2px solid #007bff;
 }
 .group-requested {
-    background-color: #50bff;
+    background-color: #50bfff;
     color: white;
 }
 .group-failed {

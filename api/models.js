@@ -225,6 +225,12 @@ var projectSchema = mongoose.Schema({
     }
     */
 
+    //gids of resources allowed submit jobs ([1] by default)
+    //whiteGids: [{type: Number}],
+
+    //do not execute jobs on public resources (private / shared ones only)
+    noPublicResource: { type: Boolean, default: false }, 
+
     create_date: { type: Date, default: Date.now },
     update_date: { type: Date, default: Date.now }, //added on 8/6/2021
 

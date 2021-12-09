@@ -5,7 +5,12 @@
             <h4>{{resource.name||'No name'}}</h4>
             <b-tabs class="brainlife-tab" v-model="tab">
                 <b-tab title="Detail"/>
-                <b-tab title="Apps"/>
+                <b-tab title="Apps">
+                    <template v-slot:title>
+                        Apps
+                        <span style="opacity: 0.6; font-size: 80%">{{resource.config.services.length}}</span>
+                    </template>
+                </b-tab>
             </b-tabs>
         </b-container>
     </div>
@@ -39,7 +44,7 @@
                         <p>
                             <contact :id="resource.user_id"/>
                             <br>
-                            <small class="text-muted">Users who registered this resource and administer this resource.</small>
+                            <small>Users who registered this resource and administer this resource.</small>
                         </p>
                     </b-col>
                 </b-row>
@@ -51,14 +56,30 @@
                     <b-col>
                         <contactlist v-model="resource.admins"></contactlist>
                         <p>
-                            <small class="text-muted">Users who can administer this resource.</small>
+                            <small>Users who can administer this resource.</small>
                         </p>
                     </b-col>
                 </b-row>
 
                 <b-row>
                     <b-col cols="3">
-                        <span class="form-header">Avatar *</span>
+                        <span class="form-header">Resource Sharing</span>
+                    </b-col> 
+                    <b-col cols="9">
+                        <v-select v-if="projects" 
+                            :options="projects" v-model="resource.gids" 
+                            :reduce="r=>r.group_id" label="name" multiple/>
+                        <p>
+                            <small>You can share this resource with other members of the projects that you are an administrator of.</small>
+                        </p>
+                    </b-col>
+                    <br>
+                    <br>
+                </b-row>
+
+                <b-row>
+                    <b-col cols="3">
+                        <span class="form-header">Avatar</span>
                     </b-col> 
                     <b-col cols="9">
                         <b-input type="text" v-model="resource.avatar" placeholder="Avatar URL"/>
@@ -130,11 +151,13 @@
                     <b-col cols="9">
                         <p>
                             <b>Public Key</b>
+                            <br>
                             <small>The following ssh public key should be stored in ~/.ssh/authorized_keys on this resource.</small>
                             <b-form-textarea :rows="6" v-model="resource.config.ssh_public"/>
                         </p>
                         <p>
                             <b>Private Key</b>
+                            <br>
                             <small>Brainlife will use the following private key to access this resource.</small>
                             <b-form-checkbox v-if="resource.config.enc_ssh_private === true" v-model="resource.config.enc_ssh_private">Use the current private key</b-form-checkbox>
                             <b-form-textarea v-if="resource.config.enc_ssh_private !== true" :rows="3" v-model="resource.config.enc_ssh_private"/>
@@ -144,21 +167,6 @@
                         </p>
 
                     </b-col>
-                </b-row>
-
-
-                <b-row>
-                    <b-col cols="3">
-                        <span class="form-header">Resource Sharing</span>
-                    </b-col> 
-                    <b-col cols="9">
-                        <v-select v-if="projects" 
-                            :options="projects" v-model="resource.gids" 
-                            :reduce="r=>r.group_id" label="name" multiple/>
-                        <small>You can share this resource with other members of the projects that you are an administrator of</small>
-                    </b-col>
-                    <br>
-                    <br>
                 </b-row>
 
             </div><!--end of detail tab-->
@@ -279,7 +287,7 @@ export default {
             //if(this.config.hasRole('admin')) {
             this.projects.push({
                 group_id: 1, 
-                name: "(All Brainlfie Users)", 
+                name: "(Public Resource)", 
                 desc: "Share this resource with all brainlife users - only brainlife administrator can add this"
             });
         });
@@ -410,6 +418,9 @@ export default {
 }
 .page-content {
     margin-top: 40px;
+}
+small {
+    opacity: 0.5;
 }
 </style>
 

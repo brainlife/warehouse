@@ -301,11 +301,11 @@
                                 </div>
                                 <b-row>
                                     <b-col cols="2">
-                                        <div class="text-muted">Value</div>
+                                        <div class="text-muted">Value *</div>
                                         <b-form-input type="text" v-model="option.value"></b-form-input>
                                     </b-col>
                                     <b-col>
-                                        <div class="text-muted">Label</div>
+                                        <div class="text-muted">Label *</div>
                                         <b-form-input type="text" v-model="option.label"></b-form-input>
                                     </b-col>
                                     <b-col>

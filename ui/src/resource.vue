@@ -148,17 +148,18 @@
 
                     <b-row v-if="resource.gids && resource.gids.length > 0">
                         <b-col cols="2">
-                            <span class="form-header">Sharing</span>
+                            <span class="form-header">Resource Sharing</span>
                         </b-col>
                         <b-col>
                             <p>
-                                <small>Members of the following groups can run jobs on this resource</small>
+                                <small>Members of the following projects can run jobs on this resource</small>
                             </p>
                             <p v-if="resource.gids.includes(1)">
-                                <b>Global</b><br>
-                                <small>This resource is shared globally to all brainlife users.</small>
+                                <b>Publicly Shared</b><br>
+                                <small>This resource is shared publicly to all brainlife users.</small>
                             </p>
-                            <group v-for="gid in resource.gids.filter(gid=>gid!=1)" :key="gid" :id="gid"/>
+                            <group v-for="gid in resource.gids.filter(gid=>gid!=1)" :key="gid" :id="gid" style="margin-bottom: 10px;"/>
+                            <br>
                         </b-col>
                     </b-row>
 

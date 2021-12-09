@@ -1,25 +1,15 @@
 <template>
-<div>
-    <!-- <b-badge>{{group.id}}</b-badge>-->
-    <b-badge variant="danger" v-if="!group.active">Inactive</b-badge>
-
-    <b>{{group.name}}</b>
-    <!--
-    <br>
-    <small>{{group.desc}}</small>
-    -->
-
-    <p>
+<b-row v-if="group" class="group">
+    <b-col>
+        <b-badge variant="danger" v-if="!group.active">Inactive</b-badge>
+        <b>{{group.name}}</b>
+    </b-col>
+    <b-col>
         <span v-for="c in group.admins" :key="c._id">
             <contact :fullname="c.fullname" :email="c.email"/>
         </span>
-    </p>
-
-    <!--
-    {{group.members}}
-    {{group.create_date}}
-    -->
-</div>
+    </b-col>
+</b-row>
 </template>
 
 <script>
@@ -40,18 +30,22 @@ export default {
 
     data () {
         return {
-            group: {
-            },
+            group: null,
         }
     },
 
     created: function() {
         this.groupcache(this.id, (err, group)=>{
-            this.group = group;
+            if(err) console.error(err);
+            else this.group = group;
         });
     },
 }
 </script>
 
 <style scoped>
+.group {
+    padding: 10px;
+    background-color: white;
+}
 </style>
