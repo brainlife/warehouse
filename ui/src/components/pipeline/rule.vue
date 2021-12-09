@@ -5,12 +5,12 @@
         <div class="button" @click="open"><icon name="edit"/></div>
     </div>
     -->
-    <app :app="rule.app" :branch="rule.brancn" :compact="true" :clickable="false">
+    <app :app="rule.app" :branch="rule.brancn" :compact="true">
         <div style="margin: 10px 100px 0 10px">
             <taskconfigtable :config="rule.config" :appconfig="rule.app.config" :hideDefault="true"/>
         </div>
     </app>
-   
+
     <p class="desc" v-if="rule.name">{{rule.name}}</p>
 
     <!--other metadata-->
@@ -27,7 +27,7 @@
             &nbsp;
         </div>
     </div>
- 
+
     <hr>
     <div style="margin-left: 10px;">
         <b-row>
@@ -50,6 +50,7 @@
                             :datatype="input.datatype"
                             :tags="getInputTags(input)"
                             :clickable="false"/>
+                        <!--<small>({{input.id}})</small>-->
                         <small v-for="(tag,idx) in rule.input_tags[input.id]" :key="idx"> | {{tag}} </small>
                     </div>
                     &nbsp;
@@ -60,6 +61,11 @@
                 <div v-for="output in rule.app.outputs" :key="output._id" style="display: inline-block">
                     <div v-if="outputArchived(output.id)" style="display: inline-block">
                         <datatypetag :datatype="output.datatype" :tags="output.datatype_tags" :clickable="false"/>
+                        <span v-if="output.datatype_tags_pass" title="All datatype tags from this input will also be added to output"
+                            style="color: #666; background-color: #eed;">
+                            +all <b>{{output.datatype_tags_pass}}</b> tags
+                        </span>
+                        <!--<small>({{output.id}})</small>-->
                         <small v-for="(tag,idx) in rule.output_tags[output.id]" :key="idx"> | {{tag}} </small>
                     </div>
                     &nbsp;

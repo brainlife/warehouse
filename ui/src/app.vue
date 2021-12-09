@@ -167,7 +167,8 @@
                                                 :datatype_tags="output.datatype_tags" 
                                                 :tag_pass="output.datatype_tags_pass">
                                             <template slot="tag_extra">
-                                                <span v-if="output.datatype_tags_pass" title="tag pass through from this input dataset">+ <b>{{output.datatype_tags_pass}}</b></span>
+                                                <span v-if="output.datatype_tags_pass" title="tag pass through from this input dataset"
+                                                    style="color: #666; background-color: #eee;">+ all <b>{{output.datatype_tags_pass}}</b> tags</span>
                                                 <p v-if="output.desc" style="margin-bottom: 0px; font-size: 80%;">{{output.desc}}</p>
                                             </template>
                                         </datatype>
