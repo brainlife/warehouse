@@ -22,7 +22,7 @@
         <b-row>
             <b-col class="text-muted" cols="3">Project *</b-col>
             <b-col>
-                <projectselecter canwrite="true" v-model="project" placeholder="Project you'd like to run this process in" :required="true"/> 
+                <projectselecter canwrite="true" v-model="projectId" placeholder="Project you'd like to run this process in" :required="true"/> 
                 <small>Project where you want to create a new process to execute this App.</small>
             </b-col>
         </b-row>
@@ -82,7 +82,7 @@
         
         <configform :spec="app.config" v-model="form.config"/>
         <hr>
-        <advanced :app='app' v-model='form.advanced'>
+        <advanced v-if="this.project" :app='app' v-model='form.advanced' :gids="[1, this.project.group_id]">
             <configform :spec="app.config" v-model="form.config" :advanced="true"/>
         </advanced>
         <br>
@@ -132,7 +132,9 @@ export default {
         return {
             open: false,
 
-            project: null,
+            projectId: null,
+            project: null, //loaded by projectId watch
+            
             app: null,
             no_resource: false,
 
@@ -147,6 +149,29 @@ export default {
             datasets: {}, //available datasets grouped by input._id then project_id then array of datasets
             
             config: Vue.config,
+        }
+    },
+
+    watch: {
+        async projectId() {
+            this.project = null; //forces rerendering of <advanced>
+            const resProjects = await this.$http.get('project', {params: {
+                find: JSON.stringify({
+                    _id: this.projectId,
+                }),
+                select: "group_id noPublicResource",
+            }});
+            this.project = resProjects.data.projects[0];
+
+            //create list of gids we want to use for this project
+            const gids = [this.project.group_id];
+            if(!this.project.noPublicResource) gids.push(1);
+
+            const resBest = await this.$http.get(Vue.config.amaretti_api + '/resource/best', {params: {
+                service: this.app.github,
+                gids,
+            }});
+            if(resBest.data.resource) this.no_resource = !resBest.data.resource;
         }
     },
 
@@ -173,13 +198,6 @@ export default {
                     var input = this.app.inputs[idx];
                     Vue.set(this.form.inputs, input.id, [{id: new Date().getTime(), project: null, dataset: null, loading: false}]);
                 }
-
-                return this.$http.get(Vue.config.wf_api + '/resource/best', {params: {
-                    service: this.app.github
-                }});
-            })
-            .then(res => {
-                this.no_resource = !res.data.resource;
                 this.open = true;
             })
             .catch(err=>{
@@ -385,26 +403,23 @@ export default {
                 });
             }
 
-            var project = null;
             var instance = null;
             var download = [];
 
             //load project detail for project selected and desintation project
-            let project_ids = [ this.project ]; //desintation
+            let project_ids = [ this.projectId ]; //desintation
             //for project selected for input
             for(let input_id in this.form.inputs) {
                 this.form.inputs[input_id].forEach(ps=>{
                     project_ids.push(ps.project);
                 });
             }
-
             this.$http.get('project', {params: {
                 find: JSON.stringify({
                    _id: {$in : project_ids}
                 }),
-                select: 'name group_id agreements',
+                select: 'agreements',
             }}).then(res=>{
-                project = res.data.projects.find(p=>p._id == this.project);
 
                 //make sure user has met agreements to all projects used
                 return new Promise((resolve, reject)=>{
@@ -413,7 +428,7 @@ export default {
 
                         //create an instance to run everything
                         this.$http.post(Vue.config.wf_api+'/instance', {
-                            group_id: project.group_id,
+                            group_id: this.project.group_id,
                             desc: this.form.desc||this.app.name,
                             config: {
                                 brainlife: true,
@@ -503,16 +518,8 @@ export default {
                 });
 
                 //check to see if we need to include global resource
-                const resProjects = await this.$http.get('project', {params: {
-                    find: JSON.stringify({
-                        _id: this.project,
-                    }),
-                    select: "noPublicResource",
-                }});
-                const project = resProjects.data.projects[0];
-                const gids = [instance._group_id];
-                if(!project.noPublicResource) gids.push(1);
-                console.log("using gids", gids);
+                const gids = [this.project.group_id];
+                if(!this.project.noPublicResource) gids.push(1);
                 
                 //now submit the main task
                 let submissionParams = {
@@ -532,7 +539,7 @@ export default {
 
                 return this.$http.post(Vue.config.amaretti_api+'/task', submissionParams);
             }).then(res=>{
-                this.$router.push("/project/"+this.project+"/process/"+instance._id);
+                this.$router.push("/project/"+this.projectId+"/process/"+instance._id);
             }).catch(err=>{
                 console.error(err);
                 this.$notify({ text: err, type: 'error' });

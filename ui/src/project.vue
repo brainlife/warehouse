@@ -84,22 +84,21 @@
                             <br>
                         </div>
 
-                        <span class="form-header">Public Resources</span>
-                        <div v-if="!project.noPublicResource">
-                            <h4><b-badge variant="success">Enabled</b-badge></h4>
-                            <small>Public resources will be used to run jobs submitted on this project.</small>
+                        <span class="form-header">Resources</span>
+                        <p>
+                            <small>The following resources will be used to run jobs submitted in this project</small>
+                        </p>
+                        <div v-if="!project.noPublicResource" class="resource">
+                            <h5><b-badge variant="success">Public Resources</b-badge></h5>
+                            <small>All public resources will be used to run jobs submitted on this project.</small>
                         </div>
                         <div v-if="project.noPublicResource">
-                            <h4><b-badge variant="danger">Disabled</b-badge></h4>
+                            <h4><b-badge variant="danger">No Public Resources</b-badge></h4>
                             <small>No public resources will be used to run jobs submitted on this project.</small>
                         </div>
                         <br>
 
                         <div v-if="sharedResources && sharedResources.length">
-                            <span class="form-header">Shared Resources</span>
-                            <p>
-                                <small>The following resources are allowed to be used for this project.</small>
-                            </p>
                             <div v-for="resource in sharedResources" :key="resource._id" @click="openResource(resource)" class="resource">
                                 <statustag :status="resource.status" style="float: right"/>
                                 <b>{{resource.name}}</b><br>
@@ -1108,8 +1107,13 @@ p.info .fa-icon {
 }
 .resource {
     cursor: pointer;
+<<<<<<< HEAD
     padding: 5px;
     border: 2px solid #0003;
+=======
+    padding: 8px; 
+    border: 1px solid #0003; 
+>>>>>>> upstream/master
     border-radius: 5px;
 }
 </style>

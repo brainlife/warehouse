@@ -112,7 +112,7 @@
                 <configform :spec="app.config" v-model="config"/>
 
                 <hr>
-                <advanced :app='app' v-model='advanced'>
+                <advanced :app='app' v-model='advanced' :gids="appGids">
                     <configform :spec="app.config" v-model="config" :advanced="true"/>
                 </advanced>
                 <hr>
@@ -229,7 +229,6 @@ export default {
                 this.$refs.search.focus();
             });
 
-
             //reset form
             this.app = null;
             this.valid = false;
@@ -314,6 +313,14 @@ export default {
         filter(v, ov) {
             this.update_lists();
         },
+    },
+
+    computed: {
+        appGids() {
+            const gids = [this.project.group_id];
+            if(!this.project.noPublicResource) gids.push(1);
+            return gids;
+        }
     },
 
     methods: {

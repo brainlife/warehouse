@@ -22,7 +22,7 @@
             <h4>Datasets</h4>
         </li>
         
-        <li class="divider"></li>
+        <li v-if="config.user" class="divider"></li>
 
         <!--
         <li @click="go('/ezbids')" :class="{active: active == 'ezbids'}" style="position: relative;">
@@ -46,7 +46,7 @@
             <h4>Publications</h4>
         </li>
 
-        <li class="divider"></li>
+        <li v-if="config.user" class="divider"></li>
         
         <li @click="go('/datatypes')" :class="{active: active == 'datatype'}">
             <icon name="cubes" scale="1.2"/>
@@ -58,7 +58,7 @@
             <icon name="server" scale="1.2"/>
             <h4>Resources</h4>
         </li>
-        <li class="divider"></li>
+        <li v-if="config.user" class="divider"></li>
     </ul>
 
     <ul class="items">

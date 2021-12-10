@@ -425,7 +425,7 @@ export default {
                     let archive = task.deps_config.find(t=>t.task == this.tasks.validation._id);
                     if(archive) {
                         this.$refs.modal.hide();
-                        this.$router.push("/project/"+this.project._id+"/dataset/"+task.config.datasets[0].dataset_id);
+                        this.$router.push("/project/"+this.project._id+"#object:"+task.config.datasets[0].dataset_id);
 
                         //TODO need to reload so that new subject group will show up on dataset paage..
                         //it will be nice if I can just force dataset reload (just use event?)
@@ -442,6 +442,7 @@ export default {
             //TODO why do I care which resource to run validator on?
             this.$http.get(Vue.config.amaretti_api+'/resource/best/', {params: {
                 service: this.datatype.validator,
+                gids: [1],  //should always use public?
             }}).then(res=>{
                 if(!res.data.resource) { 
                     this.$notify({ type: 'error', title: 'Server Busy', text: 'Validator service is busy. Please try again later' });

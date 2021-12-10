@@ -576,6 +576,7 @@ export default {
         find_resources(service) {
             this.$http.get(Vue.config.amaretti_api + '/resource/best', {params: {
                 service,
+                gids: [1, ...Vue.config.user.gids],
             }})
             .then(res => {
                 if(res.data.resource) this.preferred_resource = res.data.resource;

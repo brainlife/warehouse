@@ -199,7 +199,6 @@ export default {
         app: ()=>import('@/components/app'), 
         datatypetag: ()=>import('@/components/datatypetag'), 
         configform: ()=>import('@/components/configform'), 
-        //appdvanced: ()=>import('@/components/appadvanced'), 
         tageditor: ()=>import('@/components/tageditor'), 
         contact: ()=>import('@/components/contact'), 
         ExportablePlotly: ()=>import('@/components/ExportablePlotly'),

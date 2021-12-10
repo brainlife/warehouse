@@ -10,251 +10,256 @@
             </p>
             -->
             <h4>{{project.name||'No name'}}</h4>
+            <b-tabs class="brainlife-tab" v-model="tab">
+                <b-tab title="Detail"/>
+                <b-tab title="Access Control"/>
+                <b-tab title="Participants Info"/>
+                <b-tab title="Resources"/>
+            </b-tabs>
         </b-container>
     </div>
-    <div class="page-content">
-        <br>
-        <b-form @submit="submit">
+
+    <b-form @submit="submit" class="page-content">
         <b-container>
-            <h5>Project Detail</h5>
-            <b-row>
-                <b-col cols="3">
-                    <span class="form-header">Name *</span>
-                </b-col> 
-                <b-col cols="9">
-                    <b-input type="text" v-model="project.name" placeholder="Project Name" required/>
-                    <br>
-                </b-col>
-            </b-row>
+            <br>
+            <!--detail-->
+            <div v-if="tab == 0">
+                <b-row>
+                    <b-col cols="3">
+                        <span class="form-header">Name *</span>
+                    </b-col> 
+                    <b-col cols="9">
+                        <b-input type="text" v-model="project.name" placeholder="Project Name" required/>
+                        <br>
+                    </b-col>
+                </b-row>
 
-            <b-row>
-                <b-col cols="3">
-                    <span class="form-header">Description *</span>
-                </b-col> 
-                <b-col cols="9">
-                    <p style="position: relative">
-                        <span @click="showMart = true" style="position: absolute; top: 10px; right: 10px; cursor: pointer;">😋</span>
-                        <b-form-textarea v-model="project.desc" placeholder="Enter description for this project." required/>
-                        <emojimart v-if="showMart" @select="addEmojiToDesc" style="position: absolute; z-index: 5; right: 0;"/>
-                    </p>
-                </b-col>
-            </b-row>
-            
-            <b-row>
-                <b-col cols="3">
-                    <span class="form-header">README</span>
-                </b-col> 
-                <b-col cols="9">
-                    <b-form-textarea :rows="4" :max-rows="20" v-model="project.readme" placeholder="Enter extended README content"/>
-                    <p>
-                        <small class="text-muted">You can use <a href="https://help.github.com/articles/basic-writing-and-formatting-syntax/" target="_blank">markdown format</a></small>
-                    </p>
-                </b-col>
-            </b-row>
-
-            <b-row>
-                <b-col cols="3">
-                    <span class="form-header">Avatar</span>
-                </b-col> 
-                <b-col cols="9">
-                    <b-input type="text" v-model="project.avatar" placeholder="Image URL for the project avatar (if not set, randomly generate)"/>
-                    <p class="text-muted"><small>You can try choosing an image from websites like https://picsart.com/</small></p>
-                </b-col>
-            </b-row>
-
-            <h5>Access Control</h5>
-            <b-row>
-                <b-col cols="3">
-                    <span class="form-header">Access Policy</span>
-                </b-col> 
-                <b-col cols="9">
-                    <b-form-radio-group v-model="project.access">
-                        <p>
-                            <b-form-radio value="public">Public</b-form-radio> <br>
-                            <small class="text-muted">Datasets are accessible to any users but only project member can update them.</small>
+                <b-row>
+                    <b-col cols="3">
+                        <span class="form-header">Description *</span>
+                    </b-col> 
+                    <b-col cols="9">
+                        <p style="position: relative">
+                            <span @click="showMart = true" style="position: absolute; top: 10px; right: 10px; cursor: pointer;">😋</span>
+                            <b-form-textarea v-model="project.desc" placeholder="Enter description for this project." required/>
+                            <emojimart v-if="showMart" @select="addEmojiToDesc" style="position: absolute; z-index: 5; right: 0;"/>
                         </p>
+                    </b-col>
+                </b-row>
+
+                <b-row>
+                    <b-col cols="3">
+                        <span class="form-header">Avatar</span>
+                    </b-col> 
+                    <b-col cols="9">
+                        <b-input type="text" v-model="project.avatar" placeholder="Image URL for the project avatar (if not set, randomly generate)"/>
+                        <p class="text-muted"><small>You can try choosing an image from websites like https://picsart.com/</small></p>
+                    </b-col>
+                </b-row>
+
+                <b-row>
+                    <b-col cols="3">
+                        <span class="form-header">README</span>
+                    </b-col> 
+                    <b-col cols="9">
+                        <b-form-textarea :rows="4" :max-rows="20" v-model="project.readme" placeholder="Enter extended README content"/>
                         <p>
-                            <b-form-radio value="private">Private</b-form-radio> <br>
-                            <small class="text-muted">Only the members of project can access datasets. Guest users has read access to the datasets.</small>
-                       </p>
-                    </b-form-radio-group>
-                    <p>
-                        <b-form-checkbox v-if="project.access == 'private'" style="margin-left: 30px;" v-model="project.listed">List project summary for all users</b-form-checkbox>
-                    </p>
-                </b-col>
-            </b-row>
+                            <small class="text-muted">You can use <a href="https://help.github.com/articles/basic-writing-and-formatting-syntax/" target="_blank">markdown format</a></small>
+                        </p>
+                    </b-col>
+                </b-row>
+            </div>
 
-            <b-row>
-                <b-col cols="3">
-                    <span class="form-header">Agreements</span>
-                </b-col> 
-                <b-col cols="9">
-                    <p class="text-muted"><small>List of agreements that user must agree before accessing datasets stored on this project</small></p>
-                    <b-row v-for="(agreement, idx) in project.agreements" :key="idx">
-                        <b-col>
-                            <b-form-textarea v-model="agreement.agreement" placeholder="Enter agreemenet text(markdown) to be presented to the user"/>
-                            <br>
-                        </b-col>
-                        <b-col cols="1">
-                            <div class="button" @click="remove_agreement(idx)"><icon name="trash"/></div>
-                        </b-col>
-                    </b-row>
-                    <p><b-button @click="project.agreements.push({agreement: ''})" size="sm"><icon name="plus"/> Add Agreement</b-button></p>
-                    <br>
-                </b-col>
-            </b-row>
 
-            <b-row>
-                <b-col cols="3">
-                    <span class="form-header">Administrators</span>
-                </b-col> 
-                <b-col cols="9">
-                    <contactlist v-model="project.admins"/>
-                    <p class="text-muted"><small>Users who can update the project metadata, and groups</small></p>
-                </b-col>
-            </b-row>
-            
-            <b-row>
-                <b-col cols="3">
-                    <span class="form-header">Members</span>
-                </b-col> 
-                <b-col cols="9">
-                    <contactlist v-model="project.members"/>
-                    <p class="text-muted"><small>Users who can update datasets in this project. Also for a private project: Users who can run Apps registered on this project.</small></p>     
-                </b-col>
-            </b-row>
-            
-            <b-row>
-                <b-col cols="3">
-                    <span class="form-header">Guests</span>
-                </b-col> 
-                <b-col cols="9">
-                    <contactlist v-model="project.guests"/>
-                    <p class="text-muted"><small>For Private project, users who has read access to datasets.</small></p>
-                </b-col>
-            </b-row>
-            
-            <h5>Phenotype</h5>
-            <p> <small>phenotype (aka participants data) allows you to store subject specific information used to perform group analysis.</small> </p>
-            <b-row>
-                <b-col cols="3">
-                </b-col> 
-                <b-col cols="9">
-                    <b-form-checkbox v-model="project.publishParticipantsInfo">
-                        Publish Participants Info<br>
-                        <small>
-                            Participants information will be made public and included as part of publications from this project. Please be sure to only include information authorized by your IRB or consented by your test subjects. Do not include any identifiable information.
-                        </small>
-                    </b-form-checkbox>
-                    <br>
-                </b-col>
-            </b-row>
-            <b-row v-if="participants !== undefined">
-                <b-col cols="3">
-                    <span class="form-header">Participants Info</span>
-                </b-col> 
-                <b-col cols="9">
+            <!--access control-->
+            <div v-if="tab == 1">
+                <!--<h5>Access Control</h5>-->
+                <b-row>
+                    <b-col cols="3">
+                        <span class="form-header">Access Policy</span>
+                    </b-col> 
+                    <b-col cols="9">
+                        <b-form-radio-group v-model="project.access">
+                            <p>
+                                <b-form-radio value="public">Public</b-form-radio> <br>
+                                <small class="text-muted">Datasets are accessible to any users but only project member can update them.</small>
+                            </p>
+                            <p>
+                                <b-form-radio value="private">Private</b-form-radio> <br>
+                                <small class="text-muted">Only the members of project can access datasets. Guest users has read access to the datasets.</small>
+                           </p>
+                        </b-form-radio-group>
+                        <p>
+                            <b-form-checkbox v-if="project.access == 'private'" style="margin-left: 30px;" v-model="project.listed">List project summary for all users</b-form-checkbox>
+                        </p>
+                    </b-col>
+                </b-row>
+
+                <b-row>
+                    <b-col cols="3">
+                        <span class="form-header">Agreements</span>
+                    </b-col> 
+                    <b-col cols="9">
+                        <p class="text-muted"><small>List of agreements that user must agree before accessing datasets stored on this project</small></p>
+                        <b-row v-for="(agreement, idx) in project.agreements" :key="idx">
+                            <b-col>
+                                <b-form-textarea v-model="agreement.agreement" placeholder="Enter agreemenet text(markdown) to be presented to the user"/>
+                                <br>
+                            </b-col>
+                            <b-col cols="1">
+                                <div class="button" @click="remove_agreement(idx)"><icon name="trash"/></div>
+                            </b-col>
+                        </b-row>
+                        <p><b-button @click="project.agreements.push({agreement: ''})" size="sm"><icon name="plus"/> Add Agreement</b-button></p>
+                        <br>
+                    </b-col>
+                </b-row>
+
+                <b-row>
+                    <b-col cols="3">
+                        <span class="form-header">Administrators</span>
+                    </b-col> 
+                    <b-col cols="9">
+                        <contactlist v-model="project.admins"/>
+                        <p class="text-muted"><small>Users who can update the project metadata, and groups</small></p>
+                    </b-col>
+                </b-row>
+
+                <b-row>
+                    <b-col cols="3">
+                        <span class="form-header">Members</span>
+                    </b-col> 
+                    <b-col cols="9">
+                        <contactlist v-model="project.members"/>
+                        <p class="text-muted"><small>Users who can update datasets in this project. Also for a private project: Users who can run Apps registered on this project.</small></p>     
+                    </b-col>
+                </b-row>
+
+                <b-row>
+                    <b-col cols="3">
+                        <span class="form-header">Guests</span>
+                    </b-col> 
+                    <b-col cols="9">
+                        <contactlist v-model="project.guests"/>
+                        <p class="text-muted"><small>For Private project, users who has read access to datasets.</small></p>
+                    </b-col>
+                </b-row>
+            </div>
+
+            <!--participants info-->
+            <div v-if="tab == 2">
+
+                <p> <small>phenotype (aka participants data) allows you to store subject specific information used to perform group analysis.</small> </p>
+                <b-form-checkbox v-model="project.publishParticipantsInfo">
+                    Publish Participants Info<br>
+                    <small>
+                        Participants information will be made public and included as part of publications from this project. Please be sure to only include information authorized by your IRB or consented by your test subjects. Do not include any identifiable information.
+                    </small>
+                </b-form-checkbox>
+                <br>
+
+                <div v-if="participants !== undefined">
+                    <h5>Participants Info</h5>
                     <p class="text-muted"><small>Key/value dictionary for each subject (participants.tsv). You can use this information in analysis tab. It should be array of objects containig at least 'subject' key and other fields</small></p>
                     <editor v-model="participants" @init="editorInit" lang="json" height="500"/>
                     <br>
-                </b-col>
-            </b-row>
-            <b-row v-if="participants !== undefined">
-                <b-col cols="3">
-                    <span class="form-header">Column Definitions</span>
-                </b-col> 
-                <b-col cols="9">
+                </div>
+
+                <div v-if="participants !== undefined">
+                    <h5>Column Definitions</h5>
                     <p class="text-muted"><small>Participants Info column Definitions (participants.json). Please read the <a href="https://bids-specification.readthedocs.io/en/stable/03-modality-agnostic-files.html#phenotypic-and-assessment-data">BIDS speficication</a></small></p>
                     <editor v-model="participants_columns" @init="editorInit" lang="json" height="300"/>
                     <br>
-                    <br>
-                </b-col>
-            </b-row>
+                </div>
+            </div>
 
-            <h5>Remote Storage</h5>
-            <p><small>You can import and store data on remote storage systems instead of using brainlife's default storage.</small></p>
-            <b-row>
-                <b-col cols="5">
-                    <b-form-checkbox v-model="project.xnat.enabled">Integrate with XNAT</b-form-checkbox>
-                    <p>
-                        <small>Data on this project can be populated from the existing XNAT project. Any new data derivatives will be stored on this XNAT project.</small>
-                    </p>
-                </b-col> 
-                <b-col cols="7">
-                    <div v-if="project.xnat.enabled">
-                        <b-form-group label="XNAT Hostname">
-                            <b-input type="text" v-model="project.xnat.hostname" placeholder="https://example.xnat.com" required/>
-                        </b-form-group>
-                        <b-form-group label="XNAT Project Name">
-                            <b-input type="text" v-model="project.xnat.project" required/>
-                        </b-form-group>
-
-                        <p style="background-color: #eee; padding: 10px;">
-                            <small>Please issue access token/secret on your XNAT project to allow accesss from brianlife. Brainlife will automatically refresh your token periodically.</small>
-                            <b-form-group label="Access Token / Alias">
-                                <b-input type="text" v-model="project.xnat.token" required/>
-                            </b-form-group>
-                            <b-form-group label="Secret">
-                                <b-input type="password" v-model="project.xnat.secret" required/>
-                            </b-form-group>
-                            <b-button size="sm" @click="testXnat">Test</b-button>
-                            <pre v-if="xnatTestResult" style="padding: 10px; background-color: white; margin-top: 10px;">{{xnatTestResult}}</pre>
+            <!--resources-->
+            <div v-if="tab == 3">
+                <h5>Storage</h5>
+                <p><small>You can import and store data on remote storage systems instead of using brainlife's default storage.</small></p>
+                <b-row>
+                    <b-col cols="5">
+                        <b-form-checkbox v-model="project.xnat.enabled">Integrate with XNAT</b-form-checkbox>
+                        <p>
+                            <small>Data on this project can be populated from the existing XNAT project. Any new data derivatives will be stored on this XNAT project.</small>
                         </p>
+                    </b-col> 
+                    <b-col cols="7">
+                        <div v-if="project.xnat.enabled">
+                            <b-form-group label="XNAT Hostname">
+                                <b-input type="text" v-model="project.xnat.hostname" placeholder="https://example.xnat.com" required/>
+                            </b-form-group>
+                            <b-form-group label="XNAT Project Name">
+                                <b-input type="text" v-model="project.xnat.project" required/>
+                            </b-form-group>
 
-                        <b-form-group label="Scan Mapping">
-                            <small>Please enter mapping between XNAT scans names and brainlife datatype/tags</small>
+                            <p style="background-color: #eee; padding: 10px;">
+                                <small>Please issue access token/secret on your XNAT project to allow accesss from brianlife. Brainlife will automatically refresh your token periodically.</small>
+                                <b-form-group label="Access Token / Alias">
+                                    <b-input type="text" v-model="project.xnat.token" required/>
+                                </b-form-group>
+                                <b-form-group label="Secret">
+                                    <b-input type="password" v-model="project.xnat.secret" required/>
+                                </b-form-group>
+                                <b-button size="sm" @click="testXnat">Test</b-button>
+                                <pre v-if="xnatTestResult" style="padding: 10px; background-color: white; margin-top: 10px;">{{xnatTestResult}}</pre>
+                            </p>
 
-                            <div v-for="(scan, idx) in project.xnat.scans" :key="idx" style="background-color: white; padding: 10px;">
-                                <b-row>
-                                    <b-col cols="3">
-                                        <span class="text-muted">Scan Name</span>
-                                        <b-input type="text" v-model="scan.scan" required/>
-                                        <small>XNAT scan name to look for</small>
-                                    </b-col>
-                                    <b-col cols="5">
-                                        <span class="text-muted">Datatype</span>
-                                        <datatypeselecter v-model="scan.datatype"></datatypeselecter>
-                                        <small>brainlife.io datatype to import as</small>
+                            <b-form-group label="Scan Mapping">
+                                <small>Please enter mapping between XNAT scans names and brainlife datatype/tags</small>
 
-                                        <datatype :datatype="datatypes[scan.datatype]" style="margin-top: 5px;" v-if="scan.datatype" :clickable="false"/>
-                                    </b-col>
-                                    <b-col cols="3">
-                                        <div v-if="scan.datatype">
-                                            <div class="text-muted">Datatype Tags</div>
-                                            <tageditor placeholder="Tags" v-model="scan.datatype_tags" :options="datatypes[scan.datatype]._tags" />
-                                            <small>brainlife.io datatype tags to add for this scan</small>
-                                        </div>
-                                    </b-col>
-                                    <b-col cols="1">
-                                        <div class="text-muted">&nbsp;</div>
-                                        <b-button variant="danger" @click="project.xnat.scans.splice(idx, 1)" size="sm"><icon name="trash"/></b-button>
-                                    </b-col>
-                                </b-row>
-                            </div>
-                            <br>
-                            <b-button type="button" variant="secondary" @click="project.xnat.scans.push({})" size="sm"><icon name="plus"/> Add Scan Mapping</b-button>
+                                <div v-for="(scan, idx) in project.xnat.scans" :key="idx" style="background-color: white; padding: 10px;">
+                                    <b-row>
+                                        <b-col cols="3">
+                                            <span class="text-muted">Scan Name</span>
+                                            <b-input type="text" v-model="scan.scan" required/>
+                                            <small>XNAT scan name to look for</small>
+                                        </b-col>
+                                        <b-col cols="5">
+                                            <span class="text-muted">Datatype</span>
+                                            <datatypeselecter v-model="scan.datatype"></datatypeselecter>
+                                            <small>brainlife.io datatype to import as</small>
 
-                        </b-form-group>
-                    </div>
-                </b-col> 
-            </b-row>
+                                            <datatype :datatype="datatypes[scan.datatype]" style="margin-top: 5px;" v-if="scan.datatype" :clickable="false"/>
+                                        </b-col>
+                                        <b-col cols="3">
+                                            <div v-if="scan.datatype">
+                                                <div class="text-muted">Datatype Tags</div>
+                                                <tageditor placeholder="Tags" v-model="scan.datatype_tags" :options="datatypes[scan.datatype]._tags" />
+                                                <small>brainlife.io datatype tags to add for this scan</small>
+                                            </div>
+                                        </b-col>
+                                        <b-col cols="1">
+                                            <div class="text-muted">&nbsp;</div>
+                                            <b-button variant="danger" @click="project.xnat.scans.splice(idx, 1)" size="sm"><icon name="trash"/></b-button>
+                                        </b-col>
+                                    </b-row>
+                                </div>
+                                <br>
+                                <b-button type="button" variant="secondary" @click="project.xnat.scans.push({})" size="sm"><icon name="plus"/> Add Scan Mapping</b-button>
 
-            <h5>Compute Resources</h5>
-            <span class="form-header">Public Resources</span>
-            <p>
-                <small>By default, data in this project will be computed on brainlife's public resources. Please see the Resources page for a list of public resources.</small>
-            </p>
-            <b-form-checkbox v-model="project.noPublicResource">
-                <p style="padding-left: 15px">Do not compute on brainlife public resources<br>
-                    <small>Please check this if you'd like to only process data on your private resources or shared resources.</small>
-                </p>
-            </b-form-checkbox>
-            <br>
+                            </b-form-group>
+                        </div>
+                    </b-col> 
+                </b-row>
 
-            <div v-if="sharedResources && sharedResources.length">
-                <span class="form-header">Shared Resources</span>
-                <small>The following resources are allowed to be used for this project.</small>
-                <resource v-for="resource in sharedResources" :key="resource._id" :resource="resource"/>
+                <h5>Compute Resources</h5>
+                <span class="form-header">Public Resources</span>
+                <b-form-checkbox v-model="project.noPublicResource">
+                    <p style="padding-left: 15px">Do not compute on brainlife public resources<br>
+                        <small>By default, all project will have access to brainlife's public resources. Please check this if you'd like to not use public resources to process your data stored in this project.</small>
+                    </p>
+                </b-form-checkbox>
+                <br>
+
+                <div v-if="sharedResources && sharedResources.length">
+                    <span class="form-header">Private Resources</span>
+                    <small>The following resources are allowed to be used for this project.</small>
+                    <resource v-for="resource in sharedResources" :key="resource._id" :resource="resource"/>
+                </div>
+
+
+
             </div>
 
             <!--
@@ -282,11 +287,11 @@
             <br>
             <br>
         </b-container>
+
         <div v-if="config.debug">
             <pre>{{JSON.stringify(project, null, 4)}}</pre>
         </div>
-        </b-form>
-    </div><!--page-content-->
+    </b-form><!--page-content-->
 </div>
 </template>
 
@@ -338,6 +343,8 @@ export default {
             sharedResources: null,
 
             submitting: false,
+
+            tab: 0,
 
             config: Vue.config,
         }
@@ -565,9 +572,11 @@ export default {
 <style scoped>
 .page-header {
     padding: 10px 0;
+    height: 85px;
 }
 .page-header h4 {
     opacity: 0.8;
+    margin-bottom: 1px;
 }
 .readme {
     background-color: white;
@@ -581,6 +590,8 @@ export default {
     opacity: 0.7;
     border-bottom: 1px solid #ddd;
 }
-
+.page-content {
+    margin-top: 40px;
+}
 </style>
 
