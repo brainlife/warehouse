@@ -55,7 +55,7 @@
                         </p>
                         <div v-if="release.sets && release.sets.length">
                             <small class="clickable" @click="jump('release.'+release.name+'.data')">
-                                Data ({{release.sets.length}} subjects)
+                                Data ({{release.sets.length}} sets)
                             </small>
                         </div>
                         <div v-if="release.apps && release.apps.length">
