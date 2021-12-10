@@ -732,7 +732,7 @@ export default {
         },
         submitComment() {
             if(this.editcommentID) {
-                this.$http.patch('comment/'+this.editcommentID, {commentString: this.comment})
+                this.$http.patch('comment/'+this.editcommentID, {comment: this.comment})
                 .then(res=>{
                     console.log(res.data);
                     /* events api will update*/
