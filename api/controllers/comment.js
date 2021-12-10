@@ -27,8 +27,11 @@ router.get('/project/:id', common.jwt(), (req, res, next) =>{
         /*if project access is public, let any body see the comment  
         if project is private let admins, members and guests be able to look
         */
-        if(project.acesss != "public" && 
-        !common.isuserpartofProject(req.user,project)) return res.status(401).end("you are not a afilliated with the project");
+        if(project.acesss == 'private') {
+            if(!common.ismember(req.user,project) && 
+            !common.isadmin(req.user,project) && 
+            !common.isguest(req.user,project)) return res.status(401).end("you are not a afilliated with the project");
+        }
 
         db.Comments.find({"project": projectID, "removed" : false}).limit(+limit).exec((err, recs)=>{
             if(err) return next(err);
@@ -40,6 +43,7 @@ router.get('/project/:id', common.jwt(), (req, res, next) =>{
 /**
  * @apiGroup Comments
  * @api {post} /comment/project/:id Post comment on a Project
+ * @apiHeader {String} authorization    A valid JWT token "Bearer: xxxxx"
  * @apiParam {String} comment
  * @apiParam {project} projectID
  * @apiSuccess {}            Comment registered 
@@ -54,7 +58,11 @@ router.post('/project/:id', common.jwt(), function(req, res, next) {
         let comment = new db.Comments(req.body);
         comment.project = projectID;
         /* project is private, only let members,admins and guest comment */
-        if(project.access == "private" && !common.isuserpartofProject(req.user,project)) next("you can not comment to private project"); 
+        if(project.access == 'private') { 
+            if(!common.ismember(req.user,project) && 
+            !common.isadmin(req.user,project) && 
+            !common.isguest(req.user,project)) return next("you can not comment to private project");
+        } 
         comment.user_id = req.user.sub;
         comment.save((err)=>{
         if(err) return next(err);
@@ -70,21 +78,22 @@ router.post('/project/:id', common.jwt(), function(req, res, next) {
 /**
  * @apiGroup Comments
  * @api {patch} /comment/id  Update comment on a Project
- * @apiParam {String} commentString
- * 
+ * @apiHeader {String} authorization    A valid JWT token "Bearer: xxxxx"
+ * @apiParam {String} comment
  * @apiSuccess {}            Comment updated 
  */
 
 router.patch('/:id', common.jwt(), (req, res, next) =>{
     if(!req.params.id) return next("Id missing");
-    if(!req.body.commentString) return next("comment String missing");
+    if(!req.body.comment) return next("comment missing");
     const id = req.params.id;
-    const updatedComment = req.body.commentString;
+    const updatedComment = req.body.comment;
     db.Comments.findById(id, (err, comment)=>{
         if(err) return next(err);
         if(!comment) return res.status(404).end();
         /* user is either the same or it is the admin*/
-        if(comment.user_id != req.user.sub && !common.isadmin(req.user, comment.project)) return next("unauthorized attempt to delete comment"); 
+        if(comment.user_id != req.user.sub && 
+        !common.isadmin(req.user, comment.project)) return next("unauthorized attempt to edit comment"); 
         comment.comment = updatedComment;
         comment.save((err, comment)=>{
             if(err) return next(err);
@@ -98,8 +107,7 @@ router.patch('/:id', common.jwt(), (req, res, next) =>{
 /**
  * @apiGroup Comments
  * @api {delete} /comment/id  Deleted comment on a Project
- * @apiParam {String} commentString
- * 
+ * @apiHeader {String} authorization    A valid JWT token "Bearer: xxxxx"
  * @apiSuccess {}            Comment Deleted 
  */
 

@@ -1250,15 +1250,6 @@ exports.ismember = (user, rec)=>{
     return false;
 }
 
-exports.isuserpartofProject = (user, rec) =>{
-    if(user) {
-        if(exports.ismember(user,rec) || 
-        exports.isadmin(user,rec) || 
-        exports.isguest(user,rec)) return true;
-    }
-    return false;
-}
-
 exports.users_general = async ()=>{
     console.log("loading users");
     try {
