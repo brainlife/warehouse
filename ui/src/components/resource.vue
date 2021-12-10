@@ -13,7 +13,7 @@
                 </b-badge>
                 <span style="position: relative; top: -2px">
                     <b-badge v-if="!resource_obj.active" variant="secondary">Inactive</b-badge>
-                    <b-badge v-if="resource_obj.gids.includes(1)" variant="success">Public</b-badge>
+                    <b-badge v-if="resource_obj.gids && resource_obj.gids.includes(1)" variant="success">Public</b-badge>
                 </span>
                 <b>{{resource_obj.name}}</b>
             </p>

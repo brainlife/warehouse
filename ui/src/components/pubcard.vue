@@ -36,7 +36,7 @@
     </div>
 
     <div v-for="release in pub.releases" :key="release._id">
-        <div v-if="!release.removed" style="clear: both; padding: 10px 20px;">
+        <div v-if="!release.removed" style="clear: both; padding: 10px; margin-left: 10px; border-left: 5px solid #0002">
             <span class="form-header" style="opacity: 0.7; display: inline-block;">Release</span> <b>{{release.name}}</b>
             <b-badge pill class="bigpill" style="margin-left: 10px; transform: scale(0.9); transform-origin: left; position: relative; top: -2px;" v-if="release.subjects">
                 <icon name="user-friends" style="opacity: 0.4;"/>&nbsp;&nbsp;{{release.subjects}} <small>subjects</small> 

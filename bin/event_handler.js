@@ -284,7 +284,6 @@ function handle_task(task, cb) {
 
                     _outputs: [Object.assign({}, output, {
                         subdir: "output", //validator should always output under "output"
-                        
                         //validator should always output files using datatype file names
                         //also without this, it could end up using deprecated app file mapping
                         files: null, 

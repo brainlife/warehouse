@@ -162,11 +162,14 @@ export default {
                 select: "group_id noPublicResource",
             }});
             this.project = resProjects.data.projects[0];
-            console.log("loaded projct detail", this.project);
+
+            //create list of gids we want to use for this project
+            const gids = [this.project.group_id];
+            if(!this.project.noPublicResource) gids.push(1);
 
             const resBest = await this.$http.get(Vue.config.amaretti_api + '/resource/best', {params: {
                 service: this.app.github,
-                gids: [1, ...this.project.group_id],
+                gids,
             }});
             if(resBest.data.resource) this.no_resource = !resBest.data.resource;
         }

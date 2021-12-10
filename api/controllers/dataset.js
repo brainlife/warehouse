@@ -1741,7 +1741,7 @@ router.post('/finalize-upload', common.jwt({secret: config.express.pubkey}), (re
     let archive_task; //only set if there is no validator
 
     async.series([
-        
+
         //load task and check access
         next=>{
             axios.get(config.amaretti.api+"/task/"+req.body.task, {
@@ -1755,7 +1755,7 @@ router.post('/finalize-upload', common.jwt({secret: config.express.pubkey}), (re
                 next();
             }).catch(next);
         },
-        
+
         //load project
         next=>{
             db.Projects.findOne({group_id: task._group_id}, (err, _project)=>{
@@ -1781,7 +1781,7 @@ router.post('/finalize-upload', common.jwt({secret: config.express.pubkey}), (re
                     tags: req.body.tags||[],
                     desc: req.body.desc,
                 };
-                
+
                 next();
             });
         },
@@ -1802,7 +1802,7 @@ router.post('/finalize-upload', common.jwt({secret: config.express.pubkey}), (re
                 datatype: {
                     _id: datatype._id,
                     name: datatype.name,
-                }, 
+                },
                 output,
                 finish_date: task.finish_date,
             }
@@ -1811,7 +1811,7 @@ router.post('/finalize-upload', common.jwt({secret: config.express.pubkey}), (re
                 request.src += "/"+req.body.subdir;
                 request.subdir = req.body.subdir;
             }
-            
+
             //submit secondary archiver with just secondary deps
             console.log("submitting secondary output archiver");
             let remove_date = new Date();
@@ -1825,7 +1825,6 @@ router.post('/finalize-upload', common.jwt({secret: config.express.pubkey}), (re
                     requests: [request ], 
                 },
                 remove_date,
-                //user_id: task.user_id, 
             },{
                 headers: { authorization: req.headers.authorization, }
             }).then(res=>{
@@ -1853,6 +1852,14 @@ router.post('/finalize-upload', common.jwt({secret: config.express.pubkey}), (re
                 });
                 output.subdir = "output"; //validator always output to output directory
                 _config._outputs = [output];
+                _config._inputs = [
+                    {
+                        id: "upload", //??
+                        task_id: task._id,
+                        subdir: "upload",
+                        //no datatype, etc..
+                    }
+                ];
 
                 axios.post(config.amaretti.api+"/task", {
                     instance_id: task.instance_id,

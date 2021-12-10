@@ -924,8 +924,8 @@ p.info .fa-icon {
 }
 .resource {
     cursor: pointer;
-    padding: 5px; 
-    border: 2px solid #0003; 
+    padding: 8px; 
+    border: 1px solid #0003; 
     border-radius: 5px;
 }
 </style>

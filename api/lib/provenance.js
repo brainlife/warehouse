@@ -88,7 +88,7 @@ exports.traverseProvenance = async (startTaskId) => {
             //datalad dataset doesn't have any prov but that's ok.. it's terminal there
             console.error("can't register fake app-archive for dataset:"+dataset._id+" without prov.task or prov.task_id. storage:", dataset.storage);
             return;
-        }  
+        }
 
         //old validator didn't have subdir set, but it should be set to "output" for linking to work properly
         if(dataset.prov.task && dataset.prov.task.service.startsWith("brain-life/validator-") && !dataset.prov.subdir) {
@@ -193,8 +193,10 @@ exports.traverseProvenance = async (startTaskId) => {
         if(task.service.startsWith("brainlife/validator-") ||
            task.service.startsWith("brain-life/validator-")) node.validator = true;
 
+        //console.log("registering node");
+        //console.dir(node);
         nodes.push(node);
-       
+
         if(task.service == "brainlife/app-archive") {
             for await (const datasetConfig of task.config.datasets) {
 
@@ -316,7 +318,7 @@ exports.traverseProvenance = async (startTaskId) => {
                     inputId: dataset._id, //is this right?
                 });
             }
-        }   
+        }
 
         //old validator didn't have _inputs.. let's use deps_config
         if(node.validator && !task.config._inputs) {
@@ -342,7 +344,7 @@ exports.traverseProvenance = async (startTaskId) => {
                     //again, input id doesn't matter for validator
                     task: dep.task
                 });
-            });         
+            });
             //really old ones used deps instead of deps_config
             if((!task.deps_config || !task.deps_config.length) && task.deps) task.deps.forEach(task=>{
                 node.inputs.push({task})
@@ -383,6 +385,7 @@ exports.traverseProvenance = async (startTaskId) => {
             }
 
             nodes.push(outputNode);
+            //console.log("connecting from", nodeIdx, "to", outputNodeIdx);
             edges.push({ 
                 idx: edges.length,
                 from: nodeIdx, 
@@ -434,7 +437,7 @@ exports.traverseProvenance = async (startTaskId) => {
         });
     });
 
-    console.debug("  nodes:", nodes.length," edges:", edges.length);
+    //console.debug("  nodes:", nodes.length," edges:", edges.length);
 
     return {nodes, edges}
 }
@@ -512,7 +515,6 @@ exports.setupShortcuts = (prov)=>{
             //validator should only have 1 input / output
             const validatorInputIdx = getParentIndices(node.idx)[0];
             const validatorSourceIdx = getParentIndices(validatorInputIdx)[0]; 
-            //const validatorInput = prov.nodes[validatorInputIdx];
             const validatorOutputIdx = getChildIndices(node.idx)[0];
             const validatorOutput = prov.nodes[validatorOutputIdx];
 
@@ -679,176 +681,6 @@ exports.setupShortcuts = (prov)=>{
     }
 }
 
-/*
-//from array of provenances, construct a single tree with counts indicating number of paths for each branch
-exports.countProvenances = (provs)=>{
-    console.debug("counting provenances");
-
-    function countApps(prov, pnode, cnode, pidx) {
-
-        //find all input edges
-        prov.edges.filter(e=>(e.to == pnode.idx && !e._simplified)).forEach(edge=>{
-
-            const output = prov.nodes[edge._output];
-            const input = prov.nodes[edge.from];
-            const info = pullnodeinfo(input);
-
-            let datatype = null;
-            if(output) datatype = output.datatype;
-            const iid = datatype+":"+edge.inputId;
-
-            if(!cnode.inputs[iid]) cnode.inputs[iid] = [];
-
-            let c = cnode.inputs[iid].find(a=>a.id == info.id);
-            if(!c) {
-                c = info;
-                info.outputId = edge.outputId;
-
-                //these will be just sample from the first task that matches the id
-                if(output && output.datatypeTags) {
-                    info.datatypeTags = {};
-                    output.datatypeTags.forEach(tag=>{
-                        info.datatypeTags[tag] = 1;
-                    });
-                }
-                info.config = {};
-
-                //convert all v into count of 1
-                for(const key in input._config) {
-                    let v = input._config[key].v;
-                    //if(v === undefined) v = "__undefined__"; 
-                    if(!info.config[key]) {
-                        info.config[key] = Object.assign({}, input._config[key]);
-                        info.config[key].vcounts = {};
-                    }
-                    //if(v === '') v = "__emptystring__";
-                    info.config[key].vcounts = {[v]: 1};
-                    delete info.config[key].v;
-                }
-
-                //add new app
-                cnode.inputs[iid].push(info);
-            } else {
-                //merge datatype tags
-                if(output && output.datatypeTags) {
-                    if(!c.datatypeTags) c.datatypeTags = {};
-                    output.datatypeTags.forEach(tag=>{
-                        if(!c.datatypeTags[tag]) c.datatypeTags[tag] = 0;
-                        c.datatypeTags[tag]++;
-                    });
-                } 
-
-                //merge new config values
-                if(!c.config) c.config = {};
-                for(const key in input._config) {
-                    let v = input._config[key].v;
-                    if(!c.config[key]) {
-                        c.config[key] = Object.assign({}, input._config[key]);
-                        c.config[key].vcounts = {};
-                    } 
-                    if(!c.config[key].vcounts[v]) c.config[key].vcounts[v] = 0;
-                    if(c.config[key]) c.config[key].vcounts[v]++;
-                    delete c.config[key].v;
-                }
-            }
-            //c.count++;
-            c.provs.push(pidx);
-
-            //recurse into parent
-            countApps(prov, input, c, pidx);
-        });
-    }
-
-    function pullnodeinfo(pnode) {
-        let id = pnode.type;
-        switch(pnode.type) {
-        case "task":
-            id+=":"+pnode.service;
-            if(pnode.serviceBranch) id+=":"+pnode.serviceBranch;
-            break
-        case "dataset":
-            id+=":"+pnode.datasetId;
-        default:
-            //??
-        }
-        return {
-            id,
-            appId: pnode.appId, 
-            //_taskId: pnode.taskId, //first one seen
-            //count: 0,
-            //service: pnode.service, 
-            //serviceBranch: pnode.serviceBranch, 
-            inputs: {},
-            provs: [],  //provIndices
-            storage: pnode.storage, //for dataset
-            storageLocation: pnode.storageLocation, //for dataset
-        }
-    }
-
-    //create the root of count node
-    const cnodes = [];
-    provs.forEach((prov, pidx)=>{
-        const pnode = provs[0].nodes[0];
-        const info = pullnodeinfo(pnode);
-
-        //see if we already have the app listed
-        let c = cnodes.find(a=>a.id == info.id);
-        if(!c) {
-            c = info;
-            cnodes.push(c);
-        }
-        //c.count++;
-        c.provs.push(pidx);
-
-        countApps(prov, pnode, c, pidx);
-    });
-    return cnodes;
-}
-
-//from the output of countProvenances, pick ones with highest counts
-exports.computeProbabilities = (cnodes)=>{
-    console.debug("picking common provenances");
-    //console.dir(cnodes);
-
-    //multiple provenance graph could end up in the same terminal nodes
-    //to prevent picking similar(same) provenances with the same highest probs,
-    //let's preserve the prob grouping so client can pick 1 from each groups
-    const probs = []; //{prob: <conditional probability>: provs: [ <indicies for the provs> ]}
-
-    //compute the conditional probability of each provenance
-    function walk(nodes, prob = 1.0, denominator) {
-        nodes.forEach(node=>{
-            const nodeProvs = node.provs.length;
-            let condprob = prob;
-            if(denominator) condprob *= nodeProvs/denominator;
-            //console.log("walking inputs", prob, node.id, nodeProvs, denominator, node.provs);
-            //TODO - when an app has multiple input, the we end up walking multiple paths and come up with
-            //same or different terimnal probability
-            if(Object.keys(node.inputs).length) for(const inputId in node.inputs) {
-                const inputs = node.inputs[inputId];
-                if(inputs.length) {
-                    walk(inputs, condprob, nodeProvs);
-                }
-            } else {
-                //reached the terminal node.. save the probability for each provIndices
-                console.log("reached terminal", condprob, node.provs);
-                probs.push({prob: condprob, provs: node.provs})
-            }
-        });
-    }
-    walk(cnodes);
-
-    //sort the probs
-    probs.sort((a,b)=>{
-        if(a.prob < b.prob) return 1;
-        if(a.prob > b.prob) return -1;
-        return 0;
-    });
-
-    return probs; 
-}
-*/
-
 //input is an array of provenance graphs (needs shortcuts)
 exports.cluster = (provs)=>{
     console.log("MCL clustering with ", provs.length, "provs");
@@ -861,8 +693,6 @@ exports.cluster = (provs)=>{
 
     //count number of app transitions (appA > appB) for each graph.
     provs.forEach(prov=>{
-        //console.log("---------------------------------------------");
-        //console.dir(provs);
         prov._transitions = {};
         //find task > task edges
         prov.edges.filter(e=>!e._simplified).forEach(edge=>{
@@ -878,7 +708,6 @@ exports.cluster = (provs)=>{
             if(!prov._transitions[id]) prov._transitions[id] = 0;
             prov._transitions[id]++;
         });
-        //console.dir(pairs);
     });
 
     //create adjacency matrix between all graph with each cell representing distances between each graph. 
@@ -899,68 +728,13 @@ exports.cluster = (provs)=>{
         return dist;
     }
 
-    /*
-    const matrix = [];
-    provs.forEach((p1, p1idx)=>{
-        matrix[p1idx] = [];
-        provs.forEach((p2, p2idx)=>{
-            let v = 0;
-            if(p1idx != p2idx) v = 1/computeDistance(p1, p2); 
-            matrix[p1idx][p2idx] = v;
-        }); 
-    });
-
-    //console.log("similarity matrix...");
-    //console.dir(matrix);
-
-    //convert it to transition probability matrix
-    //see page 10 https://sites.cs.ucsb.edu/~xyan/classes/CS595D-2009winter/MCL_Presentation2.pdf
-    provs.forEach((p1, col)=>{
-        //invert distance to make it similarity, then sum all weights in the column
-        let sum = 0;
-        provs.forEach((p2, row)=>{
-            sum += matrix[row][col]; 
-        }); 
-
-        //then convert to probability matrix (each column should sum to 1)
-        provs.forEach((p2, row)=>{
-            let v = matrix[row][col];
-            matrix[row][col] = v/sum;
-        }); 
-    });
-
-    console.log("probability matrix...");
-    console.dir(matrix);
-   
-    const clusters = mc.cluster(math.matrix(matrix), {
-        //expandFactor: 3,
-        //inflateFactor: 3,
-        //maxLoops: 20,
-        //multiFactor: 1.2,
-    });    
-
-    //TODO I don't know why but MCL returns multiple pairs
-    //[ [ 0 ], [ 1, 2 ], [ 1, 2 ], [ 3 ], [ 4, 5 ], [ 4, 5 ] ] (for app 5eab8082bd120f70ca6511dd on dev)
-    const seen = []; 
-    const dedupedClusters = [];
-    clusters.forEach(cluster=>{
-        if(!cluster.length) return; //remove empty cluster (looks like it happened with prod: 592dc03eb3cd7c00211dc239)
-        if(seen.includes(cluster[0])) return;
-        dedupedClusters.push(cluster);
-        seen.push(cluster[0]);
-    });  
-
-    console.dir("(deduped) clusters..");
-    console.dir(dedupedClusters);
-    */
-
     console.log("clustering with dbscan");
     const clusters = dbscan({
         dataset: provs,
         epsilon: 1.1,
         distanceFunction: computeDistance,
     });
-    console.dir(clusters);
+    //console.dir(clusters);
     return clusters.clusters;
 }
 
