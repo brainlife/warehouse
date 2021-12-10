@@ -123,6 +123,27 @@
                         </b-col>
                     </b-row>
 
+                    <b-row v-if="resource.gids && resource.gids.length > 0">
+                        <b-col cols="2">
+                            <span class="form-header">Projects</span>
+                        </b-col>
+                        <b-col>
+                            <p>
+                                <small>This resource will be used to run jobs submitted to the following projects.</small>
+                            </p>
+                            <div v-if="resource.gids.includes(1)">
+                                <h5>
+                                    <b-badge variant="success" 
+                                        title="This is a public resource for all brainlife projects/users.">
+                                        All Projects
+                                    </b-badge>
+                                </h5>
+                            </div>
+                            <group v-for="gid in resource.gids.filter(gid=>gid!=1)" :key="gid" :id="gid" style="margin-bottom: 10px;"/>
+                            <br>
+                        </b-col>
+                    </b-row>
+
                     <b-row>
                         <b-col cols="2">
                             <span class="form-header">Execution Counts</span>
@@ -143,23 +164,6 @@
                                 <pre class="">{{resource.config.io_hostname}}</pre> 
                                 <small>Optional hostname used to transfer data in and out of this resource</small>
                             </p>
-                        </b-col>
-                    </b-row>
-
-                    <b-row v-if="resource.gids && resource.gids.length > 0">
-                        <b-col cols="2">
-                            <span class="form-header">Resource Sharing</span>
-                        </b-col>
-                        <b-col>
-                            <p>
-                                <small>Members of the following projects can run jobs on this resource</small>
-                            </p>
-                            <p v-if="resource.gids.includes(1)">
-                                <b>Publicly Shared</b><br>
-                                <small>This resource is shared publicly to all brainlife users.</small>
-                            </p>
-                            <group v-for="gid in resource.gids.filter(gid=>gid!=1)" :key="gid" :id="gid" style="margin-bottom: 10px;"/>
-                            <br>
                         </b-col>
                     </b-row>
 
@@ -302,9 +306,6 @@
 import Vue from 'vue'
 import Router from 'vue-router'
 
-//import Plotly from '@statnett/vue-plotly'
-//import {Plotly} from 'vue-plotly'
-
 import pageheader from '@/components/pageheader'
 import group from '@/components/group'
 import contact from '@/components/contact'
@@ -385,6 +386,8 @@ export default {
             }}).then(res=>{
                 this.resource = res.data.resources[0];
                 if(!this.resource) alert("no such resource");
+
+                /* resource.stats might not be set.. why do I have to sort it?
                 this.resource.config.services.sort((a,b)=>{
                     let a_stats = this.resource.stats.services[a.name];
                     let b_stats = this.resource.stats.services[b.name];
@@ -398,6 +401,7 @@ export default {
                     }
                     return 0;
                 });
+                */
 
                 if(Vue.config.hasRole("admin")) {
                     if(!this.resource.stats.projects) return;

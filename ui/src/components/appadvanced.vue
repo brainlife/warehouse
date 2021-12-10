@@ -26,18 +26,7 @@
         <b-row>
             <b-col cols="3" class="text-muted">Github Branch</b-col>
             <b-col>
-                <!--
-                <b-form-select v-model='github_branch'>
-                    <optgroup label="Branches" v-if="github_branches">
-                        <option v-for="branch in github_branches" :key="branch" :value="branch">{{branch}}</option>
-                    </optgroup>
-                    <optgroup label="Tags" v-if="github_tags">
-                        <option v-for="tag in github_tags" :key="tag" :value="tag">{{tag}}</option>
-                    </optgroup>
-                </b-form-select>
-                -->
                 <branchselecter v-model="github_branch" :service="app.github"/>
-
             </b-col>
         </b-row>
         <br>
@@ -51,30 +40,32 @@ import Vue from 'vue'
 import branchselecter from '@/components/branchselecter'
 
 export default {
-    props: [ 'app', 'value' ],
+    props: [ 
+        'app', 
+        'value', //selected resource.id
+        'gids', //gids to query for best resource
+    ],
 
-    components: { 
+    components: {
         branchselecter,
     },
-    
+
     data () {
         return {
             show: false,
-            
+
             preferrable_resources: [],
             preferred_resource: null,
-            
-            //github_branches: [],
-            //github_tags: [],
 
             github_branch: null,
-            
+
         };
     },
-    
+
     mounted () {
-        this.$http.get(Vue.config.wf_api + '/resource/best', {params: {
-            service: this.app.github
+        this.$http.get(Vue.config.amaretti_api + '/resource/best', {params: {
+            service: this.app.github,
+            gids: this.gids,
         }})
         .then(res => {
             this.preferrable_resources = res.data.considered.map(resource => {
@@ -99,7 +90,7 @@ export default {
             this.update();
         },
     },
-    
+
     methods: {
         update: function() {
             this.$emit('input', {

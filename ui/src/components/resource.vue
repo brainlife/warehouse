@@ -11,7 +11,10 @@
                 <b-badge v-if="!resource.gids || resource.gids.length == 0" variant="secondary" title="Private resource that's not shared with anyone.">
                     <icon name="lock" scale="0.8"/>
                 </b-badge>
-                <b-badge v-if="!resource_obj.active" variant="secondary">Inactive</b-badge>
+                <span style="position: relative; top: -2px">
+                    <b-badge v-if="!resource_obj.active" variant="secondary">Inactive</b-badge>
+                    <b-badge v-if="resource_obj.gids.includes(1)" variant="success">Public</b-badge>
+                </span>
                 <b>{{resource_obj.name}}</b>
             </p>
             <p class="desc">

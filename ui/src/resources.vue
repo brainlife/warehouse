@@ -12,7 +12,7 @@
         </div>
         -->
         <div v-if="resources.mine.length > 0">
-            <h4 class="header-sticky"><b-container>My Resources</b-container></h4> 
+            <h4 class="header-sticky"><b-container>Private Resources</b-container></h4> 
             <b-container>
                 <resource v-for="resource in resources.mine" :key="resource._id" class="resource" :resource="resource"/>
             </b-container>
@@ -20,6 +20,7 @@
             <br>
         </div>
 
+        <!--
         <div v-if="resources.others.length > 0">
             <h4 class="header-sticky"><b-container>User Resources <small>(for admin)</small></b-container></h4> 
             <b-container>
@@ -28,13 +29,14 @@
             <br>
             <br>
         </div>
+        -->
 
         <div v-if="resources.public.length > 0">
             <h4 class="header-sticky"><b-container>Public Resources</b-container></h4> 
             <b-container>
                 <br>
-                <p style="opacity: 0.7">
-                    The following resources are shared among all brainlife users.
+                <p>
+                    <small>The following resources can be used by all members of brainlife.</small>
                 </p>
                 <resource v-for="resource in resources.public" :key="resource._id" class="resource" :resource="resource"/>
                 <br>
@@ -116,14 +118,14 @@ export default {
         const find = {
             status: {$ne: "removed"},
         };
-        if(Vue.config.hasRole("admin")) find.user_id = null; //disable user filtering to show all
+        //if(Vue.config.hasRole("admin")) find.user_id = null; //disable user filtering to show all
 
         this.$http.get(Vue.config.amaretti_api+'/resource', {params: {
             find: JSON.stringify(find),
             select: 'resource_id config.desc config.maxtask name citation status status_msg lastok_date active gids stats avatar'
         }}).then(res=>{
             this.resources.mine = [];
-            this.resources.others = [];
+            //this.resources.others = [];
             this.resources.public = [];
             const usub = Vue.config.user.sub.toString();
             res.data.resources.forEach(r=>{
@@ -134,7 +136,9 @@ export default {
                     //mine
                     this.resources.mine.push(r);
                 } else {
-                    this.resources.others.push(r); //only admin should see this
+                    console.error("resource that's not mine nor public");
+                    console.dir(r)
+                    //this.resources.others.push(r); //only admin should see this
                 }
             });
         }).catch(console.error);

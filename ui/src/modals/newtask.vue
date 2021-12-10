@@ -112,7 +112,7 @@
                 <configform :spec="app.config" v-model="config"/>
 
                 <hr>
-                <advanced :app='app' v-model='advanced'>
+                <advanced :app='app' v-model='advanced' :gids="[1,project.group_id]">
                     <configform :spec="app.config" v-model="config" :advanced="true"/>
                 </advanced>
                 <hr>
@@ -228,7 +228,6 @@ export default {
             this.$nextTick(()=>{
                 this.$refs.search.focus();
             });
-
 
             //reset form
             this.app = null;

@@ -20,10 +20,9 @@ export default {
         load_agreement: async function() {
             let agreements = await this.get_user_agreements();
             for(let id in agreements) {
-                //this.$nofity("Agreement updated"); //this.$notifhy is not available in mixin?
                 Vue.set(this.user_agreements, id, agreements[id]);
             }
-        },  
+        },
 
         get_user_agreements: function() {
             return new Promise((resolve, reject)=>{

@@ -63,14 +63,14 @@
 
                 <b-row>
                     <b-col cols="3">
-                        <span class="form-header">Resource Sharing</span>
+                        <span class="form-header">Projects *</span>
                     </b-col> 
                     <b-col cols="9">
                         <v-select v-if="projects" 
                             :options="projects" v-model="resource.gids" 
                             :reduce="r=>r.group_id" label="name" multiple/>
                         <p>
-                            <small>You can share this resource with other members of the projects that you are an administrator of.</small>
+                            <small>Please select projects that you'd like to use this resource. Any jobs submitted by any member of the project will be executed on this resource.</small>
                         </p>
                     </b-col>
                     <br>
@@ -365,6 +365,7 @@ export default {
                     return;
                 }
             }
+
 
             if(this.resource._id) {
                 //update
