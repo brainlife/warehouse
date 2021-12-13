@@ -96,8 +96,6 @@
                             <h4><b-badge variant="danger">No Public Resources</b-badge></h4>
                             <small>No public resources will be used to run jobs submitted on this project.</small>
                         </div>
-                        <br>
-
                         <div v-if="resources && resources.length">
                             <div v-for="resource in resources" :key="resource._id" @click="openResource(resource)" class="resource">
                                 <statustag :status="resource.status" style="float: right"/>
@@ -927,5 +925,6 @@ p.info .fa-icon {
     padding: 8px; 
     border: 1px solid #0003; 
     border-radius: 5px;
+    margin-bottom: 10px;
 }
 </style>

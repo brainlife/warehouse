@@ -67,11 +67,10 @@ export default {
 
 <style scoped>
 .agreement {
-    background-color: #f0f0f0;
+    border-radius: 5px;
     padding: 5px;
     padding-left: 10px;
     margin-bottom: 10px;
     color: #666;
-    border-left: 3px solid #aaa;
 }
 </style>

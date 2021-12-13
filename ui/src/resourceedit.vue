@@ -280,6 +280,7 @@ export default {
                 admins: Vue.config.user.sub,
             }),
             select: 'name desc group_id',
+            limit: 3000,
         }}).then(res=>{
             this.projects = res.data.projects;
 
