@@ -98,8 +98,8 @@
                         </div>
                         <br>
 
-                        <div v-if="sharedResources && sharedResources.length">
-                            <div v-for="resource in sharedResources" :key="resource._id" @click="openResource(resource)" class="resource">
+                        <div v-if="resources && resources.length">
+                            <div v-for="resource in resources" :key="resource._id" @click="openResource(resource)" class="resource">
                                 <statustag :status="resource.status" style="float: right"/>
                                 <b>{{resource.name}}</b><br>
                                 <small>{{resource.config.desc}}</small>
@@ -469,7 +469,7 @@ export default {
     data() {
         return {
             project: null, 
-            sharedResources: null,
+            resources: null,
 
             resource_usage: null,
             total_walltime: 0,
@@ -670,11 +670,11 @@ export default {
                 this.$http.get(Vue.config.amaretti_api+'/resource', {params: {
                     find: {
                         gids: this.project.group_id,
-                        removed: false,
+                        status: {$ne: "removed"},
                     },
                     select: 'name active config.hostname config.desc status avatar',
                 }}).then(res=>{
-                    this.sharedResources = res.data.resources;
+                    this.resources = res.data.resources;
                 });
 
             }).catch(res=>{

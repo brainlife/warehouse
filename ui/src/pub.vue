@@ -1,24 +1,5 @@
 <template>
 <div v-if="pub" class="pub page-content">
-    <!--
-    <div class="header">
-        <b-container style="position: relative;">
-            <div style="background-color: white;">
-                <h4 style="color: #666; margin-bottom: 5px;">
-                    {{pub.name}} 
-                </h4>
-                <b-tabs class="brainlife-tab" v-model="tab_index">
-                    <b-tab title="Detail"/>
-                    <b-tab v-for="release in pub.releases" :key="release._id">
-                        <template slot="title">Release {{release.name}}</template>
-                    </b-tab>
-                </b-tabs>
-            </div>
-            <b-alert :show="pub.removed" variant="secondary">This publication has been removed</b-alert>
-        </b-container>
-    </div>
-    -->
-
     <b-alert :show="pub.removed" variant="secondary">This publication has been removed</b-alert>
 
     <div style="background-color: white; padding-top: 5px; border-bottom: 1px solid #ddd;">
@@ -30,7 +11,6 @@
                 <projectavatar :project="pub.project" :height="125" :width="125"/>
                 <br>
                 <br>
-
                 <div v-if="pub.tags.length > 0"> 
                     <div class="content-subheader border-bottom">Topics</div>
                     <p style="line-height: 200%; margin-bottom: 0px;">
@@ -140,9 +120,7 @@
 
             <!--main content-->
             <div class="main">
-                <br>
-                <br>
-                <h4 class="serif" style="color: #666; padding-bottom: 5px;">
+                <h4 class="serif" style="color: #666; padding: 10px 0;">
                     {{pub.name}} 
                 </h4>
                 <p>

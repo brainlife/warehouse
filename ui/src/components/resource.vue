@@ -259,11 +259,6 @@ export default {
     background-color: #f6f6f6;
     color: #666;
 }
-.resource:hover {
-    background-color: #0001;
-    opacity: inherit;
-    color: inherit;
-}
 .bigpill {
     position: relative;
     left: -10px;

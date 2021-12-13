@@ -58,18 +58,20 @@
                 <b-container>
                     <br>
                     <div class="box">
-                        <span class="form-header">Files/Dirs</span>
+                        <span class="form-header">Files / Dirs</span>
                         <p><small style="opacity: 0.7">The following files/dirs are expected to be part of this datatype</small></p>
                         <div v-for="file in datatype.files" :key="file.id" style="padding: 5px 20px; border-top: 1px solid #f6f6f6; margin: 0 -20px;">
                             <b-row>
                                 <b-col>
-                                    <span v-if="file.filename"><icon name="regular/file"/> {{file.filename}}</span>
-                                    <span v-if="file.dirname"><icon name="folder"/> {{file.dirname}}</span>
-                                    <b-badge v-if="file.ext" variant="light" title="Validator extension check">{{file.ext}}</b-badge>
+                                    <div style="font-size: 90%">
+                                        <span v-if="file.filename"><icon name="regular/file"/> {{file.filename}}</span>
+                                        <span v-if="file.dirname"><icon name="folder"/> {{file.dirname}}</span>
+                                        <b-badge v-if="file.ext" variant="light" title="Validator extension check">{{file.ext}}</b-badge>
+                                    </div>
                                 </b-col>
                                 <b-col cols="3">
                                     <small><b style="opacity: 0.7">{{file.id}}</b></small>
-                                    <b-badge v-if="!file.required" style="float: right;">optional</b-badge>
+                                    <b-badge v-if="file.required" style="float: right; padding-top: 5px;">Required</b-badge>
                                 </b-col>
                                 <b-col>
                                     <small>{{file.desc}}</small>

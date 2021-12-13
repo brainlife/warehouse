@@ -1,24 +1,22 @@
 <template>
 <table width="100%">
-    <tr v-for="(v,k) in config" :key="k" class="config-row" :class="{ default: isDefault(k), hideDefault: hideDefault }">
-        <th>{{k}}</th>
+    <tr v-for="(v,k) in config" :key="k" 
+        class="config-row" 
+        :class="{ default: isDefault(k), hideDefault: hideDefault }"
+        :title="appconfig[k].desc" v-b-tooltip.hover>
+
+        <!--key-->
+        <th style="max-width:200px">{{k}}</th>
 
         <!--value-->
         <td>
-            <div style="word-break: break-all; display: inline-block;">
+            <div style="word-break: break-all; max-height: 300px; overflow: auto;">
                 <pre v-if="v === null" class="text-muted" style="margin-bottom: 0;">null</pre>
                 <span v-else-if="v === ''">(empty)</span>
                 <pre v-else-if="typeof v == 'object'" style="margin-bottom: 0;">{{JSON.stringify(v, null, 4)}}</pre>
                 <pre v-else style="white-space: pre-wrap; margin-bottom: 0;">{{v}}</pre>
             </div>
             <span style="position: relative; top: -4px; opacity: 0.6;" v-if="!isDefault(k)">(default: {{getDefault(k)}})</span>
-        </td>
-        
-        <!--desc-->
-        <td style="font-size: 85%;" width="50%" v-if="appconfig[k]" :title="appconfig[k].desc" v-b-tooltip.hover>
-            <div style="white-space: pre-line; overflow: hidden; text-overflow: ellipsis; height: 15px;">
-                <!--<span style="opacity: 0.7;">default: {{getDefault(k)}}</span>-->{{appconfig[k].desc}} 
-            </div>
         </td>
     </tr>
 </table>
