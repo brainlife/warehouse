@@ -3,7 +3,7 @@
 import Vue from 'vue'
 
 export default {
-    data: function() {
+    data() {
         return {
             user_agreements: {},
         }
@@ -17,14 +17,14 @@ export default {
     },
 
     methods: {
-        load_agreement: async function() {
+        async load_agreement() {
             let agreements = await this.get_user_agreements();
             for(let id in agreements) {
                 Vue.set(this.user_agreements, id, agreements[id]);
             }
         },
 
-        get_user_agreements: function() {
+        get_user_agreements() {
             return new Promise((resolve, reject)=>{
                 let agreements = {};
 
@@ -41,17 +41,17 @@ export default {
                 }).catch(reject);
             });
         },
-        
-        check_agreements: async function(project, cb) {
-            if(!project.agreements) return cb(); 
-            let user_agreements = await this.get_user_agreements();
-            let agreed = true;
-            project.agreements.forEach(agreement=>{
-                if(!user_agreements[agreement._id]) {
-                    agreed = false;
-                }
-            });
-            if(agreed) return cb();
+
+        isAllAgreed(project) {
+            if(!project.agreements) true; //no agreements to agree to
+            return project.agreements.map(a=>this.user_agreements[a._id]).every(a=>a);
+        },
+
+        //TODO - bad function name (it should be something like "openAgreementModalIfNotAgreed"
+        async check_agreements(project, cb) {
+            await this.load_agreement();
+            if(this.isAllAgreed(project)) return cb();
+            //if not agreed.. open dialog
             this.$root.$emit("agreements.open", {project, cb});
         }
     }

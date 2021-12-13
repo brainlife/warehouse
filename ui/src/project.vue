@@ -160,9 +160,14 @@
 
                         <div v-if="project.agreements && project.agreements.length > 0">
                             <span class="form-header">Agreements</span>
-                            <p> <small class="text-muted">You must consent to the following agreement(s) before accessing data on this project.</small> </p>
-                            <agreements :agreements="project.agreements"/>
-                            <br>
+                            <div v-if="showAgreements || !isAllAgreed(project)">
+                                <p> <small class="text-muted">You must consent to the following agreement(s) before accessing data on this project.</small> </p>
+                                <agreements :agreements="project.agreements"/>
+                                <br>
+                            </div>
+                            <p v-else>
+                                You have consented to all project agreements. <b-button @click="showAgreements = true" size="sm" variant="link">Show Agreements</b-button>
+                            </p>
                         </div>
 
                         <b-row>
@@ -429,10 +434,16 @@ import datatypeselecterModal from '@/modals/datatypeselecter'
 import ReconnectingWebSocket from 'reconnectingwebsocket'
 import citation from '@/components/citation'
 
-let ps;
+import agreementMixin from '@/mixins/agreement'
+
+//let ps;
 
 export default {
+    mixins: [
+        agreementMixin,
+    ],
     components: { 
+
         projectaccess, 
         pageheader,     
         contact, 
@@ -494,6 +505,8 @@ export default {
             resource_citations: [],
 
             ws: null,
+            
+            showAgreements: false,
 
             config: Vue.config,
 
@@ -525,7 +538,7 @@ export default {
     computed: {
         sortedPapers : function() {
             return this.project.relatedPapers.sort((a,b)=> b.citationCount - a.citationCount );
-        }
+        },
     },
 
     mounted() {
