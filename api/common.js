@@ -195,7 +195,7 @@ exports.wait_task = function(req, task_id, cb) {
 exports.issue_archiver_jwt = async function(user_id) {
 
     //load user's gids so that we can add warehouse group id (authorized to access archive)
-    //I need existing user's gids so that user can submit stating task on the instance that user should have access to
+    //I need existing user's gids so that user can submit staging task on the instance that user should have access to
     let gids = await rp.get({
         url: config.auth.api+"/user/groups/"+user_id,
         json: true,

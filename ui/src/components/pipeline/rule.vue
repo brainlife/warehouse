@@ -95,7 +95,7 @@
         </b-col>
 
         <!--counts-->
-        <b-col :cols="2" v-if="rule.stats && rule.stats.counts" title="Number of subjects/session that this rule is waiting for the input data to become available">
+        <b-col :cols="2" v-if="rule.stats && rule.stats.counts && rule.stats.counts.waiting !== undefined" title="Number of subjects/session that this rule is waiting for the input data to become available">
             <h5 style="height: 20px; margin-bottom: 3px">{{rule.stats.counts.waiting}}</h5>
             <span class="form-header">Waiting</span>
         </b-col>
@@ -108,7 +108,7 @@
             </div>
             <span class="form-header" style="float: left;">Processing</span>
         </b-col>
-        <b-col :cols="2" v-if="rule.stats && rule.stats.counts">
+        <b-col :cols="2" v-if="rule.stats && rule.stats.counts && rule.stats.counts.archived !== undefined">
             <h5 style="height: 20px; margin-bottom: 3px">{{rule.stats.counts.archived}}</h5>
             <span class="form-header">Archived</span>
         </b-col>

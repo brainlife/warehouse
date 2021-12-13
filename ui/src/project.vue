@@ -96,10 +96,8 @@
                             <h4><b-badge variant="danger">No Public Resources</b-badge></h4>
                             <small>No public resources will be used to run jobs submitted on this project.</small>
                         </div>
-                        <br>
-
-                        <div v-if="sharedResources && sharedResources.length">
-                            <div v-for="resource in sharedResources" :key="resource._id" @click="openResource(resource)" class="resource">
+                        <div v-if="resources && resources.length">
+                            <div v-for="resource in resources" :key="resource._id" @click="openResource(resource)" class="resource">
                                 <statustag :status="resource.status" style="float: right"/>
                                 <b>{{resource.name}}</b><br>
                                 <small>{{resource.config.desc}}</small>
@@ -162,9 +160,14 @@
 
                         <div v-if="project.agreements && project.agreements.length > 0">
                             <span class="form-header">Agreements</span>
-                            <p> <small class="text-muted">You must consent to the following agreement(s) before accessing data on this project.</small> </p>
-                            <agreements :agreements="project.agreements"/>
-                            <br>
+                            <div v-if="showAgreements || !isAllAgreed(project)">
+                                <p> <small class="text-muted">You must consent to the following agreement(s) before accessing data on this project.</small> </p>
+                                <agreements :agreements="project.agreements"/>
+                                <br>
+                            </div>
+                            <p v-else>
+                                You have consented to all project agreements. <b-button @click="showAgreements = true" size="sm" variant="link">Show Agreements</b-button>
+                            </p>
                         </div>
 
                         <b-row>
@@ -490,9 +493,15 @@ import {VueEditor} from "vue2-editor"
 import { Picker } from 'emoji-mart-vue'
 
 
-let ps;
+import agreementMixin from '@/mixins/agreement'
+
+//let ps;
 
 export default {
+
+    mixins: [
+        agreementMixin,
+    ],
     components: {
         projectaccess,
         pageheader,
@@ -529,7 +538,7 @@ export default {
     data() {
         return {
             project: null, 
-            sharedResources: null,
+            resources: null,
 
             resource_usage: null,
             total_walltime: 0,
@@ -559,6 +568,8 @@ export default {
             resource_citations: [],
 
             ws: null,
+
+            showAgreements: false,
 
             config: Vue.config,
             comment: "",
@@ -627,7 +638,7 @@ export default {
     computed: {
         sortedPapers : function() {
             return this.project.relatedPapers.sort((a,b)=> b.citationCount - a.citationCount );
-        }
+        },
     },
 
     mounted() {
@@ -842,11 +853,11 @@ export default {
                 this.$http.get(Vue.config.amaretti_api+'/resource', {params: {
                     find: {
                         gids: this.project.group_id,
-                        removed: false,
+                        status: {$ne: "removed"},
                     },
                     select: 'name active config.hostname config.desc status avatar',
                 }}).then(res=>{
-                    this.sharedResources = res.data.resources;
+                    this.resources = res.data.resources;
                 });
 
             }).catch(res=>{
@@ -1110,5 +1121,6 @@ p.info .fa-icon {
     padding: 8px; 
     border: 1px solid #0003; 
     border-radius: 5px;
+    margin-bottom: 10px;
 }
 </style>

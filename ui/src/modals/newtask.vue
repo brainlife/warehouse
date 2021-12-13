@@ -428,11 +428,8 @@ export default {
 
         //transform config object
         process_input_config(config) {
-            console.log("app spec");
-            console.dir(this.app);
             for(var k in this.app.config) { 
                 var node = this.app.config[k];
-                //console.log("processing input", k, node);
                 if(node.type && node.type == "input") {
                     var input = this.inputs[node.input_id]; //input spec from the app registration
                     if(input.multi) config[k] = [];
@@ -471,9 +468,6 @@ export default {
                                 } else dep_config.subdirs.push(dataset.subdir);
                             }
                         }
-
-                        console.log("input");
-                        console.dir(input);
 
                         var path = base+"/"+(file.filename||file.dirname);
                         if(dataset.files && dataset.files[node.file_id]) {

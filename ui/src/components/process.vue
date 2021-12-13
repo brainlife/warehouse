@@ -869,7 +869,6 @@ export default {
             //figure out which gids to use
             task.gids = [this.project.group_id];
             if(!this.project.noPublicResource) task.gids.push(1);
-            console.log("using gids", task.gids);
 
             this.$http.post(Vue.config.amaretti_api+'/task', task).then(res=>{
                 var _task = res.data.task;

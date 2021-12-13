@@ -70,7 +70,7 @@
                             :options="projects" v-model="resource.gids" 
                             :reduce="r=>r.group_id" label="name" multiple/>
                         <p>
-                            <small>Please select projects that you'd like to use this resource. Any jobs submitted by any member of the project will be executed on this resource.</small>
+                            <small>Please select projects that you'd like enable this resource. Any jobs submitted by any member of specified project will be executed on this resource.</small>
                         </p>
                     </b-col>
                     <br>
@@ -280,6 +280,7 @@ export default {
                 admins: Vue.config.user.sub,
             }),
             select: 'name desc group_id',
+            limit: 3000,
         }}).then(res=>{
             this.projects = res.data.projects;
 
@@ -356,6 +357,8 @@ export default {
             evt.preventDefault(); //TODO do I need this?
             if(this.submitting) return; //prevent double submission..
             this.submitting = true;
+
+            //validate things
             if(this.envs_ && this.envs_.trim()) {
                 try {
                     this.resource.envs = JSON.parse(this.envs_);
@@ -365,7 +368,11 @@ export default {
                     return;
                 }
             }
-
+            if(!this.resource.gids.length) {
+                this.$notify({type: 'error', text: "Please specify at least 1 project to use this resource"});
+                this.submitting = false;
+                return;
+            }
 
             if(this.resource._id) {
                 //update

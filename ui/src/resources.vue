@@ -20,16 +20,18 @@
             <br>
         </div>
 
-        <!--
-        <div v-if="resources.others.length > 0">
-            <h4 class="header-sticky"><b-container>User Resources <small>(for admin)</small></b-container></h4> 
+        <div v-if="resources.shared.length > 0">
+            <h4 class="header-sticky"><b-container>Shared Resources</b-container></h4> 
             <b-container>
-                <resource v-for="resource in resources.others" :key="resource._id" class="resource" :resource="resource"/>
+                <br>
+                <p>
+                    <small>The following resources are enabled on projects that you are member of.</small>
+                </p>
+                <resource v-for="resource in resources.shared" :key="resource._id" class="resource" :resource="resource"/>
             </b-container>
             <br>
             <br>
         </div>
-        -->
 
         <div v-if="resources.public.length > 0">
             <h4 class="header-sticky"><b-container>Public Resources</b-container></h4> 
@@ -77,7 +79,7 @@ export default {
         return {
             resources: {
                 mine: [],
-                others: [], //only admin should see this
+                shared: [], //only admin should see this
                 public: [], 
             },
 
@@ -93,27 +95,6 @@ export default {
         }
     },
 
-    computed: {
-        /*
-        myResources() {
-            if(!this.resources) return [];
-            const usub = Vue.config.user.sub.toString();
-            return this.resources.filter(r=>(r.user_id == usub || (r.admins && r.admins.includes(usub))));
-        },
-
-        userResources() {
-            if(!this.resources) return [];
-            const usub = Vue.config.user.sub.toString();
-            return this.resources.filter(r=>(!r.gids.includes(1) && r.user_id != usub && (!r.admins || !r.admins.includes(usub))));
-        },
-
-        publicResources() {
-            if(!this.resources) return [];
-            return this.resources.filter(r=>r.gids.includes(1));
-        },
-        */
-    },
-
     mounted() {
         const find = {
             status: {$ne: "removed"},
@@ -125,7 +106,7 @@ export default {
             select: 'resource_id config.desc config.maxtask name citation status status_msg lastok_date active gids stats avatar'
         }}).then(res=>{
             this.resources.mine = [];
-            //this.resources.others = [];
+            this.resources.shared = [];
             this.resources.public = [];
             const usub = Vue.config.user.sub.toString();
             res.data.resources.forEach(r=>{
@@ -136,9 +117,8 @@ export default {
                     //mine
                     this.resources.mine.push(r);
                 } else {
-                    console.error("resource that's not mine nor public");
-                    console.dir(r)
-                    //this.resources.others.push(r); //only admin should see this
+                    //must be shared
+                    this.resources.shared.push(r); 
                 }
             });
         }).catch(console.error);

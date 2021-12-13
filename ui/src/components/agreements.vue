@@ -3,8 +3,7 @@
     <div v-for="agreement in agreements" class="agreement">
         <vue-markdown :source="agreement.agreement" class="readme"/>
         <b-form-checkbox :disabled="!config.user" @change="update_agreements(agreement._id)" v-model="user_agreements[agreement._id]">
-            I Agree
-            <small v-if="!config.user">(Please register/signin first to agree)</small>
+            I Agree <small v-if="!config.user">(Please register/signin first to agree)</small>
         </b-form-checkbox>
     </div>
 </div>
@@ -67,11 +66,13 @@ export default {
 
 <style scoped>
 .agreement {
-    background-color: #f0f0f0;
+    border-radius: 5px;
     padding: 5px;
     padding-left: 10px;
     margin-bottom: 10px;
     color: #666;
-    border-left: 3px solid #aaa;
+}
+/deep/ .readme p {
+    margin-bottom: 0.25em;
 }
 </style>

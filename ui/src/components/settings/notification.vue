@@ -21,7 +21,9 @@
                 <span class="form-header">New Comments</span>
             </b-col>
             <b-col cols="7">
-                check box..  
+                <b-form-checkbox v-model="profile.private.notifyCommentEmail">
+                    Send email when new comments are posted to project that I am a member, or I follow.
+                </b-form-checkbox>
             </b-col>
         </b-row>
         <br>
