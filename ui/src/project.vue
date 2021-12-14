@@ -279,7 +279,7 @@
 
                         <!--participants-->
                         <div v-if="detailTab == 1">
-                            <p><small>Participants info provides information for each subject and can be used for the group analysis.</small></p>                        
+                            <p><small>Participants info provides information for each subject and can be used for the group analysis.</small></p>
                             <b-alert variant="secondary" :show="project.publishParticipantsInfo" style="margin-bottom: 15px;">
                                 This information will be published as part of all publications made from this project.
                             </b-alert>
@@ -296,7 +296,7 @@
 
                             <div v-if="project.stats.apps && project.stats.apps.length > 0">
                                 <span class="form-header">App Usage</span>
-                                <p><small>The following Apps were used to generate the data in this project.</small></p>                        
+                                <p><small>The following Apps were used to generate the data in this project.</small></p>
                                 <b-row style="border-bottom: 1px solid #0003; margin-bottom: 10px; opacity: 0.7">
                                     <b-col cols="10">App</b-col>
                                     <b-col cols="2">Execution Count</b-col>
@@ -314,7 +314,7 @@
 
                             <div v-if="resource_usage && total_walltime > 3600*1000">
                                 <span class="form-header">Resource Usage</span>
-                                <p><small>Data-objects on this project has been computed using the following resources.</small></p>             
+                                <p><small>Data-objects on this project has been computed using the following resources.</small></p>
                                 <ExportablePlotly :data="resource_usage.data" 
                                     :layout="resource_usage.layout" 
                                     :autoResize="true" 
@@ -605,26 +605,6 @@ export default {
             if(this.detailTab == 4) {
                 this.axios.get("/comment/project/"+this.project._id).then(res=>{
                     var url = Vue.config.event_ws+"/subscribe?jwt="+Vue.config.jwt;
-                    this.ws = new ReconnectingWebSocket(url, null, {reconnectInterval: 3000});
-                    /* for updating comments */
-                    // this.ws.onopen = (e)=>{
-                    //     this.ws.send(JSON.stringify({
-                    //         bind: {
-                    //             ex: "warehouse",
-                    //             key: "comment_project.*.*."+this.selected._id,
-                    //         },
-                    //     }));
-                    //     this.ws.onmessage = (json)=>{
-                    //         let event = JSON.parse(json.data);
-                    //         let index = this.comments.findIndex(comment=>
-                    //             comment._id == event.msg._id);
-                    //         if(index == -1) this.comments.push(event.msg);
-                    //         else {
-                    //             if(!event.msg.removed) this.comments.splice(index, 1, event.msg);
-                    //             else this.comments.splice(index, 1);
-                    //         }
-                    //     };
-                // };
                     this.comments = res.data;
                 }).catch(err=>{
                     console.error(err);
@@ -814,22 +794,9 @@ export default {
                         }
                     }));
                     this.ws.onmessage = (json)=>{
-                        var event = JSON.parse(json.data);
+                        let event = JSON.parse(json.data);
                         console.log(event);
-                        /* make it better
-                        if(project update)
-                        if(comment update)
-                        if(comment removed)
-                        */
-                        if(event.msg.comment) {
-                            let index = this.comments.findIndex(comment=>
-                                comment._id == event.msg._id);
-                            if(index == -1) this.comments.push(event.msg);
-                            else {
-                                if(!event.msg.removed) this.comments.splice(index, 1, event.msg);
-                                else this.comments.splice(index, 1);
-                            }
-                        } else {
+                        if(event.dinfo.routingKey.startsWith("project")) {
                             for(let k in event.msg) {
                                 if(this.project[k] === undefined) this.project[k] = event.msg[k];
                                 else {
@@ -837,6 +804,19 @@ export default {
                                     else this.project[k] = event.msg[k];
                                 }
                             }
+                        }
+                        /* comment updated
+                        msg.removed == false*/
+                        if(event.dinfo.routingKey.startsWith("comment") && !event.msg.removed) {
+                            const index = this.comments.findIndex(comment=>comment._id == event.msg._id);
+                            if(index == -1) this.comments.push(event.msg);
+                            else this.comments.splice(index, 1, event.msg);
+                        }
+                        /*comment deleted*/
+                        if(event.dinfo.routingKey.startsWith("comment") && event.msg.removed) {
+                            const index = this.comments.findIndex(comment=>comment._id == event.msg._id);
+                            console.log(index,this.comments[index]);
+                            this.comments.splice(index, 1);
                         }
                     }
                 }
