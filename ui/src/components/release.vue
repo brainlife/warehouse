@@ -139,8 +139,10 @@ export default {
 <style scoped>
 .header {
     background-color: #eee;
-    padding: 10px;
+    padding: 10px 25px;
     margin-bottom: 15px;
+    margin-left: -25px;
+    margin-right: -15px;
     position: sticky;
     top: 0;
     z-index: 2;

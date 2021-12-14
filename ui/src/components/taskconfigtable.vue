@@ -2,14 +2,13 @@
 <table width="100%">
     <tr v-for="(v,k) in config" :key="k" 
         class="config-row" 
-        :class="{ default: isDefault(k), hideDefault: hideDefault }"
-        :title="appconfig[k].desc" v-b-tooltip.hover>
+        :class="{ default: isDefault(k), hideDefault: hideDefault }">
 
         <!--key-->
-        <th style="max-width:200px">{{k}}</th>
+        <th :title="appconfig[k].desc" v-b-tooltip>{{k}}</th>
 
         <!--value-->
-        <td>
+        <td width="80%">
             <div style="word-break: break-all; max-height: 300px; overflow: auto;">
                 <pre v-if="v === null" class="text-muted" style="margin-bottom: 0;">null</pre>
                 <span v-else-if="v === ''">(empty)</span>

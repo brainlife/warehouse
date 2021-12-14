@@ -1,11 +1,12 @@
 <template>
 <div class="project" @click="open">
     <b-row>
-        <b-col md="6">
+        <b-col>
             <projectavatar class="avatar" :project="project" :width="25" :height="25"/>
             <div class="header-row">
                 <projectaccess :access="project.access"/>
-                <div style="float: right; font-size: 90%; opacity: 0.9;" v-if="project.stats.datasets && project.stats.datasets.subject_count">
+                <div style="float: right; font-size: 90%; opacity: 0.9;" 
+                    v-if="project.stats && project.stats.datasets && project.stats.datasets.subject_count">
                     {{project.stats.datasets.subject_count}} <span style="opacity: 0.5;">sub</span>
 
                     <span style="opacity: 0.2;">|</span>
@@ -33,14 +34,14 @@
             </div>
         </b-col>
         <b-col md="1">
-            <span style="font-size: 90%">{{new Date(project.create_date).toLocaleDateString()}}</span>
+            <small>{{new Date(project.create_date).toLocaleDateString()}}</small>
         </b-col>
         <b-col md="1">
-            <stateprogress v-if="project.stats && project.stats.instances" 
-                :states="project.stats.instances" height="26px"/>
+            <stateprogress :states="project.stats.instances" height="26px" 
+                v-if="project.stats && project.stats.instances"/>
         </b-col>
-        <b-col md="1" v-if="config.user">
-            <div class="contacts">
+        <b-col md="2">
+            <div v-if="config.user">
                 <contact v-for="c in contacts" :key="c._id" :id="c" size="tiny" style="margin-left: -6px; margin-bottom: -4px"/>
             </div>
         </b-col>
@@ -75,6 +76,7 @@ export default {
 
     created() {
         //delete this.project.stats;
+        /*
         if(!this.project.stats) this.project.stats = {
             instances: {},    
             rules: {
@@ -82,7 +84,7 @@ export default {
                 inactive: 0,
             }
         }
-        
+        */
     },
 
     methods: {
@@ -105,36 +107,36 @@ export default {
 
 <style scoped>
 .project {
-background-color: white;
-padding: 7px 6px;
-margin-bottom: 1px;
+    background-color: white;
+    padding: 7px 6px;
+    margin-bottom: 1px;
 }
 .project:hover {
-background-color: #f9f9f9;
-cursor: pointer;
+    background-color: #f9f9f9;
+    cursor: pointer;
 }
 .header-row {
-margin-left: 42px;
+    margin-left: 42px;
 }
 
 .datatypes {
-font-size: 85%;
+    font-size: 85%;
 }
 .avatar {
-float: left;
+    float: left;
 }
 .private {
-float: left;
-color: #dc3545;
-margin-right: 3px;
+    float: left;
+    color: #dc3545;
+    margin-right: 3px;
 }
 .title {
-font-size: 90%;
-font-weight: bold;
+    font-size: 90%;
+    font-weight: bold;
 }
 .desc {
-font-size: 85%;
-opacity: 0.7;
-padding-top: 5px;
+    font-size: 85%;
+    opacity: 0.7;
+    padding-top: 5px;
 }
 </style>

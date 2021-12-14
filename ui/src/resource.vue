@@ -135,11 +135,19 @@
                                 <h5>
                                     <b-badge variant="success" 
                                         title="This is a public resource for all brainlife projects/users.">
-                                        All Projects
+                                        Public Resource 
                                     </b-badge>
                                 </h5>
                             </div>
-                            <group v-for="gid in resource.gids.filter(gid=>gid!=1)" :key="gid" :id="gid" style="margin-bottom: 10px;"/>
+                            <!--<group v-for="gid in resource.gids.filter(gid=>gid!=1)" :key="gid" :id="gid" style="margin-bottom: 10px;"/>-->
+                            <projectbar v-for="project in gidsProjects" :key="project.group_id" :project="project"/>
+                            <div v-if="privateGids && privateGids.length">
+                                <small>This resource is enabled on private projects that you do not have access to.</small>
+                                <!--<group v-for="gid in privateGids" :key="gid" :id="gid" style="margin-bottom: 10px;"/>-->
+                                <h5>
+                                    <b-badge v-for="gid in privateGids" :key="gid">GroupID: {{gid}}</b-badge>
+                                </h5>
+                            </div>
                             <br>
                         </b-col>
                     </b-row>
@@ -307,7 +315,8 @@ import Vue from 'vue'
 import Router from 'vue-router'
 
 import pageheader from '@/components/pageheader'
-import group from '@/components/group'
+//import group from '@/components/group'
+import projectbar from '@/components/projectbar'
 import contact from '@/components/contact'
 import app from '@/components/app'
 import statustag from '@/components/statustag'
@@ -321,11 +330,12 @@ export default {
         pageheader, 
         app, 
         contact, 
-        group, 
+        //group, 
         statustag, 
         stateprogress, 
         ExportablePlotly: ()=>import('@/components/ExportablePlotly'),
         taskRecord, 
+        projectbar,
 
         editor: require('vue2-ace-editor'),
     },
@@ -337,10 +347,12 @@ export default {
             tasksRecent: null,
             tasksRunning: null,
 
-            //report: null,
-            projects: null, //list of all projects and some basic info (only admin can load this)
+            projects: null, //only used for admin - for project tab. list of all projects and some basic info (only admin can load this)
             usage_data: null, 
             usage_layout: null, 
+            
+            gidsProjects: null, //list of projects that this resource is enabled on
+            privateGids: null, //enabled gids that user doesn't have access to 
 
             tab: 0,
             tabs : [
@@ -402,6 +414,24 @@ export default {
                     return 0;
                 });
                 */
+
+                //load projects specified by the group_id
+                this.$http.get('/project', {params: {
+                    find: JSON.stringify({
+                        group_id: {$in: this.resource.gids},
+                    }),
+                    select: 'name desc group_id admins members create_date',
+                }}).then(res=>{
+                    this.gidsProjects = res.data.projects;
+
+                    //for projects that user doesn't have access (other admins of the resource can set it)
+                    //let's create a skelton project to display
+                    this.privateGids = [];
+                    this.resource.gids.forEach(gid=>{
+                        const project = this.gidsProjects.find(p=>p.group_id == gid);
+                        if(!project) this.privateGids.push(gid);
+                    });
+                });
 
                 if(Vue.config.hasRole("admin")) {
                     if(!this.resource.stats.projects) return;

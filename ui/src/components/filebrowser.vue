@@ -20,7 +20,7 @@
             <!--file/dir label-->
             <div class="fileitem" @click="click(file)" :class="{'fileitem-viewing': file.view}">
                 <span :style="{marginLeft: offset, opacity: '0.7'}">
-                    <icon name="regular/file" v-if="!file.directory && !file.link"></icon>
+                    <!--<icon name="regular/file" v-if="!file.directory && !file.link"></icon>-->
                     <icon name="folder-open" v-if="file.directory && file.open" class="text-primary"></icon>
                     <icon name="folder" v-if="file.directory && !file.open" class="text-primary"></icon>
                     <icon name="link" v-if="file.link" class="text-warning" scale="0.80"></icon>
@@ -29,6 +29,7 @@
                 <span style="float: right; width: 150px; opacity: 0.7;">
                     <timeago :datetime="file.attrs.mtime*1000" :title="new Date(file.attrs.mtime*1000).toLocaleString()"/>
                 </span>
+                <pre style="float: right; margin-right: 20px; opacity: 0.7;">{{file.attrs.mode_string}}</pre>
                 <span style="float: right; margin-right: 20px;" v-if="!file.link">{{file.attrs.size|filesize}}</span>
             </div>
 

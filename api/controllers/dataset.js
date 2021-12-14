@@ -1474,8 +1474,8 @@ router.delete('/:id?', common.jwt({secret: config.express.pubkey}), function(req
  * @apiSuccess {String}         generated bash shell script
 */
 router.post('/downscript', common.jwt({secret: config.express.pubkey/* credentialsRequired: false*/}), (req, res, next)=>{
-    let skip = req.query.skip||0;
-    let limit = req.query.limit||100; //this means if user set it to "0", no limit (it's string)
+    let skip = req.body.skip||0;
+    let limit = req.body.limit||100; //this means if user set it to "0", no limit (it's string)
     if(!req.body.find) return next("please set find parameter");
 
     common.getprojects(req.user, (err, canread_project_ids, canwrite_project_ids)=>{
