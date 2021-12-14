@@ -636,7 +636,7 @@ export default {
             this.comment += emoji.native;
             this.showMart = false;
         },
-        toggleEmojiMart (){
+        toggleEmojiMart() {
             if(this.showMart) this.showMart = false;
             else this.showMart = true;
         }
@@ -897,7 +897,7 @@ export default {
                         //title: 'Apps'
                     },
                     xaxis: {
-                        title: 'Total Walltime (hour)',  
+                        title: 'Total Walltime (hour)',
                         type: 'log',
                         //autorange: true
                         showgrid: true,
