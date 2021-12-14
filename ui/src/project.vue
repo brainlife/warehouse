@@ -722,7 +722,7 @@ export default {
             if(this.editcommentID) {
                 this.$http.patch('comment/'+this.editcommentID, {comment: this.comment})
                 .then(res=>{
-                    console.log(res.data);
+                    // console.log(res.data);
                     /* events api will update*/
                     // this.comments[this.editcommentIndex] = res.data;
                     this.comment = "";
@@ -795,7 +795,6 @@ export default {
                     }));
                     this.ws.onmessage = (json)=>{
                         let event = JSON.parse(json.data);
-                        console.log(event);
                         if(event.dinfo.routingKey.startsWith("project")) {
                             for(let k in event.msg) {
                                 if(this.project[k] === undefined) this.project[k] = event.msg[k];
@@ -815,7 +814,6 @@ export default {
                         /*comment deleted*/
                         if(event.dinfo.routingKey.startsWith("comment") && event.msg.removed) {
                             const index = this.comments.findIndex(comment=>comment._id == event.msg._id);
-                            console.log(index,this.comments[index]);
                             this.comments.splice(index, 1);
                         }
                     }
