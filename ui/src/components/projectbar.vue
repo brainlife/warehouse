@@ -1,7 +1,7 @@
 <template>
 <div class="project" @click="open">
     <b-row>
-        <b-col>
+        <b-col md="5">
             <projectavatar class="avatar" :project="project" :width="25" :height="25"/>
             <div class="header-row">
                 <projectaccess :access="project.access"/>

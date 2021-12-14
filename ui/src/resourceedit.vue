@@ -66,8 +66,7 @@
                         <span class="form-header">Projects *</span>
                     </b-col> 
                     <b-col cols="9">
-                        <v-select v-if="projects" 
-                            :options="projects" v-model="resource.gids" 
+                        <v-select v-if="projects" :options="projects" v-model="resource.gids" 
                             :reduce="r=>r.group_id" label="name" multiple/>
                         <p>
                             <small>Please select projects that you'd like enable this resource. Any jobs submitted by any member of specified project will be executed on this resource.</small>
@@ -273,26 +272,6 @@ export default {
             this.service_names.sort();
         });
 
-        //load project that user can share this resource with
-        this.$http.get('project', {params: {
-            find: JSON.stringify({
-                removed: false,
-                admins: Vue.config.user.sub,
-            }),
-            select: 'name desc group_id',
-            limit: 3000,
-        }}).then(res=>{
-            this.projects = res.data.projects;
-
-            //brainlife admin can add global user (but only site admin can *add* it)
-            //if(this.config.hasRole('admin')) {
-            this.projects.push({
-                group_id: 1, 
-                name: "(Public Resource)", 
-                desc: "Share this resource with all brainlife users - only brainlife administrator can add this"
-            });
-        });
-
         if(this.$route.params.id !== '_') {
             //TODO use resource_cache mixin?
             this.$http.get(Vue.config.amaretti_api+'/resource', {params: {
@@ -300,6 +279,7 @@ export default {
             }}).then(res=>{
                 this.resource = res.data.resources[0];
                 this.envs_ = JSON.stringify(this.resource.envs, null, 4);
+                this.loadProjects();
             });
         } else {
             this.resource = {
@@ -316,11 +296,44 @@ export default {
                 gids: [],
             };
             this.reset_sshkey();
+            this.loadProjects();
         }
 
     },
 
     methods: {
+        loadProjects() {
+            //load project that user can share this resource with
+            this.$http.get('project', {params: {
+                find: JSON.stringify({
+                    removed: false,
+                    admins: Vue.config.user.sub,
+                }),
+                select: 'name desc group_id',
+                limit: 3000,
+            }}).then(res=>{
+                this.projects = res.data.projects;
+
+                //brainlife admin can add global user (but only site admin can *add* it)
+                //if(this.config.hasRole('admin')) {
+                this.projects.push({
+                    group_id: 1, 
+                    name: "(Public Resource)", 
+                    desc: "Share this resource with all brainlife users - only brainlife administrator can add this"
+                });
+
+                //add private groups that user doesn't have access to.. so the value won't disappear
+                this.resource.gids.forEach(gid=>{
+                    const project = this.projects.find(p=>p.group_id == gid);
+                    if(!project) this.projects.push({
+                            group_id: gid, 
+                            name: "(Private Project "+gid+")", 
+                            desc: "You don't have access to this project by it was added by other administrator",
+                    });
+                }); 
+            });
+        },
+
         cancel() {
             //if(this.resource._id) this.$router.push('/resource/'+this.resource._id);
             //else this.$router.push('/resources');

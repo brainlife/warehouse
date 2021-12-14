@@ -139,13 +139,15 @@
                                     </b-badge>
                                 </h5>
                             </div>
-                            <!--<group v-for="gid in resource.gids.filter(gid=>gid!=1)" :key="gid" :id="gid" style="margin-bottom: 10px;"/>-->
-                            <projectbar v-for="project in gidsProjects" :key="project.group_id" :project="project"/>
+                            <p>
+                                <!--<group v-for="gid in resource.gids.filter(gid=>gid!=1)" :key="gid" :id="gid" style="margin-bottom: 10px;"/>-->
+                                <projectbar v-for="project in gidsProjects" :key="project.group_id" :project="project"/>
+                            </p>
                             <div v-if="privateGids && privateGids.length">
                                 <small>This resource is enabled on private projects that you do not have access to.</small>
                                 <!--<group v-for="gid in privateGids" :key="gid" :id="gid" style="margin-bottom: 10px;"/>-->
-                                <h5>
-                                    <b-badge v-for="gid in privateGids" :key="gid">GroupID: {{gid}}</b-badge>
+                                <h5 v-for="gid in privateGids" :key="gid">
+                                    <b-badge :key="gid">Private Group ID: {{gid}}</b-badge>
                                 </h5>
                             </div>
                             <br>
