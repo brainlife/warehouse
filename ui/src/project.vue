@@ -544,7 +544,6 @@ export default {
             total_walltime: 0,
             editcommentID : null,
             showMart: false,
-            editcommentIndex: null,
 
             participants: null,
             participants_columns: null,
@@ -675,7 +674,6 @@ export default {
             this.comment = "";
             this.comment = comment.comment;
             this.editcommentID = comment._id;
-            this.editcommentIndex = this.comments.indexOf(comment);
         },
         format(date) {
             let month = date.toLocaleString("en-US", { month: 'short' })
@@ -818,6 +816,11 @@ export default {
                     this.ws.onmessage = (json)=>{
                         var event = JSON.parse(json.data);
                         console.log(event);
+                        /* make it better
+                        if(project update)
+                        if(comment update)
+                        if(comment removed)
+                        */
                         if(event.msg.comment) {
                             let index = this.comments.findIndex(comment=>
                                 comment._id == event.msg._id);
