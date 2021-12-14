@@ -9,7 +9,7 @@
                 </div>
             </div>
             <h5 style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
-                <projectaccess :access="project.access" style="position: relative; top: -3px;"/> 
+                <projectaccess :access="project.access" style="position: relative; top: -3px;"/>
                 {{project.name}}
             </h5>
         </div>
@@ -25,9 +25,9 @@
                         </span>
 
                         <span v-if="tabinfo.id == 'dataset'" style="opacity: 0.6; font-size: 80%;">
-                            <span title="Number of subjects stored in archive" 
+                            <span title="Number of subjects stored in archive"
                                 v-if="project.stats && project.stats.datasets && project.stats.datasets.subject_count">
-                               &nbsp;<icon name="user-friends" scale="0.8"/>&nbsp;&nbsp;{{project.stats.datasets.subject_count}} 
+                               &nbsp;<icon name="user-friends" scale="0.8"/>&nbsp;&nbsp;{{project.stats.datasets.subject_count}}
                             </span>
                             <span title="Number of data-objects stored in archive"
                                 v-if="project.stats && project.stats.datasets && project.stats.datasets.count">
@@ -35,13 +35,13 @@
                             </span>
                         </span>
 
-                        <span v-if="tabinfo.id == 'process'" title="Number of tasks" style="opacity: 0.8;"> 
+                        <span v-if="tabinfo.id == 'process'" title="Number of tasks" style="opacity: 0.8;">
                             <div v-if="project.stats && get_total(project.stats.instances) > 0" style="display: inline-block; width: 75px;">
                                 <stateprogress :states="project.stats.instances"/>
                             </div>
                         </span>
 
-                        <span v-if="tabinfo.id == 'pipeline' && project.stats && project.stats.rules && (project.stats.rules.active||project.stats.rules.inactive)" 
+                        <span v-if="tabinfo.id == 'pipeline' && project.stats && project.stats.rules && (project.stats.rules.active||project.stats.rules.inactive)"
                             title="Number of pipeline rules" style="opacity: 0.6; font-size: 80%;">
                             &nbsp;{{project.stats.rules.active}} <small>/ {{project.stats.rules.active + project.stats.rules.inactive}}</small>
                         </span>
@@ -284,9 +284,9 @@
                                 This information will be published as part of all publications made from this project.
                             </b-alert>
 
-                            <participants v-if="participants && Object.keys(participants).length" 
-                                :rows="participants" 
-                                :columns="participants_columns" 
+                            <participants v-if="participants && Object.keys(participants).length"
+                                :rows="participants"
+                                :columns="participants_columns"
                                 style="overflow: auto; max-height: 500px;"/>
 
                         </div>
@@ -315,9 +315,9 @@
                             <div v-if="resource_usage && total_walltime > 3600*1000">
                                 <span class="form-header">Resource Usage</span>
                                 <p><small>Data-objects on this project has been computed using the following resources.</small></p>
-                                <ExportablePlotly :data="resource_usage.data" 
-                                    :layout="resource_usage.layout" 
-                                    :autoResize="true" 
+                                <ExportablePlotly :data="resource_usage.data"
+                                    :layout="resource_usage.layout"
+                                    :autoResize="true"
                                     :watchShallow="true"/>
                                 <br>
                             </div>
@@ -537,7 +537,7 @@ export default {
 
     data() {
         return {
-            project: null, 
+            project: null,
             resources: null,
 
             resource_usage: null,
@@ -639,8 +639,7 @@ export default {
         toggleEmojiMart() {
             if(this.showMart) this.showMart = false;
             else this.showMart = true;
-        }
-        ,
+        },
         deleteComment(comment) {
             this.$http.delete('comment/'+comment._id, {
             }).then(res=>{
@@ -933,7 +932,7 @@ export default {
                         //let resource = res.data.resources.find(r=>r._id == stat.resource_id);
                         //if(!resource) return; //no such resource?
                         //let resource_citations = this.resource_citations.find(r=>r.resource._id == stat.resource_id);
-                        //if(!resource_citations) this.resource_citations.push({resource, citation: stat.citation});    
+                        //if(!resource_citations) this.resource_citations.push({resource, citation: stat.citation});
                         this.resource_citations.push({resource, citation: resource.citation});
                     });
 
@@ -1099,8 +1098,8 @@ p.info .fa-icon {
 }
 .resource {
     cursor: pointer;
-    padding: 8px; 
-    border: 1px solid #0003; 
+    padding: 8px;
+    border: 1px solid #0003;
     border-radius: 5px;
     margin-bottom: 10px;
 }
