@@ -352,61 +352,38 @@
                             </div>
                         </div>
 
-
                         <div v-if="detailTab == 4">
-                            <!--<vue-disqus ref="disqus" shortname="brain-life" :identifier="selected._id"/> -->
-                            <b-alert show variant="secondary" v-if="!config.user">
-                                Please login to Comments.
-                            </b-alert>
-                            <div v-else>
-                                <div v-if="comments && comments.length">
-                                    <div v-for="comment in comments" :key="comment._id">
-                                        <div class="commentbox">
-                                            <div class="comment-header">
-                                                <contact :id="comment.user_id" size="small"
-                                                style="line-height: 150%;"/>
-                                                <div style="float: right">
-                                                    <b-badge pill class="bigpill" title="Comment Date">
-                                                        <icon name="calendar" style="opacity: 0.4;"/>&nbsp;&nbsp;
-                                                            {{new Date(comment.update_date).
-                                                            toLocaleDateString()}}
-                                                    </b-badge>
-                                                    <div @click="editComment(comment)"
-                                                    v-if="isauthor(comment.user_id)"
-                                                    class="button"
-                                                    title="Edit Comment">
-                                                        <icon name="edit" scale="1.25"/>
-                                                    </div>
-                                                    <div @click="deleteComment(comment)"
-                                                    v-if="isauthor(comment.user_id)"
-                                                    class="button"
-                                                    title="Delete Comment">
-                                                        <icon name="trash" scale="1.25"/>
-                                                    </div>
-                                                </div>
+                            <b-alert show variant="secondary" v-if="!config.user"> Please login to Comments.</b-alert>
+                            <div v-else-if="comments && comments.length">
+                                <div v-for="comment in comments" :key="comment._id" class="commentbox">
+                                    <div class="comment-header">
+                                        <contact :id="comment.user_id" size="small"/>
+                                        <small><timeago :datetime="comment.update_date"/></small>
+                                        <div style="float: right" v-if="isauthor(comment.user_id) || isadmin(comment.user_id)">
+                                            <div @click="editComment(comment)" class="button" title="Edit Comment">
+                                                <icon name="edit"/>
                                             </div>
-                                            <div class="comcontent">
-                                                <p>
-                                                    <span v-html="comment.comment"></span>
-                                                </p>
+                                            <div @click="deleteComment(comment)" class="button" title="Delete Comment">
+                                                <icon name="trash"/>
                                             </div>
-                                        </div>
                                         </div>
                                     </div>
-                                <div style="position: relative">
-                                    <span @click="toggleEmojiMart()" style="position:absolute;top: 10px; right: 10px; cursor: pointer;">😋</span>
-                                    <b-form-textarea v-model="comment" placeholder="Enter comment here" required/>
-                                    <emojimart v-if="showMart" @select="addEmojiToComment" style="position: absolute; z-index: 1; right: 0; height:250px"/>
+                                    <p v-if="comment.removed" class="comcoontent comment-removed">Comment removed</p>
+                                    <p v-else class="comcontent" v-html="comment.comment"/>
                                 </div>
-                                <br>
-                                <b-button v-if="comment.length" @click="submitComment()">Comment</b-button>
-                                <div v-if="!comments.length" style="height:120px">
-                                    <p>Be the first one to comment !</p>
-                                </div>
-                                <br>
-                                </div>
-                                 <!-- <vue-editor id="commentEditor" :editorToolbar="customToolbar" v-model="comment"></vue-editor> -->
                             </div>
+                            <div style="position: relative">
+                                <span @click="toggleEmojiMart()" style="position:absolute;top: 10px; right: 10px; cursor: pointer;">😋</span>
+                                <b-form-textarea v-model="comment" placeholder="New Comment" required/>
+                                <emojimart v-if="showMart" @select="addEmojiToComment" style="position: absolute; z-index: 1; right: 0; height:250px"/>
+                            </div>
+                            <br>
+                            <b-button v-if="comment.length" @click="submitComment()">Comment</b-button>
+                            <div v-if="!comments.length" style="height:120px">
+                                <p>Be the first one to comment !</p>
+                            </div>
+                            <br>
+                        </div>
                     </div><!-- main content-->
                 </div><!--project header-->
                 <div v-if="config.debug">
@@ -641,13 +618,14 @@ export default {
             else this.showMart = true;
         },
         deleteComment(comment) {
-            this.$http.delete('comment/'+comment._id, {
-            }).then(res=>{
-                // this.comments.splice(this.comments.indexOf(comment), 1);
+            if(confirm("do you want to remove this comment?")) {
+                this.$http.delete('comment/'+comment._id).then(res=>{
+                    this.$notify({text: "removed"});
                 }).catch(err=>{
-                console.error(err);
-                this.$notify({ text: err.response.data.message, type: 'error'});
-            })
+                    console.error(err);
+                    this.$notify({ text: err.response.data.message, type: 'error'});
+                })
+            }
         },
         editComment(comment) {
             this.comment = "";
@@ -705,7 +683,7 @@ export default {
 
         isauthor(sub) {
             if(!Vue.config.user) return false;
-            if(Vue.config.user.sub == sub || Vue.config.hasRole('admin')) return true;
+            if(Vue.config.user.sub == sub) return true;
         },
 
         remove() {
@@ -794,7 +772,7 @@ export default {
                     }));
                     this.ws.onmessage = (json)=>{
                         let event = JSON.parse(json.data);
-                        if(event.dinfo.routingKey.startsWith("project")) {
+                        if(event.dinfo.routingKey.startsWith("project.")) {
                             for(let k in event.msg) {
                                 if(this.project[k] === undefined) this.project[k] = event.msg[k];
                                 else {
@@ -803,17 +781,10 @@ export default {
                                 }
                             }
                         }
-                        /* comment updated
-                        msg.removed == false*/
-                        if(event.dinfo.routingKey.startsWith("comment") && !event.msg.removed) {
-                            const index = this.comments.findIndex(comment=>comment._id == event.msg._id);
-                            if(index == -1) this.comments.push(event.msg);
-                            else this.comments.splice(index, 1, event.msg);
-                        }
-                        /*comment deleted*/
-                        if(event.dinfo.routingKey.startsWith("comment") && event.msg.removed) {
-                            const index = this.comments.findIndex(comment=>comment._id == event.msg._id);
-                            this.comments.splice(index, 1);
+                        if(event.dinfo.routingKey.startsWith("comment_project.")) {
+                            const comment = this.comments.find(c=>c._id == event.msg._id);
+                            if(!comment) this.comments.push(event.msg);
+                            else Object.assign(comment, event.msg);
                         }
                     }
                 }
@@ -1095,6 +1066,12 @@ p.info .fa-icon {
 }
 .comcontent {
     margin: 8px;
+}
+.comment-removed {
+    opacity: 0.8;
+    margin: 10px 0;
+    padding: 10px;
+    background-color: #eee;
 }
 .resource {
     cursor: pointer;
