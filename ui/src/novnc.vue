@@ -65,7 +65,7 @@ export default {
         open_novnc() {
             this.get_instance_singleton("novnc").then((instance)=>{
                 //look for novnc task running for specified instance/task
-                this.$http.get(Vue.config.wf_api+'/task', {params: {
+                this.$http.get(Vue.config.amaretti_api+'/task', {params: {
                     find: JSON.stringify({
                         instance_id: instance._id,
                         name: novnc_task_name,
@@ -92,9 +92,12 @@ export default {
                         let dep_config = { task: this.taskid };
                         if(this.subdir) dep_config.subdirs = [ this.subdir ];
 
+                        console.log("submitting novnc with ", this.task.gids);
+
                         //submit novnc service for the first time!
-                        this.$http.post(Vue.config.wf_api+'/task', {
+                        this.$http.post(Vue.config.amaretti_api+'/task', {
                             instance_id: instance._id,
+                            gids: this.task.gids,
                             name: novnc_task_name,
                             service: "brainlife/abcd-novnc",
                             max_runtime: 3600*1000, //1 hour should be enough?
@@ -126,7 +129,7 @@ export default {
                             this.novnc_task.status == "failed" ||  //also retry if it failed before.
                             this.novnc_task.status == "removed") {
                             console.log("rerunning task");
-                            this.$http.put(Vue.config.wf_api+'/task/rerun/'+this.novnc_task._id);
+                            this.$http.put(Vue.config.amaretti_api+'/task/rerun/'+this.novnc_task._id);
                         }
                     }
                 });
@@ -137,7 +140,7 @@ export default {
             console.log("checking status "+this.novnc_task.status);
             if(this.novnc_task.status == "running") {
                 //load url.txt
-                var url = Vue.config.wf_api+'/task/download/'+this.novnc_task._id+'/url.txt?at='+Vue.config.jwt;
+                var url = Vue.config.amaretti_api+'/task/download/'+this.novnc_task._id+'/url.txt?at='+Vue.config.jwt;
                 this.$http.get(url).then(function(res) {
                     //load novnc!
                     document.location = res.data;
@@ -151,7 +154,7 @@ export default {
         get_instance_singleton(name) {
             return new Promise((resolve, reject) => {
                 //console.log("querying instance");
-                this.$http.get(Vue.config.wf_api+'/instance', {params: {
+                this.$http.get(Vue.config.amaretti_api+'/instance', {params: {
                     find: JSON.stringify({
                         name,
                     })
@@ -160,7 +163,7 @@ export default {
                     //console.log(res);
                     if(res.data.instances.length == 0) {
                         //need to submit new instance
-                        this.$http.post(Vue.config.wf_api+'/instance', {
+                        this.$http.post(Vue.config.amaretti_api+'/instance', {
                             name,
                         })
                         .then(res=>{
