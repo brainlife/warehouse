@@ -20,7 +20,7 @@
             <p class="desc">
                 <small>{{trim(resource_obj.config.desc)}}</small>
             </p>
-            <p>
+            <p v-if="resource_obj.user_id">
                 <contact :id="resource_obj.user_id"/>
             </p>
             <p style="opacity: 0.8;" v-if="resource_obj.stats">
