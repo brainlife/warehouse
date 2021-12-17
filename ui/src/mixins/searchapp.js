@@ -26,7 +26,7 @@ export default {
                 this.$http.get('app', {params: {
                     find: JSON.stringify(find),
                     populate: 'inputs.datatype outputs.datatype contributors', //to display app detail
-                    limit: 20,
+                    limit: 100, //freesurfer gives a lot of results..
                 }})
                 .then(res=>{
                     this.search_apps = res.data.apps;

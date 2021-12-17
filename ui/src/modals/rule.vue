@@ -116,7 +116,7 @@
                             </b-row> 
                             <b-row>
                                 <b-col>
-                                    Dataset Tags
+                                    Object Tags
                                     <p>
                                         <small class="text-muted">Look for data with specific object tags (<b>not datatype tag!</b>)</small>
                                     </p>

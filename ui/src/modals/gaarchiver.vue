@@ -183,7 +183,6 @@ export default {
                 console.error(err);
                 this.$notify({type: 'error', text: err.body.message});
             });
-
         },
 
         subscribeInstance(instance) {

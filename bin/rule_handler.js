@@ -499,7 +499,7 @@ function handle_rule(rule, cb) {
             }
         });
         if(!output_missing) {
-            log.info("all datasets accounted for.. skipping to next group", group_id);
+            log.info("all output data created", group_id);
             counts.archived++;
             log.set({
                 state: "archived",
@@ -541,7 +541,7 @@ function handle_rule(rule, cb) {
             let input_group_id = get_group_id(input_group);
             if(!input._datasets[input_group_id]) {
                 missing = true;
-                log.info("Found the output datasets that need to be generated, but we can't identify all required inputs and can't submit the app. missing input for "+input.id, group_id);
+                log.info("Found the output data that need to be generated, but we can't identify all required inputs and can't submit the app. missing input for "+input.id, group_id);
             } else {
                 const candidates = input._datasets[input_group_id]; 
 
@@ -567,7 +567,7 @@ function handle_rule(rule, cb) {
         }
 
         //we need to and can submit new task!
-        log.info("Found the output datasets that need to be generated, and we have all the inputs also! submitting tasks", group_id);
+        log.info("Found the output data that need to be generated, and we have all the inputs also! submitting tasks", group_id);
         submit_tasks(group, inputs, err=>{
             if(!err) {
                 counts.running++;
@@ -693,7 +693,7 @@ function handle_rule(rule, cb) {
                 let subdirs = [];
                 for(let input_id in inputs) {
                     let input = inputs[input_id];
-                    log.debug("looking for source/staged dataset "+input._id+" for input "+input_id, group_id);
+                    log.debug("looking for source/staged data "+input._id+" for input "+input_id, group_id);
 
                     //although we need to construct _outputs for product_raw, we are reusing most of the info
                     //for the main app's input. since product-raw doesn't really have id anyway, so let's just use
@@ -711,7 +711,7 @@ function handle_rule(rule, cb) {
                         if(input.prov && input.prov.task && input.prov.task._id) task = tasks[input.prov.task._id];
                         if(!isalive(task)) return false;
 
-                        log.debug("found the task generated the input dataset for output:"+input.prov.output_id, group_id);
+                        log.debug("found the task generated the input data for output:"+input.prov.output_id, group_id);
                         //find output from task
                         let output_detail = task.config._outputs.find(it=>it.id == input.prov.output_id);
                         let dep_config = {task: task._id};
@@ -750,7 +750,7 @@ function handle_rule(rule, cb) {
                         }
                         if(!output) return false;
 
-                        log.debug("found the input dataset already staged previously", group_id);
+                        log.debug("found the input data already staged previously", group_id);
 
                         let dep_config = {task: task._id};
                         if(output.subdir) {  //most app should use subdir by now..
@@ -774,7 +774,7 @@ function handle_rule(rule, cb) {
                     
                     if(!canuse_source() && !canuse_staged()) {
                         //we don't have it.. we need to stage from warehouse
-                        log.debug("couldn't find source task/staged dataset.. need to load from warehouse", group_id);
+                        log.debug("couldn't find source task/staged data .. need to load from warehouse", group_id);
                         downloads.push(input);
 
                         //handle subdirs

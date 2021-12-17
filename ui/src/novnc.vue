@@ -63,7 +63,7 @@ export default {
     methods: {
 
         open_novnc() {
-            this.get_instance_singleton("novnc").then((instance)=>{
+            this.get_instance_singleton("novnc").then(instance=>{
                 //look for novnc task running for specified instance/task
                 this.$http.get(Vue.config.amaretti_api+'/task', {params: {
                     find: JSON.stringify({
@@ -92,12 +92,15 @@ export default {
                         let dep_config = { task: this.taskid };
                         if(this.subdir) dep_config.subdirs = [ this.subdir ];
 
-                        console.log("submitting novnc with ", this.task.gids);
-
                         //submit novnc service for the first time!
                         this.$http.post(Vue.config.amaretti_api+'/task', {
                             instance_id: instance._id,
-                            gids: this.task.gids,
+                            /*
+                            gids: [
+                                ...this.task.gids, //app-stage sets it to staging gids
+                                1, //but we want to let novnc access it
+                            ],
+                            */
                             name: novnc_task_name,
                             service: "brainlife/abcd-novnc",
                             max_runtime: 3600*1000, //1 hour should be enough?

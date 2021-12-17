@@ -430,7 +430,7 @@ export default {
                     //let's create a skelton project to display
                     this.privateGids = [];
                     this.resource.gids.forEach(gid=>{
-                        if(gids == 1) return; //public id is handled elsewhere
+                        if(gid == 1) return; //public id is handled elsewhere
                         const project = this.gidsProjects.find(p=>p.group_id == gid);
                         if(!project) this.privateGids.push(gid);
                     });

@@ -160,7 +160,7 @@
 
                         <div v-if="project.agreements && project.agreements.length > 0">
                             <span class="form-header">Agreements</span>
-                            <div v-if="showAgreements || !isAllAgreed(project)">
+                            <div v-if="project.agreements.length < 3 || showAgreements || !isAllAgreed(project)">
                                 <p> <small class="text-muted">You must consent to the following agreement(s) before accessing data on this project.</small> </p>
                                 <agreements :agreements="project.agreements"/>
                                 <br>

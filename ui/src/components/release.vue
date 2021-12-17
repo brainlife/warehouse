@@ -13,7 +13,7 @@
         </div>
     </a>
 
-    <p v-if="release.desc" style="margin-bottom: 0px;"><small>{{release.desc}}</small></p>
+    <p v-if="release.desc"><small>{{release.desc}}</small></p>
     <a :name="'release.'+release.name+'.data'" class="anchor"></a>
     <div v-if="release.sets && release.sets.length">
         <b-button @click="downloadDataset(release.set)" style="float: right;" size="sm" variant="outline-secondary">
