@@ -127,6 +127,7 @@
                     <icon name="times"></icon>
                 </div>
                 <span v-if="dataset.meta">{{dataset.meta.subject}}</span>
+                <span v-if="dataset.meta && dataset.meta.session" style="opacity: 0.7"> / {{dataset.meta.session}}</span>
                 <small>
                     <tags :tags="dataset.datatype_tags"></tags>
                 </small>
@@ -470,7 +471,7 @@ export default {
                         if(q.startsWith("subject:")) {
                             return [{"meta.subject": q.substring(8)}];
                         } 
-                        
+
                         return [
                             {"meta.subject": {$regex: q, $options: 'i'}},
                             {"meta.session": {$regex: q, $options: 'i'}},
@@ -527,7 +528,7 @@ export default {
                         //and all subjects/session greater than the current one
                         {
                             "meta.subject": {$gt: this.last_meta.subject}
-                        }                    
+                        }
                     ];
                 }
                 /*

@@ -33,6 +33,7 @@
             </div>
             <h5 style="margin-top: 8px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
                 <span v-if="dataset.meta" style="color: #999;">{{dataset.meta.subject}}</span>&nbsp;
+                <span v-if="dataset.meta.session" style="color: #ccc;"> / {{dataset.meta.session}}</span>&nbsp;
                 <datatypetag v-if="dataset.datatype" :datatype="dataset.datatype" :tags="dataset.datatype_tags" style="font-size: 95%;"/>
             </h5>
         </div><!--header-->
