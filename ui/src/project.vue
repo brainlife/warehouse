@@ -9,7 +9,7 @@
                 </div>
             </div>
             <h5 style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
-                <projectaccess :access="project.access" style="position: relative; top: -3px;"/> 
+                <projectaccess :access="project.access" style="position: relative; top: -3px;"/>
                 {{project.name}}
             </h5>
         </div>
@@ -25,9 +25,9 @@
                         </span>
 
                         <span v-if="tabinfo.id == 'dataset'" style="opacity: 0.6; font-size: 80%;">
-                            <span title="Number of subjects stored in archive" 
+                            <span title="Number of subjects stored in archive"
                                 v-if="project.stats && project.stats.datasets && project.stats.datasets.subject_count">
-                               &nbsp;<icon name="user-friends" scale="0.8"/>&nbsp;&nbsp;{{project.stats.datasets.subject_count}} 
+                               &nbsp;<icon name="user-friends" scale="0.8"/>&nbsp;&nbsp;{{project.stats.datasets.subject_count}}
                             </span>
                             <span title="Number of data-objects stored in archive"
                                 v-if="project.stats && project.stats.datasets && project.stats.datasets.count">
@@ -35,18 +35,18 @@
                             </span>
                         </span>
 
-                        <span v-if="tabinfo.id == 'process'" title="Number of tasks" style="opacity: 0.8;"> 
+                        <span v-if="tabinfo.id == 'process'" title="Number of tasks" style="opacity: 0.8;">
                             <div v-if="project.stats && get_total(project.stats.instances) > 0" style="display: inline-block; width: 75px;">
                                 <stateprogress :states="project.stats.instances"/>
                             </div>
                         </span>
 
-                        <span v-if="tabinfo.id == 'pipeline' && project.stats && project.stats.rules && (project.stats.rules.active||project.stats.rules.inactive)" 
+                        <span v-if="tabinfo.id == 'pipeline' && project.stats && project.stats.rules && (project.stats.rules.active||project.stats.rules.inactive)"
                             title="Number of pipeline rules" style="opacity: 0.6; font-size: 80%;">
                             &nbsp;{{project.stats.rules.active}} <small>/ {{project.stats.rules.active + project.stats.rules.inactive}}</small>
                         </span>
 
-                        <span v-if="tabinfo.id == 'groupanalysis' && project.stats && project.stats.groupanalysis && project.stats.groupanalysis.sessions.length > 0" 
+                        <span v-if="tabinfo.id == 'groupanalysis' && project.stats && project.stats.groupanalysis && project.stats.groupanalysis.sessions.length > 0"
                             title="Number of analysis sessions" style="opacity: 0.6; font-size: 80%;">
                             &nbsp;{{project.stats.groupanalysis.sessions.length}}
                         </span>
@@ -267,6 +267,8 @@
                                     <small v-if="project.relatedPapers">{{project.relatedPapers.length}}</small>
                                 </template>
                             </b-tab>
+
+                            <b-tab title="Comments"/>
                         </b-tabs>
 
                         <!--readme-->
@@ -277,14 +279,14 @@
 
                         <!--participants-->
                         <div v-if="detailTab == 1">
-                            <p><small>Participants info provides information for each subject and can be used for the group analysis.</small></p>                        
+                            <p><small>Participants info provides information for each subject and can be used for the group analysis.</small></p>
                             <b-alert variant="secondary" :show="project.publishParticipantsInfo" style="margin-bottom: 15px;">
                                 This information will be published as part of all publications made from this project.
                             </b-alert>
 
-                            <participants v-if="participants && Object.keys(participants).length" 
-                                :rows="participants" 
-                                :columns="participants_columns" 
+                            <participants v-if="participants && Object.keys(participants).length"
+                                :rows="participants"
+                                :columns="participants_columns"
                                 style="overflow: auto; max-height: 500px;"/>
 
                         </div>
@@ -294,7 +296,7 @@
 
                             <div v-if="project.stats.apps && project.stats.apps.length > 0">
                                 <span class="form-header">App Usage</span>
-                                <p><small>The following Apps were used to generate the data in this project.</small></p>                        
+                                <p><small>The following Apps were used to generate the data in this project.</small></p>
                                 <b-row style="border-bottom: 1px solid #0003; margin-bottom: 10px; opacity: 0.7">
                                     <b-col cols="10">App</b-col>
                                     <b-col cols="2">Execution Count</b-col>
@@ -312,10 +314,10 @@
 
                             <div v-if="resource_usage && total_walltime > 3600*1000">
                                 <span class="form-header">Resource Usage</span>
-                                <p><small>Data-objects on this project has been computed using the following resources.</small></p>             
-                                <ExportablePlotly :data="resource_usage.data" 
-                                    :layout="resource_usage.layout" 
-                                    :autoResize="true" 
+                                <p><small>Data-objects on this project has been computed using the following resources.</small></p>
+                                <ExportablePlotly :data="resource_usage.data"
+                                    :layout="resource_usage.layout"
+                                    :autoResize="true"
                                     :watchShallow="true"/>
                                 <br>
                             </div>
@@ -327,7 +329,7 @@
                                 <p><small>Please use the following citations to cite the Apps/resources used by this project.</small></p>
                                 <p v-for="app in project.stats.apps" :key="app._id">
                                     <icon name="robot" style="opacity: 0.5;"/> <b>{{app.app.name}}</b><br>
-                                    <citation :doi="app.app.doi"/> 
+                                    <citation :doi="app.app.doi"/>
                                 </p>
 
                                 <div v-if="resource_citations.length > 0">
@@ -350,9 +352,40 @@
                             </div>
                         </div>
 
+                        <div v-if="detailTab == 4">
+                            <b-alert show variant="secondary" v-if="!config.user"> Please login to Comments.</b-alert>
+                            <div v-else-if="comments && comments.length">
+                                <div v-for="comment in comments" :key="comment._id" class="commentbox">
+                                    <div class="comment-header">
+                                        <contact :id="comment.user_id" size="small"/>
+                                        <small><timeago :datetime="comment.update_date"/></small>
+                                        <div style="float: right" v-if="isauthor(comment.user_id) || isadmin(comment.user_id)">
+                                            <div @click="editComment(comment)" class="button" title="Edit Comment">
+                                                <icon name="edit"/>
+                                            </div>
+                                            <div @click="deleteComment(comment)" class="button" title="Delete Comment">
+                                                <icon name="trash"/>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <p v-if="comment.removed" class="comcoontent comment-removed">Comment removed</p>
+                                    <p v-else class="comcontent" v-html="comment.comment"/>
+                                </div>
+                            </div>
+                            <div style="position: relative">
+                                <span @click="toggleEmojiMart()" style="position:absolute;top: 10px; right: 10px; cursor: pointer;">😋</span>
+                                <b-form-textarea v-model="comment" placeholder="New Comment" required/>
+                                <emojimart v-if="showMart" @select="addEmojiToComment" style="position: absolute; z-index: 1; right: 0; height:250px"/>
+                            </div>
+                            <br>
+                            <b-button v-if="comment.length" @click="submitComment()">Comment</b-button>
+                            <div v-if="!comments.length" style="height:120px">
+                                <p>Be the first one to comment !</p>
+                            </div>
+                            <br>
+                        </div>
                     </div><!-- main content-->
                 </div><!--project header-->
-
                 <div v-if="config.debug">
                     <pre>{{project.mag}}</pre>
                     <pre>{{project}}</pre>
@@ -433,30 +466,33 @@ import newtaskModal from '@/modals/newtask'
 import datatypeselecterModal from '@/modals/datatypeselecter'
 import ReconnectingWebSocket from 'reconnectingwebsocket'
 import citation from '@/components/citation'
+import {VueEditor} from "vue2-editor"
+import { Picker } from 'emoji-mart-vue'
+
 
 import agreementMixin from '@/mixins/agreement'
 
 //let ps;
 
 export default {
+
     mixins: [
         agreementMixin,
     ],
-    components: { 
-
-        projectaccess, 
-        pageheader,     
-        contact, 
-        VueMarkdown, 
-        projectavatar, 
+    components: {
+        projectaccess,
+        pageheader,
+        contact,
+        VueMarkdown,
+        projectavatar,
         license,
-        pubcard, 
+        pubcard,
         datasets,
-        processes, 
-        publications, 
+        processes,
+        publications,
         pipelines,
-        agreements, 
-        datatypetag, 
+        agreements,
+        datatypetag,
         participants,
         mag,
         doibadge,
@@ -465,23 +501,26 @@ export default {
 
         'groupAnalysis': ()=> import('@/components/groupanalysis'),
 
-        //noprocess, 
-        resource, 
+        //noprocess,
+        resource,
         ExportablePlotly: ()=>import('@/components/ExportablePlotly'),
 
-        newtaskModal, 
-        datatypeselecterModal, 
+        newtaskModal,
+        datatypeselecterModal,
         stateprogress,
         citation,
+        emojimart: Picker,
     },
 
     data() {
         return {
-            project: null, 
+            project: null,
             resources: null,
 
             resource_usage: null,
             total_walltime: 0,
+            editcommentID : null,
+            showMart: false,
 
             participants: null,
             participants_columns: null,
@@ -505,10 +544,16 @@ export default {
             resource_citations: [],
 
             ws: null,
-            
+
             showAgreements: false,
 
             config: Vue.config,
+            comment: "",
+            comments: [],
+            customToolbar:  [
+                ["bold", "italic", "underline"],
+                [{ list: "ordered" }, { list: "bullet" }],
+            ]
 
         }
     },
@@ -533,6 +578,17 @@ export default {
                 this.$router.replace("/project/"+this.project._id+"/"+this.tabs[this.tab].id);
             }
         },
+        detailTab: function() {
+            if(this.detailTab == 4) {
+                this.axios.get("/comment/project/"+this.project._id).then(res=>{
+                    var url = Vue.config.event_ws+"/subscribe?jwt="+Vue.config.jwt;
+                    this.comments = res.data;
+                }).catch(err=>{
+                    console.error(err);
+                    this.$notify({text: err.response.data.message, type: 'error' });
+                })
+            }
+        }
     },
 
     computed: {
@@ -553,6 +609,33 @@ export default {
     },
 
     methods: {
+        addEmojiToComment(emoji) {
+            this.comment += emoji.native;
+            this.showMart = false;
+        },
+        toggleEmojiMart() {
+            if(this.showMart) this.showMart = false;
+            else this.showMart = true;
+        },
+        deleteComment(comment) {
+            if(confirm("do you want to remove this comment?")) {
+                this.$http.delete('comment/'+comment._id).then(res=>{
+                    this.$notify({text: "removed"});
+                }).catch(err=>{
+                    console.error(err);
+                    this.$notify({ text: err.response.data.message, type: 'error'});
+                })
+            }
+        },
+        editComment(comment) {
+            this.comment = "";
+            this.comment = comment.comment;
+            this.editcommentID = comment._id;
+        },
+        format(date) {
+            let month = date.toLocaleString("en-US", { month: 'short' })
+            return date.getDate() + ' ' + month + ' ' + date.getFullYear();
+        },
 
         get_total(instances) {
             if(!instances) return 0;
@@ -598,13 +681,41 @@ export default {
             return false;
         },
 
+        isauthor(sub) {
+            if(!Vue.config.user) return false;
+            if(Vue.config.user.sub == sub) return true;
+        },
+
         remove() {
             if(confirm("Do you really want to remove this project?")) {
                 this.$http.delete('project/'+this.project._id)
                 .then(res=>{
                     this.project.removed = true;
-                    this.$router.push('/project');        
+                    this.$router.push('/project');
                 });
+            }
+        },
+        submitComment() {
+            if(this.editcommentID) {
+                this.$http.patch('comment/'+this.editcommentID, {comment: this.comment})
+                .then(res=>{
+                    // console.log(res.data);
+                    /* events api will update*/
+                    // this.comments[this.editcommentIndex] = res.data;
+                    this.comment = "";
+                    this.editcommentID = null;
+                })
+            } else {
+                this.$http.post('comment/project/'+this.project._id, {
+                    comment : this.comment
+                }).then(res=>{
+                    console.log(res.data);
+                    // Vue.set(this.comments, this.comments.length, res.data);
+                    this.comment = "";
+                }).catch(err=>{
+                    console.error(err);
+                    this.$notify({ text: err.response.data.message, type: 'error'});
+                })
             }
         },
 
@@ -653,26 +764,38 @@ export default {
                             key: "project.update.*."+projectId,
                         }
                     }));
+                    this.ws.send(JSON.stringify({
+                        bind: {
+                                ex: "warehouse",
+                                key: "comment_project.*.*."+projectId,
+                        }
+                    }));
                     this.ws.onmessage = (json)=>{
-                        var event = JSON.parse(json.data);
-                        for(let k in event.msg) {
-                            if(this.project[k] === undefined) this.project[k] = event.msg[k];
-                            else {
-                                if(typeof this.project[k] == 'object') Object.assign(this.project[k], event.msg[k]);
-                                else this.project[k] = event.msg[k];
+                        let event = JSON.parse(json.data);
+                        if(event.dinfo.routingKey.startsWith("project.")) {
+                            for(let k in event.msg) {
+                                if(this.project[k] === undefined) this.project[k] = event.msg[k];
+                                else {
+                                    if(typeof this.project[k] == 'object') Object.assign(this.project[k], event.msg[k]);
+                                    else this.project[k] = event.msg[k];
+                                }
                             }
                         }
-                    };
-                };
-                    
+                        if(event.dinfo.routingKey.startsWith("comment_project.")) {
+                            const comment = this.comments.find(c=>c._id == event.msg._id);
+                            if(!comment) this.comments.push(event.msg);
+                            else Object.assign(comment, event.msg);
+                        }
+                    }
+                }
                 //optionally.. load participant info
                 //TODO - maybe I should expose it if publishParticipantsInfo is true
                 if(this.isadmin() || this.ismember()) {
                     this.participants = null;
                     this.axios.get("/participant/"+projectId).then(res=>{
                         if(res.data) {
-                            this.participants = res.data.subjects||{}; 
-                            this.participants_columns = res.data.columns||{}; 
+                            this.participants = res.data.subjects||{};
+                            this.participants_columns = res.data.columns||{};
                         }
                     });
                 }
@@ -695,7 +818,7 @@ export default {
         },
 
         update_resource_usage_graph() {
-            
+
             //create resource usage graph
             if(this.project.stats && this.project.stats.resources) {
                 let resources = {};
@@ -744,7 +867,7 @@ export default {
                         //title: 'Apps'
                     },
                     xaxis: {
-                        title: 'Total Walltime (hour)',  
+                        title: 'Total Walltime (hour)',
                         type: 'log',
                         //autorange: true
                         showgrid: true,
@@ -780,7 +903,7 @@ export default {
                         //let resource = res.data.resources.find(r=>r._id == stat.resource_id);
                         //if(!resource) return; //no such resource?
                         //let resource_citations = this.resource_citations.find(r=>r.resource._id == stat.resource_id);
-                        //if(!resource_citations) this.resource_citations.push({resource, citation: stat.citation});    
+                        //if(!resource_citations) this.resource_citations.push({resource, citation: stat.citation});
                         this.resource_citations.push({resource, citation: resource.citation});
                     });
 
@@ -821,24 +944,24 @@ export default {
     padding: 12px 15px;
 }
 .page-header h4 {
-    margin-right: 150px; 
+    margin-right: 150px;
 }
 .page-content {
     overflow-x: hidden;
     top: 95px;
 }
 .project-header {
-    padding: 20px; 
+    padding: 20px;
     box-shadow: 0 0 2px #ccc;
     background-color: white;
     top: 0px;
     z-index: 7;
-    overflow: hidden;
+    /* overflow: hidden; */
 }
 .top-tabs {
     top: 50px;
     height: 45px;
-    background-color: white; 
+    background-color: white;
     box-shadow: 0px 0px 2px #ccc;
     z-index: 1;
     overflow: hidden;
@@ -864,8 +987,8 @@ export default {
     background-color: #eee;
 }
 .box {
-    background-color: #fff; 
-    padding: 20px; 
+    background-color: #fff;
+    padding: 20px;
     margin-bottom: 20px;
     box-shadow: 0 0 3px #0002;
     border-radius: 4px;
@@ -892,11 +1015,11 @@ p.info .fa-icon {
     margin-bottom: 10px;
 }
 .datatypes .datatypes-header {
-    opacity: 0.5; 
-    font-weight: bold; 
+    opacity: 0.5;
+    font-weight: bold;
     font-size: 85%;
-    margin-bottom: 5px; 
-    text-transform: uppercase;    
+    margin-bottom: 5px;
+    text-transform: uppercase;
 }
 .bigpill {
     padding: 5px 10px;
@@ -909,11 +1032,11 @@ p.info .fa-icon {
 }
 
 .side {
-    float: right; 
-    width: 280px; 
-    padding: 20px; 
+    float: right;
+    width: 280px;
+    padding: 20px;
     /* we need scrollbar..
-    position: sticky; 
+    position: sticky;
     top: 0px;
     */
     padding-top: 40px;
@@ -933,10 +1056,27 @@ p.info .fa-icon {
         margin-right: 20px;
     }
 }
+#commentEditor {
+    height: 100px;
+}
+.commentbox {
+    background-color: #ffffff;
+    border-radius: 6px;
+    margin: 5px;
+}
+.comcontent {
+    margin: 8px;
+}
+.comment-removed {
+    opacity: 0.8;
+    margin: 10px 0;
+    padding: 10px;
+    background-color: #eee;
+}
 .resource {
     cursor: pointer;
-    padding: 8px; 
-    border: 1px solid #0003; 
+    padding: 8px;
+    border: 1px solid #0003;
     border-radius: 5px;
     margin-bottom: 10px;
 }
