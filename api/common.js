@@ -1187,20 +1187,16 @@ exports.update_rule_stats = function(rule_id, cb) {
             if(stats[task.status] === undefined) stats[task.status] = 0;
             stats[task.status]+=1;
         });
-        /*
-        db.Rules.findOneAndUpdate({_id: rule_id}, {$set: {"stats.tasks": stats}}, {new: true}, (err, rule)=>{
-            if(cb) cb(err, rule);
-            let sub = "warehouse";
-            exports.publish("rule.update."+sub+"."+rule.project+"."+rule._id, rule)
-        });
-        */
         const rule = await db.Rules.findById(rule_id);
         if(!rule) return cb("can't find the rule:"+rule_id);
         if(!rule.stats) rule.stats = {};
         rule.stats.tasks = stats;
         await rule.save();
-        let sub = "warehouse";
-        exports.publish("rule.update."+sub+"."+rule.project+"."+rule._id, rule)
+        exports.publish("rule.update.warehouse."+rule.project+"."+rule._id, {
+            stats: {
+                tasks: rule.stats.tasks,
+            }
+        });
         cb(null, rule);
     }).catch(cb);
 }
