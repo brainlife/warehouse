@@ -324,13 +324,13 @@ exports.traverseProvenance = async (startTaskId) => {
         if(node.validator && !task.config._inputs) {
             if(task.deps_config) task.deps_config.forEach(dep=>{
                 if(dep.subdirs) {
-                    //there should be multiple subdirectories specified (for subsetting case?)
+                    //there should be multiple sub directories specified (for subsetting case?)
                     //but they all should have common parent. let's grab the first one and use the parent
                     //TODO - I am not too confident about this
                     let subdir;
                     if(dep.subdirs.length) {
                         const subdirFullpath = dep.subdirs[0];
-                        subdir = subdirFullpath.split("/")[0]; 
+                        subdir = subdirFullpath.split("/")[0];
                     }
                     node.inputs.push({
                         //validator only has 1 input for inputID shouldn't matter
@@ -338,6 +338,7 @@ exports.traverseProvenance = async (startTaskId) => {
                         subdir,
                     });
                 }
+
                 //if deps_config doesn't specify any subdir, maybe it's the old rootdir app.
                 //let's add task input with the whole root directory
                 if(node.inputs.length == 0) node.inputs.push({
@@ -370,7 +371,7 @@ exports.traverseProvenance = async (startTaskId) => {
             })
         });
 
-        //staging and nornmal task should have config._outputs
+        //staging and normal task should have config._outputs
         if(task.config._outputs) task.config._outputs.forEach(output=>{
             const outputNodeIdx = nodes.length;
             const outputNode = {
@@ -385,12 +386,10 @@ exports.traverseProvenance = async (startTaskId) => {
             }
 
             nodes.push(outputNode);
-            //console.log("connecting from", nodeIdx, "to", outputNodeIdx);
-            edges.push({ 
+            edges.push({
                 idx: edges.length,
-                from: nodeIdx, 
-                to: outputNodeIdx, 
-                //datatype: output.datatype 
+                from: nodeIdx,
+                to: outputNodeIdx,
                 outputId: output.id,
             })
         });
@@ -410,7 +409,14 @@ exports.traverseProvenance = async (startTaskId) => {
     //find source output for archived dataset and link it
     nodes.forEach(node=>{
         if(node.inputs) node.inputs.forEach(input=>{
-            const outputs = nodes.filter(n=>(n.type == "output" && n._taskId == input.task && n.subdir == input.subdir));
+            let outputs = nodes.filter(n=>(n.type == "output" && n._taskId == input.task && n.subdir == input.subdir));
+
+            //if input.subdir is not set, and if we can't find the output, look without subdir
+            //this happens on some validator that didn't have _inputs but app_noop was setting subdir to be "upload"
+            if(!outputs.length && !input.subdir) {
+                outputs = nodes.filter(n=>(n.type == "output" && n._taskId == input.task));
+            }
+
             outputs.forEach(output=>{
                 edges.push({
                     idx: edges.length,
@@ -437,11 +443,9 @@ exports.traverseProvenance = async (startTaskId) => {
         });
     });
 
-    //console.debug("  nodes:", nodes.length," edges:", edges.length);
-
     return {nodes, edges}
 }
-    
+
 //find app tasks that has no following tasks (end of the workflow)
 exports.sampleTerminalTasks = async (appId)=>{
     const res = await axios.get(config.amaretti.api+'/task/samples/'+appId, {
@@ -454,7 +458,6 @@ exports.sampleTerminalTasks = async (appId)=>{
     }
     return provs;
 }
-
 
 //setup shortcuts for some nodes
 //I want UI to do this.. but I need it here for provenance analysis
