@@ -463,7 +463,7 @@ export default {
                 this.$http.delete('project/'+this.project._id)
                 .then(res=>{
                     this.$notify('successfully removed the project');
-                    this.$router.push('/projects');        
+                    this.$router.push('/projects');
                 });
             }
         },
