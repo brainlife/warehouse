@@ -8,7 +8,7 @@
                 <b-tab title="Analytics"/>
                 <b-tab title="Projects"/>
                 <b-tab title="Users"/>
-                <b-tab title="Groups"/>
+                <!-- <b-tab title="Groups"/> -->
             </b-tabs>
         </b-container>
     </div>
@@ -207,7 +207,7 @@ export default {
 
             prov: null,
             /*add new tab swithching code*/
-            tabIndices : ["Task", "Switch User", "Analytics", "Projects", "Users", "Groups"],
+            // tabIndices : ["Task", "Switch User", "Analytics", "Projects", "Users", "Groups"],
         }
     },
 
@@ -240,8 +240,8 @@ export default {
 
             this.$http.get(Vue.config.auth_api+'/profile/poscount').then(res=>{
                 let trace = {
-                    values: Object.values(res.data), 
-                    labels: Object.keys(res.data),  
+                    values: Object.values(res.data),
+                    labels: Object.keys(res.data),
                     type: "pie"
                 };
                 this.posCountData = [trace];
@@ -326,7 +326,7 @@ export default {
                 where: JSON.stringify({
                     $or: [
                         //need to use iLike with postgres..
-                        {fullname: {$regex: search, $options : 'i'}}, 
+                        {fullname: {$regex: search, $options : 'i'}},
                         {email: {$regex: search, $options : 'i'}},
                     ],
                 }),
