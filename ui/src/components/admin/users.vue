@@ -9,7 +9,6 @@
                     <br>
                     <b-pagination v-model="currentPage" :total-rows="totalrowCount" :per-page="perPage"
                     aria-controls="my-table"/>
-                    {{currentPage}}
                     <b-table :tbody-tr-class="rowClass" ref="userTable" hover small
                     :items="users"
                     :fields="fields"
@@ -319,4 +318,4 @@ export default {
 .form-header {
     margin-top: 7px;
 }
-</style>>
+</style>
