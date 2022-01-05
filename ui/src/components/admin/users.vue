@@ -7,7 +7,7 @@
                     <b-form-input v-model="query" type="text" placeholder="Search Users"
                     @input="changeQueryDebounce" class="input"/>
                     <br>
-                    <b-pagination v-model="currentPage" :total-rows="500" :per-page="perPage"
+                    <b-pagination v-model="currentPage" :total-rows="totalrowCount" :per-page="perPage"
                     aria-controls="my-table"/>
                     {{currentPage}}
                     <b-table :tbody-tr-class="rowClass" ref="userTable" hover small
@@ -20,7 +20,7 @@
                         <b-badge variant="success" v-if="data.item.active">✓</b-badge>
                     </template>
                     </b-table>
-                    <b-pagination v-model="currentPage" :total-rows="500" :per-page="perPage"
+                    <b-pagination v-model="currentPage" :total-rows="totalrowCount" :per-page="perPage"
                     aria-controls="my-table"/>
                 </div>
             </b-col>
@@ -175,6 +175,7 @@ export default {
             let skip = 0;
             const limit = 50;
             if(this.currentPage > 1 && !this.query) skip = 50 * (this.currentPage - 1);
+            /* if searching then let limit be 0*/
             this.$http.get(Vue.config.auth_api+'/users/query', {params:{
                 q: this.query,
                 skip,
