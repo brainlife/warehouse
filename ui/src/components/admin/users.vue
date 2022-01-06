@@ -152,13 +152,6 @@ export default {
         }
     },
     mounted() {
-        //TODO - only load users in the page
-        // this.$http.get(Vue.config.auth_api+"/users").then(res=>{
-        //     this.users = res.data;
-        // }).catch(err=>{
-        //     console.error(err.response);
-        //     this.$notify({type: "error", text: err});
-        // });
         this.load();
     },
     watch: {
