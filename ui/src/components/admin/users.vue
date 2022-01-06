@@ -175,7 +175,7 @@ export default {
             const limit = 50;
             if(this.currentPage > 1) skip = 50 * (this.currentPage - 1);
             this.$http.get(Vue.config.auth_api+'/users', {params:{
-               find: JSON.stringify({
+                find: JSON.stringify({
                     $or: [
                         //need to use iLike with postgres..
                         {fullname: {$regex: this.query, $options : 'i'}},
