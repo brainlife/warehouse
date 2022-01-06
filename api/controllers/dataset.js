@@ -1357,7 +1357,7 @@ router.get('/download/:id', common.jwt({
 
                     if(project_agreements.length == 0) return cb(); //no required agreements
                     if(!req.user) return cb("you must be logged in to access this dataset");
-                    
+
                     //load user agreements
                     let authorization = req.headers.authorization;
                     if(req.query.at) authorization = "Bearer "+req.query.at;
@@ -1490,8 +1490,7 @@ router.post('/downscript', common.jwt({secret: config.express.pubkey/* credentia
             if(err) return next(err);
 
             let script = `#!/bin/bash\n
-set +x #show all commands running
-set +e #stop the script if anything fails
+set -e
 
 `;
             if(req.headers.authorization) script += "auth=\"Authorization: "+req.headers.authorization+"\"\n"
@@ -1503,13 +1502,13 @@ set +e #stop the script if anything fails
                 if(!d.project) return false; //probably only happens for dev
                 return canread_project_ids_str.includes(d.project._id.toString());
             });
-            
+
             //find unique projects
             let projects = {};
             datasets.forEach(d=>{
                 if(!projects[d.project._id]) projects[d.project._id] = d.project;
             });
-            
+
             //construct project info
             for(let project_id in projects) {
                 let p = projects[project_id];
@@ -1526,7 +1525,7 @@ set +e #stop the script if anything fails
 ${config.warehouse.url}/project/${project_id}
 
 ${p.desc}`;
-                
+
                 script += "\n__ENDREADME__\n";
 
                 let dataset_description = {
@@ -1544,10 +1543,10 @@ ${p.desc}`;
                 };
                 script += "echo \""+JSON.stringify(dataset_description).replace().replace(/\"/g, '\\"')+"\" > "+root+"/bids/dataset_description.json\n";
             }
-            
+
             datasets.forEach(dataset=>{
                 if(!dataset.meta) return; //probably only happens in dev
-                    
+
                 //construct a path to put the datasets in
                 let root = "./proj-"+dataset.project._id;
 
@@ -1632,6 +1631,31 @@ ${p.desc}`;
 
                 script+="\n";
             });
+
+            script+=`
+echo
+echo "All requested objects succesfully downloaded!!"
+echo
+echo "---------------------------------------------------------------------------------"
+echo "---------------------------------------------------------------------------------"
+echo
+echo "  brainlife.io is supported by public funds. The project’s success depends on"
+echo "  users like you! If you use this data for a grant submission, publication,"
+echo "  or a talk, please use the following citation to acknowledge Brainlife:"
+echo
+echo "    Avesani, P., McPherson, B., Hayashi, S. et al. The open diffusion data"
+echo "       derivatives, brain data upcycling via integrated publishing of"
+echo "       derivatives and reproducible open cloud services. Sci Data 6, 69 (2019)."
+echo "        https://doi.org/10.1038/s41597-019-0073-y"
+echo
+echo "  Thank you for using brainlife.io! Please contact us at info@brainlife.io"
+echo
+echo "---------------------------------------------------------------------------------"
+echo "---------------------------------------------------------------------------------"
+echo 
+`;
+
+            common.publish("dataset.downscript."+req.user.sub, {});
             res.send(script);
         });
     });

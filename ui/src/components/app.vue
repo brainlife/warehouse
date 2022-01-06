@@ -178,7 +178,7 @@ margin-left: 7px;
     margin-top: 0px;
     padding: 7px;
     margin-bottom: 32px;
-    font-size: 12.5px;
+    font-size: 84%;
     color: #444;
 }
 .image {

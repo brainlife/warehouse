@@ -616,32 +616,29 @@ function handle_instance(instance, cb) {
     console.debug("instance ---", instance._id, instance.status);
     health_counts.instances++;
     
-    //if(instance._status_changed) {
-        //number of instance events for each user
-        inc_count("instance.user."+instance.user_id+"."+instance.status); 
-        
-        //number of instance events for each project
-        if(instance.group_id) {
-            inc_count("instance.group."+instance.group_id+"."+instance.status); 
+    //number of instance events for each user
+    inc_count("instance.user."+instance.user_id+"."+instance.status); 
+    
+    //number of instance events for each project
+    if(instance.group_id) {
+        inc_count("instance.group."+instance.group_id+"."+instance.status); 
 
-            debounce("update_project_stats."+instance.group_id, async ()=>{
-                let project = await db.Projects.findOne({group_id: instance.group_id});
-                console.log("requesting to update_project_stats");
-                common.update_project_stats(project);
-            }, 1000*60*10); 
-        }
-    //}
+        debounce("update_project_stats."+instance.group_id, async ()=>{
+            let project = await db.Projects.findOne({group_id: instance.group_id});
+            console.log("requesting to update_project_stats");
+            common.update_project_stats(project);
+        }, 1000*60); 
+    }
     cb();
 }
 
 function handle_dataset(dataset, cb) {
     if(!dataset) return cb("null dataset");
-    console.debug("dataset:%s", dataset._id);
-    let pid = dataset.project._id||dataset.project; //unpopulate project if necessary
+    //console.debug("dataset:%s", dataset._id);
+    const pid = dataset.project._id||dataset.project; //unpopulate project if necessary
     debounce("update_dataset_stats."+pid, ()=>{
         common.update_dataset_stats(pid);
     }, 1000*60);  //counting datasets are bit more expensive.. let's debounce longer
-
     cb();
 }
 

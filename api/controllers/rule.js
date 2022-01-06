@@ -188,7 +188,7 @@ router.put('/:id', common.jwt(), (req, res, next)=>{
             rule.update_date = new Date();
             rule.save((err, _rule)=>{
                 if(err) return next(err);
-                common.publish("rule.update."+req.user.sub+"."+rule.project+"."+rule._id, _rule)
+                common.publish("rule.update."+req.user.sub+"."+rule.project+"."+rule._id, req.body)
                 res.json(_rule); 
                 
                 //TODO - need to query for project .. and update stats
@@ -276,7 +276,9 @@ router.put('/removejobs/:id', common.jwt(), function(req, res, next) {
             let found = canwrite_project_ids.find(id=>id.equals(rule.project));
             if(!found) return next("you are not allowed to edit this rule");
 
-            common.publish("rule.update."+req.user.sub+"."+rule.project+"."+rule._id, rule)
+            //why am I publishing this when I am making no changes to the rule?
+            //maybe to trigger UI update?
+            //common.publish("rule.update."+req.user.sub+"."+rule.project+"."+rule._id, rule)
 
             //I need to wait for the rule_handler to finish its cycle before I start removing tasks..
             //TODO - this could take a while? (too long for this synchronous api?)
@@ -351,7 +353,7 @@ router.delete('/:id', common.jwt(), function(req, res, next) {
             rule.removed = true;
             rule.save(function(err) {
                 if(err) return next(err);
-                common.publish("rule.update."+req.user.sub+"."+rule.project+"."+rule._id, rule)
+                common.publish("rule.update."+req.user.sub+"."+rule.project+"."+rule._id, {removed: true})
                 res.json({status: "ok"});
                 
                 //TODO - need to query for project .. and update stats

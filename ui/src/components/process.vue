@@ -237,7 +237,7 @@
                         <br clear="both">
                     </div>
                     <div v-if="task.desc && editing_taskdesc[task.config._tid] === undefined" @click="edit_taskdesc(task)" style="padding: 5px 0;">
-                        <vue-markdown :source="task.desc" class="readme" style="margin: 0px 5px;"/>
+                        <vue-markdown :source="task.desc" class="readme" style="margin: 0px 5px; font-size: 90%;"/>
                     </div>
                 </div>
             </div>

@@ -157,7 +157,7 @@ export default {
                             if(node.serviceBranch && node.serviceBranch != "master") graphNode.label += ":"+node.serviceBranch;
                         }
                     }
-                    if(node.runtime) graphNode.label += "\n"+Math.floor(node.runtime/(1000*60))+" mins\n";
+                    if(node.runtime) graphNode.label += "\n"+(node.runtime/(1000*60)).toFixed(2)+" mins\n";
                     break;
 
                 case "dataset":
