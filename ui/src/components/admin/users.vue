@@ -173,10 +173,18 @@ export default {
         load() {
             let skip = 0;
             const limit = 50;
-            if(this.currentPage > 1 && !this.query) skip = 50 * (this.currentPage - 1);
-            /* if searching then let limit be 0*/
-            this.$http.get(Vue.config.auth_api+'/users/query', {params:{
-                q: this.query,
+            if(this.currentPage > 1) skip = 50 * (this.currentPage - 1);
+            this.$http.get(Vue.config.auth_api+'/users', {params:{
+               find: JSON.stringify({
+                    $or: [
+                        //need to use iLike with postgres..
+                        {fullname: {$regex: this.query, $options : 'i'}},
+                        {email: {$regex: this.query, $options : 'i'}},
+                        {username: {$regex: this.query, $options : 'i'}},
+                        {"profile.public.position": {$regex: this.query, $options : 'i'}},
+                        {"profile.public.institution": {$regex: this.query, $options : 'i'}}
+                    ],
+                }),
                 skip,
                 limit,
             }}).then(res=>{

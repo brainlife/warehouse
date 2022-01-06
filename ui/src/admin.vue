@@ -332,7 +332,7 @@ export default {
                 }),
                 limit: 0,
             }}).then(res=>{
-                this.su_options = res.data;
+                this.su_options = res.data.users;
                 loading(false);
             });
         },
