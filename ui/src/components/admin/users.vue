@@ -164,9 +164,8 @@ export default {
     },
     methods : {
         load() {
-            let skip = 0;
             const limit = 50;
-            if(this.currentPage > 1) skip = 50 * (this.currentPage - 1);
+            const skip = (this.currentPage-1) * limit;
             this.$http.get(Vue.config.auth_api+'/users', {params:{
                 find: JSON.stringify({
                     $or: [
@@ -174,8 +173,6 @@ export default {
                         {fullname: {$regex: this.query, $options : 'i'}},
                         {email: {$regex: this.query, $options : 'i'}},
                         {username: {$regex: this.query, $options : 'i'}},
-                        {"profile.public.position": {$regex: this.query, $options : 'i'}},
-                        {"profile.public.institution": {$regex: this.query, $options : 'i'}}
                     ],
                 }),
                 skip,
@@ -299,8 +296,6 @@ export default {
         },
 
         changeQuery() {
-            if(!this.datatypes) return setTimeout(this.changeQuery, 300);
-            sessionStorage.setItem("users.query", this.query);
             this.load();
         },
     },
