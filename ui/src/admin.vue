@@ -7,6 +7,8 @@
                 <b-tab title="Switch User"/> 
                 <b-tab title="Analytics"/>
                 <b-tab title="Projects"/>
+                <b-tab title="Users"/>
+                <!-- <b-tab title="Groups"/> -->
             </b-tabs>
         </b-container>
     </div>
@@ -131,6 +133,8 @@
             </b-table>
         </div>
 
+        <adminUsers v-if="tab == 4"/>
+
     </b-container>
 </div>
 </template>
@@ -140,7 +144,7 @@ import Vue from 'vue'
 import task from '@/components/task'
 import projectaccess from '@/components/projectaccess'
 import contact from '@/components/contact'
-
+import adminUsers from '@/components/admin/users'
 import ReconnectingWebSocket from 'reconnectingwebsocket'
 
 const numeral = require('numeral');
@@ -150,7 +154,7 @@ export default {
         task,
         projectaccess,
         contact,
-
+        adminUsers,
         ExportablePlotly: ()=>import('@/components/ExportablePlotly'),
         provgraph: ()=>import('@/components/provgraph'),
     },
@@ -202,6 +206,8 @@ export default {
             minProjectSize: 500,
 
             prov: null,
+            /*add new tab swithching code*/
+            // tabIndices : ["Task", "Switch User", "Analytics", "Projects", "Users", "Groups"],
         }
     },
 
@@ -234,8 +240,8 @@ export default {
 
             this.$http.get(Vue.config.auth_api+'/profile/poscount').then(res=>{
                 let trace = {
-                    values: Object.values(res.data), 
-                    labels: Object.keys(res.data),  
+                    values: Object.values(res.data),
+                    labels: Object.keys(res.data),
                     type: "pie"
                 };
                 this.posCountData = [trace];
@@ -320,13 +326,13 @@ export default {
                 where: JSON.stringify({
                     $or: [
                         //need to use iLike with postgres..
-                        {fullname: {$regex: search, $options : 'i'}}, 
+                        {fullname: {$regex: search, $options : 'i'}},
                         {email: {$regex: search, $options : 'i'}},
                     ],
                 }),
                 limit: 0,
             }}).then(res=>{
-                this.su_options = res.data;
+                this.su_options = res.data.users;
                 loading(false);
             });
         },

@@ -3,36 +3,43 @@
     <b-container>
         <b-row>
             <b-col>
-                <!--<b-form-input v-model="query" type="text" placeholder="Search Users" class="input"/>-->
-                <div style="background-color: white; padding: 10px;">
-                    <b-pagination v-model="currentPage" :total-rows="users.length" :per-page="perPage" aria-controls="my-table"/>
+                <div style="background-color:white; padding: 10px;">
+                    <b-form-input v-model="query" type="text" placeholder="Search Users"
+                    @input="changeQueryDebounce" class="input"/>
+                    <br>
+                    <b-pagination v-model="currentPage" :total-rows="totalrowCount" :per-page="perPage"
+                    aria-controls="my-table"/>
                     <b-table :tbody-tr-class="rowClass" ref="userTable" hover small
-                    :items="users" 
-                    :fields="fields" 
-                    :per-page="perPage" 
-                    :current-page="currentPage" 
+                    :items="users"
+                    :fields="fields"
+                    :per-page="0"
+                    :current-page="currentPage"
                     @row-clicked="select" v-b-modal.modal-useredit>
                     <template #cell(active)="data">
                         <b-badge variant="success" v-if="data.item.active">✓</b-badge>
                     </template>
                     </b-table>
-                    <b-pagination v-model="currentPage" :total-rows="users.length" :per-page="perPage" aria-controls="my-table"/>
+                    <b-pagination v-model="currentPage" :total-rows="totalrowCount" :per-page="perPage"
+                    aria-controls="my-table"/>
                 </div>
             </b-col>
             <b-modal size="xl" id='modal-useredit' v-if="form">
                 <template #modal-header>
-                    <h4 style="margin-bottom: 0;">{{form.fullname}} <small style="float: right">{{form.sub}}</small></h4>
+                    <h4 style="magin-bottom: 0;">{{form.fullname}} <small style="float: right">
+                    &nbsp;({{form.sub}})</small></h4>
                     <div class="button" @click="closeModal()" style="float: right">
                         <icon name="times" scale="1.5"/>
                     </div>
                 </template>
-                <editor v-if="mode == 'json'" v-model="json" @init="editorInit" lang="json" height="500"/>
+                <editor v-if="mode == 'json'" v-model="json" @init="editorInit" lang="json"
+                height="500"/>
                 <div v-if="mode == 'ui'">
                     <b-row>
                         <b-col cols="6">
                             <b-row>
                                 <b-col cols="6"><b-form-checkbox v-model="form.active">Active</b-form-checkbox></b-col>
-                                <b-col cols="6"><b-form-checkbox style="margin:auto" v-model="form.email_confirmed">Confirmed</b-form-checkbox></b-col>
+                                <b-col cols="6"><b-form-checkbox style="margin:auto"
+                                v-model="form.email_confirmed">Confirmed</b-form-checkbox></b-col>
                             </b-row>
                             <span class="form-header">Full Name</span>
                             <b-form-input v-if="form.fullname" v-model="form.fullname"/>
@@ -82,7 +89,6 @@
                         </b-col>
                     </b-row>
                 </div>
-
                 <template #modal-footer="{cancel}">
                     <div class="float-left mr-auto">
                         <b-button v-if="mode == 'ui'" @click="switchToJSON" variant="secondary">Show JSON</b-button>
@@ -95,37 +101,33 @@
         </b-row>
     </b-container>
 </div>
-
 </template>
 
 <script>
-
 import Vue from 'vue'
-
-const lib = require('@/lib');
-
+const lib = require('@/lib')
+let queryDebounce;
 export default {
-    components: { 
-        editor: ()=>import('vue2-ace-editor'),
+    components : {
+        editor : require('vue2-ace-editor'),
     },
 
     data () {
         return {
             users: [],
-
-
             currentPage: 1,
+            query: "",
             perPage: 50,
+            totalrowCount : 500,
             fields: [
-                "sub", 
-                "username", 
-                "fullname", 
-                "active", 
-                "email", 
-                {key: 'profile.public.institution',label: 'instituition'}, 
+                "sub",
+                "username",
+                "fullname",
+                "active",
+                "email",
+                {key: 'profile.public.institution',label: 'instituition'},
                 {key: 'profile.private.position',label: "position"}
             ],
-
             scopeCatalog: {
                 "brainlife": {
                     "user" : "Basic user privileges given to all new users by default",
@@ -143,58 +145,54 @@ export default {
                     "admin" : "Allows user to perform administrative tasks on authorization service"
                 }
             },
-
-            //query: "",
-
             mode: "ui",
             form: null,
-            json : null,
-
+            json: null,
             config: Vue.config,
         }
     },
-
     mounted() {
-        //TODO - only load users in the page
-        this.$http.get(Vue.config.auth_api+"/users").then(res=>{
-            this.users = res.data;
-        }).catch(err=>{
-            console.error(err.response);
-            this.$notify({type: "error", text: err});
-        });
+        this.load();
     },
-
-    methods: {
-        closeModal() {
-            this.$root.$emit('bv::hide::modal', 'modal-useredit')
+    watch: {
+        query() {
+            this.load();
         },
-
+        currentPage() {
+            this.load();
+        }
+    },
+    methods : {
+        load() {
+            const limit = 50;
+            const skip = (this.currentPage-1) * limit;
+            this.$http.get(Vue.config.auth_api+'/users', {params:{
+                find: JSON.stringify({
+                    $or: [
+                        //need to use iLike with postgres..
+                        {fullname: {$regex: this.query, $options : 'i'}},
+                        {email: {$regex: this.query, $options : 'i'}},
+                        {username: {$regex: this.query, $options : 'i'}},
+                    ],
+                }),
+                skip,
+                limit,
+            }}).then(res=>{
+                this.totalrowCount = res.data.count;
+                this.users = res.data.users;
+            }).catch(err=>{
+                console.error(err.response);
+                this.$notify({type: "error", text: err});
+            });
+        },
         rowClass(item, type) {
             if (!item || type !== 'row') return;
             if(this.form && this.form._id == item._id) return 'table-primary';
         },
 
-        /*
-        changeQueryDebounceUser() {
-            clearTimeout(queryDebounceUser);
-            queryDebounceUser = setTimeout(()=>{
-                this.applyFilterUser();
-            }, 300);        
+        closeModal: function() {
+            this.$root.$emit('bv::hide::modal', 'modal-useredit');
         },
-        applyFilterUser() {
-            let tokens = this.query.toLowerCase().split(" ");
-            this.filteredUsers = this.users.filter(user=>{
-                let stuff = [
-                    user.fullname,
-                    user.username,
-                    user.email
-                ];
-                const text = stuff.filter(thing=>!!thing).join(" ").toLowerCase();
-                return tokens.every(token=>text.includes(token));
-            });
-
-        },
-        */
 
         switchToUI() {
             const form = JSON.parse(this.json.toString());
@@ -231,8 +229,8 @@ export default {
                 this.form._scopes[service] = {};
                 for(const key in this.scopeCatalog[service]) {
                     this.form._scopes[service][key] = (this.form.scopes[service] && this.form.scopes[service].includes(key));
-                }  
-            } 
+                }
+            }
         },
 
         convertBooleanScopesToArray() {
@@ -249,8 +247,8 @@ export default {
                         const idx = tags.indexOf(key);
                         if(~idx) tags.splice(idx, 1);
                     }
-                }  
-            } 
+                }
+            }
         },
 
         submitUser(e) {
@@ -287,10 +285,24 @@ export default {
                 //nothing to add..
             });
         },
-    },
-}
-</script>
+        clearQuery() {
+            this.query = ''
+            this.changeQuery();
+        },
 
+        changeQueryDebounce() {
+            clearTimeout(queryDebounce);
+            queryDebounce = setTimeout(this.changeQuery, 300);
+        },
+
+        changeQuery() {
+            this.load();
+        },
+    },
+
+}
+
+</script>
 <style scoped>
 /deep/ h5 {
     padding-bottom: 5px;
@@ -303,4 +315,3 @@ export default {
     margin-top: 7px;
 }
 </style>
-

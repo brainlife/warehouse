@@ -6,7 +6,6 @@
                 <b-tab title="Profile"/>
                 <b-tab title="Account"/>
                 <b-tab title="Notification"/>
-                <b-tab v-if="config.hasRole('admin')" title="Users"/>
                 <b-tab v-if="config.hasRole('admin')" title="Groups"/>
             </b-tabs>
         </b-container>
@@ -19,8 +18,8 @@
         <settingsNotification v-if="tab == 2"/>
 
         <!--administrative settings-->
-        <settingsUsers v-if="tab == 3"/>
-        <settingsGroups v-if="tab == 4"/>
+        <!-- <settingsUsers v-if="tab == 3"/> -->
+        <settingsGroups v-if="tab == 3"/>
     </b-container>
     <br>
     <br>
@@ -33,7 +32,7 @@ import Vue from 'vue'
 import settingsProfile from '@/components/settings/profile'
 import settingsAccount from '@/components/settings/account'
 import settingsNotification from '@/components/settings/notification'
-import settingsUsers from '@/components/settings/users'
+// import settingsUsers from '@/components/settings/users'
 import settingsGroups from '@/components/settings/groups'
 
 export default {
@@ -41,7 +40,6 @@ export default {
         settingsProfile,
         settingsAccount,
         settingsNotification,
-        settingsUsers,
         settingsGroups,
     },
 
