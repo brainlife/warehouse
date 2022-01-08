@@ -4,11 +4,11 @@
         <b-container>
             <b-tabs class="brainlife-tab" v-model="tab">
                 <b-tab title="Task"/>
-                <b-tab title="Switch User"/> 
+                <b-tab title="Switch User"/>
                 <b-tab title="Analytics"/>
                 <b-tab title="Projects"/>
                 <b-tab title="Users"/>
-                <!-- <b-tab title="Groups"/> -->
+                <b-tab title="Groups"/>
             </b-tabs>
         </b-container>
     </div>
@@ -45,22 +45,22 @@
 
             <div v-if="prov">
                 <provgraph :prov="prov" :taskid="task._id" style="height: 500px;" :showFull="true"/>
-            </div> 
-            
+            </div>
+
             <hr>
             <div style="padding: 20px" v-if="task">
                 <b>Task Dump</b>
                 <pre>{{task}}</pre>
             </div>
         </div> <!--end task tab-->
-        
+
         <!--switch user-->
         <div v-if="tab == 1">
             <p>
-                <v-select 
-                    @search="get_sulist" 
-                    @input="su" 
-                    :debounce="250" 
+                <v-select
+                    @search="get_sulist"
+                    @input="su"
+                    :debounce="250"
                     :options="su_options" placeholder="search user to become" label="fullname"/>
             </p>
 
@@ -81,7 +81,7 @@
             <div style="margin: 0 15px" v-if="appItems">
                 <span class="form-header">App Stats</span>
                 <small>{{appItems.length}} apps</small>
-                <b-table 
+                <b-table
                     :small="true" :items="appItems" :fields="appFields" selectable @row-selected="appSelected">
                     <template #cell(name)="data">
                         {{data.item.name}}
@@ -134,6 +134,7 @@
         </div>
 
         <adminUsers v-if="tab == 4"/>
+        <adminGroups v-if="tab == 5"/>
 
     </b-container>
 </div>
@@ -145,16 +146,18 @@ import task from '@/components/task'
 import projectaccess from '@/components/projectaccess'
 import contact from '@/components/contact'
 import adminUsers from '@/components/admin/users'
+import adminGroups from '@/components/admin/groups'
 import ReconnectingWebSocket from 'reconnectingwebsocket'
 
 const numeral = require('numeral');
 
 export default {
-    components: { 
+    components: {
         task,
         projectaccess,
         contact,
         adminUsers,
+        adminGroups,
         ExportablePlotly: ()=>import('@/components/ExportablePlotly'),
         provgraph: ()=>import('@/components/provgraph'),
     },
@@ -172,7 +175,7 @@ export default {
 
             tab: 0,
 
-            posCountData: null, 
+            posCountData: null,
             posCountLayout : {
                 //"title" : "User Categories"
             },

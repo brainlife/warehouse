@@ -36,7 +36,7 @@ import settingsNotification from '@/components/settings/notification'
 import settingsGroups from '@/components/settings/groups'
 
 export default {
-    components: { 
+    components: {
         settingsProfile,
         settingsAccount,
         settingsNotification,
@@ -63,7 +63,7 @@ export default {
     mounted() {
         this.handleRouteParams();
     },
-    
+
     methods: {
         handleRouteParams() {
             let tab_id = this.$route.params.tab;
