@@ -258,21 +258,6 @@
                         </div>
                     </div><!--dataset-detail-->
                 </b-tab>
-                <!--
-                <b-tab title="Provenance(old)">
-                    <div v-if="prov" class="dataset-provenance">
-                        <div v-if="prov.edges.length == 0">
-                            <b-alert show variant="secondary">This data-object was uploaded by the user, and therefore has no provenance information.</b-alert>
-                        </div>
-                        <div v-else style="height: 100%">
-                            <div style="position: absolute; right: 10px; top: 10px; z-index: 1;">
-                                <span style="opacity: 0.6; margin-right: 10px;">Double click to open items</span>
-                            </div>
-                            <div ref="vis" style="height: 100%;"/>
-                        </div>
-                    </div>
-                </b-tab>
-                -->
                 <b-tab title="Provenance">
                     <h5 style="padding: 20px; opacity: 0.5;" v-if="!prov2">Loading ...</h5>
                     <div class="dataset-provenance" v-if="prov2">
@@ -520,9 +505,6 @@ export default {
                     }
                 })
 
-                console.log("prov1");
-                console.dir(res.data);
-                
                 if(this.prov.edges.length) {
                         getVis().then(vis=>{
                             var gph = new vis.Network(this.$refs.vis, res.data, 
@@ -1122,20 +1104,18 @@ padding: 10px;
 padding: 10px;
 margin-bottom: 0;
 }
-</style>
 
-<style>
-.dataset-provenance div.vis-tooltip {
-font-family: inherit;
-font-size: 80%;
-background-color: white;
-border: none;
-box-shadow: 2px 2px 4px rgba(0,0,0,.1);
-opacity: 0.8;
+/deep/ .dataset-provenance div.vis-tooltip {
+    font-family: inherit;
+    font-size: 80%;
+    background-color: white;
+    border: none;
+    box-shadow: 2px 2px 4px rgba(0,0,0,.1);
+    opacity: 0.8;
 }
-.dataset-provenance .table-sm th, 
-.dataset-provenance .table-sm td {
-padding: 0px 2px;
-border-top: 1px solid #0001;
+/deep/ .dataset-provenance .table-sm th, 
+/deep/ .dataset-provenance .table-sm td {
+    padding: 0px 2px;
+    border-top: 1px solid #0001;
 }
 </style>

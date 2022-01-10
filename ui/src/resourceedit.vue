@@ -157,12 +157,12 @@
                         <p>
                             <b>Private Key</b>
                             <br>
-                            <small>Brainlife will use the following private key to access this resource.</small>
+                            <small>Brainlife will use the following private key to access this resource (You should not have to copy/paste this out of here).</small>
                             <b-form-checkbox v-if="resource.config.enc_ssh_private === true" v-model="resource.config.enc_ssh_private">Use the current private key</b-form-checkbox>
                             <b-form-textarea v-if="resource.config.enc_ssh_private !== true" :rows="3" v-model="resource.config.enc_ssh_private"/>
                         </p>
                         <p>
-                            <b-btn @click="reset_sshkey" size="sm">Generate Keypair</b-btn>
+                            <b-btn @click="reset_sshkey" size="sm">Issue New Keypair</b-btn>
                         </p>
 
                     </b-col>
@@ -355,6 +355,7 @@ export default {
         reset_sshkey() {
             delete this.resource.config.enc_ssh_private;
             getForge().then(forge=>{
+                //publicKeyToOpenSSH only works for rsa.. not forge.pki.ed25519
                 forge.pki.rsa.generateKeyPair({bits: 2048, workers: 2/*e: 0x10001*/}, (err, keypair)=>{
                     if(err) {
                         this.$notify({type: 'error', text: err});

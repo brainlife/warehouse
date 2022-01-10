@@ -59,9 +59,3 @@ export default {
     },
 }
 </script>
-
-<style>
-#notebook-container.container {
-    width: 100px;
-}
-</style>

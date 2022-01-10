@@ -487,36 +487,6 @@ export default {
     }
 }
 </script>
-
-<style>
-.social-buttons span[data-link] {
-    background-color: white;
-    border-radius: 10px;
-    padding: 10px;
-    margin: 5px;
-    display: inline-block;
-    width: 140px;
-    transition: 0.5s background-color, 0.5s color;
-}
-.social-buttons span[data-link]:hover {
-    background-color: #007bff;
-    color: white;
-    cursor: pointer;
-}
-.social-buttons svg {
-    position: relative;
-    top: 2px;
-    height: 15px;
-    width: 15px;
-    margin: 0 5px;
-    color: #999;
-    transition: 0.5s color;
-}
-.social-buttons span[data-link]:hover svg {
-    color: white;
-}
-</style>
-
 <style scoped>
 .page-content {
     top: 0;
@@ -611,6 +581,7 @@ export default {
     z-index: 1;
     opacity: 0.6;
 }
+/*
 .brainlife-logo {
     font-family: "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
     font-size: 19pt;
@@ -619,6 +590,7 @@ export default {
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
 }
+*/
 
 .rightside{
     float: right; 

@@ -1,7 +1,5 @@
 <template>
-<!--deprecated-->
-<div class="pageheader" :style="styles" v-if="false">
-</div>
+<div class="pageheader" :style="styles" v-if="false"/>
 </template>
 
 <script>
@@ -117,11 +115,3 @@ svg.cloud {
 }
 </style>
 
-<style>
-/*placing under warehouse.vue doesn't work for some reason*/
-.pageheader .nav .nav-link {
-font-weight: bold;
-color: white;
-}
-
-</style>

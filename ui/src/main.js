@@ -22,6 +22,7 @@ import 'perfect-scrollbar/css/perfect-scrollbar.css'
 //https://www.npmjs.com/package/vue-notification
 import Notifications from 'vue-notification' //override element-ui ugly $notify..
 
+//TODO really~!?
 import 'vue-awesome/icons/robot.js'
 import 'vue-awesome/icons/book.js'
 import 'vue-awesome/icons/paper-plane.js'
@@ -143,9 +144,8 @@ import router from './router.js'
 import warehouse from './warehouse'
 import VueTimeago from 'vue-timeago'
 
-import SocialSharing from 'vue-social-sharing';
+//import SocialSharing from 'vue-social-sharing';
 
-//import VueAnalytics from 'vue-analytics'
 import VueGtag from 'vue-gtag'
 
 import axios from 'axios'
@@ -173,7 +173,9 @@ Vue.use(BootstrapVue, {
     }
     */
 });
-Vue.use(SocialSharing);
+
+//Vue.use(SocialSharing);
+
 Vue.use(VueTimeago, {
     name: 'timeago',
     locale: 'en',
@@ -274,7 +276,7 @@ axios.defaults.baseURL = Vue.config.api; //default root for $http
 console.log("ENV", process.env.NODE_ENV);
 if (process.env.NODE_ENV == "development") {
     Vue.config.debug = true;
-    
+
     //do crosssite auth between localhost and dev1 auth
     Vue.config.auth_signin = "https://"+process.env.HOSTNAME+"/auth#!/signin?app=dev";
     Vue.config.auth_signout = "https://"+process.env.HOSTNAME+"/auth#!/signout?app=dev";
@@ -295,7 +297,7 @@ if (process.env.NODE_ENV == "development") {
 function jwt_decode_brainlife(jwt) {
     Vue.config.user = jwt_decode(jwt);
     Vue.config.jwt = jwt;
-    
+
     //auth service should return sub in string format, but currently it doesn't..
     //let's just covert it to string 
     Vue.config.user.sub = Vue.config.user.sub.toString();
@@ -356,7 +358,7 @@ new Vue({
             //things we can access via $root
             sidemenuWide: true,
             rightviewOpen: null,
-                
+
             ezbidsSession: null, //set this to ezbids {sessionId} to open ezbidssession dialog on modal load
 
             notificationSounds: {},
@@ -414,7 +416,7 @@ new Vue({
 
         async ensure_myproject() {
             if(!Vue.config.jwt) return;
-            
+
             //make sure user has create at least 1 project
             var res = await this.$http.get('project', {params: {
                 //find: {$or: [{admins: Vue.config.user.sub}, {members: Vue.config.user.sub}]},

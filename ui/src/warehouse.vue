@@ -55,7 +55,6 @@ export default {
 
             if(document.location.hash.startsWith("#object")) {
                 const id = document.location.hash.substring(8);
-                console.log("hash changed to opening object", id);
                 this.$root.openDataObject = {id};
             }
         },
@@ -260,21 +259,12 @@ table.info td {
     background-color: #2693ff;
     cursor: pointer;
 }
+
 .fa-icon {
     vertical-align: middle !important;
     position: relative;
-    top: -0.1em;
+    fill: currentColor;
 }
-
-/*
-.fa-icon {
-    position: relative;
-    top: -0.1em;
-}
-.button-fixed .fa-icon {
-    top: 0;
-}
-*/
 
 .button {
     display: inline-block;
@@ -496,6 +486,7 @@ pre {
 }
 
 /*default vue-animate.css effect is too slow*/
+/*
 .fade-enter-active, .fadeIn,
 .fade-leave-active, .fadeOut {
   -webkit-animation-duration: 0.2s;
@@ -503,6 +494,8 @@ pre {
   -webkit-animation-fill-mode: both;
           animation-fill-mode: both; 
 }
+*/
+
 .github {
     opacity: 0.7;
     font-size: 90%;
@@ -690,6 +683,10 @@ https://stackoverflow.com/questions/14942081/detect-if-a-browser-in-a-mobile-dev
     #warehouse:not(.rightviewOpen) .onRight {
         right: 0;
     }
+}
+
+#notebook-container.container {
+    width: 100px;
 }
 
 </style>

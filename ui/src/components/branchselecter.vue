@@ -86,33 +86,3 @@ export default {
 }
 </script>
 
-<style>
-.menu-item {
-    display:inline-block;
-}
-/* these thins should probably go to component/datasetselecter.vue*/
-.menu-item time {
-    margin-left:10px;
-    color:#999;
-    float: right;
-}
-
-/* Hide the 'Searching...' text */
-.select2-results__option.loading-results {
-    display:none;
-}
-/* fix some odd indentation issue on the first result option inside each group*/
-.select2-container--default .select2-results__option .select2-results__option {
-    padding-left: 6px;
-}
-.select2-container--default .select2-results__option {
-    font-size: 10pt;
-}
-.select2-container--default .select2-selection--multiple .select2-selection__choice {
-    border: none;
-    border-radius: 0px;
-}
-.select2-dropdown {
-    z-index: 9900;
-}
-</style>
