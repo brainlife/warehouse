@@ -2,11 +2,14 @@
 <div>
     <b-container>
         <div style="background-color: white; padding: 10px">
+            <b-form-input v-model="query" type="text" placeholder="Search Groups"
+            @input="changeQueryDebounce" class="input"/>
+            <br>
             <b-pagination v-model="currentPage" :total-rows="totalrowCount" :per-page="perPage" aria-controls="my-table"/>
                 <b-table :tbody-tr-class="rowClass" hover small
                     :items="groups"
                     :fields="fields"
-                    :per-page="perPage"
+                    :per-page="0"
                     :current-page="currentPage"
                     @row-clicked="selectGroup" v-b-modal.modal-groupedit>
                     <template #cell(active)="data">
@@ -19,7 +22,7 @@
                         <contact v-for="c in data.item.members" :key="c._id" :id="c.toString()" size="tiny"/>
                     </template>
                 </b-table>
-                <b-pagination v-model="currentPage" :total-rows="groups.length" :per-page="perPage" aria-controls="my-table"/>
+                <b-pagination v-model="currentPage" :total-rows="totalrowCount" :per-page="perPage" aria-controls="my-table"/>
         </div>
         <b-modal v-if="form" id="modal-groupedit" :title="form.name||'(Untitled)'" @ok="submit">
                 <b-form-checkbox v-model="form.active">Active</b-form-checkbox>
@@ -54,30 +57,57 @@ export default {
             fields: ["id", "active", "name", "desc", "admins", "members"],
 
             form: null,
-
+            query: "",
             currentPage: 1,
             perPage: 50,
-
+            totalrowCount: 500,
             config: Vue.config,
         }
     },
 
+    watch: {
+        query() {
+            this.load();
+        },
+        currentPage() {
+            this.load();
+        }
+    },
+
     mounted() {
-        this.$http.get(Vue.config.auth_api+"/groups").then(res=>{
-            this.groups = res.data;
-            this.groups.forEach(group=>{
-                if(group.admins) group.admins = group.admins.map(admins=>admins.sub);
-                if(group.members) group.members = group.members.map(members=>members.sub);
-            });
-        }).catch(err=>{
-            console.error(err.response);
-            this.$notify({type: "error", text: err});
-        });
+        // this.$http.get(Vue.config.auth_api+"/groups").then(res=>{
+        //     this.groups = res.data;
+        //     this.groups.forEach(group=>{
+        //         if(group.admins) group.admins = group.admins.map(admins=>admins.sub);
+        //         if(group.members) group.members = group.members.map(members=>members.sub);
+        //     });
+        // }).catch(err=>{
+        //     console.error(err.response);
+        //     this.$notify({type: "error", text: err});
+        // });
+        this.load();
     },
     methods: {
         rowClass(item, type) {
             if (!item || type !== 'row') return;
             if(this.form && this.form._id == item._id) return 'table-primary';
+        },
+
+        load() {
+            const limit = 50;
+            const skip = (this.currentPage - 1) * limit;
+            this.$http.get(Vue.config.auth_api+"/groups", {params: {
+                tokens: this.query,
+                },
+                skip,
+                limit
+            }).then(res=>{
+                this.totalrowCount = res.data.length;
+                this.groups = res.data;
+            }).catch(err=>{
+                console.error(err.response);
+                this.$notify({type: 'error', text: err});
+            });
         },
 
         selectGroup(group) {
@@ -140,6 +170,17 @@ export default {
             this.$nextTick(()=>{
                 this.$root.$emit('bv::show::modal', 'modal-groupedit')
             });
+        },
+        clearQuery() {
+            this.query = '';
+            this.changeQuery();
+        },
+        changeQueryDebounce() {
+            clearTimeout(queryDebounce);
+            queryDebounce = setTimeout(this.changeQuery, 300);
+        },
+        changeQuery() {
+            this.load();
         },
     },
 }
