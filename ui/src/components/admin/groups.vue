@@ -59,7 +59,7 @@ export default {
             form: null,
             query: "",
             currentPage: 1,
-            perPage: 50,
+            perPage: 10,
             totalrowCount: 500,
             config: Vue.config,
         }
@@ -94,16 +94,16 @@ export default {
         },
 
         load() {
-            const limit = 50;
+            const limit = 10;
             const skip = (this.currentPage - 1) * limit;
+            console.log(skip);
             this.$http.get(Vue.config.auth_api+"/groups", {params: {
                 tokens: this.query,
-                },
                 skip,
                 limit
-            }).then(res=>{
-                this.totalrowCount = res.data.length;
-                this.groups = res.data;
+            }}).then(res=>{
+                this.totalrowCount = res.data.count;
+                this.groups = res.data.groups;
             }).catch(err=>{
                 console.error(err.response);
                 this.$notify({type: 'error', text: err});
