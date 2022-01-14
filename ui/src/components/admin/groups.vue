@@ -44,6 +44,7 @@
 </template>
 <script>
 import Vue from 'vue';
+let queryDebounce;
 export default {
     components: {
         contactlist: ()=>import('@/components/contactlist'),
@@ -84,17 +85,42 @@ export default {
         },
 
         load() {
+            const limit = 100;
+            // if(!this.query.length) this.findGroups([]);
+            this.$http.get(this.config.auth_api+'/users', {params:{
+                find: JSON.stringify({
+                    $or: [
+                        {fullname: {$regex: this.query, $options : 'i'}},
+                        {email: {$regex: this.query, $options : 'i'}},
+                        {username: {$regex: this.query, $options : 'i'}}
+                    ],
+                }),
+                limit,
+            }}).then(res =>{
+                this.findGroups(res.data.users.map(user=>user._id));
+            }).catch(err =>{
+                this.$notify({type: 'error', text: err});
+                console.error(err.response);
+            })
+        },
+        findGroups(userList) {
             const limit = 50;
             const skip = (this.currentPage - 1) * limit;
+            const find = JSON.stringify({
+                $or: [
+                    {admins: {$in: userList}},
+                    {members: {$in: userList}},
+                ],
+            });
             this.$http.get(Vue.config.auth_api+"/groups", {params: {
-                tokens: this.query,
+                find,
                 skip,
                 limit
             }}).then(res=>{
                 this.totalrowCount = res.data.count;
                 this.groups = res.data.groups;
             }).catch(err=>{
-                console.error(err.response);
+                console.error(err);
                 this.$notify({type: 'error', text: err});
             });
         },
