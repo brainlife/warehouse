@@ -97,13 +97,13 @@ export default {
                 }),
                 limit,
             }}).then(res =>{
-                this.findGroups(res.data.users.map(user=>user._id));
+                this.queryGroups(res.data.users.map(user=>user._id));
             }).catch(err =>{
                 this.$notify({type: 'error', text: err});
                 console.error(err.response);
             })
         },
-        findGroups(userList) {
+        queryGroups(userList) {
             const limit = 50;
             const skip = (this.currentPage - 1) * limit;
             const find = JSON.stringify({
