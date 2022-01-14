@@ -119,6 +119,10 @@ export default {
             }}).then(res=>{
                 this.totalrowCount = res.data.count;
                 this.groups = res.data.groups;
+                this.groups.forEach(group=>{
+                    if(group.admins) group.admins = group.admins.map(admins=>admins.sub);
+                    if(group.members) group.members = group.members.map(members=>members.sub);
+                });
             }).catch(err=>{
                 console.error(err);
                 this.$notify({type: 'error', text: err});
