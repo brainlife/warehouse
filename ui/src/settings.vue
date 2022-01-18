@@ -6,7 +6,6 @@
                 <b-tab title="Profile"/>
                 <b-tab title="Account"/>
                 <b-tab title="Notification"/>
-                <b-tab v-if="config.hasRole('admin')" title="Groups"/>
             </b-tabs>
         </b-container>
     </div>
@@ -16,10 +15,6 @@
         <settingsProfile v-if="tab == 0"/>
         <settingsAccount v-if="tab == 1"/>
         <settingsNotification v-if="tab == 2"/>
-
-        <!--administrative settings-->
-        <!-- <settingsUsers v-if="tab == 3"/> -->
-        <settingsGroups v-if="tab == 3"/>
     </b-container>
     <br>
     <br>
@@ -32,15 +27,12 @@ import Vue from 'vue'
 import settingsProfile from '@/components/settings/profile'
 import settingsAccount from '@/components/settings/account'
 import settingsNotification from '@/components/settings/notification'
-// import settingsUsers from '@/components/settings/users'
-import settingsGroups from '@/components/settings/groups'
 
 export default {
-    components: { 
+    components: {
         settingsProfile,
         settingsAccount,
         settingsNotification,
-        settingsGroups,
     },
 
     data () {
@@ -63,7 +55,7 @@ export default {
     mounted() {
         this.handleRouteParams();
     },
-    
+
     methods: {
         handleRouteParams() {
             let tab_id = this.$route.params.tab;
