@@ -179,6 +179,10 @@
                                 </p>
                             </b-collapse>
 
+                            <!-- 
+                                we are now requering data to be archived to primary for it to be made available for analysis
+                                so output.secondary_task is somewhat irrelevant.
+
                             <div v-if="output.secondary_task" style="font-size: 90%; padding: 5px 10px; border: 2px solid #eee; border-radius: 5px; margin-top: 5px; color: #888;">
                                 <span v-if="output.secondary_task.finish_date">
                                     Ready for Analysis
@@ -189,6 +193,7 @@
                                 </span>
                                 <small style="opacity: 0.5; font-size:70%;">{{output.secondary_task._id}}</small>
                             </div>
+                            -->
 
                         </div><!--output-->
 
