@@ -173,6 +173,8 @@ export default {
                         {fullname: {$regex: this.query, $options : 'i'}},
                         {email: {$regex: this.query, $options : 'i'}},
                         {username: {$regex: this.query, $options : 'i'}},
+                        {"profile.public.position": {$regex: this.query, $options : 'i'}},
+                        {"profile.public.institution": {$regex: this.query, $options : 'i'}}
                     ],
                 }),
                 skip,
