@@ -93,6 +93,7 @@
                     <div class="float-left mr-auto">
                         <b-button v-if="mode == 'ui'" @click="switchToJSON" variant="secondary">Show JSON</b-button>
                         <b-button v-if="mode == 'json'" @click="switchToUI" variant="secondary">Show UI</b-button>
+                        <b-button variant="secondary" @click="unlockAccount">Unlock Account</b-button>
                     </div>
                     <b-button variant="secondary" @click="cancel()">Cancel</b-button>
                     <b-button variant="primary" ref="okBTN" @click="submitUser">Submit</b-button>
@@ -300,6 +301,15 @@ export default {
         changeQuery() {
             this.load();
         },
+        unlockAccount() {
+            //this.form.ext.openids[0] = this.openids;
+            this.$http.post(Vue.config.auth_api+"/local/unlockuser",
+            {email: this.form.email}).then(res=>{
+                console.log(res);
+                this.$notify({type: "success", text: res.data.message});
+                this.closeModal();
+            }).catch(this.handleError);
+        }
     },
 
 }
