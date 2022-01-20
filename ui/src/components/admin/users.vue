@@ -305,7 +305,6 @@ export default {
             //this.form.ext.openids[0] = this.openids;
             this.$http.post(Vue.config.auth_api+"/local/unlockuser",
             {email: this.form.email}).then(res=>{
-                console.log(res);
                 this.$notify({type: "success", text: res.data.message});
                 this.closeModal();
             }).catch(this.handleError);
