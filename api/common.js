@@ -1189,10 +1189,13 @@ exports.update_project_stats = async function(project, cb) {
                 services,
             });
         });
-        console.log("---resource_stats---");
+        //console.log("---resource_stats---");
 
         //lad number of publications
         let publications = await db.Publications.countDocuments({project});
+
+        let comments = await db.Comments.count({project: project._id, removed: false});
+        //console.log("found comments", comments, project._id);
 
         //now update the record!
         let newproject = await db.Projects.findOneAndUpdate({_id: project._id}, {$set: {
@@ -1202,12 +1205,16 @@ exports.update_project_stats = async function(project, cb) {
             "stats.publications": publications,
             "stats.instances": instance_counts,
             "stats.groupanalysis": groupanalysis,
+            "stats.comments": comments,
         }}, {new: true});
 
-        //only publish some stats
+        //only publish some stats that UI wants to receive
         exports.publish("project.update.warehouse."+project._id, {stats: {
-            rules,
+            rules, //counts..
             instances: instance_counts,
+            groupanalysis, //object..
+            publications,
+            comments,
         }})
 
         if(cb) cb(null, newproject);
@@ -1266,7 +1273,10 @@ exports.publish = (key, message, cb)=>{
     message.timestamp = (new Date().getTime())/1000; //it's crazy that amqp doesn't set this?
     if(!warehouse_ex) { 
         console.error("warehouse_ex not connected yet.. can't publish");
-    } else warehouse_ex.publish(key, message, {}, cb);
+    } else {
+        console.log("publishing event", key, message);
+        warehouse_ex.publish(key, message, {}, cb);
+    }
 }
 
 exports.isadmin = (user, rec)=>{

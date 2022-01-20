@@ -15,7 +15,6 @@ const db = require('../api/models');
 const common = require('../api/common');
 
 // TODO  Look for failed tasks and report to the user/dev?
-
 let acon, rcon;
 
 console.log("connected to mongo");
@@ -28,7 +27,6 @@ db.init(err=>{
     rcon = common.connectRedis();
     setInterval(emit_counts, 1000*config.metrics.counts.interval);  //usually 24 hours?
     setInterval(emit_health_counts, 1000*config.metrics.health_counts.interval);  //usually 5min
-    //setInterval(health_check, 1000*60);
 });
 
 function subscribe() {
@@ -52,7 +50,7 @@ function subscribe() {
                 next();
             });
         },
-     
+
         //ensure queues/binds and subscribe to task events
         next=>{
             //TODO - why can't I use warehouse queue for this?
@@ -71,7 +69,6 @@ function subscribe() {
             });
         },
 
-        //dataset create events
         next=>{
             //TODO - why can't I use warehouse queue for this?
             acon.queue('warehouse.dataset', {durable: true, autoDelete: false}, dataset_q=>{
@@ -100,10 +97,21 @@ function subscribe() {
                 q.bind('auth', 'user.login.*');
                 q.subscribe({ack: true}, (msg, head, dinfo, ack)=>{
                     handle_auth_event(msg, head, dinfo, err=>{
-                        if(err) {
-                            console.error(err)
-                            //TODO - maybe I should report the failed event to failed queue?
-                        }
+                        if(err) console.error(err) //TODO - maybe I should report the failed event to failed queue?
+                        q.shift();
+                    });
+                });
+                next();
+            });
+        },
+
+        next=>{
+            acon.queue('warehouse.comment', {durable: true, autoDelete: false}, q=>{
+                q.bind('warehouse', 'comment_project.#');
+                q.subscribe({ack: true}, (msg, head, dinfo, ack)=>{
+                    console.log("----------received comment_project");
+                    handleProjectComments(msg, err=>{
+                        if(err) console.error(err);
                         q.shift();
                     });
                 });
@@ -610,15 +618,23 @@ function debounce(key, action, delay) {
     }
 }
 
+async function handleProjectComments(event, cb) {
+    const project = await db.Projects.findById(event.project);
+    debounce("comment_project."+project.group_id, async ()=>{
+        await common.update_project_stats(project);
+    }, 1000*10);
+    cb();
+}
+
 function handle_instance(instance, cb) {
     if(!instance) return cb("null instance..");
-    
+
     console.debug("instance ---", instance._id, instance.status);
     health_counts.instances++;
-    
+
     //number of instance events for each user
     inc_count("instance.user."+instance.user_id+"."+instance.status); 
-    
+
     //number of instance events for each project
     if(instance.group_id) {
         inc_count("instance.group."+instance.group_id+"."+instance.status); 
@@ -636,7 +652,6 @@ async function handle_dataset(dataset, cb) {
     if(!dataset) return cb("null dataset");
     const pid = dataset.project._id||dataset.project; //unpopulate project if necessary
     //console.log("handling dataset event", dataset);
-
     debounce("update_dataset_stats."+pid, ()=>{
         common.update_dataset_stats(pid);
     }, 1000*60);  //counting datasets are bit more expensive.. let's debounce longer

@@ -139,6 +139,9 @@ var projectSchema = mongoose.Schema({
                 config: mongoose.Schema.Types.Mixed,
             }]
         },
+
+        //number of comments on this project
+        comments: Number,
     },
 
     //quota: {type: Number, default: 1000000000000}, //maximum archive size (1TB by default)

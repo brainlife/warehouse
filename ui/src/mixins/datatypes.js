@@ -14,6 +14,7 @@ export default {
                 let res = await this.$http.get('datatype', {params: {
                     find: JSON.stringify(find),
                     select: '-readme -admins -bids -samples -uis',
+                    limit: 1000,
                 }});
                 this.datatypes = {};
                 res.data.datatypes.forEach(type=>{

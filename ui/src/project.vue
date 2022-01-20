@@ -268,7 +268,12 @@
                                 </template>
                             </b-tab>
 
-                            <b-tab title="Comments"/>
+                            <b-tab>
+                                <template v-slot:title>
+                                    Comments
+                                    <small v-if="project.stats.comments">{{project.stats.comments}}</small>
+                                </template>
+                            </b-tab>
                         </b-tabs>
 
                         <!--readme-->
@@ -766,8 +771,8 @@ export default {
                     }));
                     this.ws.send(JSON.stringify({
                         bind: {
-                                ex: "warehouse",
-                                key: "comment_project.*.*."+projectId,
+                            ex: "warehouse",
+                            key: "comment_project.*.*."+projectId,
                         }
                     }));
                     this.ws.onmessage = (json)=>{
@@ -788,6 +793,7 @@ export default {
                         }
                     }
                 }
+
                 //optionally.. load participant info
                 //TODO - maybe I should expose it if publishParticipantsInfo is true
                 if(this.isadmin() || this.ismember()) {
@@ -841,18 +847,11 @@ export default {
                         };
                     }
                     let d = resources[stat.resource_id];
-                    /*
-                    //if(!services.includes(stat.service)) services.push(stat.service);
-                    //if(!d.x.includes(stat.service)) {
-                        d.x.push(stat.total_walltime/(3600*1000));
-                        d.y.push(stat.service);
-                        d.text.push(stat.count.toString()+" tasks");
-                    //}
-                    */
                     names.push(stat.name);
                     walltimes.push(stat.total_walltime/(3600*1000));
                     counts.push(stat.count.toString()+" jobs");
                 });
+
                 //create plotly graph
                 var data = [{
                     y: names,

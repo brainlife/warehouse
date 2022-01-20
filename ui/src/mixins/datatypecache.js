@@ -15,7 +15,7 @@ export default {
                 if(err) return cb(err);
                 cb(err, res.data.datatypes[0]);
             });
-        },  
+        },
     }
 }
 
