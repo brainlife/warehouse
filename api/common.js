@@ -935,6 +935,53 @@ exports.update_dataset_stats = async function(project_id, cb) {
     }
 }
 
+//update the secondary metadata for group analysis datatypes
+//(removed will set to true if it's removed - but we don't remove files)
+exports.updateSecondaryInventoryInfo = async function(dataset_id) {
+    /*
+    if(!dataset.datatype) {
+        console.error("dataset", dataset._id, "doesn't have datatype field set");
+        return;
+    }
+    */
+    const dataset = await db.Datasets.findOne({_id: dataset_id}).populate([
+        {path: 'datatype', select: 'groupAnalysis name desc files'},
+        {path: 'project', select: 'group_id'},
+    ]).lean()
+
+    //I need the full data
+    //console.log("looking up to see if this is for groupanalysis", dataset.datatype);
+    //const datatype = await db.Datatypes.findById(dataset.datatype); //should I cache?
+    /*
+    dataset._datatype = {
+            name: datatype.name,
+            desc: datatype.desc,
+            files: datatype.files,
+    };
+    */
+    if(!dataset.datatype.groupAnalysis) return; //not group analysis
+
+    const project = await db.Projects.findById(dataset.project);
+
+    const dir = config.groupanalysis.secondaryDir+"/"+project.group_id+"/meta";
+    const path = dir+"/"+dataset._id+".json";
+
+    //figure out the secondary path
+    const p = dataset.prov;
+    if(p.task.follow_task_id) {
+        //output from dtv is stored slightly differently (has to use output_id)
+        dataset._secondaryPath = p.task.instance_id+"/"+p.task.follow_task_id+"/"+p.output_id;
+    } else {
+        //output without validator
+        dataset._secondaryPath = p.task.instance_id+"/"+p.task._id+"/"+p.subdir;
+    }
+    config.groupanalysis.getSecondaryUploadStream(path, (err, stream)=>{
+        stream.write(JSON.stringify(dataset, null, 4));
+        stream.end();
+    });
+    //fs.writeFileSync(path, JSON.stringify(dataset));
+}
+
 exports.update_secondary_index = async function(project) {
     console.log("updating secondary output index file for project", project._id);
     let participants = await db.Participants.findOne({project}).lean();

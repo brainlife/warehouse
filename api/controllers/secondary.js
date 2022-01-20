@@ -11,6 +11,11 @@ const config = require('../config');
 const db = require('../models');
 const common = require('../common');
 
+//DEPRECATED 
+// we now store object metadata under /inputs/meta
+// information under /inputs/meta can be accessed directly (without this api)
+// /inputs/meta is created whenever dataset object is created/updated so user can treat them
+// one2one with archived objects (user has to consider "removed", however..)
 /**
  * @apiGroup Secondary
  *                              List secondary output list. This is a public interface (for now) as it only contains the metadata, 

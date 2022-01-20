@@ -378,8 +378,8 @@
                                 <emojimart v-if="showMart" @select="addEmojiToComment" style="position: absolute; z-index: 1; right: 0; height:250px"/>
                             </div>
                             <br>
-                            <b-button v-if="comment.length" @click="submitComment()">Comment</b-button>
-                            <div v-if="!comments.length" style="height:120px">
+                            <b-button v-if="comment.length" @click="submitComment()">Post</b-button>
+                            <div v-if="!comments.length && !comment.length" style="height:120px">
                                 <p>Be the first one to comment !</p>
                             </div>
                             <br>

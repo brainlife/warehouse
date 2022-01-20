@@ -68,7 +68,7 @@ router.post('/import/:dataset_id', common.jwt(), (req, res, next)=>{
             if(!project) return next("no such project");
 
             let canedit = false;
-            
+
             //TODO - project.admins/members contain id in string
             //but req.user.sub is numeric... so why don't I have to toString()??
             if(project.admins.includes(req.user.sub)) canedit = true;
@@ -82,9 +82,6 @@ router.post('/import/:dataset_id', common.jwt(), (req, res, next)=>{
                 //copy participants info..
                 subjects: dataset.participants,
                 columns: dataset.participants_info, //might be missing
-                
-                //columns: req.body.meta_info,
-                //subjects: req.body.meta,
             });
             common.publish("participant.create."+req.user.sub+"."+project._id, participants); //too much data?
             participants.save();

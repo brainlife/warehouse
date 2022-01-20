@@ -130,7 +130,7 @@ router.put('/:projectid', common.jwt(), (req, res, next)=>{
 
         //store participants.json
         const participant_path = config.groupanalysis.secondaryDir+"/"+project.group_id+"/participants.json";
-        console.debug("writing participants.json to", participant_path);
+        //console.debug("writing participants.json to", participant_path);
         config.groupanalysis.getSecondaryUploadStream(participant_path, (err, stream)=>{
             if(err) {
                 console.error(err);
@@ -142,7 +142,7 @@ router.put('/:projectid', common.jwt(), (req, res, next)=>{
 
         //store participant_column
         const column_path = config.groupanalysis.secondaryDir+"/"+project.group_id+"/participants_column.json";
-        console.debug("writing participants_column to", column_path);
+        //console.debug("writing participants_column to", column_path);
         config.groupanalysis.getSecondaryUploadStream(column_path, (err, stream)=>{
             if(err) {
                 console.error(err);

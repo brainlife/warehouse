@@ -1164,6 +1164,7 @@ router.put('/:id', common.jwt({secret: config.express.pubkey}), (req, res, next)
                     dataset = JSON.parse(JSON.stringify(dataset));
                     dataset._canedit = canedit(req.user, dataset, canwrite_project_ids); //need to recompute with new admin/members list
                     common.publish("dataset.update."+req.user.sub+"."+dataset.project+"."+dataset._id,{
+                        //only publish things that changes (client must lookup things that doesn't change)
                         _id: dataset._id,
                         desc: dataset.desc,
                         tags: dataset.tags,
@@ -1721,7 +1722,6 @@ router.post('/copy', common.jwt({secret: config.express.pubkey}), (req, res, nex
 
             db.Datasets.insertMany(datasets,(err, docs)=>{
                 if(err) return next(err);
-                //docs.map(db.dataset_event);
                 docs.map(doc=>{
                     common.publish("dataset.create."+req.user.sub+"."+doc.project+"."+doc._id, doc);
                 });
