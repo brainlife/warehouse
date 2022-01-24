@@ -1,9 +1,11 @@
 #!/usr/bin/env node
 
+const fs = require('fs');
 const config = require('../../api/config');
 const db = require('../../api/models');
 const common = require('../../api/common');
 const async = require('async');
+
 
 db.init(async err=>{
     if(err) throw err;

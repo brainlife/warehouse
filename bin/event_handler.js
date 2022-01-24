@@ -654,13 +654,10 @@ function handle_instance(instance, cb) {
 async function handle_dataset(dataset, cb) {
     if(!dataset) return cb("null dataset");
     const pid = dataset.project._id||dataset.project; //unpopulate project if necessary
-    //console.log("handling dataset event", dataset);
     debounce("update_dataset_stats."+pid, ()=>{
         common.update_dataset_stats(pid);
     }, 1000*60);  //counting datasets are bit more expensive.. let's debounce longer
-
     await common.updateSecondaryInventoryInfo(dataset._id);
-
     cb();
 }
 

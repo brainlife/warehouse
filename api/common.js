@@ -963,8 +963,8 @@ exports.updateSecondaryInventoryInfo = async function(dataset_id) {
 
     const project = await db.Projects.findById(dataset.project);
 
-    const dir = config.groupanalysis.secondaryDir+"/"+project.group_id+"/meta";
-    const path = dir+"/"+dataset._id+".json";
+    const dir = config.groupanalysis.secondaryDir+"/"+project.group_id;
+    const path = dir+"/meta/"+dataset._id+".json";
 
     //figure out the secondary path
     const p = dataset.prov;
@@ -975,6 +975,12 @@ exports.updateSecondaryInventoryInfo = async function(dataset_id) {
         //output without validator
         dataset._secondaryPath = p.task.instance_id+"/"+p.task._id+"/"+p.subdir;
     }
+    /*
+    if(!fs.existsSync(dir+"/"+dataset._secondaryPath)) {
+        console.info("invalid secondary path (not stored?) .. skipping meta", dir+"/"+dataset._secondaryPath);
+        return;
+    }
+    */
     await new Promise((resolve, reject)=>{
         console.debug(path);
         config.groupanalysis.getSecondaryUploadStream(path, (err, stream)=>{
