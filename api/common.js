@@ -975,11 +975,15 @@ exports.updateSecondaryInventoryInfo = async function(dataset_id) {
         //output without validator
         dataset._secondaryPath = p.task.instance_id+"/"+p.task._id+"/"+p.subdir;
     }
-    config.groupanalysis.getSecondaryUploadStream(path, (err, stream)=>{
-        stream.write(JSON.stringify(dataset, null, 4));
-        stream.end();
+    await new Promise((resolve, reject)=>{
+        console.debug(path);
+        config.groupanalysis.getSecondaryUploadStream(path, (err, stream)=>{
+            if(err) return reject(err);
+            stream.write(JSON.stringify(dataset, null, 4));
+            stream.end();
+            resolve();
+        });
     });
-    //fs.writeFileSync(path, JSON.stringify(dataset));
 }
 
 exports.update_secondary_index = async function(project) {

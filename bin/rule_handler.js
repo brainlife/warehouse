@@ -13,6 +13,8 @@ const config = require('../api/config');
 const db = require('../api/models');
 const common = require('../api/common');
 
+const pkg = requirE('../package.json');
+
 let rcon;
 let acon;
 let rule_ex;
@@ -43,6 +45,7 @@ let _counts = {
 function health_check() {
     let report = {
         status: "ok",
+        version: pkg.version,
         messages: [],
         counts: _counts,
         date: new Date(),

@@ -10,6 +10,8 @@ const redis = require('redis');
 const fs = require('fs');
 const child_process = require('child_process');
 
+const pkg = require('../package.json');
+
 const config = require('../api/config');
 const db = require('../api/models');
 const common = require('../api/common');
@@ -154,6 +156,7 @@ const health_counts = {
 function emit_health_counts() {
     var report = {
         status: "ok",
+        version: pkg.version,
         messages: [],
         date: new Date(),
         counts: health_counts,
@@ -700,8 +703,6 @@ function subscribe_newsletter(email, real_name) {
     //https://mailchimp.com/developer/reference/lists/list-members/#post_/lists/-list_id-/members
     axios.post("https://us12.api.mailchimp.com/3.0/lists/"+config.mailchimp.newsletter_list+"/members", {
         status: "subscribed",
-        //tags,
-        //vip: (counts>100?true:false),
         email_address: email,
         merge_fields: {
             FNAME: name.shift(),

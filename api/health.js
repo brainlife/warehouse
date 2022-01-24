@@ -4,6 +4,7 @@ const fs = require('fs');
 const config = require('./config');
 const db = require('./models');
 const common = require('./common');
+const pkg = require('../package');
 
 const r = common.connectRedis();
 
@@ -11,6 +12,7 @@ exports.health_check = function() {
     console.debug("running api health check");
     var report = {
         status: "ok",
+        version: pkg.version,
         messages: [],
         storages: {},
         date: new Date(),
