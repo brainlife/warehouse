@@ -147,9 +147,13 @@ export default {
             //e.preventDefault();
 
             //TODO validate?
-            if(!this.form.name) this.$notify({type: "error", text: 'Group Name can not be empty'});
+            if(!this.form.name) {
+                this.$notify({type: "error", text: 'Group Name can not be empty'});
+                return;
+            }
             if(!this.form._admins) {
                 this.$notify({type: "error", text: 'Group is required to have atleast one admin'});
+                return;
             }
             //convert back to numbers
             if(this.form._members) this.form.members = this.form._members.map(m=>parseInt(m));
