@@ -188,7 +188,7 @@ export default {
             this.form = {
                 name : "",
                 desc : "",
-                admins: [Vue.config.user.sub],
+                admins: [],
                 members: [],
                 active: true,
             }
