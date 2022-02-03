@@ -1,13 +1,13 @@
 <template>
 <div>
-    <div class="page-header" :style="{width: listWidth+'px'}">
-        <div class="search-box" :style="{width: listWidth+'px'}">
-            <b-form-input v-model="query" type="text" placeholder="Search Datasets" @input="change_query_debounce" class="input"/>
+    <div class="page-header">
+        <div class="search-box">
+            <b-form-input v-model="query" type="text" placeholder="Search Datasets" class="input"/>
             <icon name="search" class="search-icon" scale="1.5"/>
             <img src="https://pbs.twimg.com/profile_images/899900469119680512/XybpieA7_400x400.jpg" height="30px" class="datalad-logo">
         </div>
     </div>
-    <div class="page-content page-left scroll-shadow" ref="dataset-list" :style="{width: listWidth+'px'}">
+    <div class="page-content">
         <div v-if="datatype_options" style="margin: 5px; padding-right: 15px;">
             <v-select v-if="datatype_options" v-model="datatypes" :options="datatype_options" :reduce="dt => dt._id" label="name" :multiple="true" placeholder="Filter by Datatype">
                 <template slot="option" slot-scope="option">
@@ -19,171 +19,55 @@
                 </template>
             </v-select>
         </div>
+
+        <div class="hint">
+            <p>The following are the list of publically avaiable datasets that you can import to your brainlife projects.</p>
+            <p>The list includes datasets published on OpenNeuro, FCP/INDI, and other sources that can be accessed via <a href="https://datalad.org" target="datalad">Datalad</a>.</p>
+        </div>
+
         <p v-if="loading_datasets" style="padding: 20px; opacity: 0.8;">Loading...</p>
-        <p v-else-if="datasets.length == 0" style="padding: 20px; opacity: 0.8;">No matching dataset</p>
-        <div v-for="dataset in datasets" :key="dataset._id" class="dataset" :title="dataset.path" :ref="dataset._id" @click="open_dataset(dataset._id)" 
-            :class="{dataset_selected: (selected && dataset._id == selected._id)}"> 
-            <p style="margin-bottom:7px;">
-                <b-badge variant="light" style="font-size: 85%;">{{dataset.path | shortName}}</b-badge>
-                <span>{{dataset.dataset_description.Name}}</span>
-                <span v-if="dataset.dataset_description.Authors">
-                    <small v-for="(author, idx) in dataset.dataset_description.Authors.slice(0, 3)" :key="idx"> <span style="opacity: 0.3;">|</span> {{author}} </small>
+        <p v-else-if="filteredGroups.length == 0" style="padding: 20px; opacity: 0.8;">No matching dataset</p>
+        <div v-for="group in filteredGroups" :key="group.key" class="dataset" @click="openDataset(group.key)">
+            <small style="opacity: 0.7;"><b>{{group.key}}</b></small>
+            <p style="margin-bottom: 0px;">
+                <span class="serif">{{group.dsDesc.Name}}</span>
+                <span v-if="group.dsDesc.Authors">
+                    <small v-for="(author, idx) in group.dsDesc.Authors.slice(0, 3)" :key="idx"> <span style="opacity: 0.3;">|</span> {{author}} </small>
                 </span>
-            </p>
-            <p style="margin-bottom:0px;">
+
+                <span style="opacity: 0.3;">&bull;</span>
                 <small>
-                    {{dataset.stats.subjects}} <span style="opacity: 0.5;">sub</span>
-                    <span v-if="dataset.stats.sessions"> 
-                        <span style="opacity: 0.3;">|</span> {{dataset.stats.sessions}} <span style="opacity: 0.5;">ses</span>
+                    {{group.stats.subjects}} <span style="opacity: 0.5;">sub</span>
+                    <span v-if="group.stats.sessions"> 
+                        <span style="opacity: 0.3;">|</span> {{group.stats.sessions}} <span style="opacity: 0.5;">ses</span>
                     </span>
                 </small>
-                <small v-for="(count, datatype_id) in dataset.stats.datatypes" :key="datatype_id" style="margin-right: 10px;">
+
+                <span style="opacity: 0.3;">&bull;</span>
+                <small v-for="(count, datatype_id) in group.stats.datatypes" :key="datatype_id" style="margin-right: 10px;">
                     <datatypetag :datatype="datatype_id" :clickable="false"/> <small>{{count}}</small>
                 </small>
+
+                <!-- multiple versions? -->
+                <b-badge v-if="group.datasets.length > 1">Multi Versions</b-badge>
+                <!--
+                <div v-if="group.datasets.length > 1" style="display: inline-block;">
+                    <span style="opacity: 0.3;">Versions</span>
+                    <b-badge v-for="dataset in group.datasets" :key="dataset._id" style="margin-right: 5px;">{{dataset.version}}</b></b-badge>
+                </div>
+                -->
             </p>
         </div>
+        <p style="padding: 5px 10px; background-color: #ddd; margin: 0;">
+            <small v-if="groups.length != filteredGroups.length">Matching Filter <b>{{filteredGroups.length}}</b> datasets | </small>
+            <small>Total <b>{{groups.length}}</b> datasets </small>
+        </p>
     </div>
-    <div class="page-content page-left-bottom" style="text-align: right;" :style="{width: listWidth+'px'}">
+    <!--
+    <div class="page-content" style="text-align: right;" :style="{width: listWidth+'px'}">
         <small><b>{{datasets.length}}</b> datasets</small>
     </div>
-    <div class="splitter" ref="splitter" :style="{left: splitter_pos+'px'}"/>
-    <div class="page-content page-main" v-if="selected" :style="{left: (splitter_pos+10)+'px'}">
-        <div style="padding: 10px">
-            <b-button variant="primary" @click="openImporter" class="import-button"><icon name="cloud-download-alt"/> Import</b-button>
-            <p>
-                <a v-if="selected.dataset_description && selected.dataset_description.DatasetDOI" :target="selected._id" :href="'https://doi.org/'+selected.dataset_description.DatasetDOI">
-                    <b-badge variant="light">{{selected.dataset_description.DatasetDOI}}</b-badge>
-                </a>
-                <pre v-else style="opacity: 0.5; font-size: 70%">{{selected.path}}</pre>
-                <h5 style="font-size: 20px; line-height: 150%; margin-bottom: 10px;">{{selected.dataset_description.Name}}</h5>
-                <small v-for="(author, idx) in selected.dataset_description.Authors" :key="idx"> 
-                    <span v-if="idx > 0" style="opacity: 0.3;">|</span> {{author}} 
-                </small>
-            </p>
-            
-            <p>
-                <b-badge pill class="bigpill" style="margin-right: 5px;">
-                    <icon name="user-friends" style="opacity: 0.4;"/>&nbsp;&nbsp;{{selected.stats.subjects}} <small>subjects</small> 
-                    <span v-if="selected.stats.sessions"><span style="opacity: 0.4"> | </span>{{selected.stats.sessions}} <small>sessions</small></span>
-                </b-badge>
-                <span v-for="(count, datatype_id) in selected.stats.datatypes" :key="datatype_id" style="margin-right: 10px;">
-                    <datatypetag :datatype="datatype_id" :clickable="false"/> <small>{{count}}</small>
-                </span>    
-            </p>
-
-            <div v-if="selected.README">
-                <span class="form-header">README</span>
-                <vue-markdown v-if="selected.README" :source="selected.README" class="readme box"></vue-markdown>
-                <hr>
-            </div>
-        
-            <div v-if="selected.dataset_description.License">
-                <span class="form-header">License</span>
-                <div style="margin-left: 40px;" v-if="known_license(selected.dataset_description.License)">
-                    <license :id="known_license(selected.dataset_description.License)"/>
-                </div>
-                <p v-else style="margin-left: 40px; font-style: italic;">{{selected.dataset_description.License}}</p>
-            </div>
-
-            <div v-if="selected.dataset_description.Acknowledgements && selected.dataset_description.Acknowledgements != ''">
-                <span class="form-header">Acknowledgements</span>
-                <ul><li v-for="(ack, idx) in selected.dataset_description.Acknowledgements" :key="idx">{{ack}}</li></ul>
-            </div>
-
-            <div v-if="selected.dataset_description.HowToAcknowledge">
-                <span class="form-header">How To Acknowledge</span>
-                <p style="margin-left: 40px;"><i>{{selected.dataset_description.HowToAcknowledge}}</i></p>
-            </div>
-
-            <div v-if="selected.dataset_description.Funding && selected.dataset_description.Funding != ''">
-                <span class="form-header">Funding</span>
-                <ul><li v-for="(fund, idx) in selected.dataset_description.Funding" :key="idx">{{fund}}</li></ul>
-            </div>
-
-            <div v-if="selected.dataset_description.ReferencesAndLinks && selected.dataset_description.ReferencesAndLinks.filter(ref=>ref != '').length > 0">
-                <span class="form-header">References And Links</span>
-                <ul><li v-for="(ref, idx) in selected.dataset_description.ReferencesAndLinks.filter(ref=>ref != '')" :key="idx">{{ref}}</li></ul>
-            </div>
-
-            <div v-if="selected.CHANGES">
-                <span class="form-header">CHANGES</span>
-                <p>{{selected.CHANGES}}</p>
-            </div>
-        </div>
-
-        <div v-if="subjects">
-            <div class="table-header">
-                <b-row>
-                    <b-col cols="2">subject<small>/session</small></b-col>
-                    <b-col cols="3" v-if="selected.participants"><!--participants.json--></b-col>
-                    <b-col>
-                        <b-row>
-                            <b-col>datatype</b-col>
-                            <b-col>tags</b-col>
-                        </b-row>
-                    </b-col>
-                </b-row>
-            </div>
-            <div class="table-body">
-                <b-row v-for="(group, subses) in subjects" :key="subses" class="subject-group">
-                    <b-col cols="2">{{subses}}</b-col>
-                    <b-col cols="3" v-if="selected.participants">
-                        <span class="keyvalue" v-for="(v, k) in selected.participants.find(p=>p.subject == group.subject)" :key="k" v-if="k != 'subject'">
-                            <small>{{k}}</small> {{v}}
-                        </span>
-                    </b-col>
-                    <b-col>
-                        <div v-for="dataset in group.datasets" :key="dataset._id">
-                            <b-row @click="click_dataset(dataset)" class="dataobject-clickable">
-                                <b-col>
-                                    <datatypetag :datatype="dataset.datatype" :clickable="false" :tags="dataset.datatype_tags" />
-                                </b-col>
-                                <b-col><tags :tags="dataset.tags"/></b-col>
-                            </b-row>
-                            <div v-if="dataset.showmeta">
-                                <pre style="font-size: 80%; background-color: #f6f6f6; max-height: 300px;">{{dataset._meta}}</pre>
-                                <ul>
-                                    <li v-for="file in dataset._files" :key="file.dest">
-                                        <span style="display: inline-block;">{{file.src}}</span>
-                                        <b-badge variant="secondary">{{file.dest}}</b-badge> 
-                                    </li>
-                                </ul>
-                            </div>
-                        </div>
-                    </b-col>
-                </b-row>
-            </div>
-
-            <p v-if="hasMore" style="padding: 10px 20px; margin: 0px; background-color: #f0f0f0;">
-                Showing up to {{itemLimit}} data objects
-                <b-button style="float: right" @click="showAll()">Show All</b-button>
-                <br clear="both">
-            </p>
-
-            <div v-if="selected.participants_info">
-                <b-alert show variant="secondary">Phenotype Column Definitions</b-alert>
-                <pre>{{selected.participants_info}}</pre>
-            </div>
-        </div>
-
-    </div>
-
-    <div class="page-content page-main" v-else style="padding: 20px 40px; opacity: 0.7; background-color: #eee;" :style="{left: (splitter_pos+10)+'px'}"> 
-        <p v-if="loading_dataset" style="opacity: 0.6; font-size: 150%;">Loading...</p>
-        <div v-else>
-            <p style="font-size: 150%; margin-top: 20px;"><icon name="arrow-left"/> Select a dataset</p>
-            <p>You can import datasets from various remote data sources such as OpenNeuro, FCP/INDI through datalad.</p>
-            <div style="position: fixed; bottom: 30px;"
-                <!--
-                <img src="https://www.datalad.org/theme/img/logo/datalad_nav_wide.png" width="150px" align="right" style="margin: 0px 30px;">
-                -->
-                <p>You can discover and import datasets from data repositories published through Datalad.</p>
-                <p><a href="https://www.datalad.org/">Datalad</a> is a data discovery, and versioning tool that allows 
-                you to easily search and access various public datasets and store metadata and provenance information.
-                </p>
-            </div>
-        </div>
-    </div>
+    -->
 </div>
 </template>
 
@@ -201,20 +85,24 @@ import VueMarkdown from 'vue-markdown'
 
 import PerfectScrollbar from 'perfect-scrollbar'
 
-import pagesplitter from '@/mixins/pagesplitter'
+//import pagesplitter from '@/mixins/pagesplitter'
 import datatypecache from '@/mixins/datatypecache'
 
-let query_debounce = null;
+//let query_debounce = null;
+
+import {debounce} from './lib'
 
 export default {
-    mixins: [pagesplitter, datatypecache],
+    mixins: [ datatypecache ],
     components: { 
         pageheader, datatypetag, VueMarkdown, tags, license, 
     },
 
     data() {
         return {
-            datasets: [], //dataset list
+            //dataset list - grouped by
+            groups: [],
+            filteredGroups: [],
 
             datatypes: [], //selected datatypes
             datatype_options: null, //{label: .. datatype: } opbjects
@@ -241,11 +129,11 @@ export default {
             ],
 
             query: "",
-            dataset_ps: null, 
+            dataset_ps: null,
 
             loading_datasets: false,
             loading_dataset: false,
-            selected: null, 
+            selected: null,
             subjects: null, //dataobjects that belongs to selected dataset
 
             itemLimit: 0,
@@ -259,10 +147,15 @@ export default {
         datatypes() {
             this.load_datasets();
         },
+
         "$route.params.dataset_id": function(dataset_id, ov) {
             if(dataset_id == ov) return;
             this.load_dataset(dataset_id);
         },
+
+        query: debounce(function(v) {
+            this.updateFilteredGroups();
+        }, 500),
     },
 
     filters: {
@@ -270,31 +163,45 @@ export default {
             if(path.startsWith("datasets.datalad.org/indi")) {
                 return path.split("/").slice(1,3).join("/");
             }
+            if(path.startsWith("OpenNeuroDatasets2/")) {
+                return path.split("/")[1];
+            }
             return path.split("/").splice(-1)[0];
         },
     },
 
     computed: {
-        listWidth() {
-            if(this.$root.sidemenuWide) return this.splitter_pos-180;
-            else return this.splitter_pos-40;
-        },
     },
 
     mounted() {
         this.load_datatypes();
-        this.readHash();
         this.load_datasets();
-        this.init_splitter();
         let dataset_id = this.$route.params.dataset_id;
         if(dataset_id) this.load_dataset(dataset_id);
     },
-    
+
     methods: {
         showAll() {
             this.load_dataset(this.selected._id, 0);
         },
 
+        updateFilteredGroups() {
+            this.filteredGroups = this.groups.filter(group=>{
+                if(!this.query) return true;
+                const tokens = this.query.split(" ").map(t=>t.toLowerCase());
+                let match = true;
+                const name = group.dsDesc.Name.toLowerCase();
+                const key = group.key.toLowerCase();
+                tokens.forEach(t=>{
+                    if(name.includes(t)) return;
+                    if(key.includes(t)) return;
+                    match = false;
+                });
+                return match;
+            });
+        },
+
+        /*
         readHash() {
             let hash = document.location.hash;
             if(hash) {
@@ -308,6 +215,7 @@ export default {
                 }
             }
         },
+        */
 
         load_datatypes(cb) {
             this.$http.get('datatype', {params: {
@@ -320,35 +228,73 @@ export default {
 
         load_datasets() {
             this.loading_datasets = true;
-            this.datasets = [];
+            this.groups = [];
 
-            let find = { removed: false };
-                //TODO - mongo text search is handy, but it's very limited.
-                //for example, it doesn't allow partial search. like "btc" doesn't find "BTC_postop".
-                //we might want to switch to constructing a query much like project/archive search            
+            const find = {
+                removed: false,
+                path: { $not: { $regex: "^OpenNeuroDatasets\/" } },
+            };
+
+            //TODO - mongo text search is handy, but it's very limited.
+            //for example, it doesn't allow partial search. like "btc" doesn't find "BTC_postop".
+            //we might want to switch to constructing a query much like project/archive search
             for(let datatype_id of this.datatypes) {
                 find["stats.datatypes."+datatype_id] = {$exists: true};
             }
 
+            /*
             //remember query
             let hash = JSON.stringify({query: this.query, datatypes: this.datatypes});
             history.replaceState(null, null, '#'+escape(hash));
+            */
 
             this.$http('datalad/datasets', {params: {
                 find: JSON.stringify(find),
-                select: 'path name dataset_description stats',
+                select: 'path name dataset_description stats version',
                 sort: '-create_date',
                 limit: 0,
             }}).then(res=>{
-                this.datasets = res.data;
-                this.$refs["dataset-list"].scrollTop = 0;
-
                 //make sure certain key information is set
-                this.datasets.forEach(dataset=>{
+                res.data.forEach(dataset=>{
                     if(!dataset.dataset_description) dataset.dataset_description = {};
                     if(!dataset.dataset_description.Name) dataset.dataset_description.Name = "untitled";
                 });
 
+                //group different versions for OpenNeuroDatasets together
+                res.data.forEach(dataset=>{
+                    /*
+                    if(dataset.path.startsWith("OpenNeuroDatasets2/")) {
+                        //look for existing entry - and just add
+                    } else {
+                        //not openneuro.. just add it
+                        this.datasets.push(dataset); 
+                    }
+                    */
+
+                    let key = dataset.path;
+                    if(dataset.path.startsWith("OpenNeuroDatasets2/")) {
+                        //trim the version name for ON dataset
+                        const ptokens = dataset.path.split("/");
+                        ptokens.pop();
+                        key = ptokens.join("/");
+                    }
+                    let group = this.groups.find(d=>d.key == key);
+                    if(!group) {
+                        group = {
+                            key,
+                            dsDesc: dataset.dataset_description,
+                            datasets: [],
+                            stats: dataset.stats,
+                        }
+                        this.groups.push(group);
+                    }
+                    group.datasets.push(dataset);
+                });
+
+                this.updateFilteredGroups();
+
+                //this.$refs["dataset-list"].scrollTop = 0;
+                /* 
                 if(this.query) {
                     let tokens = this.query.toLowerCase().split(" ");
                     this.datasets = this.datasets.filter(dataset=>{
@@ -361,16 +307,19 @@ export default {
                         return tokens.every(token=>text.includes(token));
                     });
                 }
-                
+                */
+
                 //scroll list to the selected element
+                /*
                 this.$nextTick(()=>{
                     let dataset_list = this.$refs["dataset-list"];
-                    this.dataset_ps = new PerfectScrollbar(dataset_list);        
+                    this.dataset_ps = new PerfectScrollbar(dataset_list);
                     if(this.$route.params.dataset_id && this.$refs[this.$route.params.dataset_id]) {
                         let item = this.$refs[this.$route.params.dataset_id][0];
                         if(item) item.scrollIntoView();
                     }
                 });
+                */
 
                 this.loading_datasets = false;
 
@@ -381,6 +330,7 @@ export default {
         },
 
         //TODO - I think there is a case where this goes into infinite loop..
+        /*
         open_dataset(dataset_id) {
             if(this.selected && this.selected._id == dataset_id) {
                 this.$router.push('/datasets'+document.location.hash);
@@ -390,23 +340,11 @@ export default {
                 document.getElementsByClassName("page-main")[0].scrollTop = 0;
             }
         },
+        */
 
-        known_license(license) {
-            license = license.toLowerCase().trim();
-            
-            //corrrect some common mistakes.. (should I do this?)
-            if(license == "cco" || license == "cc") license = "cc0";
-            if(license == "ppdl") license = "pddl";
-            if(license == "ccby") license = "ccby.40";
-
-            switch(license) {
-            case "cc0":
-            case "pddl":
-            case "pd":
-            case "ccby.40":
-                return license;
-            }
-            return null;
+        openDataset(key) {
+            console.log("opening /dataset/"+key);
+            this.$router.push('/dataset/'+key);
         },
 
         load_dataset(dataset_id, limit = 100) {
@@ -418,7 +356,7 @@ export default {
             //dataset details
             this.loading_dataset = true;
             this.$http('datalad/datasets', {params: {
-                find: JSON.stringify({_id: dataset_id}), 
+                find: JSON.stringify({_id: dataset_id}),
             }}).then(res=>{
                 this.selected = res.data[0];
                 if(this.selected.participants && this.selected.participants.length == 0) this.selected.participants = null;
@@ -445,21 +383,21 @@ export default {
                     this.subjects[group].datasets.push(item.dataset);
                 }
                 this.loading_dataset = false;
-
                 this.hasMore = (items.length == this.itemLimit);
-
-            }).catch(console.error);            
+            }).catch(console.error);
         },
 
+        /*
         change_query_debounce() {
             clearTimeout(query_debounce);
             query_debounce = setTimeout(this.change_query, 300);        
         },
 
-        change_query() {
+        changeQuery() {
             if(this.loading) return setTimeout(this.change_query, 300);
             this.load_datasets();
         },
+        */
 
         license_label(dataset) {
             let license = dataset.dataset_description.License; 
@@ -503,157 +441,157 @@ export default {
 
 <style scoped>
 .page-content {
-top: 0px;
-background-color: #eee;
+    top: 50px;
+    background-color: #eee;
 }
 .page-content h2 {
-margin-bottom: 0px;
-padding: 10px 0px;
-font-size: 20pt;
+    margin-bottom: 0px;
+    padding: 10px 0px;
+    font-size: 20pt;
 }
 .page-content h3 {
-background-color: white;
-color: gray;
-padding: 20px;
-margin-bottom: 0px;
+    background-color: white;
+    color: gray;
+    padding: 20px;
+    margin-bottom: 0px;
 }
 .page-content h4 {
-padding: 15px 20px;
-background-color: white;
-opacity: 0.8;
-color: #999;
-font-size: 17pt;
-font-weight: bold;
+    padding: 15px 20px;
+    background-color: white;
+    opacity: 0.8;
+    color: #999;
+    font-size: 17pt;
+    font-weight: bold;
 }
 .header {
-padding: 10px;
-background-color: white;
-border-bottom: 1px solid #eee;
+    padding: 10px;
+    background-color: white;
+    border-bottom: 1px solid #eee;
 }
 .header-sticky {
-position: sticky;
-top: 0px;
-z-index: 1;
-box-shadow: 0 0 1px #ccc;
+    position: sticky;
+    top: 0px;
+    z-index: 1;
+    box-shadow: 0 0 1px #ccc;
 }
 .page-left {
-background-color: #fcfcfc;
-top: 50px;
-bottom: 40px;
-border-right: 1px solid #eee;
+    background-color: #fcfcfc;
+    top: 50px;
+    bottom: 40px;
+    border-right: 1px solid #eee;
 }
 .page-main {
-bottom: 0px;
-overflow: auto;
-background-color: white;
-overflow-x: hidden;
-transition: left 0s;
-z-index: 1;
+    bottom: 0px;
+    overflow: auto;
+    background-color: white;
+    overflow-x: hidden;
+    transition: left 0s;
+    z-index: 1;
 }
 .page-left-top {
-top: 50px;
-height: 50px;
-background-color: #f0f0f0;
-overflow: hidden;
+    top: 50px;
+    height: 50px;
+    background-color: #f0f0f0;
+    overflow: hidden;
 }
 .page-left-bottom {
-height: 40px;
-top: inherit;
-border-top: 1px solid #ddd;
-padding-top: 5px; 
-padding-right: 15px;
+    height: 40px;
+    top: inherit;
+    border-top: 1px solid #ddd;
+    padding-top: 5px; 
+    padding-right: 15px;
 }
 .page-header {
-box-shadow: none;
-border-bottom: 1px solid #eee;
-padding-left: 0;
+    box-shadow: none;
+    border-bottom: 1px solid #eee;
+    padding-left: 0;
 }
 .datalad-logo {
-position: absolute;
-top: 3px;
-right: 20px;
-z-index: -1;
-opacity: 0.5;
+    position: absolute;
+    top: 3px;
+    right: 20px;
+    z-index: -1;
+    opacity: 0.5;
 }
-
 .dataset {
-padding: 7px 10px;
-font-size: 95%;
-border-top: 1px solid #0001;
+    padding: 7px 10px;
+    font-size: 95%;
+    border-top: 1px solid #0001;
+    background-color: #fff;
 }
 
 .dataset:hover {
-cursor: pointer;
-background-color: #9993;
+    cursor: pointer;
+    background-color: #9993;
 }
 
 .dataset.dataset_selected {
 /*
 position: sticky;
-
 //making it sticky on top causes some browser bug? the list will go on top
 //of selected element. adjusting z-index causes scrollbar to be hidden 
 //under the selected item
 top: 0;
-
 bottom: 0;
 */
-
-background-color: #2693ff;
-color: white;
+    background-color: #2693ff;
+    color: white;
 }
 
 .count {
-float: right;
-opacity: 0.7;
-font-size: 90%;
+    float: right;
+    opacity: 0.7;
+    font-size: 90%;
 }
 
 .dataset-header {
-padding: 10px;
-background-color: white;
-color: black;
+    padding: 10px;
+    background-color: white;
+    color: black;
 }
 
 .table-header {
-position: sticky; 
-top: 0; 
-background-color: #ddd; 
-padding: 5px 10px;
-z-index: 1;
-text-transform: uppercase;
-font-weight: bold;
+    position: sticky; 
+    top: 0; 
+    background-color: #ddd; 
+    padding: 5px 10px;
+    z-index: 1;
+    text-transform: uppercase;
+    font-weight: bold;
 }
 
 .table-body {
-padding: 0px 10px;
+    padding: 0px 10px;
 }
 
 .subject-group {
-border-bottom: 1px solid #ddd9;
-padding: 5px 0px;
-font-size: 90%;
+    border-bottom: 1px solid #ddd9;
+    padding: 5px 0px;
+    font-size: 90%;
 }
 
 .subject-group .dataobject-clickable:hover {
-background-color: #eee;
-cursor: pointer;
+    background-color: #eee;
+    cursor: pointer;
 }
 
 .import-button {
-float: right; 
-position: sticky;
-top: 10px;
-margin-left: 30px;
-z-index: 1;
+    float: right; 
+    position: sticky;
+    top: 10px;
+    margin-left: 30px;
+    z-index: 1;
 }
 .search-icon {
-left: 12px;
+    left: 12px;
 }
 
 .disableText {
     user-select: none;
 }
-
+.hint {
+    padding: 10px;
+    opacity: 0.8;
+}
 </style>
 

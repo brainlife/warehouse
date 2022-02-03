@@ -37,25 +37,8 @@ export default {
     },
 
     mounted: function() {
-        /*
-        this.$http.get('project', {params: {
-            find: JSON.stringify({ 
-                removed: false,
-                "openneuro.dataset_id": this.$route.params.id,
-            }),
-        }})
-        .then(res=>{
-            //redirect if we are hosting this project
-            if(res.data.count > 0) {
-                let project = res.data.projects[0];
-                console.log("redirecting to "+project._id);
-                this.$router.push("/project/"+project._id+"/process");
-            }
-        }, res=>{
-            console.error(res);
-        });
-        */
-
+        console.log("redirector", this.$route.params);
+        let path = "^OpenNeuro/"+this.$route.params.id;
         this.$http.get('datalad/datasets', {params: {
             find: JSON.stringify({
                 path: {$regex: this.$route.params.id+"$"},
@@ -66,7 +49,7 @@ export default {
             //in case there are multiple.. let's pick the first one
             let dataset = res.data[0];
             console.log("redirecting to "+dataset._id);
-            this.$router.push("/datasets/"+dataset._id);
+            this.$router.push("/dataset/"+dataset.path);
         }).catch(console.error);
     },
 }

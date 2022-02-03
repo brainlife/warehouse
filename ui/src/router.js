@@ -22,6 +22,7 @@ import datatype from '@/datatype'
 import datatypeedit from '@/datatypeedit'
 
 import datasets from '@/datasets'
+import dataset from '@/dataset'
 
 import resources from '@/resources'
 import resource from '@/resource'
@@ -132,12 +133,6 @@ export default new Router({
             sidemenu: "project",
         }},
 
-        //redirector
-        {path: '/openneuro/:id', component: openneuro, meta: {
-            public: true,
-            sidemenu: "project",
-        }},
-
         {path: '/datatypes', component: datatypes, meta: {
             public: true,
             sidemenu: "datatype",
@@ -147,14 +142,14 @@ export default new Router({
             public: true,
             sidemenu: "datatype",
         }}, //depecated by /datatype/:id
-        
+
         {path: '/datatype/:id', component: datatype, meta: {
             public: true,
             sidemenu: "datatype",
         }},
 
         {path: '/datatype/:id/edit', component: datatypeedit, meta: {
-            sidemenu: "datatype",     
+            sidemenu: "datatype",
         }},
 
         {path: '/datatype/:id/:tab?', component: datatype, meta: {
@@ -165,13 +160,27 @@ export default new Router({
         //aka.. datalad search
         {path: '/datasets', component: datasets, meta: {
             public: true,
-            sidemenu: "dataset",     
+            sidemenu: "dataset",
         }},
 
+        {path: '/dataset/:key*', component: dataset, meta: {
+            public: true,
+            sidemenu: "dataset",
+        }},
+
+        //redirector
+        {path: '/openneuro/:id*', component: openneuro, meta: {
+            public: true,
+            sidemenu: "dataset",
+        }},
+
+        //TODO - redirect to the new URL
+        /*
         {path: '/datasets/:dataset_id', component: datasets, meta: {
             public: true,
             sidemenu: "dataset",  
         }},
+        */
 
         {path: '/resources', component: resources, meta: {
             public: true,

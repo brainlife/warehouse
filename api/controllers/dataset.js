@@ -1579,8 +1579,8 @@ ${p.desc}`;
                         //use service name as the pipeline name
                         pipeline = dataset.prov.task.service.replace(/\//g, '.');
                     }
-                    //TODO - for output from validator, I need to lookup the service name of follow_task
 
+                    //TODO - for output from validator, I need to lookup the service name of follow_task
                     bidspath += "/"+pipeline;
                     if(dataset.meta.subject) bidspath += "/sub-"+dataset.meta.subject;
                     if(dataset.meta.session) bidspath += "/ses-"+dataset.meta.session;

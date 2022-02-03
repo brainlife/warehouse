@@ -8,19 +8,8 @@ mongoose.set("debug", config.mongoose_debug);
 
 exports.init = (cb)=>{
     mongoose.connect(config.mongodb, {
-        //TODO - move to config
-        /*
-        readPreference: 'nearest',
-        readConcern: {
-            level: 'majority',//prevents read to grab stale data from secondary
-        },
-        writeConcern: {
-            w: 'majority', //isn't this the default?
-        },
-        */
         useNewUrlParser: true,
         useUnifiedTopology: true,
-        //useCreateIndex: true,
     }, err=>{
         if(err) return cb(err);
         cb();
@@ -67,7 +56,7 @@ var projectSchema = mongoose.Schema({
     limitResource: {type: Boolean, default: false},
 
     publishParticipantsInfo: { type: Boolean, default: false }, //publish participants info as part of publications
-    
+
     //basic stats for this app (aggregated by bin/projectinfo.js)
     stats: {
 
@@ -76,7 +65,7 @@ var projectSchema = mongoose.Schema({
 
             //deprecated - by datatypes_detail
             datatypes: [{type: mongoose.Schema.Types.ObjectId, ref: "Datatypes"}],
-           
+
             //datatypes and number of objects
             datatypes_detail: [{
                 type: {type: mongoose.Schema.Types.ObjectId, ref: "Datatypes"},
@@ -90,7 +79,7 @@ var projectSchema = mongoose.Schema({
             count: Number,
             size: Number,
         },
-        
+
         //count of instances for each status (updated by common.update_project_stats)
         instances: {
             requested: Number,
@@ -812,8 +801,8 @@ exports.Rules = mongoose.model('Rules', ruleSchema);
 
 //////////////////////////////////////////////////////////////
 //
-// DL collections
-// 
+// datalad collections
+//
 
 //similar to brainlife "project"
 var dlDatasetSchema = mongoose.Schema({
@@ -821,6 +810,8 @@ var dlDatasetSchema = mongoose.Schema({
     path: String, //datasets.dl.org/openneuro (can be used as dataset "group")
 
     commit_id: String, //dataset datalad git repo commit id (used to skip iterating through already registered dataset?)
+
+    version: String, //only set for OpenNeuroDataset version
 
     README: String, 
     CHANGES: String, 
@@ -869,7 +860,6 @@ var dlItemSchema = mongoose.Schema({
 dlItemSchema.index({'dldataset': 1, 'dataset.datatype': 1, 'dataset.meta.subject': 1, 'dataset.meta.session': 1, 'dataset.meta.run': 1}); //importdatlad uses this as *key* for each item
 exports.DLItems = mongoose.model('DLItems', dlItemSchema);
 
-
 var commentSchema = mongoose.Schema({
     comment: String,
     user_id: String, //sub of the user    
@@ -882,6 +872,7 @@ var commentSchema = mongoose.Schema({
     update_date: { type: Date, default: Date.now },
     //let user "edit" comment, and if it's edited, this is set.
     removed: { type: Boolean, default: false },
-    });
+});
 
 exports.Comments = mongoose.model('Comments', commentSchema);
+

@@ -7,7 +7,6 @@ const config = require('../config');
 const db = require('../models');
 const common = require('../common');
 
-
 /**
  * @apiGroup Comment
  * @api {get} /comment/project/:projectid  Get Comment List of Particular Project

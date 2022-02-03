@@ -517,7 +517,7 @@ exports.storage_systems.project = {
     test: cb=>{
         console.log("project/test - todo");
         cb();
-    }, 
+    },
 
     stat: (dataset, cb)=>{
         cb();
@@ -551,6 +551,7 @@ function get_copysource_dataset(dataset) {
         _id: dataset.storage_config.dataset_id,
     });
 }
+
 exports.storage_systems.copy = {
     need_backup: true,
     test: cb=>{
@@ -727,7 +728,7 @@ exports.storage_systems["nki"] = {
 }
 */
 
-exports.storage_systems["url"] = {
+exports.storage_systems.url = {
     need_backup: false,
     test: cb=>{
         //TODO - maybe check to see if we have outbound connection?
@@ -773,7 +774,7 @@ async function walk(dir) {
 }
 
 const datalad_root = "/mnt/datalad";
-exports.storage_systems["datalad"] = {
+exports.storage_systems.datalad = {
     need_backup: false,
     test: cb=>{
         //TODO??

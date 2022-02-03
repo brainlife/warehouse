@@ -18,47 +18,43 @@ db.init(async err=>{
     await load_datatypes();
 
     //find dataset_description.json
-    console.log("loading datasets.txt");
-    //let datalad_datasets = child_process.execSync("find datasets.datalad.org -maxdepth 4 -name dataset_description.json", {encoding: "utf8"}).split("\n").filter(dataset=>{
-    let datasets = child_process.execSync("cat datasets.txt", {encoding: "utf8"}).split("\n").filter(dataset=>{
+    console.log("loading datasets2.txt");
+    let datasets = child_process.execSync("cat datasets2.txt", {encoding: "utf8"}).split("\n").filter(dataset=>{
+        //ignore some datasets
         if(dataset.startsWith("datasets.datalad.org/openneuro")) return false;
         if(dataset.startsWith("datasets.datalad.org/openfmri")) return false;
         return true;
     });
 
-    /*
-    console.log("looking for dataset_description.json /mnt/datalad/OpenNeuroDatasets");
-    //let openneuro_datasets = child_process.execSync("find OpenNeuroDatasets -maxdepth 2 -name dataset_description.json", {encoding: "utf8"}).split("\n");
-    let openneuro_datasets = child_process.execSync("cat OpenNeuroDatasets/datasets.txt", {encoding: "utf8"}).split("\n");
-    let datasets = [...datalad_datasets, ...openneuro_datasets];
-    */
-
-    //debug..
     //datasets = ["OpenNeuroDatasets/ds001771/dataset_description.json"];
-
     let skipped = [];
     async.eachSeries(datasets, (bids_dir, next_dir)=>{
         let dataset_path = path.dirname(bids_dir);
 
         console.log(dataset_path+".......................");
         if(dataset_path[0] == '.') return next_dir();
-        if(dataset_path.includes("/derivatives")) return next_dir(); //openneuro/ds001734/derivatives contains dataset_description.json
-        if(dataset_path.includes("/.bidsignore")) return next_dir(); //openneuro/ds001583
+
+        //debug -- just process 1
+        //if(dataset_path != "OpenNeuroDatasets2/ds000117/1.0.2") return next_dir();
+
+        //openneuro/ds001734/derivatives contains dataset_description.json
+        if(dataset_path.includes("/derivatives")) return next_dir(); 
+
+        //openneuro/ds001583
+        if(dataset_path.includes("/.bidsignore")) return next_dir(); 
 
         //somehow it gets stuck... (not bids walker issue?)
+        /*
         //TODO - fix it!
         if(dataset_path == "OpenNeuroDatasets/ds001499") return next_dir();
         if(dataset_path == "OpenNeuroDatasets/ds003634") return next_dir();
         if(dataset_path == "OpenNeuroDatasets/ds003505") return next_dir();
         if(dataset_path == "OpenNeuroDatasets/ds002785") return next_dir();
-
-        //debug
-        //if(dataset_path != "datasets.datalad.org/openneuro/ds001590") return next_dir();
+        */
 
         console.log("walking bids..");
         cli.bids_walker(dataset_path, (err, bids)=>{
             if(err) return next_dir(err);
-            //console.dir(bids);
 
             //if there are no data, something went wrong..
             if(bids.datasets.length == 0) {
@@ -70,10 +66,17 @@ db.init(async err=>{
                 return next_dir();
             }
 
-            console.log(" .. found", bids.datasets.length, "objects");
+            let version = undefined;
+            if(dataset_path.startsWith("OpenNeuroDatasets2/")) {
+                const tokens = dataset_path.split("/");
+                version = tokens[2]; // OpenNeuroDatasets2/ds001499/1.0.0
+            }
 
-            let key = {path: dataset_path};
-            handle_bids(key, bids, next_dir);
+            console.log(" .. found", bids.datasets.length, "objects", dataset_path, version);
+            handle_bids({
+                path: dataset_path,
+                version,
+            }, bids, next_dir);
         });
     }, err=>{
         if(err) throw err;
@@ -96,6 +99,7 @@ async function load_datatypes() {
 }
 
 function handle_bids(key, bids, cb) {
+
     //upsert dl-dataset record
     db.DLDatasets.findOne(key, (err, dldataset)=>{
         if(err) return cb(err);
@@ -137,13 +141,13 @@ function handle_bids(key, bids, cb) {
         //so that data will be re-registered (should I store the branlife npm package version number?)
         let commit_id = child_process.execSync("git rev-parse HEAD", {cwd: key.path, encoding: "utf8"}).trim();
         dldataset.commit_id = commit_id;
-        
+
         //why was I doing this?
         //dldataset.removed = false;
 
         dldataset.save(err=>{
             if(err) throw err;
-           
+
             //handle each items
             async.eachSeries(bids.datasets, (item, next_dataset)=>{
                 item.dataset.datatype = datatype_ids[item.dataset.datatype];
@@ -153,7 +157,14 @@ function handle_bids(key, bids, cb) {
                     files.push({src: item.files[dest], dest});
                 }
 
-                item.dataset.storage_config = {files, commit_id, path: key.path, dldataset_id: dldataset._id, something: 'whatever' }; //let's set commit_id for provenance purpose (not used yet)
+                item.dataset.storage_config = {
+                    files, 
+                    commit_id, //let's set commit_id for provenance purpose (not used yet)
+                    path: key.path, 
+                    dldataset_id: dldataset._id, 
+                    something: 'whatever' 
+                };
+
                 item.dataset.status = "stored"; //should I come up with something?
 
                 //similar code exists in bl-bids-upload
@@ -172,7 +183,6 @@ function handle_bids(key, bids, cb) {
                     "task", "acq", "ce", "rec", "dir", 
                     "run", "mod", "echo", "flip", "inv", "mt", "part", "recording",
                     "proc", "split", 
-                    //"space", "res", "den", "label", "desc" //only for derivatives
                 ];
                 entities.forEach(e=>{
                     if(item.dataset.meta[e]) itemkey["dataset.meta."+e] = item.dataset.meta[e];
@@ -188,7 +198,6 @@ function handle_bids(key, bids, cb) {
                             next_dataset();
                         });
                     } else {
-                        //for(let key in update) dlitem[key] = update[key];
                         db.DLItems.updateOne(itemkey, {$set: {dataset: item.dataset, update_date: new Date()}}, err=>{
                             if(err) return cb(err);
                             next_dataset();
