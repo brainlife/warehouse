@@ -34,9 +34,6 @@ db.init(async err=>{
         console.log(dataset_path+".......................");
         if(dataset_path[0] == '.') return next_dir();
 
-        //debug -- just process 1
-        //if(dataset_path != "OpenNeuroDatasets2/ds000117/1.0.2") return next_dir();
-
         //openneuro/ds001734/derivatives contains dataset_description.json
         if(dataset_path.includes("/derivatives")) return next_dir(); 
 
@@ -67,9 +64,9 @@ db.init(async err=>{
             }
 
             let version = undefined;
-            if(dataset_path.startsWith("OpenNeuroDatasets2/")) {
+            if(dataset_path.startsWith("OpenNeuro/")) {
                 const tokens = dataset_path.split("/");
-                version = tokens[2]; // OpenNeuroDatasets2/ds001499/1.0.0
+                version = tokens[2]; // OpenNeuro/ds001499/1.0.0
             }
 
             console.log(" .. found", bids.datasets.length, "objects", dataset_path, version);
