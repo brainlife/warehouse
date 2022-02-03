@@ -147,11 +147,17 @@ export default {
             //e.preventDefault();
 
             //TODO validate?
-
+            if(!this.form.name) {
+                this.$notify({type: "error", text: 'Group Name can not be empty'});
+                return;
+            }
+            if(!this.form._admins) {
+                this.$notify({type: "error", text: 'Group is required to have atleast one admin'});
+                return;
+            }
             //convert back to numbers
-            this.form.members = this.form._members.map(m=>parseInt(m));
+            if(this.form._members) this.form.members = this.form._members.map(m=>parseInt(m));
             this.form.admins = this.form._admins.map(m=>parseInt(m));
-
             if(this.form.id) {
                 //update
                 this.$http.put(Vue.config.auth_api+"/group/"+this.form.id,this.form).then(res=>{
@@ -182,7 +188,7 @@ export default {
             this.form = {
                 name : "",
                 desc : "",
-                admins: [Vue.config.user.sub],
+                admins: [],
                 members: [],
                 active: true,
             }
