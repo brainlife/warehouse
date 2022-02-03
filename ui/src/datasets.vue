@@ -9,7 +9,8 @@
     </div>
     <div class="page-content">
         <div v-if="datatype_options" style="margin: 5px; padding-right: 15px;">
-            <v-select v-if="datatype_options" v-model="datatypes" :options="datatype_options" :reduce="dt => dt._id" label="name" :multiple="true" placeholder="Filter by Datatype">
+            <v-select v-if="datatype_options" v-model="datatypes" :options="datatype_options" 
+                :reduce="dt => dt._id" label="name" :multiple="true" placeholder="Filter by Datatype">
                 <template slot="option" slot-scope="option">
                     <datatypetag :datatype="option" :clickable="false"/>
                     <small>{{option.desc}}</small>
@@ -145,13 +146,16 @@ export default {
 
     watch: {
         datatypes() {
-            this.load_datasets();
+            //this.load_datasets();
+            this.updateFilteredGroups();
         },
 
+        /*
         "$route.params.dataset_id": function(dataset_id, ov) {
             if(dataset_id == ov) return;
             this.load_dataset(dataset_id);
         },
+        */
 
         query: debounce(function(v) {
             this.updateFilteredGroups();
@@ -170,9 +174,6 @@ export default {
         },
     },
 
-    computed: {
-    },
-
     mounted() {
         this.load_datatypes();
         this.load_datasets();
@@ -187,35 +188,36 @@ export default {
 
         updateFilteredGroups() {
             this.filteredGroups = this.groups.filter(group=>{
-                if(!this.query) return true;
-                const tokens = this.query.split(" ").map(t=>t.toLowerCase());
                 let match = true;
-                const name = group.dsDesc.Name.toLowerCase();
-                const key = group.key.toLowerCase();
-                tokens.forEach(t=>{
-                    if(name.includes(t)) return;
-                    if(key.includes(t)) return;
-                    match = false;
-                });
+
+                //apply query
+                if(this.query) {
+                    const tokens = this.query.split(" ").map(t=>t.toLowerCase());
+                    const name = group.dsDesc.Name.toLowerCase();
+                    const key = group.key.toLowerCase();
+                    tokens.forEach(t=>{
+                        if(name.includes(t)) return;
+                        if(key.includes(t)) return;
+                        match = false;
+                    });
+                }
+
+                if(this.datatypes.length) {
+                    //apply datatype query
+                    //see if there is any dataset that contains all specified datatypes
+                    let hasMatchingDataset = false;
+                    group.datasets.forEach(dataset=>{
+                        for(let datatype_id of this.datatypes) {
+                            if(!dataset.stats.datatypes[datatype_id]) return; //missing!
+                        }
+                        hasMatchingDataset = true;
+                    });
+                    if(!hasMatchingDataset) match = false;
+                }
+
                 return match;
             });
         },
-
-        /*
-        readHash() {
-            let hash = document.location.hash;
-            if(hash) {
-                hash = unescape(hash.substring(1)); //remove #
-                try {
-                    let query = JSON.parse(hash);
-                    this.query = query.query;
-                    this.datatypes = query.datatypes;
-                } catch (err) {
-                    console.error(err);
-                }
-            }
-        },
-        */
 
         load_datatypes(cb) {
             this.$http.get('datatype', {params: {
@@ -234,19 +236,6 @@ export default {
                 removed: false,
                 path: { $not: { $regex: "^OpenNeuroDatasets\/" } },
             };
-
-            //TODO - mongo text search is handy, but it's very limited.
-            //for example, it doesn't allow partial search. like "btc" doesn't find "BTC_postop".
-            //we might want to switch to constructing a query much like project/archive search
-            for(let datatype_id of this.datatypes) {
-                find["stats.datatypes."+datatype_id] = {$exists: true};
-            }
-
-            /*
-            //remember query
-            let hash = JSON.stringify({query: this.query, datatypes: this.datatypes});
-            history.replaceState(null, null, '#'+escape(hash));
-            */
 
             this.$http('datalad/datasets', {params: {
                 find: JSON.stringify(find),
@@ -284,34 +273,6 @@ export default {
 
                 this.updateFilteredGroups();
 
-                //this.$refs["dataset-list"].scrollTop = 0;
-                /* 
-                if(this.query) {
-                    let tokens = this.query.toLowerCase().split(" ");
-                    this.datasets = this.datasets.filter(dataset=>{
-                        let stuff = [
-                            dataset.dataset_description.Name,
-                            dataset.path,
-                            dataset.dataset_description.DatasetDOI,
-                        ];
-                        const text = stuff.filter(thing=>!!thing).join(" ").toLowerCase();
-                        return tokens.every(token=>text.includes(token));
-                    });
-                }
-                */
-
-                //scroll list to the selected element
-                /*
-                this.$nextTick(()=>{
-                    let dataset_list = this.$refs["dataset-list"];
-                    this.dataset_ps = new PerfectScrollbar(dataset_list);
-                    if(this.$route.params.dataset_id && this.$refs[this.$route.params.dataset_id]) {
-                        let item = this.$refs[this.$route.params.dataset_id][0];
-                        if(item) item.scrollIntoView();
-                    }
-                });
-                */
-
                 this.loading_datasets = false;
 
             }).catch(err=>{
@@ -319,19 +280,6 @@ export default {
                 console.error(err);
             });
         },
-
-        //TODO - I think there is a case where this goes into infinite loop..
-        /*
-        open_dataset(dataset_id) {
-            if(this.selected && this.selected._id == dataset_id) {
-                this.$router.push('/datasets'+document.location.hash);
-            } else {
-                console.log("opening", dataset_id)
-                this.$router.push('/datasets/'+dataset_id+document.location.hash);
-                document.getElementsByClassName("page-main")[0].scrollTop = 0;
-            }
-        },
-        */
 
         openDataset(key) {
             console.log("opening /dataset/"+key);
@@ -377,18 +325,6 @@ export default {
                 this.hasMore = (items.length == this.itemLimit);
             }).catch(console.error);
         },
-
-        /*
-        change_query_debounce() {
-            clearTimeout(query_debounce);
-            query_debounce = setTimeout(this.change_query, 300);        
-        },
-
-        changeQuery() {
-            if(this.loading) return setTimeout(this.change_query, 300);
-            this.load_datasets();
-        },
-        */
 
         license_label(dataset) {
             let license = dataset.dataset_description.License; 

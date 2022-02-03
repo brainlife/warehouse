@@ -6,7 +6,7 @@
             <b-tab v-for="(version, idx) in tabs" :key="idx" :title="version" :active="tab == idx"/>
         </b-tabs>
         <h5 style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; opacity: 0.5;">
-            {{$route.params.key}}
+            {{path}}
         </h5>
     </div>
     <div class="page-content" v-if="selected">
@@ -102,11 +102,13 @@ export default {
         doibadge,
         VueMarkdown: ()=>import('vue-markdown'),
     },
+
     data() {
         return {
             datasets: [], //list of datasets (for each versions)
             //selected: null,
             tab: 0,
+            path: null,
         }
     },
 
@@ -119,14 +121,31 @@ export default {
         },
     },
 
-    mounted: function() {
-        const prefix = this.$route.params.key;
+    watch: {
+        tab(v) {
+            this.$router.replace("/dataset/"+this.path+"/"+this.tabs[v]);
+        },
+    },
 
-        //load the dataset detail
+    mounted: function() {
+        this.path = this.$route.params.key;
+        let version = null;
+
+        //strip version number if specified
+        if(this.path.startsWith("OpenNeuro/")) {
+            const tokens = this.path.split("/");
+            if(tokens.length == 3) {
+                version = tokens.pop(); 
+                this.path = tokens.join("/");
+            }
+        }
+        console.log(this.path, version);
+
+        //load te dataset detail
         this.$http('datalad/datasets', {params: {
             find: JSON.stringify({
                 removed: false,
-                path: { $regex: "^"+prefix.replace("/", "\/")},
+                path: { $regex: "^"+this.path.replace("/", "\/")},
             }),
             sort: '-version',
         }}).then(res=>{
@@ -138,12 +157,20 @@ export default {
                 if(this.selected.participants && this.selected.participants.length == 0) this.selected.participants = null;
             });
 
-            //this.selected = this.datasets[0];
+            //select specified version
+            if(version) {
+                this.tab = this.tabs.indexOf(version);
+                console.log("preselected", version, this.tab);
+            }
         });
 
     },
 
     methods: {
+        updateHash() {
+            console.log(this.tab);
+        },
+
         openImporter() {
             if(Vue.config.user) {
                 this.$root.$emit("importer.open", {
