@@ -163,7 +163,7 @@ export default {
             if(path.startsWith("datasets.datalad.org/indi")) {
                 return path.split("/").slice(1,3).join("/");
             }
-            if(path.startsWith("OpenNeuroDatasets2/")) {
+            if(path.startsWith("OpenNeuro")) {
                 return path.split("/")[1];
             }
             return path.split("/").splice(-1)[0];
@@ -262,17 +262,8 @@ export default {
 
                 //group different versions for OpenNeuroDatasets together
                 res.data.forEach(dataset=>{
-                    /*
-                    if(dataset.path.startsWith("OpenNeuroDatasets2/")) {
-                        //look for existing entry - and just add
-                    } else {
-                        //not openneuro.. just add it
-                        this.datasets.push(dataset); 
-                    }
-                    */
-
                     let key = dataset.path;
-                    if(dataset.path.startsWith("OpenNeuroDatasets2/")) {
+                    if(dataset.path.startsWith("OpenNeuro/")) {
                         //trim the version name for ON dataset
                         const ptokens = dataset.path.split("/");
                         ptokens.pop();
