@@ -13,7 +13,7 @@ const config = require('../api/config');
 const db = require('../api/models');
 const common = require('../api/common');
 
-const pkg = requirE('../package.json');
+const pkg = require('../package.json');
 
 let rcon;
 let acon;
