@@ -28,7 +28,7 @@
     "aws-sdk": "^2.1043.0",
     "axios": "^0.21.4",
     "body-parser": "^1.18.3",
-    "brainlife": "^1.5.37",
+    "brainlife": "^1.5.42",
     "compression": "^1.7.3",
     "cors": "^2.8.5",
     "coveralls": "^3.1.1",
