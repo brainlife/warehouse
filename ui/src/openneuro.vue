@@ -41,8 +41,9 @@ export default {
         let path = "^OpenNeuro/"+this.$route.params.id;
         this.$http.get('datalad/datasets', {params: {
             find: JSON.stringify({
-                path: {$regex: this.$route.params.id+"$"},
-            })
+                path: {$regex: this.$route.params.id},
+            }),
+            sort: '-version', //is there a better way to find the latest one?
         }})
         .then(res=>{
             if(res.data.length == 0) return;

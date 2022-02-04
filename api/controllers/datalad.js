@@ -173,8 +173,6 @@ router.get('/items', common.jwt({credentialsRequired: false}), (req, res, next)=
     });
 });
 
-
-
 module.exports = router;
 
 

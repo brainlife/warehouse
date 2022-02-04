@@ -107,6 +107,7 @@ export default {
         return {
             datasets: [], //list of datasets (for each versions)
             //selected: null,
+            tabs: [],
             tab: 0,
             path: null,
         }
@@ -116,14 +117,14 @@ export default {
         selected() {
             return this.datasets[this.tab];
         },
-        tabs() {
-            return this.datasets.map(d=>d.version||d._id);
-        },
     },
 
     watch: {
-        tab(v) {
-            this.$router.replace("/dataset/"+this.path+"/"+this.tabs[v]);
+        tab(v, ov) {
+            if(~v) {
+                console.log("tab changed to", v, this.tabs, "updating router");
+                this.$router.replace("/dataset/"+this.path+"/"+this.tabs[v]);
+            }
         },
     },
 
@@ -139,7 +140,6 @@ export default {
                 this.path = tokens.join("/");
             }
         }
-        console.log(this.path, version);
 
         //load te dataset detail
         this.$http('datalad/datasets', {params: {
@@ -151,16 +151,19 @@ export default {
         }}).then(res=>{
             console.log("loaded", res.data);
             this.datasets = res.data;
+            this.tabs = this.datasets.map(d=>d.version||d._id);
 
-            //cleanup
+            //cleanup (why?)
             this.datasets.forEach(dataset=>{
-                if(this.selected.participants && this.selected.participants.length == 0) this.selected.participants = null;
+                if(dataset.participants && dataset.participants.length == 0) dataset.participants = null;
             });
 
             //select specified version
             if(version) {
-                this.tab = this.tabs.indexOf(version);
-                console.log("preselected", version, this.tab);
+                this.$nextTick(()=>{
+                    //wait for b-tab initialization first
+                    this.tab = this.tabs.indexOf(version);
+                });
             }
         });
 
