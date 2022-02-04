@@ -50,7 +50,9 @@
                 </small>
 
                 <!-- multiple versions? -->
+                <!--
                 <b-badge v-if="group.datasets.length > 1">Multi Versions</b-badge>
+                -->
                 <!--
                 <div v-if="group.datasets.length > 1" style="display: inline-block;">
                     <span style="opacity: 0.3;">Versions</span>

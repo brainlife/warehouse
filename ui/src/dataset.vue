@@ -2,7 +2,7 @@
 <div>
     <div class="page-header">
         <b-button variant="primary" @click="openImporter" class="import-button"><icon name="cloud-download-alt"/> Import</b-button>
-        <b-tabs class="brainlife-tab" v-model="tab" v-if="tabs.length > 1">
+        <b-tabs class="brainlife-tab" v-model="tab">
             <b-tab v-for="(version, idx) in tabs" :key="idx" :title="version" :active="tab == idx"/>
         </b-tabs>
         <h5 style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; opacity: 0.5;">
