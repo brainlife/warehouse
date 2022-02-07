@@ -5,7 +5,7 @@
         <div class="button" @click="open"><icon name="edit"/></div>
     </div>
     -->
-    <app :app="rule.app" :branch="rule.brancn" :compact="true">
+    <app :app="rule.app" :branch="rule.brancn" :compact="true" :clickable="false">
         <div style="margin: 10px 100px 0 10px">
             <taskconfigtable :config="rule.config" :appconfig="rule.app.config" :hideDefault="true"/>
         </div>

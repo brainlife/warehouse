@@ -1,7 +1,10 @@
 <template>
 <div class="pipeline-group" :class="{'group-root': root, 'group-open': group.open}" :style="{'background-color': group.color}">
-    <h5 style="opacity: 0.7" v-if="!root">{{group.name}}</h5>
 
+    <groupbuttons :group="group" v-if="group.open && root && group.items.length" :root="root" 
+        @newrule="newrule" @newgroup="newgroup" @newmarkdown="newmarkdown" @sort="sort"/>
+
+    <h5 style="opacity: 0.7" v-if="!root">{{group.name}}</h5>
     <div v-if="!group.open" class="item-body">
         <pipelineReadme v-if="closedItem" :item="closedItem" @updated="$emit('updated')"/>
         <small>{{activeRuleCount}} Active</small>
@@ -11,17 +14,17 @@
         <div v-if="group.open" v-for="(item, idx) in group.items" :key="idx" class="item">
             <!--move button-->
             <div class="item-buttons">
-                <b-button-group>
+                <b-button-group vertical>
 
                     <b-btn variant="primary" size="sm" @click="editReadme(item)" title="Edit" v-if="item.type == 'readme' && item._editing === null"><icon name="edit"/></b-btn>
                     <b-btn variant="primary" size="sm" @click="editRule(item)" title="Edit" v-if="item.type == 'rule'"><icon name="edit"/></b-btn>
                     <b-btn variant="primary" size="sm" @click="editGroup(item)" title="Edit" v-if="item.type == 'group'"><icon name="edit"/></b-btn>
-                    <b-btn variant="outline-secondary" size="sm" @click="copyrule({group, ruleId: item.ruleId})" title="Edit" v-if="item.type == 'rule'"><icon name="copy"/></b-btn>
-                    <b-btn variant="outline-secondary" size="sm" class="handle" title="Move this item"><icon name="arrows-alt-v"/></b-btn>
-                    <b-btn variant="primary" size="sm" v-if="item.type == 'readme' && item._editing !== null" title="Save the update" @click="saveReadme(item)">Save</b-btn>
+                    <b-btn variant="light" size="sm" @click="copyrule({group, ruleId: item.ruleId})" title="Edit" v-if="item.type == 'rule'"><icon name="copy"/></b-btn>
+                    <b-btn variant="light" size="sm" class="handle" title="Move this item"><icon name="arrows-alt-v"/></b-btn>
+                    <b-btn variant="primary" size="sm" v-if="item.type == 'readme' && item._editing !== null" title="Save the update" @click="saveReadme(item)"><icon name="check"/></b-btn>
                     <b-btn variant="secondary" size="sm" v-if="item.type == 'readme' && item._editing !== null" title="Edit this note" @click="cancelEditReadme(item)">X</b-btn>
-                    <b-btn variant="outline-secondary" size="sm" v-if="item.type == 'group' && item.open" title="Close this group" @click="toggle(item)"><icon name="minus"/></b-btn>
-                    <b-btn variant="outline-secondary" size="sm" v-if="item.type == 'group' && !item.open" title="Open this group" @click="toggle(item)"><icon name="plus"/></b-btn>
+                    <b-btn variant="light" size="sm" v-if="item.type == 'group' && item.open" title="Close this group" @click="toggle(item)"><icon name="minus"/></b-btn>
+                    <b-btn variant="light" size="sm" v-if="item.type == 'group' && !item.open" title="Open this group" @click="toggle(item)"><icon name="plus"/></b-btn>
 
                     <b-btn variant="danger" size="sm" @click="remove(item)" title="Remove this item"><icon name="trash"/></b-btn>
                 </b-button-group>
@@ -44,22 +47,16 @@
             </div>
         </div>
     </draggable>
-    <p class="group-buttons" v-if="group.open">
-        <b-button variant="success" size="sm" @click="newrule(group)">
-            <icon name="robot"/>&nbsp;&nbsp;Add Rule
-        </b-button>
-        <b-button variant="outline-secondary" size="sm" @click="newgroup" v-if="root" title="Create New Group">
-            <icon name="indent"/>&nbsp;&nbsp;Add Group
-        </b-button>
-        <b-button variant="outline-secondary" size="sm" @click="newmarkdown" title="Add New Note">
-            <icon name="edit"/>&nbsp;&nbsp;Add Note
-        </b-button>
-    </p>
+
+    <groupbuttons v-if="group.open" :root="root" :group="group"
+        @newrule="newrule" @newgroup="newgroup" @newmarkdown="newmarkdown" @sort="sort"/>
 </div>
 </template>
 
 <script>
 import Vue from 'vue'
+
+import groupbuttons from './groupbuttons'
 
 export default {
     props: [ 'rules', 'group', 'root', ],
@@ -69,6 +66,7 @@ export default {
         pipelineReadme: ()=>import('@/components/pipeline/readme'),
         pipelineGroup: ()=>import('@/components/pipeline/group'), //recursive
         draggable: ()=>import('vuedraggable'),
+        groupbuttons,
     },
 
     computed: {
@@ -104,7 +102,7 @@ export default {
             this.group.items[idx+1] = item;
             this.$emit("updated");
         },
-    
+
         newgroup() {
             this.$root.$emit("pipelinegroup.edit", {
                 group: {},
@@ -130,7 +128,7 @@ export default {
             this.group.items.push({ type: "readme", readme: "", _editing: ""});
             this.$emit("updated");
         },
-        
+
         newrule(group) {
             this.$emit("newrule", group);
         },
@@ -167,6 +165,32 @@ export default {
                     this.$emit("updated");
                 }
             });
+        },
+        
+        sort(mode) {
+            //sort items 
+            this.group.items.sort((a,b)=>{
+
+                //I can only sort rules
+                if(a.type != "rule") return 0;
+                if(b.type != "rule") return 0;
+
+                const arule = this.rules.find(r=>r._id == a.ruleId);
+                const brule = this.rules.find(r=>r._id == b.ruleId);
+                let av, bv;
+                switch(mode) {
+                case "date":
+                    av = new Date(arule.create_date);
+                    bv = new Date(brule.create_date);
+                case "name":
+                    av = arule.app.name;
+                    bv = brule.app.name;
+                }
+                if(av > bv) return 1;
+                if(av < bv) return -1;
+                return 0;
+            });
+            this.$emit("updated");
         },
 
         /*
@@ -230,14 +254,14 @@ export default {
 }
 .item-buttons {
     float: right; 
-    width: 120px; 
+    width: 50px; 
     opacity: 0.1;
     transition: 0.3s opacity;
     position: relative;
     left: -5px;
 }
 .item-body {
-    margin-right: 120px;
+    margin-right: 50px;
     padding-right: 10px;
     border-right: 3px solid #0000;
 }

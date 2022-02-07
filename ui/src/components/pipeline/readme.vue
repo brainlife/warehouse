@@ -36,6 +36,7 @@ export default {
 
 <style scoped>
 .pipeline-readme {
+    min-height: 100px;
 }
 .buttons {
     float: right; 

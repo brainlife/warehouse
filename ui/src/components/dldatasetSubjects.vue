@@ -3,7 +3,7 @@
 <div class="dlsubjects">
     <div class="table-header">
         <b-row>
-            <b-col cols="1">subject<small>/session</small></b-col>
+            <b-col cols="1">subject<small>/ses</small></b-col>
             <b-col cols="2" v-if="selected.participants"/>
             <b-col>
                 <b-row>
@@ -16,7 +16,7 @@
 
     <div class="table-body">
         <b-row v-for="(group, subses) in subjects" :key="subses" class="subject-group">
-            <b-col cols="1">{{subses}}</b-col>
+            <b-col cols="1"><b>{{subses}}</b></b-col>
             <b-col cols="2" v-if="selected.participants">
                 <span class="keyvalue" v-for="(v, k) in selected.participants.find(p=>p.subject == group.subject)" :key="k" v-if="k != 'subject'">
                     <small>{{k}}</small> {{v}}

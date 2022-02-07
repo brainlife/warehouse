@@ -2,7 +2,7 @@
 <div>
     <div class="page-header">
         <b-button variant="primary" @click="openImporter" class="import-button"><icon name="cloud-download-alt"/> Import</b-button>
-        <b-tabs class="brainlife-tab" v-model="tab">
+        <b-tabs class="brainlife-tab" v-model="tab" title="version">
             <b-tab v-for="(version, idx) in tabs" :key="idx" :title="version" :active="tab == idx"/>
         </b-tabs>
         <h5 style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; opacity: 0.5;">
@@ -151,7 +151,7 @@ export default {
         }}).then(res=>{
             console.log("loaded", res.data);
             this.datasets = res.data;
-            this.tabs = this.datasets.map(d=>d.version||d._id);
+            this.tabs = this.datasets.map(d=>d.version||'default');
 
             //cleanup (why?)
             this.datasets.forEach(dataset=>{
