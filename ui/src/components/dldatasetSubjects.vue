@@ -3,8 +3,8 @@
 <div class="dlsubjects">
     <div class="table-header">
         <b-row>
-            <b-col cols="2">subject<small>/session</small></b-col>
-            <b-col cols="3" v-if="selected.participants"/>
+            <b-col cols="1">subject<small>/session</small></b-col>
+            <b-col cols="2" v-if="selected.participants"/>
             <b-col>
                 <b-row>
                     <b-col>datatype</b-col>
@@ -16,13 +16,13 @@
 
     <div class="table-body">
         <b-row v-for="(group, subses) in subjects" :key="subses" class="subject-group">
-            <b-col cols="2">{{subses}}</b-col>
-            <b-col cols="3" v-if="selected.participants">
+            <b-col cols="1">{{subses}}</b-col>
+            <b-col cols="2" v-if="selected.participants">
                 <span class="keyvalue" v-for="(v, k) in selected.participants.find(p=>p.subject == group.subject)" :key="k" v-if="k != 'subject'">
                     <small>{{k}}</small> {{v}}
                 </span>
             </b-col>
-            <b-col cols="6">
+            <b-col>
                 <div v-for="dataset in group.datasets" :key="dataset._id">
                     <b-row @click="click_dataset(dataset)" class="dataobject-clickable">
                         <b-col>
@@ -132,6 +132,7 @@ export default {
     padding-left: 15px;
     margin-right: auto;
     margin-left: auto;
+    background-color: white;
 }
 .table-header {
     position: sticky; 
