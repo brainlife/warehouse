@@ -177,34 +177,44 @@ export default {
         setting_old() {
             window.open("/auth/#!/settings/account", "_blank");
         },
+
         go(page) {
-            this.$router.push(page);
+            if(this.$route.path != page) this.$router.push(page);
         },
+
         doc() {
             window.open("https://brainlife.io/docs/", "brainlife doc");
         },
+
         clickTitle() {
             if(this.$root.sidemenuWide) document.location = "https://brainlife.io";
             else this.$root.toggleSideMenu();
         },
+
         signout() {
             sessionStorage.setItem('auth_redirect', window.location); //TODO - un-tested.. as to if this gets back here
             document.location = Vue.config.auth_signout;
         },
+
         reportbug() {
             window.open("https://github.com/brainlife/brainlife/issues", "github");
         },
+
         login() {
             sessionStorage.setItem('auth_redirect', window.location); //TODO - un-tested.. as to if this gets back here
             document.location = Vue.config.auth_signin;
         },
+
         signup() {
             document.location = "/auth/#!/signup";
         },
+
         slack() {
             window.open("https://brainlife.slack.com", "slack");
         },
+
         md5, 
+
         open_usersettings() {
             this.$refs.usersettings.$emit('popoever');
         },

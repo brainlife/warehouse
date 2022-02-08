@@ -29,25 +29,15 @@
         <p v-if="loading_datasets" style="padding: 20px; opacity: 0.8;">Loading...</p>
         <p v-else-if="filteredGroups.length == 0" style="padding: 20px; opacity: 0.8;">No matching dataset</p>
         <div v-for="group in filteredGroups" :key="group.key" class="dataset" @click="openDataset(group.key)">
-            <small style="opacity: 0.7;"><b>{{group.key}}</b></small>
             <p style="margin-bottom: 0px;">
                 <span class="serif">{{group.dsDesc.Name}}</span>
+                <br>
                 <span v-if="group.dsDesc.Authors">
-                    <small v-for="(author, idx) in group.dsDesc.Authors.slice(0, 3)" :key="idx"> <span style="opacity: 0.3;">|</span> {{author}} </small>
+                    <small v-for="(author, idx) in group.dsDesc.Authors.slice(0, 3)" :key="idx"> 
+                        {{author}} 
+                        <span style="opacity: 0.3;">|</span> 
+                    </small>
                 </span>
-
-                <span style="opacity: 0.3;">&bull;</span>
-                <small>
-                    {{group.stats.subjects}} <span style="opacity: 0.5;">sub</span>
-                    <span v-if="group.stats.sessions"> 
-                        <span style="opacity: 0.3;">|</span> {{group.stats.sessions}} <span style="opacity: 0.5;">ses</span>
-                    </span>
-                </small>
-
-                <span style="opacity: 0.3;">&bull;</span>
-                <small v-for="(count, datatype_id) in group.stats.datatypes" :key="datatype_id" style="margin-right: 10px;">
-                    <datatypetag :datatype="datatype_id" :clickable="false"/> <small>{{count}}</small>
-                </small>
 
                 <!-- multiple versions? -->
                 <!--
@@ -60,6 +50,21 @@
                 </div>
                 -->
             </p>
+
+            <small style="opacity: 0.7;"><b>{{group.key}}</b></small>
+            <small>
+                <span style="opacity: 0.3;">&bull;</span>
+                {{group.stats.subjects}} <span style="opacity: 0.5;">sub</span>
+                <span v-if="group.stats.sessions"> 
+                    <span style="opacity: 0.3;">|</span> {{group.stats.sessions}} <span style="opacity: 0.5;">ses</span>
+                </span>
+            </small>
+
+            <span style="opacity: 0.3;">&bull;</span>
+            <small v-for="(count, datatype_id) in group.stats.datatypes" :key="datatype_id" style="margin-right: 10px;">
+                <datatypetag :datatype="datatype_id" :clickable="false"/> <small>{{count}}</small>
+            </small>
+
         </div>
         <p style="padding: 5px 10px; background-color: #ddd; margin: 0;">
             <small v-if="groups.length != filteredGroups.length">Matching Filter <b>{{filteredGroups.length}}</b> datasets | </small>
@@ -443,7 +448,7 @@ export default {
     opacity: 0.5;
 }
 .dataset {
-    padding: 7px 10px;
+    padding: 10px;
     font-size: 95%;
     border-top: 1px solid #0001;
     background-color: #fff;
