@@ -1,11 +1,6 @@
 <template>
 <div :class="{'rule-inactive': !rule.active}" class="rule">
-    <!--
-    <div style="float: right">
-        <div class="button" @click="open"><icon name="edit"/></div>
-    </div>
-    -->
-    <app :app="rule.app" :branch="rule.brancn" :compact="true" :clickable="false">
+    <app v-if="rule.app" :app="rule.app" :branch="rule.branch" :compact="true" :clickable="false">
         <div style="margin: 10px 100px 0 10px">
             <taskconfigtable :config="rule.config" :appconfig="rule.app.config" :hideDefault="true"/>
         </div>
@@ -29,7 +24,7 @@
     </div>
 
     <hr>
-    <div style="margin-left: 10px;">
+    <div style="margin-left: 10px;" v-if="rule.app">
         <b-row>
             <b-col>
                 <icon name="arrow-right" style="float: right; position: relative; top: 0px; opacity: 0.5;"/>
@@ -87,7 +82,7 @@
                 </div>
                 &nbsp;
                 &nbsp;
-                <b-form-checkbox switch v-model="rule.active" size="lg" @change="flip" name="something" style="display: inline-block">
+                <b-form-checkbox switch v-model="rule.active" size="lg" @change="flip" style="display: inline-block">
                     <b v-if="rule.active" class="text-primary" title="Piepline will submit new job when conditions are met">Active</b>
                     <b v-else class="text-secondary" title="No new jobs will be submitted by this rule">Inactive</b>
                 </b-form-checkbox>
@@ -159,29 +154,7 @@ export default {
         },
 
         flip(v) {
-            this.$http.put('rule/'+this.rule._id, {active: v}).then(res=>{
-                //this.$notify({ title: 'Activating', text: 'Successfully activated', type: 'success', });
-                /*
-                if(!v && this.numJobsRunning > 0) {
-                    alert("There are still jobs submitted by this rule. Please remove them if you don't want those jobs anymore.");
-                }
-                */
-            }).catch(this.notify_error);
-            /*
-            if(rule.active) {
-                //activate
-                this.$http.put('rule/'+rule._id, {active: true}).then(res=>{
-                    //this.$notify({ title: 'Activating', text: 'Successfully activated', type: 'success', });
-                }).catch(this.notify_error);
-            } else {
-                //deactivate
-                //this.$notify({ title: 'Deactivating', text: 'Deactivating this rule and all tasks submitted from it', type: 'info', });
-                this.$http.put('rule/deactivate/'+rule._id).then(res=>{
-                    //this.$notify({ title: 'Deactivating', text: 'Successfully deactivated', type: 'success', });
-                }).catch(this.notify_error);
-            }
-            */
-
+            this.$http.put('rule/'+this.rule._id, {active: v}).then(res=>{}).catch(this.notify_error);
             return true; //stop prop
         },
 

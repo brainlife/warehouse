@@ -19,7 +19,9 @@
                     <b-btn variant="primary" size="sm" @click="editReadme(item)" title="Edit" v-if="item.type == 'readme' && item._editing === null"><icon name="edit"/></b-btn>
                     <b-btn variant="primary" size="sm" @click="editRule(item)" title="Edit" v-if="item.type == 'rule'"><icon name="edit"/></b-btn>
                     <b-btn variant="primary" size="sm" @click="editGroup(item)" title="Edit" v-if="item.type == 'group'"><icon name="edit"/></b-btn>
-                    <b-btn variant="light" size="sm" @click="copyrule({group, ruleId: item.ruleId})" title="Edit" v-if="item.type == 'rule'"><icon name="copy"/></b-btn>
+                    <b-btn variant="light" size="sm" @click="copyrule({group, ruleId: item.ruleId})" title="Copy" v-if="item.type == 'rule'">
+                        <icon name="copy"/>
+                    </b-btn>
                     <b-btn variant="light" size="sm" class="handle" title="Move this item"><icon name="arrows-alt-v"/></b-btn>
                     <b-btn variant="primary" size="sm" v-if="item.type == 'readme' && item._editing !== null" title="Save the update" @click="saveReadme(item)"><icon name="check"/></b-btn>
                     <b-btn variant="secondary" size="sm" v-if="item.type == 'readme' && item._editing !== null" title="Edit this note" @click="cancelEditReadme(item)">X</b-btn>

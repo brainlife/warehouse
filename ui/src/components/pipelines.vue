@@ -153,6 +153,7 @@ export default {
                 if(event.dinfo.routingKey.startsWith("rule.update.")) {
                     let newrule = event.msg;
                     //populate app info
+
                     this.appcache(newrule.app, {populate_datatype: false}, (err, app)=>{
                         newrule.app = app;
                         let rule = this.rules.find(rule=>rule._id == newrule._id);

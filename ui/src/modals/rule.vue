@@ -44,7 +44,7 @@
 
                 <div v-if="rule.app">
                     <b-form-group label="Branch" horizontal>
-                        <branchselecter v-model="rule.branch" :service="this.rule.app.github"/>
+                        <branchselecter v-model="rule.branch" :service="rule.app.github"/>
                     </b-form-group>
 
                     <b-form-group label="Configuration" horizontal>
@@ -176,45 +176,7 @@
                 </b-card>
             </b-container>
         </b-tab>
-        <!--
-        <b-tab v-if="rule.app">
-            <template v-slot:title>
-                Logs 
-                &nbsp;
-                <div style="width: 100px; display: inline-block;" v-if="numJobsRunning">
-                    <stateprogress v-if="rule.stats" :states="rule.stats.tasks"/>
-                </div>
-            </template>
-            <rulelog :id="rule._id"/>
-        </b-tab>
-        -->
-
-        <!--
-        <b-tab title="Debug">
-            <pre>{{rule}}</pre>
-        </b-tab>
-        -->
     </b-tabs>
-        
-    <!--
-    <template #modal-header>
-        <h4 style="margin-bottom: 0;">{{form.fullname}} <small style="float: right">{{form.sub}}</small></h4>
-        <div class="button" @click="closeModal()" style="float: right">
-            <icon name="times" scale="1.5"/>
-        </div>
-    </template>
-    -->
-
-    <!--
-    <template #modal-footer="{cancel}">
-        <div class="float-left mr-auto">
-            <b-button v-if="mode == 'ui'" @click="switchToJSON" variant="secondary">Show JSON</b-button>
-            <b-button v-if="mode == 'json'" @click="switchToUI" variant="secondary">Show UI</b-button>
-        </div>
-        <b-button variant="secondary" @click="cancel()">Cancel</b-button>
-        <b-button variant="primary" ref="okBTN" @click="submitUser">Submit</b-button>
-    </template>
-    -->
 </b-modal>
 </template>
 
@@ -223,7 +185,7 @@
 import Vue from 'vue'
 import search_app_mixin from '@/mixins/searchapp'
 import ReconnectingWebSocket from 'reconnectingwebsocket'
-import appcache from '@/mixins/appcache'
+//import appcache from '@/mixins/appcache'
 
 const lib = require('@/lib');
 
@@ -237,7 +199,7 @@ function remove_null(obj) {
 }
 
 export default {
-    mixins: [ search_app_mixin, appcache ],
+    mixins: [ search_app_mixin, /*appcache*/ ],
     components: { 
         projectselecter: ()=>import('@/components/projectselecter'),
         branchselecter: ()=>import('@/components/branchselecter'),
@@ -245,7 +207,6 @@ export default {
         app: ()=>import('@/components/app'),
         tageditor: ()=>import('@/components/tageditor'),
         configform: ()=>import('@/components/configform'),
-        //rulelog: ()=>import('@/components/rulelog'),
         stateprogress: ()=>import('@/components/stateprogress'),
     },
 
@@ -255,13 +216,12 @@ export default {
             rule: {
                 name: "",
                 app: null,
+                branch: null,
                 stats: {},
                 project: null, //must be set
-
-                //input_tags: {}, 
             },
-            cb: null, //cb function to call with (err, rule[updated])
 
+            cb: null, //cb function to call with (err, rule[updated])
             ws: null,
 
             input_dataset_tags: {},
@@ -298,6 +258,7 @@ export default {
             Object.assign(this.rule, {
                 name: "",
                 app: null,
+                branch: null,
                 stats: {},
                 active: true,
                 _id: undefined,
@@ -339,6 +300,7 @@ export default {
     },
 
     methods: {
+
         changeapp(){
             this.resetIOConfig();
             this.rule.branch = this.rule.app.github_branch;
@@ -366,18 +328,6 @@ export default {
 
                 //ignore everything except stats update
                 this.rule.stats = event.msg.stats;
-                /*
-                for(let key in event.msg) {
-                    console.log(key, event.msg[key]);
-                    if(key == "app") {
-                        this.appcache(event.msg[key], {populate_datatype: false}, (err, app)=>{
-                            this.rule.app = app;
-                        });
-                    } else {
-                        this.rule[key] = event.msg[key];
-                    }
-                }
-                */
             }
         },
 
@@ -462,7 +412,7 @@ export default {
                 if(neg_tags.length > 0) tag_query.push({datatype_tags: {$nin:neg_tags}});
 
                 if(tag_query.length > 0) find.$and = tag_query;
-                
+
                 console.log("searching for inputs", id, find);
                 this.$http.get('dataset', {params: {
                     find: JSON.stringify(find),
@@ -470,7 +420,7 @@ export default {
                 }}).then(res=>{
                     this.rule.input_tags_count[id] = res.data.count;
                     this.$forceUpdate();
-                }); 
+                });
             }
         },
 
@@ -496,7 +446,7 @@ export default {
 
         ensure_ids_exists() {
             if(!this.rule.app) return;
-            
+
             //ensure input.id exists on various objects (if not set)
             //WTF is this
             this.rule.app.inputs.forEach(input=>{
@@ -567,12 +517,13 @@ export default {
             }
 
             //construct the final rule and submit
-            var rule = Object.assign(this.rule, {
+            var rule = Object.assign({}, this.rule, {
                 input_tags,
                 output_tags,
                 input_project_override,
                 input_subject,
                 input_session,
+                app: this.rule.app._id, //unpopulate
             });
 
             //now ready to submit!
@@ -581,7 +532,6 @@ export default {
                 this.$http.put('rule/'+rule._id, rule).then(res=>{
                     this.$notify({text: "Successfully updated a rule", type: "success"});
                     this.$root.$emit('bv::hide::modal', 'modal-rule')
-                    console.log("rule created .. received data from server", res.data);
                     this.cb(null, res.data);
                 }).catch(this.notify_error);
             } else {
@@ -617,7 +567,7 @@ export default {
                     json: true,
                 }).then(res=>{
                     Vue.set(this.input_dataset_tags, input.id, res.data);
-                }); 
+                });
             });
 
             this.rule.app.outputs.forEach(output=>{

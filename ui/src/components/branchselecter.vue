@@ -21,8 +21,8 @@ let debounce;
 import Vue from 'vue'
 export default {
     props: {
-        service: String,
         value: String, //initial
+        service: String,
     },
 
     data() {
@@ -48,14 +48,11 @@ export default {
     },
 
     mounted() {
-        //this.selection = this.value;
         this.load();
     },
 
     methods: {
         load() {
-            //this.tags = [];
-            //this.branches = [];
             if(!this.service) {
                 this.error = "Please specify service";
                 return;
@@ -68,7 +65,6 @@ export default {
                 this.branches = res.data.branches.map(b => {
                     return b.name;
                 });
-                //console.log("finished loading tag/branches. now setting selection to "+this.value);
                 this.selection = this.value;
             }).catch(err=>{
                 if(err.response.status == "404") {

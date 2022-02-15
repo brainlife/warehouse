@@ -12,9 +12,7 @@ export default {
                     populate_datatype: true,
                 }
             }
-            //console.dir(opt);
             this._cache("app."+id, ()=>{
-                //console.log("loading app cache for "+id);
                 let params = {};
                 if(opt.populate_datatype) params["populate"] = "inputs.datatype outputs.datatype";
                 return this.$http.get('app/'+id, {params});
@@ -22,6 +20,6 @@ export default {
                 if(err) return cb(err);
                 cb(null, res.data);
             });
-        },  
+        },
     }
 }
