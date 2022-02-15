@@ -12,6 +12,7 @@ const xmlescape = require('xml-escape');
 const amqp = require("amqp"); //switch to amqplib?
 const axios = require('axios');
 const jwt = require('express-jwt');
+const crypto = require('crypto');
 
 const config = require('./config');
 const db = require('./models');
@@ -262,8 +263,31 @@ exports.archive_task_outputs = async function(user_id, task, outputs, cb) {
     if(project_ids.length == 0) return cb(); //nothing to archive?
     if(project_ids.length > 1) return cb("archive_task_outputs can't handle request with mixed projects");
     let project = await db.Projects.findById(project_ids[0]);
-    let storage = project.storage||config.archive.storage_default;
-    let storage_config = project.storage_config||config.archive.storage_config;
+
+    //let storage = project.storage||config.archive.storage_default;
+    //let storage_config = project.storage_config||config.archive.storage_config;
+    let storage = config.archive.storage_default;
+    let storage_config = {};
+
+    /*
+    if(project.xnat && project.xnat.enabled) {
+        storage = "xnat";
+
+        //use openssl rsautl to encrypt the xnat secret
+        const secretEnc = child_process.execSync("openssl rsautl -inkey ./api/config/configEncrypt.key -encrypt", {
+            input: project.xnat.secret,
+        }).toString('base64');
+        console.log("openssl encrypted", secretEnc);
+
+        storage_config = {
+            hostname: project.xnat.hostname,
+            project: project.xnat.project,
+            token: project.xnat.token,
+            secretEnc,
+            url: project.xnat.hostname+"/data/projects/"+project.xnat.project+"/subjects/"+,
+        }
+    }
+    */
 
     //check project access
     exports.validate_projects(user_id, project_ids, err=>{
@@ -273,7 +297,6 @@ exports.archive_task_outputs = async function(user_id, task, outputs, cb) {
         let subdirs;
         let noSubdirs = false;
         async.eachSeries(outputs, (output, next_output)=>{
-
             //only archive output that has archive requested
             if(!output.archive) return next_output();
 
@@ -282,6 +305,7 @@ exports.archive_task_outputs = async function(user_id, task, outputs, cb) {
                 if(err) return next_output(err);
                 if(!dataset) return next_output(); //couldn't register, or already registered
                 let dir =  "../"+task._id;
+
                 let dataset_config = {
                     project: output.archive.project,
                     dir,
@@ -292,7 +316,27 @@ exports.archive_task_outputs = async function(user_id, task, outputs, cb) {
                     //should be the same across all requested dataset (these are set by event_handler when app-achive finishes successfully)
                     storage,
                     storage_config,
+
+                    datatype_id: output.datatype,
                 }
+
+                if(project.xnat && project.xnat.enabled) {
+                    dataset_config.storage = "xnat";
+                    //use openssl rsautl to encrypt the xnat secret
+                    const secretEnc = child_process.execSync("openssl rsautl -inkey ./api/config/configEncrypt.key -encrypt", {
+                        input: project.xnat.secret,
+                    }).toString('base64');
+                    const meta = products[output.id].meta;
+                    dataset_config.storage_config = {
+                        hostname: project.xnat.hostname,
+                        project: project.xnat.project,
+                        token: project.xnat.token,
+                        path: "files", //everything
+                        secretEnc,
+                        meta, //app-archive needs to access subject/session
+                    }
+                }
+
                 if(output.subdir) {
                     //new subdir outputs
                     dataset_config.dir+="/"+output.subdir;
@@ -326,7 +370,6 @@ exports.archive_task_outputs = async function(user_id, task, outputs, cb) {
                     name: "archive",
                     deps_config: [ {task: task._id, subdirs } ],
                     service: "brainlife/app-archive",
-                    //service_branch: "1.1", //why did we do this?
                     instance_id: task.instance_id,
                     gids: [config.archive.gid],
                     config: {
@@ -343,7 +386,8 @@ exports.archive_task_outputs = async function(user_id, task, outputs, cb) {
                     }
                 });
 
-                //note: archive_task_id is set by event_handler while setting other things like status, desc, status_msg, etc..
+                //note: archive_task_id is set by event_handler (when app-archive is requested)
+                //storage/storate_config is also copied to dataset once archive finished
                 console.debug("submitted archive_task:"+archive_task_res.data.task._id);
                 cb(null, datasets, archive_task_res.data.task);
             } catch(err) {
@@ -1161,26 +1205,6 @@ exports.update_project_stats = async function(project, cb) {
             headers: { authorization: "Bearer "+config.warehouse.jwt, },
         });
         const resource_stats = [];
-        /*
-        let resource_stats = resource_usage.map(raw=>{
-            let resource = resources.find(r=>r._id == raw._id.resource_id);
-            return {
-                service: raw._id.service,
-                resource_id: raw._id.resource_id, 
-
-                //resource detail for quick reference
-                name: resource.name,
-
-                //we could have hundreds of records for resource_stats as we group by service/resource.
-                //adding desc/citation here is not appropriate ..
-                //desc: resource.config.desc,
-                //citation: resource.citation,
-
-                count: raw.count,
-                total_walltime: raw.total_walltime,
-            }
-        });
-        */
         resources.forEach(resource=>{
             let count = 0;
             let total_walltime = 0;
@@ -1199,13 +1223,10 @@ exports.update_project_stats = async function(project, cb) {
                 services,
             });
         });
-        //console.log("---resource_stats---");
 
         //lad number of publications
         let publications = await db.Publications.countDocuments({project});
-
         let comments = await db.Comments.count({project: project._id, removed: false});
-        //console.log("found comments", comments, project._id);
 
         //now update the record!
         let newproject = await db.Projects.findOneAndUpdate({_id: project._id}, {$set: {
@@ -1348,7 +1369,7 @@ exports.cast_mongoid = function(node) {
             }
         } else {
             return false
-        }  
+        }
     }
 
     for(let k in node) {
@@ -1452,12 +1473,20 @@ exports.jwt = opt=>{
     }, opt));
 }
 
+exports.encryptConfigValue = async (value)=>{
+}
+
 exports.enumXnatObjects = async (project)=>{
 
     const auth = {
         username: project.xnat.token,
         password: project.xnat.secret,
     }
+
+    //use openssl rsautl to encrypt the xnat secret
+    const secretEnc = child_process.execSync("openssl rsautl -inkey "+__dirname+"/config/configEncrypt.key -encrypt", {
+        input: project.xnat.secret,
+    }).toString('base64');
 
     console.log("loading all experiments for this project");
     //const res = await axios.get(project.xnat.hostname+"/data/projects/"+project.xnat.project+"/experiments", {auth});
@@ -1522,9 +1551,10 @@ exports.enumXnatObjects = async (project)=>{
                         meta: {
                             subject: oSubject.label, 
                             session: oExperiment.label,
-                            xnat_subject: oSubject,
-                            xnat_experiment: oExperiment,
-                            xnat_scan: oScan,
+
+                            //xnat_subject: oSubject.label,
+                            //xnat_experiment: oExperiment.label,
+                            xnat_scan: oScan.ID,
                         },
                         datatype: mapping.datatype,
                         datatype_tags: mapping.datatype_tags,
@@ -1541,9 +1571,21 @@ exports.enumXnatObjects = async (project)=>{
                             experiment: oExperiment.label,
                             scan: oScan.ID,
                             */
-                            url: `${project.xnat.hostname}/data/projects/${project.xnat.project}/subjects/${oSubject.label}/experiments/${oExperiment.label}/scans/${oScan.ID}/resources/DICOM/files`,
-                            auth, //is it too dangerous to do this? alternative is to lookup project.xnat everytime I need to access data
+                            //url: `${project.xnat.hostname}/data/projects/${project.xnat.project}/subjects/${oSubject.label}/experiments/${oExperiment.label}/scans/${oScan.ID}/resources/DICOM/files`,
+                            //auth, //is it too dangerous to do this? alternative is to lookup project.xnat everytime I need to access data
+
+                            hostname: project.xnat.hostname,
+                            project: project.xnat.project,
+                            token: project.xnat.token,
+
+                            path: "resources/DICOM/files",
+
+                            //I also see that XNAT holds NIFTI already! why can't just use that?
+                            //path: "resources/NIFTI/files",
+
+                            secretEnc,
                         },
+
                         create_date: new Date(oExperiment.insert_date),
                         user_id: project.user_id, //using project creator's id (not always right?)
                         project: project.id,
@@ -1736,7 +1778,12 @@ exports.updateXNATObjects = async (objects)=>{
         //TODO - this wipes out any updates made by user for existing object.. maybe I should upsert a bit more manually?
         let res = await db.Datasets.findOneAndUpdate({
             "storage": "xnat",
-            "storage_config.url": object.storage_config.url,
+
+            //"storage_config.url": object.storage_config.url,
+            "meta.subject": object.meta.subject,
+            "meta.session": object.meta.session,
+            "meta.xnat_scan": object.meta.xnat_scan,
+
         }, object, {new: true, upsert: true, rawResult: true});
         console.dir(res.lastErrorObject); 
     }

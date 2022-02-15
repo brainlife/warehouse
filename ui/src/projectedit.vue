@@ -177,71 +177,66 @@
             <div v-if="tab == 3">
                 <h5>Storage</h5>
                 <p><small>You can import and store data on remote storage systems instead of using brainlife's default storage.</small></p>
-                <b-row>
-                    <b-col cols="5">
-                        <b-form-checkbox v-model="project.xnat.enabled">Integrate with XNAT</b-form-checkbox>
-                        <p>
-                            <small>Data on this project can be populated from the existing XNAT project. Any new data derivatives will be stored on this XNAT project.</small>
-                        </p>
-                    </b-col> 
-                    <b-col cols="7">
-                        <div v-if="project.xnat.enabled">
-                            <b-form-group label="XNAT Hostname">
-                                <b-input type="text" v-model="project.xnat.hostname" placeholder="https://example.xnat.com" required/>
-                            </b-form-group>
-                            <b-form-group label="XNAT Project Name">
-                                <b-input type="text" v-model="project.xnat.project" required/>
-                            </b-form-group>
+                <b-form-checkbox v-model="project.xnat.enabled">Integrate with XNAT</b-form-checkbox>
+                <p>
+                    <small>Data on this project can be populated from the existing XNAT project. Any new data derivatives will be stored on this XNAT project.</small>
+                </p>
+                <div v-if="project.xnat.enabled" style="margin-left: 30px;">
+                    <b-form-group label="XNAT Hostname">
+                        <b-input type="text" v-model="project.xnat.hostname" placeholder="https://example.xnat.com" required/>
+                    </b-form-group>
+                    <b-form-group label="XNAT Project Name">
+                        <b-input type="text" v-model="project.xnat.project" required/>
+                    </b-form-group>
 
-                            <p style="background-color: #eee; padding: 10px;">
-                                <small>Please issue access token/secret on your XNAT project to allow accesss from brianlife. Brainlife will automatically refresh your token periodically.</small>
-                                <b-form-group label="Access Token / Alias">
-                                    <b-input type="text" v-model="project.xnat.token" required/>
-                                </b-form-group>
-                                <b-form-group label="Secret">
-                                    <b-input type="password" v-model="project.xnat.secret" required/>
-                                </b-form-group>
-                                <b-button size="sm" @click="testXnat">Test</b-button>
-                                <pre v-if="xnatTestResult" style="padding: 10px; background-color: white; margin-top: 10px;">{{xnatTestResult}}</pre>
-                            </p>
+                    <p style="background-color: #eee; padding: 10px;">
+                        <small>Please issue access token/secret on your XNAT project to allow accesss from brianlife. Brainlife will automatically refresh your token periodically.</small>
+                        <b-form-group label="Access Token / Alias">
+                            <b-input type="text" v-model="project.xnat.token" required/>
+                        </b-form-group>
+                        <b-form-group label="Secret">
+                            <b-input type="password" v-model="project.xnat.secret" required/>
+                        </b-form-group>
+                        <b-button size="sm" @click="testXnat">Test</b-button>
+                        <pre v-if="xnatTestResult" style="padding: 10px; background-color: white; margin-top: 10px;">{{xnatTestResult}}</pre>
+                    </p>
 
-                            <b-form-group label="Scan Mapping">
-                                <small>Please enter mapping between XNAT scans names and brainlife datatype/tags</small>
+                    <b-form-group label="Scan Mapping">
+                        <small>Please enter mapping between XNAT scans names and brainlife datatype/tags</small>
 
-                                <div v-for="(scan, idx) in project.xnat.scans" :key="idx" style="background-color: white; padding: 10px;">
-                                    <b-row>
-                                        <b-col cols="3">
-                                            <span class="text-muted">Scan Name</span>
-                                            <b-input type="text" v-model="scan.scan" required/>
-                                            <small>XNAT scan name to look for</small>
-                                        </b-col>
-                                        <b-col cols="5">
-                                            <span class="text-muted">Datatype</span>
-                                            <datatypeselecter v-model="scan.datatype"></datatypeselecter>
-                                            <small>brainlife.io datatype to import as</small>
+                        <div v-for="(scan, idx) in project.xnat.scans" :key="idx" style="background-color: white; padding: 10px;">
+                            <b-row>
+                                <b-col cols="3">
+                                    <span class="text-muted">Scan Name</span>
+                                    <b-input type="text" v-model="scan.scan" required/>
+                                    <small>XNAT scan name to look for</small>
+                                </b-col>
+                                <b-col cols="5">
+                                    <span class="text-muted">Datatype</span>
+                                    <datatypeselecter v-model="scan.datatype"></datatypeselecter>
+                                    <small>brainlife.io datatype to import as</small>
 
-                                            <datatype :datatype="datatypes[scan.datatype]" style="margin-top: 5px;" v-if="scan.datatype" :clickable="false"/>
-                                        </b-col>
-                                        <b-col cols="3">
-                                            <div v-if="scan.datatype">
-                                                <div class="text-muted">Datatype Tags</div>
-                                                <tageditor placeholder="Tags" v-model="scan.datatype_tags" :options="datatypes[scan.datatype]._tags" />
-                                                <small>brainlife.io datatype tags to add for this scan</small>
-                                            </div>
-                                        </b-col>
-                                        <b-col cols="1">
-                                            <div class="text-muted">&nbsp;</div>
-                                            <b-button variant="danger" @click="project.xnat.scans.splice(idx, 1)" size="sm"><icon name="trash"/></b-button>
-                                        </b-col>
-                                    </b-row>
-                                </div>
-                                <br>
-                                <b-button type="button" variant="secondary" @click="project.xnat.scans.push({})" size="sm"><icon name="plus"/> Add Scan Mapping</b-button>
-
-                            </b-form-group>
+                                    <datatype :datatype="datatypes[scan.datatype]" style="margin-top: 5px;" v-if="scan.datatype" :clickable="false"/>
+                                </b-col>
+                                <b-col cols="3">
+                                    <div v-if="scan.datatype">
+                                        <div class="text-muted">Datatype Tags</div>
+                                        <tageditor placeholder="Tags" v-model="scan.datatype_tags" :options="datatypes[scan.datatype]._tags" />
+                                        <small>brainlife.io datatype tags to add for this scan</small>
+                                    </div>
+                                </b-col>
+                                <b-col cols="1">
+                                    <div class="text-muted">&nbsp;</div>
+                                    <b-button variant="danger" @click="project.xnat.scans.splice(idx, 1)" size="sm"><icon name="trash"/></b-button>
+                                </b-col>
+                            </b-row>
                         </div>
-                    </b-col> 
-                </b-row>
+                        <br>
+                        <b-button type="button" variant="secondary" @click="project.xnat.scans.push({})" size="sm"><icon name="plus"/> Add Scan Mapping</b-button>
+
+                    </b-form-group>
+                    <br>
+                </div>
 
                 <h5>Compute Resources</h5>
                 <span class="form-header">Public Resources</span>

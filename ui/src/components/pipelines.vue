@@ -148,24 +148,44 @@ export default {
             }
 
             this.ws.onmessage=(json)=>{
-                var event = JSON.parse(json.data);
+                const event = JSON.parse(json.data);
                 if(!event.dinfo) return; //??
+
+                const keys = event.dinfo.routingKey.split(".");
+                const project_id = keys[3];
+                const rule_id = keys[4];
+
                 if(event.dinfo.routingKey.startsWith("rule.update.")) {
                     let newrule = event.msg;
-                    //populate app info
-
-                    this.appcache(newrule.app, {populate_datatype: false}, (err, app)=>{
-                        newrule.app = app;
-                        let rule = this.rules.find(rule=>rule._id == newrule._id);
-                        if(rule) {
-                            //update existing rule
-                            for(let key in newrule) {
+                    let rule = this.rules.find(rule=>rule._id == rule_id);
+                    if(rule) {
+                        //update existing rule
+                        for(let key in newrule) {
+                            switch(key) {
+                            case "app":
+                            case "stats":
+                                //we handle these differently
+                                break;
+                            default:
                                 rule[key] = newrule[key];
                             }
-                        } else {
-                            console.error("odd.. couldn't find the rule that we just received update");
                         }
-                    });
+                        if(newrule.stats) {
+                            //stats events are populated sparsely.. so let's not overwrite
+                            for(let key in newrule.stats) {
+                                rule.stats[key] = newrule.stats[key];
+                            }
+                        }
+                    } else {
+                        console.error("odd.. couldn't find the rule that we just received update", keys, newrule);
+                    }
+
+                    if(newrule.app) {
+                        //populate app info
+                        this.appcache(newrule.app, {populate_datatype: false}, (err, app)=>{
+                            rule.app = app;
+                        });
+                    }
                 }
 
                 if(event.dinfo.routingKey.startsWith("rule.create.")) {

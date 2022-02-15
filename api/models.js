@@ -163,8 +163,8 @@ var projectSchema = mongoose.Schema({
     //dldatasets: [{type: mongoose.Schema.Types.ObjectId, ref: "DLDatasets"}],
 
     //project can store datasets on project specific storage. {resource_id}
-    storage: String,  //default to warehouse config.archive.storage_default
-    storage_config: mongoose.Schema.Types.Mixed, 
+    //storage: String,  //default to warehouse config.archive.storage_default
+    //storage_config: mongoose.Schema.Types.Mixed, 
     
     //experimental
     xnat: {

@@ -653,12 +653,17 @@ function handle_instance(instance, cb) {
 
 async function handle_dataset(dataset, cb) {
     if(!dataset) return cb("null dataset");
-    const pid = dataset.project._id||dataset.project; //unpopulate project if necessary
-    debounce("update_dataset_stats."+pid, ()=>{
-        common.update_dataset_stats(pid);
+    debounce("update_dataset_stats."+dataset.project, ()=>{
+        common.update_dataset_stats(dataset.project);
     }, 1000*60);  //counting datasets are bit more expensive.. let's debounce longer
-    await common.updateSecondaryInventoryInfo(dataset._id);
-    cb();
+
+    try {
+        await common.updateSecondaryInventoryInfo(dataset._id);
+        cb();
+    } catch (err) {
+        //can't connect to osiris? (try different host)
+        cb(err);
+    }
 }
 
 function handle_auth_event(msg, head, dinfo, cb) {
