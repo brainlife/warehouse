@@ -269,26 +269,6 @@ exports.archive_task_outputs = async function(user_id, task, outputs, cb) {
     let storage = config.archive.storage_default;
     let storage_config = {};
 
-    /*
-    if(project.xnat && project.xnat.enabled) {
-        storage = "xnat";
-
-        //use openssl rsautl to encrypt the xnat secret
-        const secretEnc = child_process.execSync("openssl rsautl -inkey ./api/config/configEncrypt.key -encrypt", {
-            input: project.xnat.secret,
-        }).toString('base64');
-        console.log("openssl encrypted", secretEnc);
-
-        storage_config = {
-            hostname: project.xnat.hostname,
-            project: project.xnat.project,
-            token: project.xnat.token,
-            secretEnc,
-            url: project.xnat.hostname+"/data/projects/"+project.xnat.project+"/subjects/"+,
-        }
-    }
-    */
-
     //check project access
     exports.validate_projects(user_id, project_ids, err=>{
         if(err) return cb(err);
@@ -306,26 +286,24 @@ exports.archive_task_outputs = async function(user_id, task, outputs, cb) {
                 if(!dataset) return next_output(); //couldn't register, or already registered
                 let dir =  "../"+task._id;
 
+                const datatype = await db.Datatypes.findById(output.datatype);
+
                 let dataset_config = {
                     project: output.archive.project,
                     dir,
 
-                    //dataset,  //used for .brainlife.json
                     dataset_id: dataset._id,
+                    create_date: dataset.create_date,
 
                     //should be the same across all requested dataset (these are set by event_handler when app-achive finishes successfully)
                     storage,
                     storage_config,
-
-                    datatype_id: output.datatype,
                 }
 
                 if(project.xnat && project.xnat.enabled) {
                     dataset_config.storage = "xnat";
-                    //use openssl rsautl to encrypt the xnat secret
-                    const secretEnc = child_process.execSync("openssl rsautl -inkey ./api/config/configEncrypt.key -encrypt", {
-                        input: project.xnat.secret,
-                    }).toString('base64');
+
+                    const secretEnc = exports.encryptConfigValue(project.xnat.secret);
                     const meta = products[output.id].meta;
                     dataset_config.storage_config = {
                         hostname: project.xnat.hostname,
@@ -335,6 +313,11 @@ exports.archive_task_outputs = async function(user_id, task, outputs, cb) {
                         secretEnc,
                         meta, //app-archive needs to access subject/session
                     }
+                    dataset_config.datatype_id = datatype._id;
+                    dataset_config.datatype_name = datatype.name;
+
+                    //app-archive load the prov from the public API and store it next to data
+                    dataset_config.provURL = config.warehouse.api+"/dataset/prov/"+dataset._id;
                 }
 
                 if(output.subdir) {
@@ -343,8 +326,7 @@ exports.archive_task_outputs = async function(user_id, task, outputs, cb) {
                     if(!subdirs) subdirs = [];
                     subdirs.push(output.subdir);
                 } else {
-                    //old method - need to lookup datatype first
-                    let datatype = await db.Datatypes.findById(output.datatype);
+                    //old method - use datatype info
                     dataset_config.files = datatype.files;
                     dataset_config.files_override = output.files;
                     noSubdirs = true; //old method requires the entire workdir to be synced.
@@ -420,7 +402,7 @@ exports.load_github_detail = function(service_name, cb) {
     let headers = {
         'Authorization': 'token '+config.github.access_token,
         'User-Agent': 'brainlife',
-        
+
         //needed to get topic (which is currently in preview mode..)
         //https://developer.github.com/v3/repos/#list-all-topics-for-a-repository
         'Accept': "application/vnd.github.mercy-preview+json", 
@@ -594,7 +576,7 @@ exports.updateRelatedPaperMag = function(rec,cb) {
 
 exports.compose_app_datacite_metadata = function(app) {
     if(!cachedContacts) throw "Please call startContactCache first";
-    //
+
     //publication year
     let year = app.create_date.getFullYear();
     let publication_year = "<publicationYear>"+year+"</publicationYear>";
@@ -1430,36 +1412,27 @@ exports.aggregateDatasetsByApps = query=>{
         .group({
             _id: { 
                 app: "$prov.task.config._app", 
-                //service: "$prov.task.service",
-                //service_branch: "$prov.task.service_branch"
             },
             count: {$sum: 1},
             task: { "$first": "$prov.task"}, //pick the first task as a sample
         })
         .project({
             _id: 0, 
-            //app: "$_id.app", 
             count: "$count",
-            
-            //service: "$_id.service",
-            //service_branch: "$_id.service_branch",
-
-            //aconfig: "$aconfig",
             app: "$task.config._app",
             task: "$task",
         })
         .exec((err, recs)=>{
             if(err) return reject(err);
-            
+
             //do some clean up of data
             recs.forEach(rec=>{
-                //if(!rec.service_branch) rec.service_branch = "master";
                 for(const k in rec.task.config) {
                     if(k == "_app") continue; //we need this for <taskconfig>
                     if(k.startsWith("_")) delete rec.task.config[k]; //hidden parameters
                 }
             });
-            
+
             resolve(recs);
         });
     });
@@ -1473,7 +1446,10 @@ exports.jwt = opt=>{
     }, opt));
 }
 
-exports.encryptConfigValue = async (value)=>{
+exports.encryptConfigValue = value=>{
+    return child_process.execSync("openssl rsautl -inkey "+__dirname+"/config/configEncrypt.key -encrypt", {
+        input: value,
+    }).toString('base64');
 }
 
 exports.enumXnatObjects = async (project)=>{
@@ -1484,14 +1460,14 @@ exports.enumXnatObjects = async (project)=>{
     }
 
     //use openssl rsautl to encrypt the xnat secret
+    /*
     const secretEnc = child_process.execSync("openssl rsautl -inkey "+__dirname+"/config/configEncrypt.key -encrypt", {
         input: project.xnat.secret,
     }).toString('base64');
+    */
+    const secretEnc = exports.encryptConfigValue(project.xnat.secret);
 
     console.log("loading all experiments for this project");
-    //const res = await axios.get(project.xnat.hostname+"/data/projects/"+project.xnat.project+"/experiments", {auth});
-    //const experiments = res.data.ResultSet.Result;
-
     const objects = [];
     const res = await axios.get(project.xnat.hostname+"/data"+
         "/projects/"+project.xnat.project+
@@ -1532,28 +1508,12 @@ exports.enumXnatObjects = async (project)=>{
             const scanres = await axios.get(project.xnat.hostname+oExperiment.URI+"/scans", {auth});
             for(const oScan of scanres.data.ResultSet.Result) {
                 console.log("      scan", oScan.ID, oScan.type, oScan.series_description);
-                /* oScan
-                {
-                  xsiType: 'xnat:mrScanData',
-                  xnat_imagescandata_id: '755',
-                  note: '',
-                  series_description: '',
-                  ID: '7',
-                  type: 'GRE_FIELD_MAPPING',
-                  URI: '/data/experiments/XNAT19_E00027/scans/7',
-                  quality: ''
-                }
-                */
-
                 const mapping = project.xnat.scans.find(scan=>scan.scan == oScan.type);
                 if(mapping) {
                     objects.push({
                         meta: {
                             subject: oSubject.label, 
                             session: oExperiment.label,
-
-                            //xnat_subject: oSubject.label,
-                            //xnat_experiment: oExperiment.label,
                             xnat_scan: oScan.ID,
                         },
                         datatype: mapping.datatype,
@@ -1564,24 +1524,13 @@ exports.enumXnatObjects = async (project)=>{
 
                         storage: "xnat",
                         storage_config: {
-                            /*
-                            project: project.id, //xnat hostname/user/pass to use
-
-                            subject: oSubject.label,
-                            experiment: oExperiment.label,
-                            scan: oScan.ID,
-                            */
-                            //url: `${project.xnat.hostname}/data/projects/${project.xnat.project}/subjects/${oSubject.label}/experiments/${oExperiment.label}/scans/${oScan.ID}/resources/DICOM/files`,
-                            //auth, //is it too dangerous to do this? alternative is to lookup project.xnat everytime I need to access data
 
                             hostname: project.xnat.hostname,
                             project: project.xnat.project,
                             token: project.xnat.token,
 
+                            //path: "resources/NIFTI/files", //not all project has dicom > nifti conversion turned on.. so we can't use this
                             path: "resources/DICOM/files",
-
-                            //I also see that XNAT holds NIFTI already! why can't just use that?
-                            //path: "resources/NIFTI/files",
 
                             secretEnc,
                         },
@@ -1594,176 +1543,6 @@ exports.enumXnatObjects = async (project)=>{
                         status: "stored",
                     });
                 }
-
-                /*
-                //TODO - what can I do with the resources? I think scan is all I need?
-                const resourceres = await axios.get(project.xnat.hostname+oScan.URI, {params: {
-                    format: "json" //somehow needed..
-                }, auth});
-                resourceres.data.items.forEach(item=>{
-                    item.children.forEach(child=>{
-                        console.log("        ", child.field, child.items.length);
-                    });
-                });
-                */
-                //console.log(JSON.stringify(resourceres.data.items, null, 4));
-                /* resourceres.data.items
-                [
-                    {
-                        "children": [
-                            {
-                                "field": "file",
-                                "items": [
-                                    {
-                                        "children": [
-                                            {
-                                                "field": "tags/tag",
-                                                "items": [
-                                                    {
-                                                        "children": [],
-                                                        "meta": {
-                                                            "create_event_id": 71968,
-                                                            "xsi:type": "xnat:abstractResource_tag",
-                                                            "isHistory": false,
-                                                            "start_date": "Wed Sep 23 14:44:53 AEST 2020"
-                                                        },
-                                                        "data_fields": {
-                                                            "xnat_abstractResource_tag_id": 6,
-                                                            "tag": "BIDS"
-                                                        }
-                                                    }
-                                                ]
-                                            }
-                                        ],
-                                        "meta": {
-                                            "create_event_id": 71968,
-                                            "xsi:type": "xnat:resourceCatalog",
-                                            "isHistory": false,
-                                            "start_date": "Wed Sep 23 14:44:53 AEST 2020"
-                                        },
-                                        "data_fields": {
-                                            "file_count": 1,
-                                            "xnat_abstractresource_id": 1839,
-                                            "format": "BIDS",
-                                            "label": "BIDS",
-                                            "URI": "/efs/data/xnat/archive/PIPELINETEST/arc001/S01_MR1/SCANS/9/BIDS/BIDS_catalog.xml",
-                                            "file_size": 1569,
-                                            "content": "BIDS",
-                                            "xnat_abstractResource_id": 1839
-                                        }
-                                    },
-                                    {
-                                        "children": [],
-                                        "meta": {
-                                            "create_event_id": 59564,
-                                            "xsi:type": "xnat:resourceCatalog",
-                                            "isHistory": false,
-                                            "start_date": "Tue Sep 15 16:14:57 AEST 2020"
-                                        },
-                                        "data_fields": {
-                                            "file_count": 176,
-                                            "xnat_abstractresource_id": 1736,
-                                            "label": "DICOM",
-                                            "URI": "/efs/data/xnat/archive/PIPELINETEST/arc001/S01_MR1/SCANS/9/DICOM/9_catalog.xml",
-                                            "file_size": 34708682,
-                                            "content": "RAW",
-                                            "xnat_abstractResource_id": 1736
-                                        }
-                                    },
-                                    {
-                                        "children": [
-                                            {
-                                                "field": "tags/tag",
-                                                "items": [
-                                                    {
-                                                        "children": [],
-                                                        "meta": {
-                                                            "create_event_id": 71967,
-                                                            "xsi:type": "xnat:abstractResource_tag",
-                                                            "isHistory": false,
-                                                            "start_date": "Wed Sep 23 14:44:52 AEST 2020"
-                                                        },
-                                                        "data_fields": {
-                                                            "xnat_abstractResource_tag_id": 5,
-                                                            "tag": "BIDS"
-                                                        }
-                                                    }
-                                                ]
-                                            }
-                                        ],
-                                        "meta": {
-                                            "create_event_id": 71967,
-                                            "xsi:type": "xnat:resourceCatalog",
-                                            "isHistory": false,
-                                            "start_date": "Wed Sep 23 14:44:52 AEST 2020"
-                                        },
-                                        "data_fields": {
-                                            "file_count": 1,
-                                            "xnat_abstractresource_id": 1838,
-                                            "format": "NIFTI",
-                                            "label": "NIFTI",
-                                            "URI": "/efs/data/xnat/archive/PIPELINETEST/arc001/S01_MR1/SCANS/9/NIFTI/NIFTI_catalog.xml",
-                                            "file_size": 12385218,
-                                            "content": "NIFTI_RAW",
-                                            "xnat_abstractResource_id": 1838
-                                        }
-                                    },
-                                    {
-                                        "children": [],
-                                        "meta": {
-                                            "create_event_id": 72688,
-                                            "xsi:type": "xnat:resourceCatalog",
-                                            "isHistory": false,
-                                            "start_date": "Tue Oct 06 14:08:26 AEDT 2020"
-                                        },
-                                        "data_fields": {
-                                            "file_count": 176,
-                                            "xnat_abstractresource_id": 1924,
-                                            "label": "jpeg",
-                                            "URI": "/efs/data/xnat/archive/PIPELINETEST/arc001/S01_MR1/SCANS/9/jpeg/9_catalog.xml",
-                                            "file_size": 1603561,
-                                            "xnat_abstractResource_id": 1924
-                                        }
-                                    }
-                                ]
-                            },
-                            {
-                                "field": "sharing/share",
-                                "items": [
-                                    {
-                                        "children": [],
-                                        "meta": {
-                                            "create_event_id": 75059,
-                                            "xsi:type": "xnat:imageScanData_share",
-                                            "isHistory": false,
-                                            "start_date": "Mon Nov 23 17:15:51 AEDT 2020"
-                                        },
-                                        "data_fields": {
-                                            "project": "ShareTest",
-                                            "label": "9",
-                                            "xnat_imageScanData_share_id": 11
-                                        }
-                                    }
-                                ]
-                            }
-                        ],
-                        "meta": {
-                            "create_event_id": 59386,
-                            "xsi:type": "xnat:mrScanData",
-                            "isHistory": false,
-                            "start_date": "Tue Sep 15 16:13:33 AEST 2020"
-                        },
-                        "data_fields": {
-                            "xnat_imagescandata_id": 737,
-                            "project": "PIPELINETEST",
-                            "ID": "9",
-                            "image_session_ID": "XNAT19_E00023",
-                            "type": "t1mpr_SAG_NSel_S176",
-                            "xnat_imageScanData_id": 737
-                        }
-                    }
-                ]
-                */
             }
         }
     }

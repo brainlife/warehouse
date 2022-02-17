@@ -225,8 +225,6 @@ function handle_task(task, cb) {
             }).then(res=>{
                 if(res.data.length == 1) {
                     task_product = res.data[0].product;
-                    //console.log("product is");
-                    //console.dir(task_product);
                 }
                 next();
             }).catch(err=>{
@@ -257,7 +255,7 @@ function handle_task(task, cb) {
 
                 let datatype = await db.Datatypes.findById(output.datatype);
                 if(!datatype.validator) return; //no validator for this datatype..
-                
+
                 //see if we already submitted validator for this output
                 //TODO - I should probably key by the resource_id also? if user resubmit a jobs on different resource
                 //we probably want to resubmit validator on the different resource also? - in case the resource is disabled and such

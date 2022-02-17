@@ -512,16 +512,15 @@ export default {
             //now construct the task object
             this.deps_config = [];
             this.process_input_config(this.config);
-            var meta = {};
-            var _inputs = [];
-            for(var input_id in this.inputs) {
-                var input = this.inputs[input_id];
-                //if(!input.selected) continue; //optional input not selected?
+            const meta = {};
+            const _inputs = [];
+            for(const input_id in this.inputs) {
+                const input = this.inputs[input_id];
                 input.selected.forEach(selected=>{
                     if(!selected) return; //not set?
-                    var dataset = selected.dataset; 
-                    var keys = [];
-                    for(var key in this.app.config) {
+                    const dataset = selected.dataset; 
+                    const keys = [];
+                    for(const key in this.app.config) {
                         if(this.app.config[key].input_id == input_id) keys.push(key); 
                     }
                     _inputs.push({
@@ -540,8 +539,10 @@ export default {
                     });
 
                     //copy some hierarchical metadata from input
+                    //similar code in ui/modal/newtask.vue
                     //similar code in ui/modal/appsubmit.vue
                     //similar code in bin/rule_handler
+                    //cli
                     ["subject", "session", "run"].forEach(k=>{
                         if(!meta[k]) meta[k] = dataset.meta[k]; //use first one
                     });
@@ -550,9 +551,15 @@ export default {
 
             this.config._inputs = _inputs;
             this.config._app = this.app._id;
-            var _outputs = [];
+
+            //similar code alert
+            //modals/newtask
+            //modals/appsubmit
+            //bin/rule_handler
+            //cli
+            const _outputs = [];
             this.app.outputs.forEach(output=>{
-                var output_req = {
+                const output_req = {
                     id: output.id,
                     datatype: output.datatype._id,
                     desc: (output.desc||this.app.name),
@@ -570,13 +577,16 @@ export default {
                     output_req.subdir = output.id;
                 }
 
-                //handle datatype tag passthrough
-                var tags = [];
+                //handle datatype tag passthrough (and metadata)
+                let tags = [];
                 if(output.datatype_tags_pass) {
                     this.inputs[output.datatype_tags_pass].selected.forEach(selected=>{
                         if(!selected) return; //not set?
                         if(selected.dataset.datatype_tags) tags = tags.concat(selected.dataset.datatype_tags);
-                    }); 
+
+                        //copy all metadata (let last one win.. if there are multiple)
+                        Object.assign(output_req.meta, selected.dataset.meta);
+                    });
                 }
                 //.. and add app specified output tags at the end
                 tags = tags.concat(output.datatype_tags); 

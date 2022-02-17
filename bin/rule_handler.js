@@ -828,10 +828,10 @@ function handle_rule(rule, cb) {
             },
 
             //set metadata
+            //simialr code in ui/modal/appsubmit
+            //similar code in ui/newtask.vue
             next=>{
                 //copy some hierarchical metadata from input
-                //simialr code in ui/modal/appsubmit
-                //similar code in ui/newtask.vue
                 for(const input_id in inputs) {
                     const input = inputs[input_id];
                     //let's copy hierarchical metadata only
@@ -847,14 +847,14 @@ function handle_rule(rule, cb) {
                 next();
             },
 
+            //submit the app task!
+
             //Similar code alert...
             //modals/newtask.vue::submit()
             //modals/appsubmit.vuew::submit()
             //(bin)/rule_handler.js
             //cli
-            //submit the app task!
             next=>{
-
                 const _config = Object.assign(
                     rule.config||{}, 
                     process_input_config(rule.app, inputs, _app_inputs), 
@@ -901,7 +901,7 @@ function handle_rule(rule, cb) {
                         output_req.subdir = output.id; 
                     }
 
-                    //handle tag passthrough
+                    //handle tag passthrough (and meta)
                     let tags = [];
                     if(output.datatype_tags_pass) {
                         //TODO - how is multi input handled here?
@@ -910,9 +910,9 @@ function handle_rule(rule, cb) {
                             console.error("datatype_tags_pass set but can't find the input:"+output.datatype_tags_pass);
                             console.log("inputs dump");
                             console.dir(inputs);
-                        }
-                        if(dataset && dataset.datatype_tags) {
-                            tags = dataset.datatype_tags; //could be null?
+                        } else {
+                            if(dataset.datatype_tags) tags = dataset.datatype_tags; //could be null?
+                            Object.assign(output_req.meta, dataset.meta);
                         }
                     }
                     //.. and add app specified output tags at the end

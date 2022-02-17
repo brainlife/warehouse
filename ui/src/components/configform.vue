@@ -80,3 +80,10 @@ export default {
     },
 }
 </script>
+
+<style scoped>
+/deep/ .custom-control-label {
+    padding-top: 3px;
+    font-size: 90%;
+}
+</style>

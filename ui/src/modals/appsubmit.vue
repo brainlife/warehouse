@@ -36,9 +36,9 @@
                      :rows="3" :max-rows="6"/>
             </b-col>
         </b-row>
-        
+
         <hr>
-        
+
         <b-row v-for="input in app.inputs" :key="input.id" style="margin-bottom: 10px;">
             <b-col cols="3">
                 <small style="float: right;" class="text-muted">{{input.id}}</small>
@@ -79,7 +79,7 @@
                 <small v-if="input.desc" style="opacity: 0.8; white-space: pre-wrap;">{{input.desc}}</small>
             </b-col>
         </b-row>
-        
+
         <configform :spec="app.config" v-model="form.config"/>
         <hr>
         <advanced v-if="this.project" :app='app' v-model='form.advanced' :gids="[1, this.project.group_id]">
@@ -478,16 +478,18 @@ export default {
                 }
 
                 //copy some hierarchical metadata from input
-                //similar code in ui/modal/newtask.vue
-                //similar code in bin/rule_handler
+
+                //similar code in 
+                // ui/modal/newtask.vue
+                // ui/modal/appsubmit
+                // bin/rule_handler
+                // cli
                 let meta = config._inputs.reduce((meta, dataset)=>{
                     ["subject", "session", "run"].forEach(k=>{
                         if(!meta[k]) meta[k] = dataset.meta[k]; //use first one
                     });
                     return meta;
                 }, {});
-
-                //prepare _outputs
                 this.app.outputs.forEach(output=>{
                     var output_req = {
                         id: output.id,
@@ -503,12 +505,15 @@ export default {
                     }
 
                     //handle tag passthrough
-                    var tags = [];
+                    let tags = [];
                     if(output.datatype_tags_pass) {
                         this.form.inputs[output.datatype_tags_pass].forEach(ps=>{
                             let dataset = download_task.config._outputs.find(out=>out.dataset_id == ps.dataset.id);
                             if(dataset.datatype_tags) tags = tags.concat(dataset.datatype_tags);
-                        }); 
+
+                            //copy all metadata (let last one win)
+                            Object.assign(output_req.meta, dataset.meta);
+                        });
                     }
                     //.. and add app specified output tags at the end
                     if(output.datatype_tags) tags = tags.concat(output.datatype_tags); 

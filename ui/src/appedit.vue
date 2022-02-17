@@ -490,12 +490,12 @@ output/mri/aparc* </pre></small>
                                     <tageditor v-model="output.datatype_tags" :options="datatypes[output.datatype]._tags" />
                                     <small class="text-muted">Set these datatype tags on this output dataset</small>
 
-                                    <div class="text-muted">Datatype Tags Passthrough</div>
+                                    <div class="text-muted">Datatype Tags/Metadata Passthrough</div>
                                     <b-form-select v-model="output.datatype_tags_pass">
                                         <option :value="null">(No Pass)</option>
                                         <option v-for="input in input_datasets" :key="input.id" :value="input.id">{{input.id}}</option>
                                     </b-form-select>
-                                    <small class="text-muted">Add all datatype tags from the input dataset specified</small>
+                                    <small class="text-muted">Add all datatype tags and metadata from the input object specified</small>
                                 </div>
                             </b-col>
                         </b-row>
