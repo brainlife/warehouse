@@ -9,7 +9,7 @@
     <b-button variant="light" size="sm" @click="newmarkdown" title="Add New Note">
         <icon name="edit"/>&nbsp;&nbsp;Add Note
     </b-button>
-    <b-dropdown variant="light" text="Sort Items">
+    <b-dropdown variant="secondary" text="Sort">
         <b-dropdown-item @click="sort('date')">By creation date</b-dropdown-item>
         <b-dropdown-item @click="sort('name')">By app name</b-dropdown-item>
     </b-dropdown>

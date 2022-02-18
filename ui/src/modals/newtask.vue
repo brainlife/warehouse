@@ -108,7 +108,7 @@
                         </b-form-group>
                     </b-col>
                 </b-row>
-                
+
                 <configform :spec="app.config" v-model="config"/>
 
                 <hr>

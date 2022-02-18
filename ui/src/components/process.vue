@@ -142,6 +142,17 @@
                             </span>
                             <small class="ioid" v-if="task.app">({{compose_desc(task.app.outputs, output.id)}})</small>
 
+
+                            <b-collapse :id="task._id+'.'+output.id" style="margin-top: 8px;">
+                                <div class="subtitle">Metadata</div>
+                                <small>from config._output</small>
+                                <pre style="max-height: 300px; background-color: #eee; padding: 5px 10px;">{{JSON.stringify(output.meta, null, 4)}}</pre>
+                                <p v-if="Object.keys(findProductMeta(task, output.id)).length">
+                                    <small>from product.json</small>
+                                    <pre style="max-height: 300px; background-color: #eee; padding: 5px 10px;">{{JSON.stringify(findProductMeta(task, output.id), null, 4)}}</pre>
+                                </p>
+                            </b-collapse>
+
                             <dtv v-if="task.status == 'finished' && output.dtv_task" :task="output.dtv_task" :output="output"/>
 
                             <div v-if="findarchived(task, output).length > 0">
@@ -168,16 +179,6 @@
                                     </li>
                                 </ul>
                             </div>
-
-                            <b-collapse :id="task._id+'.'+output.id" style="margin-top: 8px;">
-                                <div class="subtitle">Metadata</div>
-                                <small>from config._output</small>
-                                <pre style="max-height: 300px; background-color: #eee; padding: 5px 10px;">{{JSON.stringify(output.meta, null, 4)}}</pre>
-                                <p v-if="Object.keys(findProductMeta(task, output.id)).length">
-                                    <small>from product.json</small>
-                                    <pre style="max-height: 300px; background-color: #eee; padding: 5px 10px;">{{JSON.stringify(findProductMeta(task, output.id), null, 4)}}</pre>
-                                </p>
-                            </b-collapse>
 
                             <!-- 
                                 we are now requering data to be archived to primary for it to be made available for analysis
