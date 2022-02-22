@@ -371,7 +371,6 @@ export default {
             evt.preventDefault(); //TODO do I need this?
             if(this.submitting) return; //prevent double submission..
             this.submitting = true;
-
             //validate things
             if(this.envs_ && this.envs_.trim()) {
                 try {
@@ -387,6 +386,8 @@ export default {
                 this.submitting = false;
                 return;
             }
+            this.resource.config.username = this.resource.config.username.trim();
+            this.resource.config.hostname = this.resource.config.hostname.trim();
 
             if(this.resource._id) {
                 //update
