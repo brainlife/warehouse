@@ -8,6 +8,7 @@
         </div>
     </div>
     <div class="page-content">
+        <!--
         <div v-if="datatype_options" style="margin: 5px; padding-right: 15px;">
             <v-select v-if="datatype_options" v-model="datatypes" :options="datatype_options" 
                 :reduce="dt => dt._id" label="name" :multiple="true" placeholder="Filter by Datatype">
@@ -20,15 +21,9 @@
                 </template>
             </v-select>
         </div>
-
-        <!--
-        <div class="hint">
-            <p>The following are the list of publically avaiable datasets that you can import to your brainlife projects.</p>
-            <p>The list includes datasets published on OpenNeuro, FCP/INDI, and other sources that can be accessed via <a href="https://datalad.org" target="datalad">Datalad</a>.</p>
-        </div>
         -->
 
-        <p v-if="loading_datasets" style="padding: 20px; opacity: 0.8;">Loading...</p>
+        <p v-if="loading_datasets" style="padding: 10px; opacity: 0.8;">Loading...</p>
         <p v-else-if="filteredGroups.length == 0" style="padding: 20px; opacity: 0.8;">No matching dataset</p>
         <div v-for="group in filteredGroups" :key="group.key" class="dataset" @click="openDataset(group.key)">
             <p style="margin-bottom: 0px;">
@@ -114,10 +109,11 @@ export default {
             groups: [],
             filteredGroups: [],
 
-            datatypes: [], //selected datatypes
-            datatype_options: null, //{label: .. datatype: } opbjects
+            datatypes: [], //datatypes info
+            //datatype_options: null, //{label: .. datatype: } opbjects
 
             //datatype ids to use in filter
+            /*
             datatype_ids: [ 
                 "58c33bcee13a50849b25879a", //t1
                 "594c0325fa1d2e5a1f0beda5", //t2
@@ -137,6 +133,7 @@ export default {
                 //"5ddf1381936ca39318c5f045", //eeg
                 //"5dcecaffc4ae284155298383", //meg
             ],
+            */
 
             query: "",
             dataset_ps: null,
@@ -154,10 +151,12 @@ export default {
     },
 
     watch: {
+        /*
         datatypes() {
-            //this.load_datasets();
+            this.load_datasets();
             this.updateFilteredGroups();
         },
+        */
 
         /*
         "$route.params.dataset_id": function(dataset_id, ov) {
@@ -183,8 +182,8 @@ export default {
         },
     },
 
-    mounted() {
-        this.load_datatypes();
+    async mounted() {
+        await this.load_datatypes();
         this.load_datasets();
         let dataset_id = this.$route.params.dataset_id;
         if(dataset_id) this.load_dataset(dataset_id);
@@ -196,45 +195,39 @@ export default {
         },
 
         updateFilteredGroups() {
+            const tokens = this.query.split(" ").map(t=>t.toLowerCase());
             this.filteredGroups = this.groups.filter(group=>{
                 let match = true;
 
                 //apply query
                 if(this.query) {
-                    const tokens = this.query.split(" ").map(t=>t.toLowerCase());
                     const name = group.dsDesc.Name.toLowerCase();
                     const key = group.key.toLowerCase();
+
+                    //try converting token to matching datatype
                     tokens.forEach(t=>{
                         if(name.includes(t)) return;
                         if(key.includes(t)) return;
+
+                        const datatype = this.datatypes.find(d=>d.name.includes(t));
+                        if(datatype) {
+                            //see if this group contains the datatype
+                            const dataset = group.datasets.find(d=>d.stats.datatypes[datatype._id]);
+                            if(dataset) return;
+                        }
                         match = false;
                     });
                 }
-
-                if(this.datatypes.length) {
-                    //apply datatype query
-                    //see if there is any dataset that contains all specified datatypes
-                    let hasMatchingDataset = false;
-                    group.datasets.forEach(dataset=>{
-                        for(let datatype_id of this.datatypes) {
-                            if(!dataset.stats.datatypes[datatype_id]) return; //missing!
-                        }
-                        hasMatchingDataset = true;
-                    });
-                    if(!hasMatchingDataset) match = false;
-                }
-
                 return match;
             });
         },
 
-        load_datatypes(cb) {
-            this.$http.get('datatype', {params: {
-                find: JSON.stringify({_id: {$in: this.datatype_ids}}),
-            }}).then(res=>{
-                this.datatype_options = res.data.datatypes;
-                if(cb) return cb();
-            });
+        async load_datatypes(cb) {
+            const ret = await this.$http.get('datatype', {params: {
+                //find: JSON.stringify({_id: {$in: this.datatype_ids}}),
+                select: 'name',
+            }});
+            this.datatypes = ret.data.datatypes;
         },
 
         load_datasets() {

@@ -36,7 +36,7 @@ router.get('/', common.jwt({credentialsRequired: false}), (req, res, next)=>{
     if(req.query.find) find = JSON.parse(req.query.find);
     db.Datatypes.find(find)
     .select(req.query.select)
-    .populate('uis') //why?
+    .populate('uis') //why? TODO - find who needs this and let the client do this on demand.
     .limit(+limit)
     .skip(+skip)
     .sort(req.query.sort || '_id')

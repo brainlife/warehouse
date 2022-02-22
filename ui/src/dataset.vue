@@ -148,7 +148,6 @@ export default {
             }),
             sort: '-version',
         }}).then(res=>{
-            console.log("loaded", res.data);
             this.datasets = res.data;
             this.tabs = this.datasets.map(d=>d.version);
 
