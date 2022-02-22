@@ -26,7 +26,7 @@
                 <div v-for="dataset in group.datasets" :key="dataset._id">
                     <b-row @click="click_dataset(dataset)" class="dataobject-clickable">
                         <b-col>
-                            <datatypetag :datatype="dataset.datatype" :clickable="false" :tags="dataset.datatype_tags" />
+                            <datatypetag :datatype="dataset.datatype" :clickable="false" :tags="dataset.datatype_tags" style="font-size: 90%;"/>
                         </b-col>
                         <b-col><tags :tags="dataset.tags"/></b-col>
                     </b-row>

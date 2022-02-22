@@ -21,10 +21,12 @@
             </v-select>
         </div>
 
+        <!--
         <div class="hint">
             <p>The following are the list of publically avaiable datasets that you can import to your brainlife projects.</p>
             <p>The list includes datasets published on OpenNeuro, FCP/INDI, and other sources that can be accessed via <a href="https://datalad.org" target="datalad">Datalad</a>.</p>
         </div>
+        -->
 
         <p v-if="loading_datasets" style="padding: 20px; opacity: 0.8;">Loading...</p>
         <p v-else-if="filteredGroups.length == 0" style="padding: 20px; opacity: 0.8;">No matching dataset</p>
@@ -523,9 +525,11 @@ bottom: 0;
 .disableText {
     user-select: none;
 }
+/*
 .hint {
     padding: 10px;
     opacity: 0.8;
 }
+*/
 </style>
 

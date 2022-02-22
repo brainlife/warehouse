@@ -2,7 +2,59 @@
 <div>
     <div :class="{rightopen: selected_count}">
         <div v-if="loading" class="loading" :class="{sidemenuwide: $root.sidemenuWide}"><icon name="cog" spin scale="2"/></div>
-        <div class="table-header onRight">
+
+        <div v-if="!loading && total_datasets == 0" style="margin: 20px; opacity: 0.8;">
+            <p>This project has no archived data.</p>
+            
+            <div v-if="isadmin() || ismember()">
+                <p>You can add data to this project by doing one of the following.</p>
+
+                <div class="hint-card">
+                    <h3>Upload Nifti/brainlife compatible data</h3>
+                    <p clas="hint-desc">
+                        <img src="@/assets/images/upload.png" width="100%"/>
+                        If you have data files that are compatible with certain brainlife datatypes,
+                        you can upload directly from your computer via the web UI.
+                    </p>
+                    <b-btn v-b-modal.uploader variant="success" @click="set_uploader_options" size="sm">
+                        Upload Data
+                    </b-btn>
+                </div>
+
+                <div class="hint-card">
+                    <h3>Upload DICOMs</h3>
+                    <p clas="hint-desc">
+                        <img src="@/assets/images/ezbids.png" width="100%"/>
+                        If you have a set of DICOM files, you can upload them using <b>ezBIDS</b>: 
+                        an online DICOM to BIDS conversion / organizing tool.
+                    </p>
+                    <b-btn href="https://brainlife.io/ezbids" variant="success" size="sm">Open ezBIDS</b-btn>
+                </div>
+
+                <div class="hint-card">
+                    <h3>Copy Data from another project</h3>
+                    <p>
+                        <img src="@/assets/images/copy.png" width="100%"/>
+                        You can <b>copy</b> data from another projects. Simply open another project, select
+                        objects you'd like to copy and click the <b>Copy</b> button.
+                    </p>
+                </div>
+
+                <div class="hint-card">
+                    <h3>Import from public datasets</h3>
+                    <p>
+                        <img src="@/assets/images/datasets.png" width="100%"/>
+                        You can import public datasets from the <b>Datasets</b> page. You can choose
+                        datasets published on OpenNeuro, FCP/INDI and other datasources made available
+                        by <a href="https://datalad.org" target="datalad">Datalad</a>.
+                    </p>
+                    <b-btn href="/datasets" variant="success" size="sm">Import Datasets</b-btn>
+                </div>
+
+            </div>
+        </div>
+
+        <div v-if="!loading && total_datasets > 0" class="table-header onRight">
             <div style="float: right; position: relative; top: 4px;">
                 <b-form-input id="filter" class="filter" :class="{'filter-active': query != ''}" size="sm" v-model="query" placeholder="Filter" @input="change_query_debounce"></b-form-input>
             </div>
@@ -30,10 +82,7 @@
             </b-row>
         </div>
 
-        <div class="page-content" ref="scrolled-area" @scroll="page_scrolled">
-            <div v-if="!loading && total_datasets == 0" style="margin: 20px; opacity: 0.8;">
-                Please upload data by clicking the button on the right bottom corner of the page. You can also copy data from another project.
-            </div>
+        <div v-if="!loading && total_datasets > 0" class="page-content" ref="scrolled-area" @scroll="page_scrolled">
 
             <!--the list-->
             <div v-for="(page, page_idx) in pages" v-if="datatypes" :key="page_idx" style="font-size: 11px;">
@@ -988,6 +1037,26 @@ h4 {
 }
 .subject-column {
     min-height: 35px;
+}
+.hint-card {
+    float: left;
+    width: 300px;
+    min-height: 350px;
+    margin-right: 10px;
+    margin-bottom: 10px;
+    padding: 10px;
+    border-radius: 5px;
+    box-shadow: 0 0 10px #0007;
+}
+.hint-card h3 {
+    font-size: 11pt;
+}
+.hint-card .hint-desc {
+    font-size: 10pt;
+}
+.hint-card img {
+    height: 150px;
+    padding-bottom: 10px;
 }
 </style>
 
