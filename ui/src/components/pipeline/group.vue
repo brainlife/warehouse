@@ -1,8 +1,11 @@
 <template>
 <div class="pipeline-group" :class="{'group-root': root, 'group-open': group.open}" :style="{'background-color': group.color}">
 
-    <groupbuttons :group="group" v-if="group.open && root && group.items.length" :root="root" 
-        @newrule="newrule" @newgroup="newgroup" @newmarkdown="newmarkdown" @sort="sort"/>
+    <groupbuttons :group="group" v-if="group.open && root && group.items.length" :root="root" :insertTop="true" 
+        @newrule="newrule" 
+        @newgroup="newgroup" 
+        @newmarkdown="newmarkdown" 
+        @sort="sort"/>
 
     <h5 style="opacity: 0.7" v-if="!root">{{group.name}}</h5>
     <div v-if="!group.open" class="item-body">
@@ -50,8 +53,11 @@
         </div>
     </draggable>
 
-    <groupbuttons v-if="group.open" :root="root" :group="group"
-        @newrule="newrule" @newgroup="newgroup" @newmarkdown="newmarkdown" @sort="sort"/>
+    <groupbuttons v-if="group.open" :root="root" :group="group" :insertTop="false"
+        @newrule="newrule" 
+        @newgroup="newgroup" 
+        @newmarkdown="newmarkdown" 
+        @sort="sort"/>
 </div>
 </template>
 
@@ -105,34 +111,26 @@ export default {
             this.$emit("updated");
         },
 
-        newgroup() {
+        newgroup(opt) {
             this.$root.$emit("pipelinegroup.edit", {
                 group: {},
                 cb: (err, group)=>{
-                    /*
-                    this.group.items.push({
-                        type: "group",
-                        name: "please enter name",
-                        items: [
-                            {type: "readme", readme: "", _editing: "Enter text here"},
-                        ],
-                        open: true,
-                        color: "#fff2",
-                    })
-                    */
-                    this.group.items.push(group);
-                    this.$emit("updated");
+                    if(opt.insertTop) this.group.items.unshift(group);
+                    else this.group.items.push(group);
+                    this.$emit("updated", group);
                 }
             });
         },
 
-        newmarkdown() {
-            this.group.items.push({ type: "readme", readme: "", _editing: ""});
-            this.$emit("updated");
+        newmarkdown(opt) {
+            const newm = { type: "readme", readme: "", _editing: "" };
+            if(opt.insertTop) this.group.items.unshift(newm);
+            else this.group.items.push(newm);
+            this.$emit("updated", opt);
         },
 
-        newrule(group) {
-            this.$emit("newrule", group);
+        newrule(opt) {
+            this.$emit("newrule", opt);
         },
 
         copyrule(opt) {
@@ -266,6 +264,7 @@ export default {
     margin-right: 50px;
     padding-right: 10px;
     border-right: 3px solid #0000;
+    min-height: 70px;
 }
 .item:hover > .item-buttons {
     opacity: 1;

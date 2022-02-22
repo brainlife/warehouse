@@ -1,7 +1,7 @@
 <template>
 <div>
     <div class="page-header">
-        <div class="search-box">
+        <div class="search-box onRight">
             <b-form-input v-model="query" type="text" placeholder="Search Datasets" class="input"/>
             <icon name="search" class="search-icon" scale="1.5"/>
             <img src="https://pbs.twimg.com/profile_images/899900469119680512/XybpieA7_400x400.jpg" height="30px" class="datalad-logo">
@@ -35,17 +35,6 @@
                         <span style="opacity: 0.3;">|</span> 
                     </small>
                 </span>
-
-                <!-- multiple versions? -->
-                <!--
-                <b-badge v-if="group.datasets.length > 1">Multi Versions</b-badge>
-                -->
-                <!--
-                <div v-if="group.datasets.length > 1" style="display: inline-block;">
-                    <span style="opacity: 0.3;">Versions</span>
-                    <b-badge v-for="dataset in group.datasets" :key="dataset._id" style="margin-right: 5px;">{{dataset.version}}</b></b-badge>
-                </div>
-                -->
             </p>
 
             <small style="opacity: 0.7;"><b>{{group.key}}</b></small>
@@ -68,11 +57,7 @@
             <small>Total <b>{{groups.length}}</b> datasets </small>
         </p>
     </div>
-    <!--
-    <div class="page-content" style="text-align: right;" :style="{width: listWidth+'px'}">
-        <small><b>{{datasets.length}}</b> datasets</small>
-    </div>
-    -->
+
 </div>
 </template>
 
@@ -510,9 +495,6 @@ bottom: 0;
     top: 10px;
     margin-left: 30px;
     z-index: 1;
-}
-.search-icon {
-    left: 12px;
 }
 
 .disableText {

@@ -204,7 +204,7 @@ export default {
             });
         },
 
-        newrule(group) {
+        newrule(opt) {
             this.$root.$emit("rule.edit", {
                 rule: {
                     //_id: null, //for new rule
@@ -215,7 +215,10 @@ export default {
                         _rule.app = app;
                         this.rules.push(_rule);
 
-                        group.items.push({type: "rule", ruleId: _rule._id})
+                        const newrule = {type: "rule", ruleId: _rule._id};
+                        if(opt.insertTop) opt.group.items.unshift(newrule);
+                        else opt.group.items.push(newrule);
+
                         this.updatePipeline();
                     });
                 }

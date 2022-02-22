@@ -413,7 +413,6 @@ export default {
 
                 if(tag_query.length > 0) find.$and = tag_query;
 
-                console.log("searching for inputs", id, find);
                 this.$http.get('dataset', {params: {
                     find: JSON.stringify(find),
                     limit: 1, //I just need count (0 means all!)

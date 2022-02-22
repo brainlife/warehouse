@@ -20,18 +20,18 @@
 import Vue from 'vue'
 
 export default {
-    props: [ 'root', 'group' ],
+    props: [ 'root', 'group', 'insertTop' ],
     methods: {
         newrule(group) {
             //I have to let the group to add the newrule bubble up all the way to the root, which then
             //takes care of actually creating a rule (why can't we just let the group itself create it?)
-            this.$emit("newrule", this.group);
+            this.$emit("newrule", {group: this.group, insertTop: this.insertTop});
         },
         newgroup() {
-            this.$emit("newgroup");
+            this.$emit("newgroup", {insertTop: this.insertTop});
         },
         newmarkdown() {
-            this.$emit("newmarkdown");
+            this.$emit("newmarkdown", {insertTop: this.insertTop});
         },
         sort(mode) {
             this.$emit("sort", mode);

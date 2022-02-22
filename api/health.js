@@ -44,7 +44,7 @@ exports.health_check = function() {
                 const queues = JSON.parse(fs.readFileSync(config.event.amqp.queues));
                 report.messages.push("amqp queue json date:"+queuestat.mtime);
                 queues.forEach(queue=>{
-                    if(queue.messages > 100) {
+                    if(queue.messages > 500) {
                         report.status = "failed";
                         report.messages.push("rabbitmq queue: "+queue.name+" is too big.. size:"+queue.messages);
                     }
