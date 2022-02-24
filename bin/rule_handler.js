@@ -548,14 +548,23 @@ function handle_rule(rule, cb) {
             } else {
                 const candidates = input._datasets[input_group_id]; 
 
-                //let's not submit jobs if there are more than 1 candidates
-                //TODO for multi-input, we could grab all?
-                if(candidates.length > 1) {
-                    log.info("We found "+candidates.length +" candidates objects for input:"+input.id+". Please increase input specificity by adding tags.", group_id);
-                    ambiguous = true;
+                //check count
+                if(input.multi && rule.input_multicount) {
+                    //make sure we have exactly the expected number of candiates
+                    if(candidates.length != rule.input_multicount[input.id]) {
+                        log.info("We found "+candidates.length +" candidates objects for input:"+input.id+", but the rule is expecting "+rule.input_multicount[input.id]+" objects", group_id);
+                        ambiguous = true;
+                    }
+                } else {
+                    //let's not submit jobs if there are more than 1 candidates
+                    if(candidates.length > 1) {
+                        log.info("We found "+candidates.length +" candidates objects for input:"+input.id+". Please increase input specificity by adding tags.", group_id);
+                        ambiguous = true;
+                    }
                 }
-                inputs[input.id] = candidates[0];
-                inputs[input.id]._inputSpec = input;
+
+                inputs[input.id] = candidates;
+                inputs[input.id]._inputSpec = input; //TODO weird place to put it..
             }
         });
         if(missing) {
@@ -695,105 +704,108 @@ function handle_rule(rule, cb) {
                 const downloads = [];
                 let subdirs = [];
                 for(let input_id in inputs) {
-                    let input = inputs[input_id];
-                    log.debug("looking for source/staged data "+input._id+" for input "+input_id, group_id);
+                    const inputSpec = inputs[input_id]._inputSpec;
+                    inputs[input_id].forEach(input=>{
+                        log.debug("looking for source/staged data "+input._id+" for input "+input_id, group_id);
 
-                    //although we need to construct _outputs for product_raw, we are reusing most of the info
-                    //for the main app's input. since product-raw doesn't really have id anyway, so let's just use
-                    //app's input id as product_raw's id
-                    input.id = input_id;
-                    
-                    //enumerate json keys for this input
-                    let keys = [];
-                    for(const key in rule.app.config) {
-                        if(rule.app.config[key].input_id == input_id) keys.push(key);
-                    }
-
-                    function canuse_source() {
-                        let task = null;
-                        if(input.prov && input.prov.task && input.prov.task._id) task = tasks[input.prov.task._id];
-                        if(!isalive(task)) return false;
-
-                        log.debug("found the task generated the input data for output:"+input.prov.output_id, group_id);
-                        //find output from task
-                        let output_detail = task.config._outputs.find(it=>it.id == input.prov.output_id);
-                        let dep_config = {task: task._id};
-                        if(input.prov.subdir) { //most app should use subdir by now?
-                            if(input._inputSpec.includes) dep_config.subdirs = appendIncludes(input.prov.subdir, input._inputSpec.includes);
-                            else dep_config.subdirs = [input.prov.subdir];
+                        console.log(input);
+                        //although we need to construct _outputs for product_raw, we are reusing most of the info
+                        //for the main app's input. since product-raw doesn't really have id anyway, so let's just use
+                        //app's input id as product_raw's id
+                        input.id = input_id;
+                        
+                        //enumerate json keys for this input
+                        let keys = [];
+                        for(const key in rule.app.config) {
+                            if(rule.app.config[key].input_id == input_id) keys.push(key);
                         }
-                        deps_config.push(dep_config);
 
-                        //TODO I should only put stuff that I need output input..
-                        _app_inputs.push(Object.assign({}, input, {
-                            datatype: input.datatype._id, //unpopulate datatype to keep it clean
-                            task_id: task._id,
-                            subdir: input.prov.subdir,
-                            dataset_id: input._id,
-                            keys,
+                        function canuse_source() {
+                            let task = null;
+                            if(input.prov && input.prov.task && input.prov.task._id) task = tasks[input.prov.task._id];
+                            if(!isalive(task)) return false;
 
-                            files: output_detail.files, //needed by process_input_config to map to correct output
-                        }));
+                            log.debug("found the task generated the input data for output:"+input.prov.output_id, group_id);
+                            //find output from task
+                            let output_detail = task.config._outputs.find(it=>it.id == input.prov.output_id);
+                            let dep_config = {task: task._id};
+                            if(input.prov.subdir) { //most app should use subdir by now?
+                                if(inputSpec.includes) dep_config.subdirs = appendIncludes(input.prov.subdir, inputSpec.includes);
+                                else dep_config.subdirs = [input.prov.subdir];
+                            }
+                            deps_config.push(dep_config);
 
-                        return true;
-                    }
+                            //TODO I should only put stuff that I need output input..
+                            _app_inputs.push(Object.assign({}, input, {
+                                datatype: input.datatype._id, //unpopulate datatype to keep it clean
+                                task_id: task._id,
+                                subdir: input.prov.subdir,
+                                dataset_id: input._id,
+                                keys,
 
-                    function canuse_staged() {
-                        //see if there are input task that has the dataset already staged
-                        let task = null;
-                        let output = null;
-                        for(const task_id in tasks) {
-                            task = tasks[task_id];
-                            if(task.service == "soichih/sca-product-raw" || task.service == "brainlife/app-stage") {
-                                if(isalive(task)) {
-                                    output = task.config._outputs.find(o=>o.dataset_id == input._id);
-                                    if(output) break;
+                                files: output_detail.files, //needed by process_input_config to map to correct output
+                            }));
+
+                            return true;
+                        }
+
+                        function canuse_staged() {
+                            //see if there are input task that has the dataset already staged
+                            let task = null;
+                            let output = null;
+                            for(const task_id in tasks) {
+                                task = tasks[task_id];
+                                if(task.service == "soichih/sca-product-raw" || task.service == "brainlife/app-stage") {
+                                    if(isalive(task)) {
+                                        output = task.config._outputs.find(o=>o.dataset_id == input._id);
+                                        if(output) break;
+                                    }
                                 }
                             }
+                            if(!output) return false;
+
+                            log.debug("found the input data already staged previously", group_id);
+
+                            let dep_config = {task: task._id};
+                            if(output.subdir) {  //most app should use subdir by now..
+                                if(inputSpec.includes) dep_config.subdirs = appendIncludes(output.subdir, inputSpec.includes);
+                                else dep_config.subdirs = [output.subdir];
+                            }
+                            deps_config.push(dep_config);
+
+                            //TODO I should only put stuff that I need output input..
+                            _app_inputs.push(Object.assign({}, input, {
+                                datatype: input.datatype._id, //unpopulate datatype to keep it clean
+                                task_id: task._id,
+                                subdir: output.subdir, 
+                                dataset_id: output.dataset_id,
+                                prov: null, //remove dataset prov
+                                keys,
+                            }));
+
+                            return true;
                         }
-                        if(!output) return false;
-
-                        log.debug("found the input data already staged previously", group_id);
-
-                        let dep_config = {task: task._id};
-                        if(output.subdir) {  //most app should use subdir by now..
-                            if(input._inputSpec.includes) dep_config.subdirs = appendIncludes(output.subdir, input._inputSpec.includes);
-                            else dep_config.subdirs = [output.subdir];
-                        }
-                        deps_config.push(dep_config);
-
-                        //TODO I should only put stuff that I need output input..
-                        _app_inputs.push(Object.assign({}, input, {
-                            datatype: input.datatype._id, //unpopulate datatype to keep it clean
-                            task_id: task._id,
-                            subdir: output.subdir, 
-                            dataset_id: output.dataset_id,
-                            prov: null, //remove dataset prov
-                            keys,
-                        }));
-
-                        return true;
-                    }
-                    
-                    if(!canuse_source() && !canuse_staged()) {
-                        //we don't have it.. we need to stage from warehouse
-                        log.debug("couldn't find source task/staged data .. need to load from warehouse", group_id);
-                        downloads.push(input);
-
-                        //handle subdirs
-                        if(input._inputSpec.includes) subdirs = [...subdirs, ...appendIncludes(input._id, input._inputSpec.includes)];
-                        else subdirs.push(input._id);
                         
-                        //TODO I should only put stuff that I need output input..
-                        const output = Object.assign({}, input, {
-                            datatype: input.datatype._id, //unpopulate datatype to keep it clean
-                            subdir: input._id,
-                            dataset_id: input._id, 
-                            prov: null, //remove dataset prov
-                        });
-                        _outputs.push(output);
-                        _app_inputs.push(Object.assign({keys}, output)); 
-                    }
+                        if(!canuse_source() && !canuse_staged()) {
+                            //we don't have it.. we need to stage from warehouse
+                            log.debug("couldn't find source task/staged data .. need to load from warehouse", group_id);
+                            downloads.push(input);
+
+                            //handle subdirs
+                            if(inputSpec.includes) subdirs = [...subdirs, ...appendIncludes(input._id, inputSpec.includes)];
+                            else subdirs.push(input._id);
+                            
+                            //TODO I should only put stuff that I need output input..
+                            const output = Object.assign({}, input, {
+                                datatype: input.datatype._id, //unpopulate datatype to keep it clean
+                                subdir: input._id,
+                                dataset_id: input._id, 
+                                prov: null, //remove dataset prov
+                            });
+                            _outputs.push(output);
+                            _app_inputs.push(Object.assign({keys}, output)); 
+                        }
+                    });
                 }
 
                 //nothing to download, then proceed to submitting the app
@@ -828,15 +840,16 @@ function handle_rule(rule, cb) {
             },
 
             //set metadata
-            //simialr code in ui/modal/appsubmit
+            //similar code in ui/modal/appsubmit
             //similar code in ui/newtask.vue
             next=>{
                 //copy some hierarchical metadata from input
                 for(const input_id in inputs) {
-                    const input = inputs[input_id];
-                    //let's copy hierarchical metadata only
-                    ["subject", "session", "run"].forEach(k=>{
-                        if(!meta[k]) meta[k] = input.meta[k]; //use first one
+                    inputs[input_id].forEach(input=>{
+                        //let's copy hierarchical metadata only
+                        ["subject", "session", "run"].forEach(k=>{
+                            if(!meta[k]) meta[k] = input.meta[k]; //use first one
+                        });
                     });
                 }
 
@@ -904,17 +917,22 @@ function handle_rule(rule, cb) {
                     //handle tag passthrough (and meta)
                     let tags = [];
                     if(output.datatype_tags_pass) {
-                        //TODO - how is multi input handled here?
-                        const dataset = inputs[output.datatype_tags_pass];
-                        if(!dataset) {
+                        const datasets = inputs[output.datatype_tags_pass];
+                        if(!datasets) {
                             console.error("datatype_tags_pass set but can't find the input:"+output.datatype_tags_pass);
                             console.log("inputs dump");
                             console.dir(inputs);
                         } else {
-                            if(dataset.datatype_tags) tags = dataset.datatype_tags; //could be null?
-                            Object.assign(output_req.meta, dataset.meta);
+                            //for multi inputs.. let's just aggregate all meta for now
+                            datasets.forEach(dataset=>{
+                                if(dataset.datatype_tags) dataset.datatype_tags.forEach(tag=>{
+                                    if(!tags.includes(tag)) tags.push(tag);
+                                });
+                                Object.assign(output_req.meta, dataset.meta);
+                            });
                         }
                     }
+
                     //.. and add app specified output tags at the end
                     if(output.datatype_tags) tags = tags.concat(output.datatype_tags);
                     output_req.datatype_tags = uniq(tags);
@@ -973,24 +991,26 @@ function process_input_config(app, input_info, _app_inputs) {
             if(input.multi) out[k] = [];
 
             //TODO - multi could have more than 1 dataset... (let's just process first one for now?)
-            const dataset = _app_inputs.find(d=>d.id == node.input_id);
-            if(!dataset) continue; //optional input that's ignored?
+            const datasets = _app_inputs.filter(d=>d.id == node.input_id);
+            if(!datasets.length) continue; //optional input that's ignored?
 
-            let base = "../"+dataset.task_id;
-            if(dataset.subdir) base+="/"+dataset.subdir;
+            datasets.forEach(dataset=>{
+                let base = "../"+dataset.task_id;
+                if(dataset.subdir) base+="/"+dataset.subdir;
 
-            const info = input_info[node.input_id];
-            const file = info.datatype.files.find(file=>file.id == node.file_id);
-            if(!file) {
-                console.error("referencing to missing file "+node.file_id);
-                continue;
-            }
-            let path = base+"/"+(file.filename||file.dirname);
-            if(dataset.files && dataset.files[node.file_id]) {
-                path = base+"/"+dataset.files[node.file_id];
-            }
-            if(input.multi) out[k].push(path);
-            else out[k] = path;
+                const info = input_info[node.input_id][0]; //using first one - should be all the same datatype info
+                const file = info.datatype.files.find(file=>file.id == node.file_id);
+                if(!file) {
+                    console.error("referencing to missing file "+node.file_id);
+                    return;
+                }
+                let path = base+"/"+(file.filename||file.dirname);
+                if(dataset.files && dataset.files[node.file_id]) {
+                    path = base+"/"+dataset.files[node.file_id];
+                }
+                if(input.multi) out[k].push(path);
+                else out[k] = path;
+            });
         }
     }
     return out;

@@ -13,8 +13,16 @@
         <small>{{activeRuleCount}} Active</small>
     </div>
 
-    <draggable :list="group.items" class="draggable" group="pipeline-items" @end="$emit('updated')" handle=".handle">
-        <div v-if="group.open" v-for="(item, idx) in group.items" :key="idx" class="item">
+    <draggable 
+        :list="group.items" 
+        class="draggable" 
+        group="pipeline-items" 
+        @start="dragStart"
+        @end="dragEnd"
+        v-bind="dragOptions"
+        handle=".handle">
+        <transition-group type="transition" :name="!drag ? 'flip-list' : null">
+        <div v-if="group.open" v-for="item in ensureKeys(group.items)" :key="item.id" class="item">
             <!--move button-->
             <div class="item-buttons">
                 <b-button-group vertical>
@@ -51,6 +59,7 @@
                     :rule="rules.find(r=>r._id == item.ruleId)"/>
             </div>
         </div>
+        </transition-group>
     </draggable>
 
     <groupbuttons v-if="group.open" :root="root" :group="group" :insertTop="false"
@@ -68,6 +77,21 @@ import groupbuttons from './groupbuttons'
 
 export default {
     props: [ 'rules', 'group', 'root', ],
+
+    /*
+    mounted() {
+        //transition-group doesn't want me to use idx
+        this.group.items.forEach(item=>{
+            if(!item.id) item.id = Math.random().toString();
+        });
+    },
+    */
+
+    data() {
+        return {
+            drag: false,
+        }
+    },
 
     components: {
         pipelineRule: ()=>import('@/components/pipeline/rule'),
@@ -95,9 +119,34 @@ export default {
             });
             return count;
         },
+
+        dragOptions() {
+            return {
+                animation: 200,
+                group: "description",
+                disabled: false,
+                ghostClass: "ghost"
+            };
+        }
     },
 
     methods: {
+        dragStart() {
+            this.drag = false;
+        },
+        dragEnd() {
+            this.drag = false;
+            this.$emit('updated');
+        },
+
+        ensureKeys(items) {
+            //draggable really want unique id for each items
+            items.forEach(item=>{
+                if(!item.id) item.id = Math.random().toString();
+            });
+            return items;
+        },
+
         moveup(item) {
             const idx = this.group.items.indexOf(item);
             this.group.items[idx] = this.group.items[idx-1];
@@ -277,5 +326,15 @@ export default {
 }
 .group-root.group-open > .draggable {
     min-height: inherit;
+}
+.flip-list-move {
+  transition: transform 0.5s;
+}
+.no-move {
+  transition: transform 0s;
+}
+.ghost {
+  opacity: 0.5;
+  background: #c8ebfb;
 }
 </style>

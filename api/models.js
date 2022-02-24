@@ -734,6 +734,9 @@ var ruleSchema = mongoose.Schema({
     //any tags to look for each input id (object with key(output id)=>array(tags))
     input_tags: mongoose.Schema.Types.Mixed,
 
+    //count of object that should match for each intput id for the rule to be submitted
+    input_multicount: mongoose.Schema.Types.Mixed,
+
     //if user wants to override where the input data comes from, specify projects IDs keyed by input id
     input_project_override: mongoose.Schema.Types.Mixed,
 

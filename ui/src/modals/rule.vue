@@ -85,6 +85,8 @@
                         <div slot="header">
                             <small class="text-muted" style="float: right">{{input.id}}</small>
                             <datatypetag :datatype="input.datatype" :tags="input.datatype_tags"/>
+                            <b v-if="input.multi">multi</b>
+
                             <span class="text-muted" v-if="input.optional">(optional)</span>
                             <div class="button" v-if="!input.edit_extra_tags" @click="edit_etag(input)" style="position: absolute; top: 7px;"><icon name="plus" scale="0.8"/></div>
                             <tageditor v-if="input.edit_extra_tags" v-model="rule.extra_datatype_tags[input.id]" placeholder="(enter extra datatype tags)" style="margin-top: 2px;"/>
@@ -94,6 +96,18 @@
                             <b-form-checkbox v-model="rule.input_selection[input.id]" value="ignore">Do not use this input</b-form-checkbox>
                             <small class="text-muted">This is an optional field. Apps will be submitted without this input</small>
                         </p>
+
+                        <p v-if="input.multi">
+                            <b-row>
+                                <b-col>
+                                    Mutiple Input Object Count
+                                </b-col>
+                                <b-col :cols="9">
+                                    <b-form-input v-model="rule.input_multicount[input.id]" placeholder="Expected number of objects for each subject/session for this input" />
+                                </b-col>
+                            </b-row>                        
+                        </p>
+                        
                         <div v-if="rule.input_selection[input.id] != 'ignore'">
                             <b-row>
                                 <b-col>
@@ -435,6 +449,7 @@ export default {
                 input_project_override: {},
                 input_subject: {},
                 input_session: {},
+                input_multicount: {},
 
                 input_selection: {},
                 extra_datatype_tags: {},
@@ -453,6 +468,7 @@ export default {
                 if(!this.rule.input_project_override[input.id]) Vue.set(this.rule.input_project_override, input.id, null);
                 if(!this.rule.input_subject[input.id]) Vue.set(this.rule.input_subject, input.id, null);
                 if(!this.rule.input_session[input.id]) Vue.set(this.rule.input_session, input.id, null);
+                if(!this.rule.input_multicount[input.id]) Vue.set(this.rule.input_multicount, input.id, null);
                 if(!this.rule.extra_datatype_tags[input.id]) Vue.set(this.rule.extra_datatype_tags, input.id, []);
 
                 if(!this.rule.input_tags_count[input.id]) Vue.set(this.rule.input_tags_count, input.id, null);
@@ -491,18 +507,21 @@ export default {
             var input_tags = {};
             var output_tags = {};
             var input_subject = {};
+            var input_multicount = {};
             var input_session = {};
             var input_project_override = {};
 
             input_ids.forEach(id=>{
                 if(this.rule.input_tags[id].length > 0) input_tags[id] = this.rule.input_tags[id];
                 input_subject[id] = this.rule.input_subject[id];
+                input_multicount[id] = this.rule.input_multicount[id];
                 input_session[id] = this.rule.input_session[id];
                 input_project_override[id] = this.rule.input_project_override[id];
             });
 
             remove_null(input_project_override);
             remove_null(input_subject);
+            remove_null(input_multicount);
             remove_null(input_session);
 
             output_ids.forEach(id=>{
@@ -521,6 +540,7 @@ export default {
                 output_tags,
                 input_project_override,
                 input_subject,
+                input_multicount,
                 input_session,
                 app: this.rule.app._id, //unpopulate
             });

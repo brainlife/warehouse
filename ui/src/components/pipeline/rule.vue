@@ -47,6 +47,9 @@
                             :clickable="false"/>
                         <!--<small>({{input.id}})</small>-->
                         <small v-for="(tag,idx) in rule.input_tags[input.id]" :key="idx"> | {{tag}} </small>
+                        <b-badge v-if="input.multi && rule.input_multicount[input.id]" title="number of expected objects">
+                            multi <b>{{rule.input_multicount[input.id]}}</b>
+                        </b-badge>
                     </div>
                     &nbsp;
                 </div>
