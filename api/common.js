@@ -964,27 +964,11 @@ exports.update_dataset_stats = async function(project_id, cb) {
 //update the secondary metadata for group analysis datatypes
 //(removed will set to true if it's removed - but we don't remove files)
 exports.updateSecondaryInventoryInfo = async function(dataset_id) {
-    /*
-    if(!dataset.datatype) {
-        console.error("dataset", dataset._id, "doesn't have datatype field set");
-        return;
-    }
-    */
     const dataset = await db.Datasets.findOne({_id: dataset_id}).populate([
         {path: 'datatype', select: 'groupAnalysis name desc files'},
         {path: 'project', select: 'group_id'},
-    ]).lean()
+    ]);
 
-    //I need the full data
-    //console.log("looking up to see if this is for groupanalysis", dataset.datatype);
-    //const datatype = await db.Datatypes.findById(dataset.datatype); //should I cache?
-    /*
-    dataset._datatype = {
-            name: datatype.name,
-            desc: datatype.desc,
-            files: datatype.files,
-    };
-    */
     if(!dataset.datatype.groupAnalysis) return; //not group analysis
 
     const project = await db.Projects.findById(dataset.project);
@@ -1001,14 +985,10 @@ exports.updateSecondaryInventoryInfo = async function(dataset_id) {
         //output without validator
         dataset._secondaryPath = p.task.instance_id+"/"+p.task._id+"/"+p.subdir;
     }
-    /*
-    if(!fs.existsSync(dir+"/"+dataset._secondaryPath)) {
-        console.info("invalid secondary path (not stored?) .. skipping meta", dir+"/"+dataset._secondaryPath);
-        return;
-    }
-    */
+    await dataset.save();
+
     await new Promise((resolve, reject)=>{
-        console.debug(path);
+        //console.debug(path);
         config.groupanalysis.getSecondaryUploadStream(path, (err, stream)=>{
             if(err) return reject(err);
             stream.write(JSON.stringify(dataset, null, 4));

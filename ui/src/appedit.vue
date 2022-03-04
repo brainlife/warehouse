@@ -369,7 +369,7 @@
                                     </div>
                                 </div>
                                 <b-form-checkbox v-model="input.optional">
-                                    Optional Configuration
+                                    Optional
                                     <small class="text-muted">user can submit this App without this input specified</small>
                                 </b-form-checkbox>
                                 <b-form-checkbox v-model="input.multi">

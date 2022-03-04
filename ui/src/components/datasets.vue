@@ -1,11 +1,23 @@
 <template>
 <div>
     <div :class="{rightopen: selected_count}">
-        <div v-if="loading" class="loading" :class="{sidemenuwide: $root.sidemenuWide}"><icon name="cog" spin scale="2"/></div>
+        <div v-if="loading || query || total_datasets > 0" style="float: right; padding: 5px 10px; position: relative; z-index: 1;">
+            <b-form-input id="filter"
+                class="filter"
+                :class="{'filter-active': query != ''}"
+                size="sm"
+                v-model="query"
+                placeholder="Filter"
+                @input="change_query"/>
+        </div>
 
-        <div v-if="!loading && total_datasets == 0" style="margin: 20px; opacity: 0.8;">
+        <div v-if="loading" class="loading" :class="{sidemenuwide: $root.sidemenuWide}">
+            <icon name="cog" spin scale="2"/>
+        </div>
+
+        <div v-if="!loading && !query && total_datasets == 0" style="margin: 20px; opacity: 0.8;">
             <p>This project has no archived data.</p>
-            
+
             <div v-if="isadmin() || ismember()">
                 <p>You can add data to this project by doing one of the following.</p>
 
@@ -54,11 +66,7 @@
             </div>
         </div>
 
-        <div v-if="!loading && total_datasets > 0" class="table-header onRight">
-            <div style="float: right; position: relative; top: 4px;">
-                <b-form-input id="filter" class="filter" :class="{'filter-active': query != ''}" size="sm" v-model="query" placeholder="Filter" @input="change_query_debounce"></b-form-input>
-            </div>
-
+        <div v-if="query || total_datasets > 0" class="table-header onRight">
             <div style="padding: 5px 0px; margin-bottom: 10px;">
                 <b>{{total_subjects}}</b> Subjects &nbsp;&nbsp;&nbsp; <b>{{total_datasets}}</b> Objects
                 <span v-if="total_size">({{total_size|filesize}})</span>
@@ -82,8 +90,7 @@
             </b-row>
         </div>
 
-        <div v-if="!loading && total_datasets > 0" class="page-content" ref="scrolled-area" @scroll="page_scrolled">
-
+        <div v-if="total_datasets > 0" class="page-content" ref="scrolled-area" @scroll="page_scrolled">
             <!--the list-->
             <div v-for="(page, page_idx) in pages" v-if="datatypes" :key="page_idx" style="font-size: 11px;">
                 <div v-if="page_info[page_idx] && !page_info[page_idx].visible" :style="{'height': page_info[page_idx].height+'px'}">
@@ -207,14 +214,14 @@ import datatypesMixin from '@/mixins/datatypes'
 const async = require('async');
 
 let query_debounce = null;
-let scroll_debounce = null;
+//let scroll_debounce = null;
 
 import ReconnectingWebSocket from 'reconnectingwebsocket'
 
 import axios from 'axios'
 
 const CancelToken = axios.CancelToken;
-const source = CancelToken.source();
+let source = null;
 
 export default {
     mixins: [
@@ -246,8 +253,8 @@ export default {
             selected: {}, //grouped by datatype_id, then array of datasets also keyed by dataset id
             last_dataset_checked: null,
 
-            query: "", //localStorage.getItem('datasets.query'), //I don't think I should persist .. causes more confusing
-            ws: null, //websocket
+            query: "",
+            ws: null,
             removing: false,
 
             //cache
@@ -274,7 +281,7 @@ export default {
             });
             return result;
         },
-        
+
         selected_count() {
             return Object.keys(this.selected).length;
         },
@@ -320,6 +327,7 @@ export default {
         this.loadDatatypes({}, err=>{
             if(err) console.error(err);
             this.reload();
+            this.subscribe();
         });
         this.applyParticipants();
     },
@@ -329,17 +337,17 @@ export default {
     },
 
     watch: {
+        /*
         //when user select different project, this gets called (mounted() won't be called anymore)
         project(nv, ov) {
             if(nv == ov) return; //why does this happen?
             this.query = ""; //clear query to avoid confusion
-            if(this.loading) {
-                //console.log("canceling load");
-                source.cancel('cancel due to project navigation');
-                this.loading = false;
-            }
-            this.reload();
+            //if(source) source.cancel('cancel due to project navigation');
+            this.reload(err=>{
+                this.subscribe();
+            });
         },
+        */
 
         participants() {
             this.applyParticipants();
@@ -375,6 +383,8 @@ export default {
         },
 
         reload() {
+            console.log("reloading..");
+
             this.pages = [];
             this.page_info = [];
             this.last_groups = {};
@@ -382,23 +392,32 @@ export default {
             this.total_datasets = null;
             this.total_size = null;
             this.total_subjects = null;
-            this.load();
 
-            //get number of subjects stored 
-            this.$http.get('dataset/distinct', {params: {
-                find: JSON.stringify(this.get_mongo_query()),
-                distinct: 'meta.subject'
-            }}).then(res=>{
-                this.total_subjects = res.data.length;
-            }).catch(res=>{
-                this.$notify({type: 'error', text: res.data.message || JSON.stringify(res.data)});
+            this.load(err=>{
+                if(err) {
+                    console.error(err);
+                    return;
+                }
+
+                //TODO - can we move this under load()?
+                //get number of subjects stored 
+                this.$http.get('dataset/distinct', {params: {
+                    find: JSON.stringify(this.get_mongo_query()),
+                    distinct: 'meta.subject'
+                }}).then(res=>{
+                    this.total_subjects = res.data.length;
+                }).catch(res=>{
+                    this.$notify({type: 'error', text: res.data.message || JSON.stringify(res.data)});
+                });
             });
+        },
 
-            var url = Vue.config.event_ws+"/subscribe?jwt="+Vue.config.jwt;
+        subscribe() {
             if(this.ws) this.ws.close();
+            console.log("subscribing to dataset update")
+            var url = Vue.config.event_ws+"/subscribe?jwt="+Vue.config.jwt;
             this.ws = new ReconnectingWebSocket(url, null, {/*debug: Vue.config.debug,*/ reconnectInterval: 3000});
             this.ws.onopen = (e)=>{
-
                 //TODO - maybe I should listen to this in project.vue? components/process.vue also listens to dataset events
                 this.ws.send(JSON.stringify({
                     bind: {
@@ -413,9 +432,8 @@ export default {
                 if(this.removing) return; //ignore rush of removed datasets events that slows down UI update
                 let dataset = event.msg;
 
-                let routingKey = event.dinfo.routingKey; //"dataset.update.1.5aaeb3dc7bc1.5e309"
+                let routingKey = event.dinfo.routingKey;
                 let dataset_id = routingKey.split(".")[4];
-                //console.log(routingKey, dataset_id);
 
                 //look for the dataset
                 this.pages.forEach(page=>{
@@ -426,7 +444,6 @@ export default {
                         if(old_dataset) break;
                     }
                     if(old_dataset) {
-                        //console.log("updating");
                         //apply updates (don't apply all changes.. it could blow up populated field)
                         if(dataset.desc !== undefined) old_dataset.desc = dataset.desc;
                         if(dataset.tags) old_dataset.tags = dataset.tags;
@@ -440,14 +457,16 @@ export default {
                 });
             }
         },
-        
+
         page_scrolled() {
             let e = this.$refs["scrolled-area"];
             var scroll_top = e.scrollTop;
             var client_height = e.clientHeight;
             var page_margin_bottom = e.scrollHeight - scroll_top - client_height;
             if (page_margin_bottom < 2000) {
-                this.load();
+                this.load(err=>{
+                    if(err) console.error(err);
+                });
             }
 
             //hide page that's not in the view
@@ -478,17 +497,12 @@ export default {
                         subject_e.offsetTop-1000 > scroll_top+client_height) continue; //out of view
                     this.visible_subjects.push(subject);
                 }
-            }  
-        },
-
-        change_query_debounce() {
-            clearTimeout(query_debounce);
-            query_debounce = setTimeout(this.change_query, 300);        
+            }
         },
 
         change_query() {
-            if(this.loading) return setTimeout(this.change_query, 300);
-            this.reload();
+            clearTimeout(query_debounce);
+            query_debounce = setTimeout(this.reload, 300);
         },
 
         get_mongo_query() {
@@ -516,10 +530,10 @@ export default {
                     function compose_ors(q) {
                         if(q.startsWith("session:")) {
                             return [{"meta.session": q.substring(8)}];
-                        } 
+                        }
                         if(q.startsWith("subject:")) {
                             return [{"meta.subject": q.substring(8)}];
-                        } 
+                        }
 
                         return [
                             {"meta.subject": {$regex: q, $options: 'i'}},
@@ -542,8 +556,7 @@ export default {
             return finds;
         },
 
-        load() {
-            if(this.loading) return;
+        load(cb) {
 
             //count number of datasets already loaded
             var loaded = 0;
@@ -555,9 +568,8 @@ export default {
             for(var subject in this.last_groups) {      
                 loaded += this.last_groups[subject].length;
             }
-            if(loaded === this.total_datasets) return;
+            if(loaded === this.total_datasets) return cb()
 
-            this.loading = true;
             let query = this.get_mongo_query();
             //add "skip" statements. The actual mongo skip is too slow
             if(this.last_meta) {
@@ -580,17 +592,12 @@ export default {
                         }
                     ];
                 }
-                /*
-                if(this.last_meta.subject) or.push({
-                    "meta.subject": {$gte: this.last_meta.subject},
-                });
-                if(this.last_meta.session) or.push({
-                    "meta.subject": this.last_meta.subject,
-                    "meta.session": {$gte: this.last_meta.session},
-                });
-                */
             }
 
+            if(source) source.cancel('cancel previous loading');
+
+            this.loading = true;
+            source = CancelToken.source();
             this.$http.get('dataset', {
                 params: {
                     find: JSON.stringify(query),
@@ -601,7 +608,6 @@ export default {
                 cancelToken: source.token
             })
             .then(res=>{
-                this.loading = false;
                 if(this.last_meta == null)  {
                     this.total_datasets = res.data.count;
                     this.total_size = res.data.size;
@@ -626,7 +632,6 @@ export default {
                     if(!duplicate) {
                         //dataset.desc = (loaded+1)+" "+dataset.sec; //debug
                         groups[group].push(dataset);
-                        //console.log(group, dataset.desc);
                         loaded++;
                     }
                 });
@@ -643,15 +648,21 @@ export default {
 
                 this.$nextTick(this.rememberHeights);
                 this.loading = false;
+                cb();
             }, err=>{
                 this.loading = false;
-                console.error(err);
+                cb(err);
             });
         },
 
         rememberHeights() {
             //remember the page height
-            var h = this.$refs["scrolled-area"].scrollHeight;
+            const e = this.$refs["scrolled-area"];
+            if(!e) {
+                console.error("no scrolled-area");
+                return;
+            }
+            const h = e.scrollHeight;
             var prev = 0;
             if(this.pages.length > 1) prev = this.page_info[this.pages.length-2].bottom;
             let info = {

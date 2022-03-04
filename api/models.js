@@ -520,6 +520,8 @@ var datasetSchema = mongoose.Schema({
     //validator_task_id: String, //task id for dtv used to validate the output
     //secondary_task_id: String, //task id for app-archive-secondary task used to store secondary output
 
+    _secondaryPath: String, //set by common/updateSecondaryInventoryInfo (not used for anything yet..)
+
     download_count: { type: Number, default: 0}, //number of time this dataset was downloaded
 
     create_date: { type: Date, default: Date.now }, //date when this dataset was registered
