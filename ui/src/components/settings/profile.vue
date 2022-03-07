@@ -157,7 +157,7 @@
                 <span class="form-header">CV</span>
             </b-col>
             <b-col>
-                <b-form-input v-model="profile.public.cv" placeholder="(Optional) If you have a CV, please enter a URL here."/>
+                <b-form-input v-model.trim="profile.public.cv" placeholder="(Optional) If you have a CV, please enter a URL here."/>
                 <br>
             </b-col>
         </b-row>

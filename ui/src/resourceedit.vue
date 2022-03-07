@@ -81,7 +81,7 @@
                         <span class="form-header">Avatar</span>
                     </b-col> 
                     <b-col cols="9">
-                        <b-input type="text" v-model="resource.avatar" placeholder="Avatar URL"/>
+                        <b-input type="text" v-model.trim="resource.avatar" placeholder="Avatar URL"/>
                         <br>
                     </b-col>
                 </b-row>
@@ -116,9 +116,9 @@
                     <b-col cols="9">
                         <p>
                             <b-input-group prepend="Username *">
-                                <b-form-input v-model="resource.config.username"></b-form-input>
+                                <b-form-input v-model.trim="resource.config.username"></b-form-input>
                                 <b-input-group-prepend is-text>Hostname *</b-input-group-prepend>
-                                <b-form-input v-model="resource.config.hostname"></b-form-input>
+                                <b-form-input v-model.trim="resource.config.hostname"></b-form-input>
                             </b-input-group>
                             <small>Login node used to access this resource</small>
                         </p>
@@ -130,7 +130,7 @@
                         </p>
                         <p>
                             <b-input-group prepend="Workdir *">
-                                <b-form-input v-model="resource.config.workdir"></b-form-input>
+                                <b-form-input v-model.trim="resource.config.workdir"></b-form-input>
                             </b-input-group>
                             <small>Shared directory to host instance and task directories.</small>
                         </p>
@@ -283,7 +283,7 @@ export default {
             });
         } else {
             this.resource = {
-                _id: null, 
+                _id: null,
                 active: true,
                 admins: [Vue.config.user.sub],
                 name: "untitled",
@@ -386,8 +386,6 @@ export default {
                 this.submitting = false;
                 return;
             }
-            this.resource.config.username = this.resource.config.username.trim();
-            this.resource.config.hostname = this.resource.config.hostname.trim();
 
             if(this.resource._id) {
                 //update

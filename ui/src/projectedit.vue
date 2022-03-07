@@ -52,7 +52,7 @@
                         <span class="form-header">Avatar</span>
                     </b-col> 
                     <b-col cols="9">
-                        <b-input type="text" v-model="project.avatar" placeholder="Image URL for the project avatar (if not set, randomly generate)"/>
+                        <b-input type="text" v-model.trim="project.avatar" placeholder="Image URL for the project avatar (if not set, randomly generate)"/>
                         <p class="text-muted"><small>You can try choosing an image from websites like https://picsart.com/</small></p>
                     </b-col>
                 </b-row>
