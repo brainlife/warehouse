@@ -359,7 +359,7 @@ export default {
         },
 
         newinstance() {
-            var desc = prompt("Please enter process description");
+            let desc = prompt("Please enter process description");
             if(!desc) return;
             this.$http.post(Vue.config.wf_api+'/instance', {
                 desc,
@@ -370,7 +370,7 @@ export default {
             }).then(res=>{
                 let instance = res.data;
                 //sometimes websocket get delivered before this callback..
-                var idx = this.instances.findIndex(i=>i._id == instance._id);
+                let idx = this.instances.findIndex(i=>i._id == instance._id);
                 if(~idx) {
                     console.log("websocket beat me!")
                     this.toggle_instance(this.instances[idx]);
@@ -390,7 +390,7 @@ export default {
         },
 
         load_instances(cb) {
-            this.instances = null; 
+            this.instances = null;
             if(!this.project.group_id) {
                 this.instances = [];
                 return; //can't load for non-group project..
@@ -421,7 +421,7 @@ export default {
                 if(cb) cb();
             }).catch(cb);
         },
-        
+
         subscribe_instance_update(cb) {
             if(this.ws) this.ws.close();
             var url = Vue.config.event_ws+"/subscribe?jwt="+Vue.config.jwt;
@@ -430,7 +430,7 @@ export default {
                 this.ws.send(JSON.stringify({
                     bind: {
                         ex: "wf.instance",
-                        key: this.project.group_id+".#", 
+                        key: this.project.group_id+".#",
                     }
                 }));
                 if(cb) cb();
@@ -451,8 +451,8 @@ export default {
                         //new instance created by other user?
                         this.instances.unshift(event.msg);
                     }
-                } 
-                if(event.error) {   
+                }
+                if(event.error) {
                     console.error("failed to subscribe to instance event:", event.error);
                     this.notify_error(event.error);
                 }
@@ -658,8 +658,8 @@ display: inline-block;
 overflow-x: hidden;
 }
 .process-count {
-margin-top: 5px; 
-margin-left: 10px; 
+margin-top: 5px;
+margin-left: 10px;
 display: inline-block;
 }
 @media (max-width: 1000px) {
