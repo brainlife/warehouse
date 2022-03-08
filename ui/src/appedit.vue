@@ -65,7 +65,7 @@
                         <span class="form-header">Avatar</span>
                     </b-col> 
                     <b-col>
-                        <b-form-input type="text" v-model="app.avatar" placeholder="Image URL of application avatar"/>
+                        <b-form-input type="text" v-model.trim="app.avatar" placeholder="Image URL of application avatar"/>
                         <br>
                     </b-col>
                 </b-row>
@@ -90,7 +90,7 @@
                         <b-row>
                             <b-col cols="7">
                                 <b-input-group prepend="https://github.com/">
-                                    <b-form-input type="text" v-model="app.github" placeholder="github-org/app-name" required/>
+                                    <b-form-input type="text" v-model.trim="app.github" placeholder="github-org/app-name" required/>
                                 </b-input-group>
                                 <!--<small v-if="app.github" class="text-danger">No such repository found.</small>-->
                             </b-col>
