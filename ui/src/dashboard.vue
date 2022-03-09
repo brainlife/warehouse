@@ -37,14 +37,13 @@
                         </td>
                         <td>
                             <span class="status-color" :class="task.status" style="padding: 3px" :title="task.status">
-                                <statusicon :status="task.status" /> 
-                                <!--<span style="text-transform: uppercase;" >{{task.status}}</span>-->
+                                <statusicon :status="task.status" />
                             </span>
-                            <small>{{task.status_msg}}</small>
+                            <small style="word-break: break-all;">{{task.status_msg}}</small>
                             <small style="font-size: 70%">{{task._id}}</small>
                         </td>
                         <td>
-                            <contact :id="task.user_id" size="small"/>
+                            <contact :id="task.user_id" size="tiny"/>
                         </td>
                         <td>
                             <span v-if="task._resource">{{task._resource.name}}</span>
@@ -54,9 +53,7 @@
                             <small v-else-if="task.status == 'running'"><time>Started <timeago :datetime="task.start_date" :auto-update="1"/></time></small>
                             <small v-else-if="task.status == 'finished'"><time>Finished <timeago :datetime="task.finish_date" :auto-update="1"/></time></small>
                             <small v-else-if="task.status == 'failed'"><time>Failed <timeago :datetime="task.fail_date" :auto-update="1"/></time></small>
-                            <!--
-                            <small v-else-if="task.status == 'removed'"><time>Removed <timeago :datetime="task.remove_date" :auto-update="1"/></time></small>
-                            -->
+                            <!-- <small v-else-if="task.status == 'removed'"><time>Removed <timeago :datetime="task.remove_date" :auto-update="1"/></time></small> -->
                         </td>
                     </tr>
                     </tbody>

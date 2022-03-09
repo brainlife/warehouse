@@ -53,7 +53,7 @@ export default {
     mounted() {
         this.updateData();
     },
-    
+
     computed: {
         other_product() {
             let all = Object.assign({}, this.product);
@@ -74,7 +74,7 @@ export default {
             if(this.skipFollow) items = this.filterFollow(items);
             return items;
         },
-        
+
         images() {
             if(!this.product.brainlife) return [];
             let items = this.product.brainlife.filter(p=>p.type.startsWith('image/'));
@@ -112,50 +112,12 @@ export default {
                     if(p.type != 'plotly') return;
                     if(p._svg_added) return;
                     p._svg_added = true;
-                    /*
-                    if(!p.options) p.options = {};
-                    p.options.modeBarButtonsToAdd = [];
-
-                    //until my PR gets accepted, we need to resize this ... https://github.com/statnett/vue-plotly/pull/18
-                    p.options.toImageButtonOptions = {
-                        width: 1200,
-                        height: 800,
-                    }
-                    
-                    p.options.modeBarButtonsToAdd.push({
-                        name: 'SVG',
-
-                        //TODO - I should find a better logo for svg export
-                        icon: {
-                            'width': 1792,
-                            'path': 'M1344 1344q0-26-19-45t-45-19-45 19-19 45 19 45 45 19 45-19 19-45zm256 0q0-26-19-45t-45-19-45 19-19 45 19 45 45 19 45-19 19-45zm128-224v320q0 40-28 68t-68 28h-1472q-40 0-68-28t-28-68v-320q0-40 28-68t68-28h465l135 136q58 56 136 56t136-56l136-136h464q40 0 68 28t28 68zm-325-569q17 41-14 70l-448 448q-18 19-45 19t-45-19l-448-448q-31-29-14-70 17-39 59-39h256v-448q0-26 19-45t45-19h256q26 0 45 19t19 45v448h256q42 0 59 39z',
-                            'ascent': 1792,
-                            'descent': 0,
-                        },
-                        click: ()=>{
-                            let plot = this.$refs.plotrefs[this.tab];
-                            plot.downloadImage({format: 'svg'});
-                        }
-                    });
-                    if(!p.layout) p.layout = {};
-                    p.layout.font = Vue.config.plotly.font;
-                    */
                 });
             }
         },
     },
 
     watch: {
-        /*
-        tab() {
-            this.$nextTick(()=>{
-                if(!this.$refs.plotrefs) return; //console.log("plotrefs not set (yet?)");
-                //let p = this.$refs.plotrefs[this.tab];
-                //if(p) p.newPlot(); //this causes it to be resized
-            });
-        },
-        */
-
         product(nv, ov) {
             this.updateData();
         },

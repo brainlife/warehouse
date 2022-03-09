@@ -688,5 +688,10 @@ https://stackoverflow.com/questions/14942081/detect-if-a-browser-in-a-mobile-dev
 #notebook-container.container {
     width: 100px;
 }
+.badge {
+    font-size: 80%;
+    position: relative;
+    top: -1px;
+}
 
 </style>

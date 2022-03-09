@@ -250,6 +250,7 @@ function handle_task(task, cb) {
                 return next();
             } 
 
+
             //handle validator submission
             async.eachSeries(task.config._outputs, async (output)=>{
 

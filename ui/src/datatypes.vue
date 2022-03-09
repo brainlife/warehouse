@@ -95,6 +95,7 @@ export default {
         this.$http.get('datatype', {params: {
             sort: 'name',
             select: 'name desc admins files groupAnalysis validator',
+            limit: 1000,
         }})
         .then(res=>{
             this.datatypes = res.data.datatypes;

@@ -106,6 +106,7 @@
                                 </b-col>
                             </b-row>
 
+                            {{secondary}}
                             <b-row v-if="secondary && product">
                                 <b-col cols="2">
                                     <span class="form-header">Secondary</span>
@@ -193,37 +194,47 @@
                             <b-row>
                                 <b-col cols="2"><span class="form-header">Archived in</span></b-col>
                                 <b-col>
-                                    <p>
-                                        <span v-if="dataset.status == 'stored'">
-                                            <b>{{dataset.storage}}</b>
-                                            <span v-if="dataset.storage_config && dataset.storage_config.path" style="opacity: 0.8; font-weight: normal; font-size: 90%">{{dataset.storage_config.path}}</span>
-                                            <span v-if="dataset.storage == 'copy'">
-                                                from <b>{{dataset.storage_config.project.name}}</b> project
-                                                stored in ({{dataset.storage_config.storage}})
-                                            </span>
-                                            <span class="text-muted" v-if="dataset.size">({{dataset.size | filesize}})</span>
-                                            <div v-if="dataset.storage == 'url'">
-                                                <b-row v-for="file in dataset.storage_config.files" :key="file.id">
-                                                    <b-col cols="2">{{file.local}}</b-col>
-                                                    <b-col><a :href="file.url">{{file.url}}</a></b-col>
-                                                </b-row>
-                                            </div>
-                                        </span> 
-                                        <span v-if="(dataset.status == 'failed' || dataset.status == 'storing')">
-                                            <task :task="dataset.archive_task" v-if="dataset.archive_task"/>
-                                            <span v-else class="text-muted"><icon name="cog" spin/> {{dataset.status_msg}}</span>
-                                        </span> 
-                                        <span v-if="!dataset.status">
-                                            Status is unknown
-                                        </span> 
-                                        <span title="Backup of this data-object exists in Scholarly Data Archive (SDA) system." v-if="dataset.backup_date" class="text-success">
-                                            <b-badge variant="success"><icon name="archive" scale="0.7"/> SDA Backup</b-badge>
+                                    <span v-if="dataset.status == 'stored'">
+                                        <b>{{dataset.storage}}</b>
+                                        <span v-if="dataset.storage_config && dataset.storage_config.path" style="opacity: 0.8; font-weight: normal; font-size: 90%">{{dataset.storage_config.path}}</span>
+                                        <span v-if="dataset.storage == 'copy'">
+                                            from <b>{{dataset.storage_config.project.name}}</b> project
+                                            stored in ({{dataset.storage_config.storage}})
                                         </span>
+                                        <small class="text-muted" v-if="dataset.size">({{dataset.size | filesize}})</small>
+                                        <div v-if="dataset.storage == 'url'">
+                                            <b-row v-for="file in dataset.storage_config.files" :key="file.id">
+                                                <b-col cols="2">{{file.local}}</b-col>
+                                                <b-col><a :href="file.url">{{file.url}}</a></b-col>
+                                            </b-row>
+                                        </div>
+                                    </span> 
+                                    <span v-if="(dataset.status == 'failed' || dataset.status == 'storing')">
+                                        <task :task="dataset.archive_task" v-if="dataset.archive_task"/>
+                                        <span v-else class="text-muted"><icon name="cog" spin/> {{dataset.status_msg}}</span>
+                                    </span> 
+                                    <span v-if="!dataset.status">
+                                        Status is unknown
+                                    </span> 
+                                    <span title="Backup of this data-object exists in Scholarly Data Archive (SDA) system." v-if="dataset.backup_date" class="text-success">
+                                        <b-badge variant="success"><icon name="archive" scale="0.7"/> SDA Backup</b-badge>
+                                    </span>
 
-                                        <p v-if="dataset.archive_task_id"><small>{{dataset.archive_task_id}}</small></p>
+                                    <span v-if="dataset.archive_task_id"><small><b>Archive Task Id:</b> {{dataset.archive_task_id}}</small></span>
+                                    <b-badge v-if="dataset._secondaryPath" title="The output data is available for jupyter notebook under Analysis tab.">
+                                        Ready for Analysis
+                                    </b-badge>
+        
+                                    <!--exprerimental info for nginx exposed secondary-->
+                                    <p v-if="dataset._secondaryPath && dataset.datatype.name == 'report/html'" style="padding: 10px 0;">
+                                        <a :href="'/participants/'+dataset.project.group_id+'/'+dataset._secondaryPath+'/html/'" :target="dataset._id">Participant URL (only for certain project)</a>
                                     </p>
+                
+                                    <br>
+                                    <br>
                                 </b-col>
                             </b-row>
+
                             <b-row>
                                 <b-col cols="2"><span class="form-header">Archived by</span></b-col>
                                 <b-col>
@@ -233,6 +244,7 @@
                                     </p>
                                 </b-col>
                             </b-row>
+
                             <b-row v-if="dataset.download_count">
                                 <b-col cols="2"><span class="form-header">Download Count</span></b-col>
                                 <b-col>
