@@ -106,7 +106,6 @@
                                 </b-col>
                             </b-row>
 
-                            {{secondary}}
                             <b-row v-if="secondary && product">
                                 <b-col cols="2">
                                     <span class="form-header">Secondary</span>
