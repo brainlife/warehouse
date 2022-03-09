@@ -952,7 +952,7 @@ background-color: #eee;
 .truncate {
 white-space: nowrap;
 overflow: hidden;
-text-overflow: ellipsis; 
+text-overflow: ellipsis;
 }
 .subtitle {
 color: #aaa;
@@ -1055,9 +1055,9 @@ opacity: 1;
 .instance-action {
 float: right;
 }
-.input, 
+.input,
 .output {
-padding: 6px 10px; 
+padding: 6px 10px;
 font-size: 92%;
 position: relative;
 }
@@ -1073,13 +1073,13 @@ opacity: 0.6;
 margin-right: 5px;
 }
 .process-header {
-padding: 10px; 
+padding: 10px;
 padding-left: 0px;
-position: fixed; 
-top: 95px; 
+position: fixed;
+top: 95px;
 left: 600px;
 height: 80px;
-z-index: 7; 
+z-index: 7;
 background-color: #eee;
 }
 

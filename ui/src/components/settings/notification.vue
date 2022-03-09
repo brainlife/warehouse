@@ -6,7 +6,7 @@
                 <span class="form-header">SMS address</span>
             </b-col>
             <b-col cols="7">
-                <b-form-input v-model="profile.private.notification.smsAddress"/>
+                <b-form-input v-model.trim="profile.private.notification.smsAddress"/>
                 <p style="opacity: 0.8;font-size: 90%; padding: 10px 0;">
                     We send SMS messages through this email2SMS gateway. 
                     For example, for AT&T, please use address such as <i>1234560000@mms.att.net</i>. 
