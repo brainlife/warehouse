@@ -1,5 +1,6 @@
 <template>
-<b-modal size="xl" id='modal-rule' :title="title" @hidden="hidden" @ok="submit">
+<b-modal size="xl" id='modal-rule' :title="title" @hidden="hidden" @ok="ok">
+<b-form @submit.stop.prevent="submit">
     <b-tabs class="brainlife-tab" v-model="tab">
         <b-tab title="App">
             <b-alert variant="secondary" :show="numJobsRunning > 0" style="border: none; margin-bottom: 0">
@@ -99,10 +100,8 @@
 
                         <p v-if="input.multi">
                             <b-row>
-                                <b-col>
-                                    Mutiple Input Object Count
-                                </b-col>
-                                <b-col :cols="9">
+                                <b-col>Mutiple Input Object Count *</b-col>
+                                <b-col :cols="8">
                                     <b-form-input v-model="rule.input_multicount[input.id]" placeholder="Expected number of objects for each subject/session for this input" />
                                 </b-col>
                             </b-row>                        
@@ -116,7 +115,7 @@
                                         <small class="text-muted">Instead of using data from the same subject/session, you can look for data from different project, or different subject/session.</small>
                                     </p>
                                 </b-col>
-                                <b-col :cols="9">
+                                <b-col :cols="8">
                                     <p>
                                         <projectselecter v-model="rule.input_project_override[input.id]" placeholder="(From this project)"/>
                                     </p>
@@ -135,7 +134,7 @@
                                         <small class="text-muted">Look for data with specific object tags (<b>not datatype tag!</b>)</small>
                                     </p>
                                 </b-col>
-                                <b-col :cols="9">
+                                <b-col :cols="8">
                                     <p>
                                         <tageditor v-model="rule.input_tags[input.id]" placeholder="(any tags)" :options="input_dataset_tags[input.id]"/>
                                     </p>
@@ -191,6 +190,7 @@
             </b-container>
         </b-tab>
     </b-tabs>
+</b-form>
 </b-modal>
 </template>
 
@@ -199,7 +199,7 @@
 import Vue from 'vue'
 import search_app_mixin from '@/mixins/searchapp'
 import ReconnectingWebSocket from 'reconnectingwebsocket'
-//import appcache from '@/mixins/appcache'
+//import { validationMixin } from "vuelidate";
 
 const lib = require('@/lib');
 
@@ -213,7 +213,7 @@ function remove_null(obj) {
 }
 
 export default {
-    mixins: [ search_app_mixin, /*appcache*/ ],
+    mixins: [ search_app_mixin ],
     components: { 
         projectselecter: ()=>import('@/components/projectselecter'),
         branchselecter: ()=>import('@/components/branchselecter'),
@@ -500,7 +500,14 @@ export default {
             }
         },
 
+        ok(modal) {
+            modal.preventDefault();
+            this.submit(); 
+        },
+
         submit() {
+
+
             //clean up _tags, and input_project_override that shouldn't exist
             var input_ids = this.rule.app.inputs.map(it=>it.id);
             var output_ids = this.rule.app.outputs.map(it=>it.id);
@@ -511,8 +518,25 @@ export default {
             var input_session = {};
             var input_project_override = {};
 
+            ////////////////////////////////////////////////////////////////////////////////////////
+            //
+            // validate
+            //
+            let valid = true;
             input_ids.forEach(id=>{
-                if(this.rule.input_tags[id].length > 0) input_tags[id] = this.rule.input_tags[id];
+                if(!this.rule.input_multicount[id]) {
+                    this.$notify({text: "Please specify munti input count for "+id, type: 'error'});
+                    valid = false;
+                }
+            });
+            if(!valid) return;
+            //
+            ////////////////////////////////////////////////////////////////////////////////////////
+
+            input_ids.forEach(id=>{
+                //if(this.rule.input_tags[id].length > 0) input_tags[id] = this.rule.input_tags[id];
+                input_tags[id] = this.rule.input_tags[id];
+
                 input_subject[id] = this.rule.input_subject[id];
                 input_multicount[id] = this.rule.input_multicount[id];
                 input_session[id] = this.rule.input_session[id];
@@ -525,7 +549,8 @@ export default {
             remove_null(input_session);
 
             output_ids.forEach(id=>{
-                if(this.rule.output_tags[id].length > 0) output_tags[id] = this.rule.output_tags[id];
+                //if(this.rule.output_tags[id].length > 0) output_tags[id] = this.rule.output_tags[id];
+                output_tags[id] = this.rule.output_tags[id];
             });
 
             //remove config that doesn't belong to specified app (or input)
