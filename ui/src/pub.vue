@@ -9,9 +9,14 @@
                     <icon name="edit" scale="1.25"/>
                 </div>
                 <projectavatar :project="pub.project" :height="125" :width="125"/>
+                <div class='altmetric-embed'
+                    data-badge-type-dis='donut'
+                    data-badge-popover="left"
+                    data-hide-no-mentions="true"
+                    :data-doi="pub.doi||config.debug_doi"></div>
                 <br>
                 <br>
-                <div v-if="pub.tags.length > 0"> 
+                <div v-if="pub.tags.length > 0">
                     <div class="content-subheader border-bottom">Topics</div>
                     <p style="line-height: 200%; margin-bottom: 0px;">
                         <b-badge v-for="topic in pub.tags" :key="topic" class="topic">{{topic}}</b-badge>
@@ -98,7 +103,6 @@
                     </div>
                     <br>
                 </div>
-
                 <div class="content-subheader clickable" @click="jump('license')">
                     License<br>
                     <div style="margin-top: 5px; opacity: 0.8; font-weight: normal;">{{pub.license}}</div>
@@ -292,7 +296,6 @@
                             </center>
                         </b-col>   
                     </b-row>    
-
                     <hr>
                     <a name="disqus"/>
                     <vue-disqus shortname="brain-life" :identifier="pub._id"/>
@@ -412,6 +415,10 @@ export default {
                 this.participants_columns = pres.data.columns||{}; 
             }
         }
+        Vue.nextTick(()=>{
+            console.log("initializing altmetric embed")
+            _altmetric_embed_init(this.$el);
+        });
     },
 
     updated() {
