@@ -91,7 +91,7 @@ export default {
                 console.error(err);
             });
         },
-        
+
         clearQuery() {
             this.query = ''
             this.changeQuery();
@@ -99,7 +99,7 @@ export default {
 
         changeQueryDebounce() {
             clearTimeout(queryDebounce);
-            queryDebounce = setTimeout(this.changeQuery, 300);        
+            queryDebounce = setTimeout(this.changeQuery, 300);
         },
 
         changeQuery() {
