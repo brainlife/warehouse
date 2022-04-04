@@ -127,9 +127,10 @@
                                 <small v-for="(tag,idx) in output.tags" :key="idx"> | {{tag}}</small>
                             </mute>
 
-                            <div style="display: inline-block;" v-if="datatypes[output.datatype].validator" :title="datatypes[output.datatype].validator">
+                            <div style="display: inline-block;" v-if="datatypes[output.datatype] && datatypes[output.datatype].validator" :title="datatypes[output.datatype].validator">
                                 <small style="opacity: 0.5"><icon name="arrow-right" scale="0.8" style="position: relative; top: -2px;"/> Validate</small>
                             </div>
+                            <span v-if="!datatypes[output.datatype]">Can't find datatype {{output.datatype}}</span>
 
                             <div v-if="output.archive" style="display: inline-block;">
                                 <small style="opacity: 0.5"><icon name="arrow-right" scale="0.8" style="position: relative; top: -2px;"/> Archive</small>
@@ -348,7 +349,12 @@ export default {
             });
         }
 
-        this.$http.get('datatype').then(res=>{
+        //TODO - why aren't we using mixing/datatypes?
+        this.$http.get('datatype', {
+            params: {
+                limit: 1000,
+            }
+        }).then(res=>{
             this.datatypes = {};
             res.data.datatypes.forEach(datatype=>{
                 this.datatypes[datatype._id] = datatype;

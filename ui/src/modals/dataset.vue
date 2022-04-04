@@ -40,8 +40,8 @@
 
             <b-tabs class="brainlife-tab" v-model="tab_index">
                 <b-tab title="Details">
+                    <b-alert :show="dataset.removed" variant="secondary">This data-object has been removed</b-alert>
                     <div class="dataset-detail">
-                        <b-alert :show="dataset.removed" variant="secondary">This data-object has been removed</b-alert>
                         <b-alert :show="!dataset.removed && dataset.status == 'storing'" variant="secondary"><icon name="cog" spin/> Archiving Data-Object.. Please wait for a minute before you can interact with this data-object.</b-alert>
                         <!-- detail -->
                         <div class="margin20">

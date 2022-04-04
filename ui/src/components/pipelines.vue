@@ -111,20 +111,6 @@ export default {
                         name: "", //we don't show name on root
                         open: true,
                         color: "inherit", //root doesn't have any color
-                        /*
-                        items: [
-                            {
-                                type: "group", 
-                                name: "Please rename this group",
-                                open: true,
-                                color: "#f0f0f0", //default
-                                items: [
-                                    //{type: "readme", readme: "Unorganized pipeline rules", _editing: null},
-                                    ...this.rules.filter(r=>!r.removed).map(r=>({type: "rule", ruleId: r._id}))
-                                ]
-                            },
-                        ],
-                        */
                         items: [
                             ...this.rules.filter(r=>!r.removed).map(r=>({type: "rule", ruleId: r._id}))
                         ]
