@@ -524,7 +524,8 @@ export default {
             //
             let valid = true;
             input_ids.forEach(id=>{
-                if(!this.rule.input_multicount[id]) {
+                const input = this.rule.app.inputs.find(input=>input.id == id);
+                if(input.multi && !this.rule.input_multicount[id]) {
                     this.$notify({text: "Please specify munti input count for "+id, type: 'error'});
                     valid = false;
                 }
