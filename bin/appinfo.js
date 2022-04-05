@@ -83,6 +83,7 @@ function handle_app(app, cb) {
                 //cache things from serviceinfo..
                 app.stats.success_rate = info.success_rate;
                 app.stats.users = info.users;
+                app.stats.groups = info.groups;
                 app.stats.runtime_mean = info.runtime_mean;
                 app.stats.runtime_std = info.runtime_std;
                 app.stats.requested =  info.counts.requested,

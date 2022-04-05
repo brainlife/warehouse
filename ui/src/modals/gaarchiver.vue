@@ -149,7 +149,6 @@ export default {
                 instance_id: this.instance._id,
                 name: "Converting notebook to html",
                 service: "brainlife/app-nbconvert",
-                //deps_config: //we can't set deps_config as this.selected might be still running 
                 config: {
                     _public: true,
 

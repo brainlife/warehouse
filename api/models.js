@@ -674,6 +674,7 @@ var appSchema = mongoose.Schema({
     //basic stats for this app (aggregated by bin/appinfo.js - most info comes from amaretti/service/info)
     stats: {
         success_rate: Number, //74.31192660550458,
+        groups: Number, //2,
         users: Number, //2,
         runtime_mean: Number, //4936275.125,
         runtime_std: Number, //3342304.692416079,

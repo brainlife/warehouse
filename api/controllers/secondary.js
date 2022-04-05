@@ -149,13 +149,10 @@ router.get('/:task_id/*', common.jwt({
     //make sure path looks safe
     const clean_p = path.resolve(prefix+"/"+p);
 
-    //console.debug("p", p);
-    console.debug("clean_p", clean_p);
-    //console.debug("prefix", prefix);
+    //console.debug("clean_p", clean_p);
 
     if(!clean_p.startsWith(prefix)) return next("invalid path");
 
-    //const readstream = fs.createReadStream(clean_p);
     config.groupanalysis.getSecondaryDownloadStream(clean_p, (err, readstream)=>{
         if(err) return next(err);
         readstream.pipe(res);   
