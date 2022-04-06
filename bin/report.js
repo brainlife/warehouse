@@ -32,6 +32,7 @@ db.init(async err=>{
     ]);
         */
 
+
     console.log("dumping app stats");
     const appStats = [];
     const apps = await db.Apps.find({ removed: false });
@@ -41,10 +42,29 @@ db.init(async err=>{
             github: app.github, 
             desc: app.desc, 
             stats: app.stats,
+            create_date: app.create_date,
             doi: app.doi,
         });
     });
     fs.writeFileSync("/output/apps.stats.json", JSON.stringify(appStats));
+
+    console.log("dumping projects stats");
+    const projectStats = [];
+    const projects = await db.Projects.find({ removed: false });
+    projects.forEach(project=>{
+        projectStats.push({
+            name: project.name, 
+            desc: project.desc, 
+            stats: project.stats,
+            group_id: project.group_id,
+            access: project.access,
+            create_date: project.create_date,
+            admins: project.admins,
+            members: project.members,
+            guests: project.guest,
+        });
+    });
+    fs.writeFileSync("/output/projects.stats.json", JSON.stringify(projectStats));
 
     //start monthly report
     for (let year = 2017; year <= 2022; ++year) {
@@ -81,6 +101,7 @@ async function report(start, end) {
                 _id: {userId: "$user_id"},
                 count: {$sum: 1},
                 size: {$sum: "$size"},
+                downloads: {$sum: "$download_count"},
             }
         }
     ]);
@@ -97,6 +118,7 @@ async function report(start, end) {
                 _id: {datatypeId: "$datatype"},
                 count: {$sum: 1},
                 size: {$sum: "$size"},
+                downloads: {$sum: "$download_count"},
             }
         }
     ]);
@@ -114,6 +136,7 @@ async function report(start, end) {
                 _id: {projectId: "$project"},
                 count: {$sum: 1},
                 size: {$sum: "$size"},
+                downloads: {$sum: "$download_count"},
             }
         }
     ]);
@@ -121,25 +144,30 @@ async function report(start, end) {
 
     objects.totalObjectCount = users.reduce((a,v)=>a+v.count, 0);
     objects.totalObjectSize = users.reduce((a,v)=>a+v.size, 0);
+    objects.totalObjectDownload = users.reduce((a,v)=>a+v.downloads, 0);
     objects.byUsers = users.map(u=>({
         sub: u._id.userId.toString(),
         count: u.count,
         totalSize: u.size,
+        totalDownload: u.downloads,
     }));
     objects.byDatatypes = datatypesPop.map(u=>({
         datatypeId: u._id.datatypeId._id.toString(),
         datatypeName: u._id.datatypeId.name,
         count: u.count,
         totalSize: u.size,
+        totalDownload: u.downloads,
     }));
     objects.byProjects = projectsPop.map(u=>({
         projectId: (u._id.projectId?u._id.projectId._id.toString():null),
         projectName: (u._id.projectId?u._id.projectId.name:null),
         count: u.count,
         totalSize: u.size,
+        totalDownload: u.downloads,
     }));
 
     console.dir(objects);
     fs.writeFileSync("/output/objects."+rangeName+".json", JSON.stringify(objects, null, 4));
 }
+
 
