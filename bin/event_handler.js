@@ -60,6 +60,7 @@ function subscribe() {
                 task_q.bind('wf.task', '#');
                 task_q.subscribe({ack: true}, (task, head, dinfo, ack)=>{
                     handle_task(task, err=>{
+                        console.log("done handling task");
                         if(err) {
                             console.error(err)
                             //TODO - maybe I should report the failed event to failed queue?
@@ -239,7 +240,10 @@ function handle_task(task, cb) {
             //we don't wait for the job to finish before we submit validator
             //because UI needs the validator already submitted before next job can be submitted 
             //to create pipe between App1 > validator > App2.
-            //if(task.status != "finished") return;
+            //let's do this for UI tasks only (task.nice is set) otherwise task queue will pile up 
+            //with events for requrested tasks
+            if(!task.nice && task.status != "finished") return next();
+
 
             //no output, no validator
             if(!task.config || !task.config._outputs ||  
