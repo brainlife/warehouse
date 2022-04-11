@@ -48,6 +48,7 @@
                             <small v-if="input.meta && input.meta.session" style="opacity: 0.8"> / {{input.meta.session}}</small>
 
                             <div style="display: inline-block;" v-if="find_task(input.task_id)" class="clickable" @click="scrollto(find_real_task(input.task_id)._id)">
+                                <h4>HEEEERREE</h4>
                                 <datatypetag :datatype="datatypes[input.datatype]" :tags="input.datatype_tags" :clickable="false"/>
                                 <span style="opacity: 0.5;">
                                     <small v-for="(tag,idx) in input.tags" :key="idx"> | {{tag}} </small>
@@ -62,6 +63,7 @@
                             <!--can't find the task... then assume it's removed-->
                             <div v-else style="display: inline-block;">
                                 <small v-if="input.meta && input.meta.session" style="opacity: 0.8"> / {{input.meta.session}}</small>
+                                                                <h4>HEEEERREE</h4>
                                 <datatypetag :datatype="datatypes[input.datatype]" :tags="input.datatype_tags" :clickable="false"/>
                                 <span style="opacity: 0.5;">
                                     <small v-for="(tag,idx) in input.tags" :key="idx"> | {{tag}} </small>
@@ -122,6 +124,7 @@
 
                             <b v-if="output.meta && output.meta.subject">{{output.meta.subject}}</b>
                             <small v-if="output.meta && output.meta.session" style="opacity: 0.8"> / {{output.meta.session}}</small>
+                                                            <h4>HEEEERREE</h4>
                             <datatypetag :datatype="datatypes[output.datatype]" :tags="output.datatype_tags" :clickable="false"/>
                             <mute>
                                 <small v-for="(tag,idx) in output.tags" :key="idx"> | {{tag}}</small>
@@ -366,7 +369,6 @@ export default {
                 this.projects[project._id] = project;
             });
             cache_projects = this.projects;
-            console.log(cache_projects);
             this.load(()=>{
                 this.readHash();
             });
