@@ -349,13 +349,13 @@ export default {
             });
         }
 
-        // this.loadDatatypes({}, async err=>{
-        //     if(err) {
-        //         console.error(err);
-        //         return;
-        //     }
-        //     cache_datatypes = this.datatypes;
-        // });
+        this.loadDatatypes({}, async err=>{
+            if(err) {
+                console.error(err);
+                return;
+            }
+            cache_datatypes = this.datatypes;
+        });
 
         this.$http.get('project', {params: {
             select: 'name desc',
@@ -366,7 +366,6 @@ export default {
                 this.projects[project._id] = project;
             });
             cache_projects = this.projects;
-            console.log(cache_projects);
             this.load(()=>{
                 this.readHash();
             });
