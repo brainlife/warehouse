@@ -83,7 +83,7 @@ export default {
                     title: "Radial Diffusivity (RD)",
                     unit: "microm^2/msec",
                 },
-                
+
                 //noddi
                 ndi: {
                     title: "Neurite Density Index (NDI)",
@@ -125,7 +125,7 @@ export default {
                     title: "Streamline Counts",
                     //unit: "count",
                 },
-                avgerageStreamlineLength: {
+                averageStreamlineLength: {
                     title: "Avg Streamline Length",
                     unit: "mm",
                 },
@@ -334,9 +334,6 @@ export default {
             const res = await this.$http.get('secondary/'+this.task._id+'/'+this.output_id+'/output_FiberStats.csv');
             this.data = parseCSV(res.data);          
         }
-
-        //load reference data
-        //this.refdata = await fetch('https://raw.githubusercontent.com/brainlife/reference/master/neuro/tractmeasures/reference.json').then(res=>res.json());
 
         //list all measures
         this.measures = [];

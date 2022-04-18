@@ -168,6 +168,38 @@ router.get('/:task_id/*', common.jwt({
     });
 });
 
+async function issueGAJwt(instance_id, user, authorization, cb) {
+    try {
+        //access control instance by querying for it
+        let _res = await axios.get(config.amaretti.api+"/instance", {
+            params: {
+                find: JSON.stringify({_id: instance_id}),
+            },
+            headers: { authorization },
+        });
+        if(_res.data.instances.length != 1) return cb("no such instance?");
+        const instance = _res.data.instances[0];
+
+        //give the user jwt extra access to gid used to access ga server
+        _res = await axios.get(config.auth.api+"/jwt/"+user.sub, {
+            params: {
+                claim: JSON.stringify({gids: [instance.group_id, config.groupanalysis.gid]}),
+            },
+            headers: { authorization: "Bearer "+ config.warehouse.jwt }
+        });
+        const jwt = _res.data.jwt;
+
+        //lookup project ID from group_id (ga-launcher uses it to set PROJECT_ID)
+        const project = await db.Projects.findOne({group_id: instance.group_id});
+        if(!project) return next("can't find project with group_id:"+instance.group_id);
+
+        cb(null, jwt, instance, project);
+
+    } catch(err) {
+        cb(err);
+    }
+}
+
 /**
  * @apiGroup Secondary
  * @api {put} /secondary/launchga   Launch Group Analysis Container
@@ -188,61 +220,21 @@ router.post('/launchga', common.jwt(), (req, res, next)=>{
     if(!req.body.config) return next("please set config");
     if(!req.body.config.container) return next("please set contianer (with tag)");
 
-    let _config = Object.assign({}, req.body.config);
+    issueGAJwt(req.body.instance_id, req.user, req.headers.authorization, 
+        async (err, jwt, instance, project)=>{
+        if(err) return next(err);
 
-    let instance = null;
-    let jwt = null;
-    let task = null;
+        let _config = Object.assign({}, req.body.config);
+        _config.project = {
+            _id: project._id, 
+            name: project.name, //galauncher juse need _id, but just in case it might become handy..
+        }
+        _config.group = instance.group_id;
 
-    async.series([
-
-        //access control instance by querying for it
-        next=>{
-            axios.get(config.amaretti.api+"/instance", {
-                params: {
-                    find: JSON.stringify({_id: req.body.instance_id}),
-                },
-                headers: { authorization: req.headers.authorization, },
-            }).then(_res=>{
-                if(_res.data.instances.length != 1) return next("no such instance?");
-                instance = _res.data.instances[0];
-                next();
-            }).catch(next);
-        },
-
-        //give the user jwt extra access to gid used to archive
-        next=>{
-            axios.get(config.auth.api+"/jwt/"+req.user.sub, {
-                params: {
-                    claim: JSON.stringify({gids: [instance.group_id, config.groupanalysis.gid]}),
-                },
-                headers: { authorization: "Bearer "+ config.warehouse.jwt }
-            }).then(_res=>{
-                jwt = _res.data.jwt;
-                next();
-            }).catch(next);
-        },
-
-        //lookup project ID from group_id (ga-launcher uses it to set PROJECT_ID)
-        next=>{
-            db.Projects.findOne({group_id: instance.group_id}, (err, _project)=>{
-                if(err) return next(err);
-                if(!_project) return next("can't find project with group_id:"+instance.group_id);
-
-                //ga-launcher just need id..
-                _config.project = {
-                    _id: _project._id, 
-                    name: _project.name, //just in case ..
-                };
-                next();
-            });
-        },
-
-        //submit the launcher
-        next=>{
-            _config.group = instance.group_id;
-            const farfuture = new Date("2100-07-27");
-            axios.post(config.amaretti.api+"/task", {
+        //submit the launcher!
+        const farfuture = new Date("2100-07-27");
+        try{
+            const _res = await axios.post(config.amaretti.api+"/task", {
                 name: req.body.name,
                 desc: req.body.desc,
                 service : "brainlife/ga-launcher",
@@ -255,15 +247,76 @@ router.post('/launchga', common.jwt(), (req, res, next)=>{
                 config: _config,
             }, {
                 headers: { authorization: "Bearer "+jwt, }
-            }).then(_res=>{
-                task = _res.data.task;
-                next();
-            }).catch(next);
-        },
+            });
+            res.json(_res.data.task);
+        } catch(err) {
+            next(err);
+        }
+    });
+});
 
-    ], err=>{
+router.post('/archive', common.jwt(), (req, res, next)=>{
+    if(!req.body.instance_id) return next("instance_id is not set");
+    if(!req.body.session) return next("session is not set");
+    if(!req.body.notebook) return next("notebook is not set");
+
+    const notebookPath = "../"+req.body.session+"/notebook/"+req.body.notebook;
+
+    //make sure notebookPath lives within the instance directory
+    //by checking to see if the notebookPath resolves on cwd's parent directory
+    //TODO - is this secure enough?
+    const notebookPathResolved = path.resolve(notebookPath);
+    const parentDir = path.resolve(process.cwd()+"/..");
+
+    //debug
+    console.log(notebookPathResolved, parentDir);
+
+    if(!notebookPathResolved.startsWith(parentDir)) {
+        return next("bad notebookPath");
+    }
+
+    issueGAJwt(req.body.instance_id, req.user, req.headers.authorization, 
+        async (err, jwt, instance, project)=>{
         if(err) return next(err);
-        res.json(task);
+
+        try {
+            const _res = await axios.post(config.amaretti.api+'/task', {
+                instance_id: instance._id,
+                gids: [config.groupanalysis.gid],
+                name: "Converting notebook to html",
+                service: "brainlife/app-nbconvert",
+                config: {
+                    _public: true,
+
+                    //notebook to convert to html/index.html
+                    notebook: notebookPath,
+
+                    _outputs: [
+                        {
+                            id: "html", //needed by archive-secondary
+                            datatype: "5e56dc330f7fa604cc3cc291", //report/html
+                        },
+                        {
+                            id: "notebook",
+                            datatype: "6079f960f1481a4d788fba3e", //jupyter/notebook
+                            subdir: "notebook",
+                            meta: {
+                                subject: "analysis",
+                            },
+                            archive: {
+                                project: project._id,
+                                desc: "for notebook publication: "+req.body.notebook, 
+                            },
+                        },
+                    ],
+                }
+            }, {
+                headers: { authorization: "Bearer "+jwt, }
+            });
+            res.json(_res.data.task);
+        } catch (err) {
+            next(err);
+        }
     });
 });
 

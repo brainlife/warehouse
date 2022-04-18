@@ -423,7 +423,7 @@ export default {
             ],
 
             tasks: [], //recent tasks submitted
-            serviceinfo: null,
+            //serviceinfo: null,
 
             config: Vue.config,
         }
@@ -524,9 +524,11 @@ export default {
                         });                   
                     }).catch(console.error);
 
+                    /*
                     this.$http.get(Vue.config.amaretti_api+'/service/info', {params: {service: this.app.github}}).then(res=>{
                         this.serviceinfo = res.data;
                     }).catch(console.error);
+                    */
 
                 }
 

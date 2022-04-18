@@ -143,8 +143,9 @@ export default {
             this.$refs.modal.hide();
         },
 
-        archive() {
+        async archive() {
             this.$notify({text: "Creating Analysis Archive"});
+            /*
             const params = {
                 instance_id: this.instance._id,
                 name: "Converting notebook to html",
@@ -162,7 +163,6 @@ export default {
                         },
                         {
                             id: "notebook",
-                            //datatype: "59c3eae633fc1cf9ead71679", //raw
                             datatype: "6079f960f1481a4d788fba3e", //jupyter/notebook
                             subdir: "notebook", 
                             meta: {
@@ -182,6 +182,18 @@ export default {
                 console.error(err);
                 this.$notify({type: 'error', text: err.body.message});
             });
+            */
+            try {
+                const res = await this.$http.post('secondary/archive', {
+                    instance_id: this.instance._id,
+                    session: this.selected,
+                    notebook: this.notebook,
+                });
+                this.nbtask = res.data;
+            } catch (err) {
+                console.error(err);
+                this.$notify({type: 'error', text: err.response.data.message});
+            }
         },
 
         subscribeInstance(instance) {
