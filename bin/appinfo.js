@@ -86,12 +86,14 @@ function handle_app(app, cb) {
                 app.stats.runtime_mean = info.runtime_mean;
                 app.stats.runtime_std = info.runtime_std;
                 app.stats.requested =  info.counts.requested,
-
+                app.stats.monthlyCounts = info.monthlyCounts;
+                // console.log(app.stats.monthlyCounts,app.name);
                 next();
             }).catch(next);
         },
       
         //cache example workflow
+        
         async ()=>{
             const cachefname = "/tmp/example.app-"+app.id+".json"; //needs to match the path used in controller/app.js
 
@@ -128,6 +130,7 @@ function handle_app(app, cb) {
             fs.writeFileSync(cachefname, JSON.stringify(subsetProvs));
 
             app.stats.examples = subsetProvs.length;
+            // console.log(app.name,app.stats);
             app.markModified('stats');
         },
   
@@ -154,8 +157,8 @@ function handle_app(app, cb) {
                         name: resource.name,
                     }
                 });
-                app.markModified('stats');
 
+                app.markModified('stats');
                 common.update_appinfo(app, next);
             }).catch(next);
         },
@@ -163,7 +166,8 @@ function handle_app(app, cb) {
         //issue doi
         next=>{
             if(app.doi) return next();
-            logger.debug("minting doi");
+            if(!config.datacite) return next();
+            console.log("minting doi",app._id,app.doi);
             common.get_next_app_doi((err, doi)=>{
                 if(err) return next(err);
                 app.doi = doi;
@@ -178,6 +182,7 @@ function handle_app(app, cb) {
 
         //check doi
         next=>{
+            if(!config.datacite) return next();
             let url = "https://doi.org/"+app.doi;
             console.log("checking doi", url);
             //if(config.debug) url = "https://doi.org/10.25663/brainlife.app.448";
@@ -197,6 +202,7 @@ function handle_app(app, cb) {
 
         //now save the app
         next=>{
+            console.log(app._id,app.stats);
             app.save(next);
         },
 

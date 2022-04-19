@@ -699,6 +699,7 @@ var appSchema = mongoose.Schema({
         ],
 
         examples: Number, //number of example workflows found
+        monthlyCounts: [Number]
     },
 
     removed: { type: Boolean, default: false} ,

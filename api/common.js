@@ -679,9 +679,12 @@ exports.compose_pub_datacite_metadata = function(pub) {
 exports.get_next_app_doi = function(cb) {
     //console.log("querying for next doi")
     db.Apps.find({}).select("doi").sort("-doi").limit(1).exec().then(recs=>{
-        let rec = recs[0];
-        let doi_tokens = rec.doi.split(".");
-        let num = parseInt(doi_tokens[doi_tokens.length-1])+1;
+        let num = 1;
+        if(recs.length) {
+            let rec = recs[0];
+            let doi_tokens = rec.doi.split(".");
+            num = parseInt(doi_tokens[doi_tokens.length-1])+1;
+        }
         //console.debug("next doi token will be", num);
         cb(null, config.datacite.prefix+"app."+num);
     }).catch(cb);
