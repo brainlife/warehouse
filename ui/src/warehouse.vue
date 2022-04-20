@@ -596,7 +596,7 @@ pre {
     text-transform: uppercase; 
     border: 1px solid #ddd; 
     padding: 4px 15px; 
-    opacity: 0.7;
+    opacity: 0.8;
     color: #333;
     height: 26px;
 }

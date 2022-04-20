@@ -117,11 +117,10 @@ export default {
                     }
                 }).then(res=>{
                     console.log("loaded sessions");
-                    //console.dir(res.data.tasks);
                     this.sessions = res.data.tasks.map(task=>{
                         return {
                             value: task._id,
-                            text: task.name+" "+task.desc+" "+task.status_msg,
+                            text: task.name+" - "+task.desc, //+" "+task.status_msg,
                             container: task.config.container,
                         }
                     });

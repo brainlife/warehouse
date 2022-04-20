@@ -61,11 +61,11 @@
             <gaarchive :gaarchive="ga"/>
             <p style="float: right; margin-bottom: 0px;">
                 <b-badge pill class="bigpill clickable" @click="downloadNotebook(ga)">
-                    <icon name="download" style="opacity: 0.4;"/>&nbsp;&nbsp;&nbsp;<small>Dowload this notebook</small>
+                    <icon name="download" style="opacity: 0.8;"/>&nbsp;&nbsp;&nbsp;<small style="opacity: 1">Dowload this notebook</small>
                 </b-badge>
                 &nbsp;
                 <b-badge pill class="bigpill clickable" @click="launchGA(release, ga)">
-                    <icon name="play" style="opacity: 0.4;"/>&nbsp;&nbsp;&nbsp;<small>Launch this notebook</small>
+                    <icon name="play" style="opacity: 0.8;"/>&nbsp;&nbsp;&nbsp;<small style="opacity: 1">Launch this notebook</small>
                 </b-badge>
             </p>
             <!--<b style="opacity: 0.5; font-size: 125%;">{{ga.notebook}}</b>-->

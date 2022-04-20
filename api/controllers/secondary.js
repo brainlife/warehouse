@@ -204,7 +204,7 @@ async function issueGAJwt(instance_id, user, authorization, cb) {
  * @apiGroup Secondary
  * @api {put} /secondary/launchga   Launch Group Analysis Container
  *                              
- * @apiParam {String} instance_id  Instance to launch the group analysis 
+ * @apiParam {String} instance_id   Instance to launch the group analysis 
  * @apiParam {String} [name]        Name for this analysis
  * @apiParam {String} [desc]        Description for this analysis
  * @apiParam {Object} [config]      Configuration to send to the launcher

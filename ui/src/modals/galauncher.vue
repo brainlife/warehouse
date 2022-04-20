@@ -10,43 +10,56 @@
                         <icon name="times" scale="1.5"/>
                     </div>
                 </div>
-                <h4 style="margin-top: 5px;">Launch New Analysis</h4>
+                <h4 style="margin-top: 5px;">New Session</h4>
             </div>
+
 
             <!--container selecter-->
             <div v-if="!selected" class="app-selecter">
-                <p>Please select a published notebook to use as a template for your new analysis.</p>
                 <span class="loading" v-if="!notebooks">Loading..</span>
-                <div v-for="(app, idx) in notebooks" :key="app.dataset_id" :title="app.name" :img-src="app.img" @click="selected = app" class="app">
-                    <p style="min-height: 125px;">
-                        <small><span style="opacity: 0.8"><icon name="brands/docker"/> {{app.container}}</span></small><br>
-                        {{app.name}}<br>
-                    </p>
+                <p>Please select a template notebook to launch your new session.</p>
 
-                    <hr>
-                    <p style="position: relative;">
-                        <span class="form-header" style="position: absolute; top: -30px; left: 115px; background-color: white; padding: 5px; color: #999;">Published In</span>
-                        <span style="float: right; margin-left: 10px;">
-                            <icon name="calendar" style="opacity: 0.4;"/>&nbsp;&nbsp;{{new Date(app.release.create_date).toLocaleDateString()}}
-                        </span>
-                        {{app.pub.name}}
-                    </p>
+                <b-row>
+                    <b-col cols="5">
+                        <span class="form-header">Published Notebooks</span>
+                    </b-col>
+                    <b-col>
+                        <small>Published In</small>
+                    </b-col>
+                </b-row>
 
-                    <p>
-                        <contact v-for="c in app.pub.authors" :key="c" :id="c" size="small" style="line-height: 150%;"/>
-                    </p>
+                <p v-if="!notebooks.length">None</p>
+                <div v-for="(app, idx) in notebooks" :key="app.dataset_id" 
+                    :img-src="app.img" @click="selected = app" class="published-notebook">
+                    <b-row>
+                        <b-col cols="5">
+                            <small style="opacity: 1"><icon name="brands/docker"/> {{app.container}}</small><br>
+                            <small class="serif">{{app.name}}</small><br>
+                        </b-col>
+                        <b-col>
+                            <div style="font-size: 80%; opacity: 0.75;">
+                                <span style="float: right; margin-left: 10px;">
+                                    <icon name="calendar" style="opacity: 0.4;"/>&nbsp;&nbsp;{{new Date(app.release.create_date).toLocaleDateString()}}
+                                </span>
+                                <p>{{app.pub.name}}</p>
 
-                    <p>
-                        <span style="opacity: 0.8">Release /</span> <b>{{app.release.name}}</b><br>
-                        <small v-if="app.release.desc">{{app.release.desc}}</small><br>
-                        <releaseset v-if="app.release.sets" :set="set" v-for="(set, idx) in app.release.sets.filter(set=>set.datatype.groupAnalysis)" :key="idx"/>
-                    </p>
-                    <small style="font-size: 60%; float: right;" title="data object id">{{app.dataset_id}}</small>
+                                <p>
+                                    <contact v-for="c in app.pub.authors" :key="c" :id="c" size="small" style="line-height: 150%;"/>
+                                </p>
+
+                                <small style="font-size: 60%; float: right;" title="data object id">{{app.dataset_id}}</small>
+                                <p>
+                                    <span style="opacity: 0.8">Release /</span> <b>{{app.release.name}}</b><br>
+                                    <small v-if="app.release.desc">{{app.release.desc}}</small><br>
+                                    <releaseset v-if="app.release.sets" :set="set" v-for="(set, idx) in app.release.sets.filter(set=>set.datatype.groupAnalysis)" :key="idx"/>
+                                </p>
+                            </div>
+                        </b-col>
+                    </b-row>
                 </div>
 
-                <br clear="both">
-                <hr>
-                <p>Or.. start from a blank template.</p>
+                <br>
+                <span class="form-header">Blank Notebooks</span>
                 <div v-for="(app, idx) in templates" :key="idx" :title="app.name" :img-src="app.img" @click="selected = app" class="app">
                     <small><span style="opacity: 0.8"><icon name="brands/docker"/> {{app.container}}</span></small><br>
                     <b>{{app.name}}</b><br>
@@ -270,7 +283,7 @@ export default {
 
                         release.gaarchives.forEach(archive=>{
                             this.notebooks.push({
-                                name: archive.name,//+" from "+release.name+" "+release.desc,
+                                name: archive.name,
                                 container: archive.container,
                                 dataset_id: archive.dataset_id,
 
@@ -317,14 +330,15 @@ export default {
 }
 .app {
     transition: box-shadow 0.5s;
+    background-color: white;
     width: 350px;
     float: left;
-    background-color: white;
     padding: 10px;
     margin-right: 10px;
     margin-bottom: 10px;
 }
-.app:hover {
+.app:hover,
+.published-notebook:hover {
     cursor: pointer;
     box-shadow: 0 0 5px #0004;
 }
@@ -335,7 +349,23 @@ export default {
     top: 60px;
     bottom: 0px;
     background-color: #f9f9f9;
-    overflow: auto;
+    overflow-x: hidden;
+    overflow-y: auto;
     padding: 10px;
+}
+.published-in {
+    position: absolute; 
+    top: -30px; 
+    left: 115px; 
+    background-color: white; 
+    padding: 5px; 
+    color: #999;
+}
+.published-notebook {
+    background-color: white;
+    margin-bottom: 10px;
+    box-shadow: 0px 1px 3px #ddd;
+    padding: 10px 20px;
+    transition: box-shadow 0.5s;
 }
 </style>
