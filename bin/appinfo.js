@@ -202,7 +202,6 @@ function handle_app(app, cb) {
 
         //now save the app
         next=>{
-            console.log(app._id,app.stats);
             app.save(next);
         },
 
