@@ -137,11 +137,11 @@ export default {
                 const event = JSON.parse(json.data);
                 if(!event.dinfo) return; //??
 
-                const keys = event.dinfo.routingKey.split(".");
-                const project_id = keys[3];
-                const rule_id = keys[4];
-
                 if(event.dinfo.routingKey.startsWith("rule.update.")) {
+                    const keys = event.dinfo.routingKey.split(".");
+                    //const project_id = keys[3];
+                    const rule_id = keys[4];
+
                     let newrule = event.msg;
                     let rule = this.rules.find(rule=>rule._id == rule_id);
                     if(rule) {

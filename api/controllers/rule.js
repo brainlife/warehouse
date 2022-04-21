@@ -340,6 +340,7 @@ router.put('/order/:projectId', common.jwt(), function(req, res, next) {
         project.save(err=>{
             if(err) return next(err);
             res.json({status: "ok:"});
+            common.publish("project.update."+req.user.sub+"."+project._id, {pipelines: project.pipelines})
         });
     });
 });
@@ -362,7 +363,6 @@ router.delete('/:id', common.jwt(), function(req, res, next) {
         //check user has access to the project
         common.getprojects(req.user, function(err, canread_project_ids, canwrite_project_ids) {
             if(err) return next(err);
-            //console.dir(rule.project);
             let found = canwrite_project_ids.find(id=>id.equals(rule.project));
             if(!found) return next("you are not allowed to edit this rule");
             //rule.remove_date = new Date();
