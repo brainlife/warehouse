@@ -105,6 +105,11 @@
                 <!--detail header-->
                 <b-row>
                     <b-col>
+                        <div  v-if="app.stats && app.stats.monthlyCounts && app.stats.monthlyCounts.length">
+                            <ExportablePlotly v-if="appStats" :data="appStats" :layout="statsLayout"/>
+                        </div>
+                    </b-col>
+                    <b-col>
                         <p v-if="app.stats && app.stats.success_rate" v-b-tooltip.hover.d1000.right title="finished/(failed+finished). Same request could be re-submitted / rerun.">
                             <svg width="70" height="70">
                                 <circle :r="140/(2*Math.PI)" cx="35" cy="35" fill="transparent" stroke="#666" stroke-width="15"/>
@@ -399,7 +404,7 @@ export default {
         taskRecord, 
         projectcard,
         exampleworkflow,
-
+        ExportablePlotly: ()=>import('@/components/ExportablePlotly'),
         editor: ()=>import('vue2-ace-editor'),
     },
 
@@ -421,6 +426,8 @@ export default {
                 {id: "recentJobs"},
                 {id: "example"},
             ],
+            appStats: null,
+            statsLayout:null,
 
             tasks: [], //recent tasks submitted
             serviceinfo: null,
@@ -521,11 +528,28 @@ export default {
                             if(task.resource_id) this.resource_cache(task.resource_id, (err, resource)=>{
                                 task._resource = resource;
                             });
-                        });                   
+                        });
                     }).catch(console.error);
 
                     this.$http.get(Vue.config.amaretti_api+'/service/info', {params: {service: this.app.github}}).then(res=>{
                         this.serviceinfo = res.data;
+                        this.appStats = [{
+                            y : this.serviceinfo.monthlyCounts,
+                            x: [],
+                            type: "bar",
+                        }];
+                        console.log(this.serviceinfo.monthlyCounts.length);
+
+                        this.serviceinfo.monthlyCounts.forEach(async(count,index)=>{
+                            if(!count) count = 0;
+                            const startDate = new Date("01/01/2017");
+                            const dataDate = new Date(startDate.setMonth(startDate.getMonth()+index));
+                            this.appStats[0].x[index] = dataDate.toLocaleString('en-us',{month:'short', year:'numeric'});
+                        })
+                        this.statsLayout = {
+                            height: 500,
+                            width:500,
+                        };
                     }).catch(console.error);
 
                 }
