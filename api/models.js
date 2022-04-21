@@ -201,7 +201,7 @@ var projectSchema = mongoose.Schema({
     },
 
     //describes how all pipeline rules are organized
-    pipelines: mongoose.Schema.Types.Mixed,
+    pipelines: mongoose.Schema.Types.Mixed, //TODO dangerous..
     /*
     {
         type: "group",

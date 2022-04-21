@@ -328,6 +328,22 @@ router.post('/updatestats/:id', common.jwt(), function(req, res, next) {
     });
 });
 
+//pipeline ordering on UI is stored in project collection
+router.put('/order/:projectId', common.jwt(), function(req, res, next) {
+    const projectId = req.params.projectId;
+    db.Projects.findById(projectId, async (err, project)=>{
+        if(err) return next(err);
+        if(!project) return res.status(404).end();
+        if(!common.isadmin(req.user, project) && !common.ismember(req.user, project)) 
+            return res.status(401).end("you can not update pipeline ordering");
+        project.pipelines = req.body; 
+        project.save(err=>{
+            if(err) return next(err);
+            res.json({status: "ok:"});
+        });
+    });
+});
+
 /**
  * @apiGroup Pipeline Rules
  * @api {delete} /rule/:id

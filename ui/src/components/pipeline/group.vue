@@ -78,15 +78,6 @@ import groupbuttons from './groupbuttons'
 export default {
     props: [ 'rules', 'group', 'root', ],
 
-    /*
-    mounted() {
-        //transition-group doesn't want me to use idx
-        this.group.items.forEach(item=>{
-            if(!item.id) item.id = Math.random().toString();
-        });
-    },
-    */
-
     data() {
         return {
             drag: false,

@@ -185,9 +185,7 @@ export default {
         },
 
         updatePipeline() {
-            this.$http.put('project/'+this.project._id, {
-                pipelines: this.project.pipelines,
-            });
+            this.$http.put('rule/order/'+this.project._id, this.project.pipelines);
         },
 
         newrule(opt) {
