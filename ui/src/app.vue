@@ -4,7 +4,7 @@
         <b-container>
             <h3 style="padding: 50px 0 15px 0;opacity: 0.7"><icon name="lock" class="text-secondary" scale="1.5"/> Private App</h3>
             <b-alert show variant="secondary">
-                The App you are trying access is a private App (belongs to a specific brainlife project). You must be logged in and also must be a member 
+                The App you are trying access is a private App (belongs to a specific brainlife project). You must be logged in and also must be a member
                 of the project to which this App belongs. Please contact the current maintainer of this App.
             </b-alert>
         </b-container>
@@ -14,7 +14,7 @@
             <b-container style="position: relative;">
                 <div style="float: right; position: relative; z-index: 3">
                     <a :href="'https://github.com/'+app.github" :target="app.github"><span class="button" title="github"><icon name="brands/github" scale="1.25"/></span></a>
-                    <span class="button" @click="go('/app/'+app._id+'/edit')" v-if="app._canedit" title="Edit"><icon name="edit" scale="1.25"/></span>                
+                    <span class="button" @click="go('/app/'+app._id+'/edit')" v-if="app._canedit" title="Edit"><icon name="edit" scale="1.25"/></span>
                     <b-dropdown size="sm" variant="link" toggle-class="text-decoration-none" no-caret>
                         <template v-slot:button-content style="padding: 0px;">
                             <span class="button"><icon name="ellipsis-v" scale="1.25"/></span>
@@ -32,7 +32,7 @@
                             <icon name="certificate" scale="1.25" style="width: 20px"/>&nbsp;&nbsp;&nbsp;Generate Badge
                         </b-dropdown-item>
                     </b-dropdown>
-                    <b-btn @click="execute" variant="primary" size="sm" style="margin-top: 3px;"><icon name="play"/>&nbsp;&nbsp;&nbsp;<b>Execute</b></b-btn>    
+                    <b-btn @click="execute" variant="primary" size="sm" style="margin-top: 3px;"><icon name="play"/>&nbsp;&nbsp;&nbsp;<b>Execute</b></b-btn>
                 </div>
 
                 <h5>
@@ -120,9 +120,9 @@
                         </p>
                     </b-col>
                     <b-col>
-                        <div class='altmetric-embed' 
-                            data-badge-type='donut' 
-                            data-badge-details="right" 
+                        <div class='altmetric-embed'
+                            data-badge-type='donut'
+                            data-badge-details="right"
                             data-hide-no-mentions="true"
                             :data-doi="app.doi||config.debug_doi"/>
                     </b-col>
@@ -168,8 +168,8 @@
                                 <div v-if="app.outputs && app.outputs.length > 0">
                                     <div v-for="output in app.outputs" :key="output.id" class="io-card">
                                         <small class="ioid">{{output.id}}</small><!--internal output id-->
-                                        <datatype :datatype="output.datatype" 
-                                                :datatype_tags="output.datatype_tags" 
+                                        <datatype :datatype="output.datatype"
+                                                :datatype_tags="output.datatype_tags"
                                                 :tag_pass="output.datatype_tags_pass">
                                             <template slot="tag_extra">
                                                 <span v-if="output.datatype_tags_pass" title="tag pass through from this input dataset"
@@ -233,7 +233,7 @@
                 <div v-if="resources_considered" class="box" style="padding: 20px">
                     <span class="form-header">Computing Resources</span>
                     <b-alert show variant="secondary" v-if="resources_considered.length == 0" style="margin-bottom: 10px;">
-                        This App is not registered to run on any resource that you have access to. 
+                        This App is not registered to run on any resource that you have access to.
                     </b-alert>
                     <b-alert show variant="secondary" v-else-if="!preferred_resource" style="margin-bottom: 10px;">
                         This App can not run on any resources that you have access to at the moment.
@@ -252,7 +252,7 @@
                             <b>{{resource.status}}</b>
                             <span class="score">Score {{resource.score}}</span>
                         </div>
-                        <div v-else-if="resource.detail.running >= resource.detail.maxtask" class="resource-status bg-warning" 
+                        <div v-else-if="resource.detail.running >= resource.detail.maxtask" class="resource-status bg-warning"
                             title="This App is registered to this resource but the resource is currently busy running other Apps.">
                             <icon name="hourglass" style="position: relative; top: -3px;"/>
                             &nbsp;
