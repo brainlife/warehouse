@@ -286,6 +286,7 @@ import VueMarkdown from 'vue-markdown'
 import dtv from '@/components/dtv'
 
 import appcache from '@/mixins/appcache'
+import datatypes from '@/mixins/datatypes'
 
 import ReconnectingWebSocket from 'reconnectingwebsocket'
 
@@ -297,7 +298,7 @@ let cache_datatypes = null;
 let cache_projects = null;
 
 export default {
-    mixins: [appcache],
+    mixins: [appcache, datatypes],
     props: [ 'project', 'instance', 'splitter_pos' ],
 
     components: { 
@@ -317,12 +318,11 @@ export default {
 
             editing_taskdesc: {},
 
-            datatypes: {}, 
             archived: [], //archived datasets from this process
             projects: null,
 
             //selected_task_id: null,
-            
+
             ws: null, //websocket
             desc: "",
 
@@ -349,23 +349,18 @@ export default {
             });
         }
 
-        //TODO - why aren't we using mixing/datatypes?
-        this.$http.get('datatype', {
-            params: {
-                limit: 1000,
+        this.loadDatatypes({}, async err=>{
+            if(err) {
+                console.error(err);
+                return;
             }
-        }).then(res=>{
-            this.datatypes = {};
-            res.data.datatypes.forEach(datatype=>{
-                this.datatypes[datatype._id] = datatype;
-            });
             cache_datatypes = this.datatypes;
+        });
 
-            return this.$http.get('project', {params: {
-                select: 'name desc',
-                limit: 500,
-            }});
-        }).then(res=>{
+        this.$http.get('project', {params: {
+            select: 'name desc',
+            limit: 500.
+        }}).then(res=>{
             this.projects = {};
             res.data.projects.forEach(project=>{
                 this.projects[project._id] = project;
@@ -374,9 +369,7 @@ export default {
             this.load(()=>{
                 this.readHash();
             });
-        });
-
-
+        }).catch(err=>console.error(err));
     },
 
     destroyed() {
