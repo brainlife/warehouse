@@ -75,6 +75,7 @@
                             </template>
                         </v-select>
                     </div>
+                    <metadata v-if="ps.dataset" :id="ps.dataset.id"/>
                 </div>
                 <small v-if="input.desc" style="opacity: 0.8; white-space: pre-wrap;">{{input.desc}}</small>
             </b-col>
@@ -111,6 +112,7 @@ import datatypetag from '@/components/datatypetag'
 import app from '@/components/app'
 import configform from '@/components/configform'
 import advanced from '@/components/appadvanced'
+import metadata from '@/components/metadata'
 
 import agreementMixin from '@/mixins/agreement'
 
@@ -123,7 +125,8 @@ export default {
         contact, 
         tags, pageheader, 
         appavatar, select2, projectselecter, 
-        app, datatypetag, configform, advanced
+        app, datatypetag, configform, advanced,
+        metadata,
     },
 
     //props: [ "id" ], //appid
@@ -196,7 +199,13 @@ export default {
                 //initialize input datasets array (with null as first item)
                 for(var idx in this.app.inputs) {
                     var input = this.app.inputs[idx];
-                    Vue.set(this.form.inputs, input.id, [{id: new Date().getTime(), project: null, dataset: null, loading: false}]);
+                    Vue.set(this.form.inputs, input.id, [{
+                        id: new Date().getTime(), 
+                        project: null, 
+                        dataset: null, 
+                        loading: false,
+                        showMeta: false,
+                    }]);
                 }
                 this.open = true;
             })

@@ -1,7 +1,7 @@
 <template>
 <div>
     <div :class="{rightopen: selected_count}">
-        <div v-if="loading || query || total_datasets > 0" style="float: right; padding: 5px 10px; position: relative; z-index: 1;">
+        <div v-if="loading || query || total_datasets > 0" class="filter-area">
             <b-form-input id="filter"
                 class="filter"
                 :class="{'filter-active': query != ''}"
@@ -337,18 +337,6 @@ export default {
     },
 
     watch: {
-        /*
-        //when user select different project, this gets called (mounted() won't be called anymore)
-        project(nv, ov) {
-            if(nv == ov) return; //why does this happen?
-            this.query = ""; //clear query to avoid confusion
-            //if(source) source.cancel('cancel due to project navigation');
-            this.reload(err=>{
-                this.subscribe();
-            });
-        },
-        */
-
         participants() {
             this.applyParticipants();
         },
@@ -914,6 +902,7 @@ h4 {
 }
 
 .rightopen .page-content,
+.rightopen .filter-area,
 .rightopen .table-header {
     right: 280px;
 }
@@ -1024,6 +1013,15 @@ h4 {
 .button-fixed.selected-view-open {
     margin-right: 300px;
 }
+
+.filter-area {
+    float: right;
+    padding: 5px 10px;
+    position: relative;
+    transition: right 0.3s;
+    z-index: 1;
+}
+
 .filter {
     float: right;
     opacity: 0.7;
@@ -1043,6 +1041,7 @@ h4 {
     color: white;
     width: 100%;
 }
+
 .participantInfo {
     font-size: 90%;
 }

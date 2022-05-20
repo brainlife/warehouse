@@ -20,7 +20,7 @@
             <div class="scrolled" style="background-color: #fcfcfc;">
                 <b-alert variant="secondary" :show="!loading && !smon.info" style="opacity: 0.8">Runtime info (_smon.out) not available</b-alert>
 
-                <div style="padding: 20px;">
+                <div class="block">
                     <b-row>
                         <b-col cols="6">
                             <h5>Task</h5>
@@ -146,11 +146,11 @@
                             </table>
                         </b-col>
                     </b-row>
-                </div><!--padding-->
+                </div>
 
-                <h5 v-if="loading" style="opacity: 0.8; padding: 20px;"><icon name="cog" :spin="true"/> Loading runtime info .. </h5>
+                <h5 v-if="loading" class="block" style="opacity: 0.8;"><icon name="cog" :spin="true"/> Loading runtime info .. </h5>
 
-                <div v-if="!loading && smon.info" style="padding: 20px;">
+                <div v-if="!loading && smon.info" class="block">
 
                     <h5>Resource Utilization</h5>
                     <p style="opacity: 0.7"><small>
@@ -178,7 +178,11 @@
                         <b-badge v-for="(v, k) in smon.info.env" :key="k" variant="light"><b>{{k}}</b> {{v}}</b-badge>
                     </p>
                 </div> <!-- smon-->
-                <div style="padding: 20px;">
+                <div class="block">
+                    <h5>Status Changes</h5>
+                    <taskevents :taskId="task._id"/>
+                </div>
+                <div class="block">
                     <h5>Config</h5>
                     <!--<pre v-highlightjs="JSON.stringify(task.config, null, 4)" style="background-color: white;"><code class="json hljs"></code></pre>-->
                     <editor ref="task-config" @init="editorInit" v-model="taskConfigJson" lang="json"/>
@@ -202,6 +206,7 @@ export default {
         tageditor: ()=>import('@/components/tageditor'), 
         contact: ()=>import('@/components/contact'), 
         ExportablePlotly: ()=>import('@/components/ExportablePlotly'),
+        taskevents: ()=>import('@/components/taskevents'),
 
         VueMarkdown: ()=>import('vue-markdown'), 
 
@@ -250,6 +255,7 @@ export default {
             this.loadSmon();
             this.taskConfigJson = JSON.stringify(this.task.config, null, 4);
         });
+
         //TODO - call removeEventListener in destroy()? Or I should do this everytime modal is shown/hidden?
         document.addEventListener("keydown", e => {
             if (e.keyCode == 27) {
@@ -502,7 +508,7 @@ export default {
                                 width: 0,
                             }
                         },
-                
+
                     ]
                 };
                 this.smon.memory_vsz.layout = Object.assign({}, this.smon.memory_rss.layout, {
@@ -549,18 +555,7 @@ export default {
     },
 
     computed: {
-        /*
-        computed_remove_date() {
-            if(this.task.remove_date) {
-                return new Date(this.task.remove_date);
-            } else {
-                //use finish date instead
-                let d = new Date(this.task.finish_date);
-                d.setDate(d.getDate() + 25); //should match with amaretti bin/task
-                return d;
-            }
-        },
-        */
+
         getruntime() {
             let diff = new Date(new Date(this.task.finish_date) - new Date(this.task.start_date));
             return diff.toISOString().substr(11, 8);
@@ -583,18 +578,21 @@ h5 {
     text-transform: uppercase;
 }
 .scrolled {
-position: absolute;
-top: 60px;
-left: 0;
-right: 0;
-bottom: 0px;
-overflow-x: hidden;
-overflow-y: auto;
+    position: absolute;
+    top: 60px;
+    left: 0;
+    right: 0;
+    bottom: 0px;
+    overflow-x: hidden;
+    overflow-y: auto;
 }
 .badge {
-border-radius: 0;
-margin-right: 3px;
-font-weight: normal;
-padding: 5px;
+    border-radius: 0;
+    margin-right: 3px;
+    font-weight: normal;
+    padding: 5px;
+}
+.block {
+    padding: 20px;
 }
 </style>

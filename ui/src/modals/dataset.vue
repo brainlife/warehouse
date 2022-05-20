@@ -1092,28 +1092,28 @@ export default {
     bottom: 0;
 }
 .dataset-provenance {
-background-color: #f9f9f9;
+    background-color: #f9f9f9;
 }
 .dataset-detail {
-overflow: auto;
-background-color: #f9f9f9;
+    overflow: auto;
+    background-color: #f9f9f9;
 }
 .dataset-apps {
-overflow: auto;
-padding: 20px;
-background-color: #f9f9f9;
+    overflow: auto;
+    padding: 20px;
+    background-color: #f9f9f9;
 }
 .dataset-meta {
-overflow: auto;
-background-color: #f9f9f9;
+    overflow: auto;
+    background-color: #f9f9f9;
 }
 pre.code {
-background-color: white;
-padding: 10px;
+    background-color: white;
+    padding: 10px;
 }
 .metadata.form-header {
-padding: 10px;
-margin-bottom: 0;
+    padding: 10px;
+    margin-bottom: 0;
 }
 
 /deep/ .dataset-provenance div.vis-tooltip {

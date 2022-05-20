@@ -985,8 +985,8 @@ exports.updateSecondaryInventoryInfo = async function(dataset_id) {
         //output without validator
         dataset._secondaryPath = p.task.instance_id+"/"+p.task._id+"/"+p.subdir;
     }
-    await dataset.save();
 
+    await dataset.save();
     await new Promise((resolve, reject)=>{
         //console.debug(path);
         config.groupanalysis.getSecondaryUploadStream(path, (err, stream)=>{

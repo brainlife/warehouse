@@ -149,7 +149,7 @@ export default {
                 //apply query filter
                 if(!i.desc) i.desc = "";
                 if(this.query && !i.desc.toLowerCase().includes(this.query.toLowerCase())) return false; //filtered by query..
-                
+
                 //apply state filter
                 if(!this.show) return true; //show all
                 let summary = this.get_nonstaging_summary(i);
@@ -206,7 +206,7 @@ export default {
                 let summary = this.get_nonstaging_summary(i);
                 summary.forEach(summary=>{
                     if(!counts[summary.status]) counts[summary.status] = 1;
-                    else counts[summary.status]+=1;                  
+                    else counts[summary.status]+=1;
                 });
             });
             return counts;
@@ -252,7 +252,7 @@ export default {
             let group_id = this.project.group_id;
             window.localStorage.setItem("processes.order."+group_id, this.order);
         },
-        
+
         show: function() {
             let group_id = this.project.group_id;
             if(this.show) window.localStorage.setItem("processes.show."+group_id, this.show);
@@ -324,15 +324,6 @@ export default {
                 //if jumping to instance below currently selected, I should adjust current scroll position
                 url += "/"+instance._id;
                 if(task) url += "#"+task;
-                this.$router.replace(url, ()=>{
-                    //console.log("emit show task", task);
-                    /*
-                    this.$nextTick(()=>{
-                        this.$root.$emit('showtask', task);   
-                    });  
-                    */
-                    
-                });
             } else {
                 //close!
                 this.$router.replace(url);

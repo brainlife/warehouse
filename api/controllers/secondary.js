@@ -44,13 +44,13 @@ router.get('/list/:projectid', async (req, res, next)=>{
         });
 
         let objects = [];
-        
+
         //merge all output requests into a single list
         console.log("iterating secondary archive tasks", _res.data.tasks.length);
         _res.data.tasks.forEach(task=>{
             if(!task.config.requests) return; //old format?
             task.config.requests.forEach(request=>{
-                
+
                 //filter out some extra metadata that's too big to store..
                 if(request.output && request.output.meta) {
                     for(let k in request.output.meta) {
@@ -70,7 +70,7 @@ router.get('/list/:projectid', async (req, res, next)=>{
                     _id: request.datatype._id,
                     name: request.datatype.name,
                 }
-                
+
                 //pull information out of request and store things that users care
                 let o = {
                     path: request.instance_id+"/"+request.task_id+"/"+request.subdir,

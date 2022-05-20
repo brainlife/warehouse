@@ -1445,13 +1445,15 @@ router.delete('/:id?', common.jwt({secret: config.express.pubkey}), function(req
     common.getprojects(req.user, function(err, canread_project_ids, canwrite_project_ids) {
         if(err) return next(err);
         async.eachSeries(ids, (id, next_id)=>{
-            db.Datasets.findById(id, (err, dataset)=>{
+            db.Datasets.findById(id, async (err, dataset)=>{
                 if(err) return next_id(err);
                 if(!dataset) return next_id(new Error("can't find the dataset with id:"+id));
                 if(!canedit(req.user, dataset, canwrite_project_ids)) return next_id("can't edit:"+id);
                 dataset.remove_date = new Date();
                 dataset.removed = true;
-                dataset.save(next_id);
+
+                //wait for database update before publishing 
+                await dataset.save(next_id);
                 common.publish("dataset.update."+req.user.sub+"."+dataset.project+"."+dataset._id, dataset);
             });
         }, err=>{

@@ -95,10 +95,12 @@
                                             </span>
                                         </template>
                                     </v-select>
+                                    <metadata v-if="input.selected[idx]" :meta="input.selected[idx].dataset.meta"/>
                                 </b-col>
                                 <b-col cols="1" v-if="input.multi">
                                     <div class="button button-danger" v-if="input.selected[idx]"
-                                        @click="input.selected.splice(idx, 1)" size="sm"><icon name="trash"/></div>
+                                        @click="input.selected.splice(idx, 1)" size="sm"><icon name="trash"/>
+                                    </div>
                                 </b-col>
                             </b-row>
                             <p v-if="input.multi">
@@ -171,12 +173,13 @@ import datatypetag from '@/components/datatypetag'
 import configform from '@/components/configform'
 import advanced from '@/components/appadvanced'
 import tageditor from '@/components/tageditor'
+import metadata from '@/components/metadata'
 
 const lib = require('../lib');
 
 export default {
     components: { 
-        app, datatypetag, configform, advanced, tageditor,
+        app, datatypetag, configform, advanced, tageditor, metadata,
     },
 
     data() {

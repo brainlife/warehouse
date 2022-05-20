@@ -15,11 +15,9 @@ const request = require('request'); //deprecate!
 const zlib = require('zlib');
 const async = require('async');
 
-const AWS = require('aws-sdk');
 const atob = require('atob');
 
 exports.mongodb = "mongodb://localhost/warehouse";
-//exports.mongoose_debug = true;
 
 exports.debug = true; 
 
@@ -286,22 +284,12 @@ function connect_wrangler(cb) {
 
     conn.connect({
         username: "brlife",
-        //host: "149.165.156.63", //wrangler
         host: "149.165.169.130", //wrangler2
         privateKey: fs.readFileSync(__dirname+'/brlife.id_rsa'),
         keepaliveInterval: 10*1000, //default 0 (disabled)
     });
 }
 
-
-const osn = {
-    s3: new AWS.S3({
-        endpoint: 'https://renc.osn.xsede.org',
-        accessKeyId: 'LR9FQG7WZWJ2C19KFY6Q',
-        secretAccessKey: 'zuVg0bA4jRRCmQ0aUTmfcCApQ8NFA1',
-    }),
-    bucket: "dbs170009francopestilli",
-}
 function getOSNPath(dataset) {
     let _path = "dev/"; //not the same as secondary
     if(!dataset) return _path;
@@ -310,13 +298,14 @@ function getOSNPath(dataset) {
     return _path;
 }
 
+const osn = require('./osnConfig');
+
 exports.storage_systems.osn = {
     need_backup: true, 
     test: cb=>{
         //test uploading something..
-        osn.s3.upload({Bucket: osn.bucket, Key: 'deleteme/test.txt', Body: 'test'}, err=>{
+        osn.s3.upload({Bucket: osn.bucket, Key: 'test.txt', Body: 'test'}, err=>{
             if(err) return cb(err);
-            //TODO what else?
             cb();
         });
     }, 
@@ -325,16 +314,6 @@ exports.storage_systems.osn = {
         const path = getOSNPath(dataset);
         osn.s3.headObject({Bucket: osn.bucket, Key: path}, (err, metadata)=>{
             if(err) return cb(err);
-            /*
-            {
-              AcceptRanges: 'bytes',
-              LastModified: 2021-09-22T22:25:39.000Z,
-              ContentLength: 6,
-              ETag: '"b1946ac92492d2347c6235b4d2611184"',
-              ContentType: 'application/octet-stream',
-              Metadata: {}
-            }
-            */
             const stats = {
                 size: metadata.ContentLength,
             }
@@ -352,9 +331,7 @@ exports.storage_systems.osn = {
     remove: (dataset, cb)=>{
         cb("todo");
     }
-} 
-
-
+}
 
 //TODO - I should try connection queue agagin
 function connect_osiris(cb) {
