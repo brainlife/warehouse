@@ -226,9 +226,9 @@ export default {
 
 <style scoped>
 .mode-toggler {
-    position: fixed;
-    top: 60px;
-    padding-right: 30px;
+    float: right;
+    position: sticky;
+    top: 10px;
     z-index: 2;
     opacity: 0.5;
     transition: opacity 0.3s;
