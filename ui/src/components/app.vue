@@ -64,11 +64,20 @@
                 &nbsp;
             </span>
             -->
+            <!-- who cares??
             <span class="stat" title="number of shared resources that this app is registered on" v-if="app_.stats.resources">
                 <icon name="server" scale="0.8"/> {{app_.stats.resources.length}}
                 &nbsp;
                 &nbsp;
             </span>
+            -->
+            <span class="stat" title="Avarage runtime of recent jobs">
+                <icon name="clock" scale="0.8"/> {{avgRuntime(app_.stats.runtime_mean, app_.stats.runtime_std)}}
+                &nbsp;
+                &nbsp;
+            </span>
+
+
             <span class="stat" style="float: right;" title="success rate = finished/(failed+finished)" v-if="app_.stats.success_rate">
                 <icon name="check-circle" scale="0.8"/> {{app_.stats.success_rate.toFixed(1)}}%
             </span>
@@ -88,9 +97,10 @@ import datatypetag from '@/components/datatypetag'
 import doibadge from '@/components/doibadge'
 
 import appcache from '@/mixins/appcache'
+import filters from '@/mixins/filters'
 
 export default {
-    mixins: [appcache],
+    mixins: [ appcache, filters ],
     components: { contact, appavatar, tags, datatypetag, doibadge },
     props: {
         app: Object,

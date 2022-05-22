@@ -92,7 +92,7 @@
                     </b-badge>
 
                     <b-badge pill v-if="app.stats && app.stats.runtime_mean" class="bigpill" title="Average Runtime of 100 most recent jobs">
-                        <icon name="clock" style="opacity: 0.4;"/>&nbsp;&nbsp;&nbsp;{{avg_runtime(app.stats.runtime_mean, app.stats.runtime_std)}}
+                        <icon name="clock" style="opacity: 0.4;"/>&nbsp;&nbsp;&nbsp;{{avgRuntime(app.stats.runtime_mean, app.stats.runtime_std)}}
                     </b-badge>
                 </p>
                 <p class="desc">{{app.desc_override||app.desc}}</p>
@@ -378,11 +378,12 @@ import projectcard from '@/components/projectcard'
 import exampleworkflow from '@/components/exampleworkflow'
 
 import resource_cache from '@/mixins/resource_cache'
+import filters from '@/mixins/filters'
 
 const lib = require('@/lib');
 
 export default {
-    mixins: [ resource_cache ],
+    mixins: [ resource_cache, filters ],
     components: { 
         contact, 
         tags, 
@@ -479,17 +480,6 @@ export default {
          */
         trimGit: (text) => text.replace(/^[ \t]*(https?:\/\/)?github\.com\/?/g, ''),
 
-        avg_runtime(mean, std) {
-            let min = Math.round((mean-std/3)/(1000*60));
-            if(min < 0) min = 0;
-            let max = Math.round((mean+std/3)/(1000*60));
-            if(max<90) {
-                return min+" - "+max+" min";
-            }
-            let min_hours = Math.round(min/60*10)/10;
-            let max_hours = Math.round(max/60*10)/10;
-            return min_hours+" - "+max_hours+" hour";
-        },
 
         open_app() {
             //load app
