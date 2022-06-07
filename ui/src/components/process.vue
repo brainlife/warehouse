@@ -143,7 +143,6 @@
                             </span>
                             <small class="ioid" v-if="task.app">({{compose_desc(task.app.outputs, output.id)}})</small>
 
-
                             <b-collapse :id="task._id+'.'+output.id" style="margin-top: 8px;">
                                 <div class="subtitle">Metadata</div>
                                 <small>from config._output</small>
@@ -572,7 +571,7 @@ export default {
         compose_desc(iolist, id) {
             let entry = iolist.find(it=>it.id == id);
             let desc = id;
-            if(entry && entry.desc) desc += " / "+entry.desc;
+            if(entry && entry.desc) desc += " - "+entry.desc;
             return desc;
         },
 

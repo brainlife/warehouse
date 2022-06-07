@@ -17,10 +17,11 @@
                             ({{project.stats.datasets.size | filesize}})
                         </span>
                     </div>
-                    <!--
                     <span style="opacity: 0.2;">|</span>
-                    <icon name="id-badge" scale="0.7" style="opacity: 0.6" title="group id"/> {{project.group_id}}
-                    -->
+                    <!--<icon name="id-badge" scale="0.7" style="opacity: 0.6" title="group id"/>-->
+
+                    <span style="opacity: 0.5">Group</span>
+                    {{project.group_id}}
                 </div>
                 <span class="title">
                     {{project.name}} <b-badge class="list-badge" variant="primary" v-if="project.new">New</b-badge> 

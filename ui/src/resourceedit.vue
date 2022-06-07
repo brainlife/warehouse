@@ -69,7 +69,7 @@
                         <v-select v-if="projects" :options="projects" v-model="resource.gids" 
                             :reduce="r=>r.group_id" label="name" multiple/>
                         <p>
-                            <small>Please select projects that you'd like enable this resource. Any jobs submitted by any member of specified project will be executed on this resource.</small>
+                            <small>Please select projects that you'd like enable this resource. Any jobs submitted by any member of specified project will be executed on this resource. You have to be listed as administrator of the project to be able to select it.</small>
                         </p>
                     </b-col>
                     <br>

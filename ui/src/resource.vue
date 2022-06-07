@@ -317,7 +317,6 @@ import Vue from 'vue'
 import Router from 'vue-router'
 
 import pageheader from '@/components/pageheader'
-//import group from '@/components/group'
 import projectbar from '@/components/projectbar'
 import contact from '@/components/contact'
 import app from '@/components/app'

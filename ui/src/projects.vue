@@ -158,7 +158,7 @@ export default {
             this.loading = true;
             this.$http.get('project/query', {params: {
                 q: this.query,
-                select: 'name desc group_id stats.datasets stats.instances create_date admins members guests access',
+                select: 'name desc avatar group_id stats.datasets stats.instances create_date admins members guests access',
             }}).then(res=>{
                 this.projects = res.data;
 
@@ -176,8 +176,8 @@ export default {
 
                 this.projects.forEach(p=>{
                     if(Vue.config.user && (
-                        p.admins.includes(Vue.config.user.sub) || 
-                        p.members.includes(Vue.config.user.sub) || 
+                        p.admins.includes(Vue.config.user.sub) ||
+                        p.members.includes(Vue.config.user.sub) ||
                         p.guests.includes(Vue.config.user.sub))
                     ) {
                         this.my_projects.push(p);
@@ -191,7 +191,6 @@ export default {
                     //then add it to recentProject list
                     if(!lastOpened) p.new = true;
                     if(p.new || lastOpened > lastMonth) this.recentProjects.push(p);
-
                 });
                 this.loading = false;
                 this.$nextTick(()=>{

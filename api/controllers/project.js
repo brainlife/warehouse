@@ -123,6 +123,7 @@ router.get('/query',common.jwt({credentialsRequired: false}), (req, res, next)=>
             let tokens = [
                 project.name,
                 project.desc,
+                project.group_id.toString(),
             ];
 
             function addContactTokens(c) {
@@ -131,7 +132,7 @@ router.get('/query',common.jwt({credentialsRequired: false}), (req, res, next)=>
                 tokens.push(c.username);
                 tokens.push(c.email);
             }
-            
+
             if(project.admins) project.admins.map(common.deref_contact).forEach(addContactTokens);
             if(project.members) project.members.map(common.deref_contact).forEach(addContactTokens);
             if(project.guests) project.guests.map(common.deref_contact).forEach(addContactTokens);
@@ -144,6 +145,7 @@ router.get('/query',common.jwt({credentialsRequired: false}), (req, res, next)=>
             tokens = tokens.filter(token=>!!token).map(token=>token.toLowerCase());
             project._tokens = tokens.join(" ");
         });
+
         const filtered = projects.filter(project=>{
             let match = true;
             queryTokens.forEach(token=>{
