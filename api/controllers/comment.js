@@ -9,11 +9,14 @@ const common = require('../common');
 
 /**
  * @apiGroup Comment
- * @api {get} /comment/project/:projectid  Get Comment List of Particular Project
- * @apiHeader {String} authorization    A valid JWT token "Bearer: xxxxx"
- * @apiParam {Number} [limit]   Optional Maximum number of records to return - defaults to 0(no limit)
+ * @api {get} /comment/project/:projectid   Get Comment List of Particular Project
+ * @apiParam {String} projectid             Project ID to post comment to
+ *
+ * @apiHeader {String} authorization        A valid JWT token "Bearer: xxxxx"
+ * @apiParam {Number} [limit]               Optional Maximum number of records to return 
+                                                - defaults to 0(no limit)
  * 
- * @apiSuccess {Object}            List of Comments 
+ * @apiSuccess {Object}                     List of Comments 
  * 
  */
 router.get('/project/:id', common.jwt(), (req, res, next) =>{
@@ -36,11 +39,13 @@ router.get('/project/:id', common.jwt(), (req, res, next) =>{
 
 /**
  * @apiGroup Comments
- * @api {post} /comment/project/:id Post comment on a Project
+ * @api {post} /comment/project/:id     Post comment on a Project
+ * @apiParam {String} id                Project ID to post comment to
+ *
+ * @apiQuery {String} comment
+ *
  * @apiHeader {String} authorization    A valid JWT token "Bearer: xxxxx"
- * @apiParam {String} comment
- * @apiParam {project} projectID
- * @apiSuccess {}            Comment registered 
+ * @apiSuccess {Object}                 Comment registered 
  */
 
 router.post('/project/:id', common.jwt(), function(req, res, next) {
@@ -67,10 +72,13 @@ router.post('/project/:id', common.jwt(), function(req, res, next) {
 
 /**
  * @apiGroup Comments
- * @api {patch} /comment/:id Update comment on a Project
+ * @api {patch} /comment/:id            Update comment on a Project
+ * @apiParam {String} id                Comment ID to update
+ *
+ * @apiQuery {String} comment
+ *
  * @apiHeader {String} authorization    A valid JWT token "Bearer: xxxxx"
- * @apiParam {String} comment
- * @apiSuccess {}            Comment updated 
+ * @apiSuccess {Object}                 Comment updated 
  */
 router.patch('/:id', common.jwt(), (req, res, next)=>{
     if(!req.body.comment) return next("comment missing");
@@ -91,9 +99,11 @@ router.patch('/:id', common.jwt(), (req, res, next)=>{
 
 /**
  * @apiGroup Comments
- * @api {delete} /comment/id Deleted comment on a Project
+ * @api {delete} /comment/:id           Deleted comment on a Project
+ * @apiParam {String} id                Comment ID to delete
+ *
  * @apiHeader {String} authorization    A valid JWT token "Bearer: xxxxx"
- * @apiSuccess {}            Comment Deleted 
+ * @apiSuccess {Object}                 Comment Deleted
  */
 router.delete('/:id', common.jwt(), (req, res)=>{
     db.Comments.findById(req.params.id, (err, comment)=>{

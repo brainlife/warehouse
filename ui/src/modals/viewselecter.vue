@@ -33,11 +33,6 @@ import Vue from 'vue'
 export default {
     data () {
         return {
-            //set by viewselecter.open
-            //datatype: null,
-            //task: null, 
-            //subdir: null,
-            //files: null, //set for datatypes that still stores things on the root with files mapping
             opt: null,
             config: Vue.config,
 

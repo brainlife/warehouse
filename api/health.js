@@ -4,7 +4,7 @@ const fs = require('fs');
 const config = require('./config');
 const db = require('./models');
 const common = require('./common');
-const pkg = require('../package');
+const pkg = require('./package');
 
 const r = common.connectRedis();
 

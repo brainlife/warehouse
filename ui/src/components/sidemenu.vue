@@ -187,7 +187,7 @@ export default {
         },
 
         clickTitle() {
-            if(this.$root.sidemenuWide) document.location = "https://brainlife.io";
+            if(this.$root.sidemenuWide) document.location = "https://brainlife.io/about";
             else this.$root.toggleSideMenu();
         },
 

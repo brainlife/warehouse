@@ -6,7 +6,6 @@
         <task :task="novnc_task"/>
     </div>
     <div v-else style="padding: 20px;">
-        <!--<h4>Staging Data</h4>-->
         <task :task="task"/>
     </div>
     <p v-if="!novnc_task && type" class="waiting"><b>{{type}}</b> UI will start once the data is ready.</p>
@@ -24,7 +23,6 @@ const novnc_task_name="brainlife.novnc";
 
 export default {
     mixins: [ wait ],
-    //props: [ 'taskid', 'type', 'subdir' ], //deprecatd - use uiconfig
     components: { 
         task
     },

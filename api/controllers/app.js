@@ -22,11 +22,10 @@ function canedit(user, rec) {
     return false;
 }
 
-//TODO - do we still need this now that we have /query api?
 /**
  * @apiGroup App
  * @api {get} /app              Query apps
- * @apiDescription              Query registered apps
+ * @apiDescription              Query registered apps (deprecated by /query api)
  *
  * @apiParam {Object} [find]    Optional Mongo find query - defaults to {}
  * @apiParam {Object} [sort]    Optional Mongo sort object - defaults to {}
@@ -44,7 +43,7 @@ router.get('/', common.jwt({credentialsRequired: false}), (req, res, next)=>{
     let limit = req.query.limit||100;
     var ands = [];
     if(req.query.find) ands.push(JSON.parse(req.query.find));
-    
+
     common.getprojects(req.user, (err, project_ids)=>{
         if(err) return next(err);
         ands.push({$or: [ 
@@ -81,24 +80,24 @@ router.get('/', common.jwt({credentialsRequired: false}), (req, res, next)=>{
 
 /**
  * @apiGroup App
- * @api {get} /app/query        
+ * @api {get} /app/query
  * @apiDescription              Query apps based on search query (public)
  *
- * @apiParam {String} q         Query used to search for apps
+ * @apiQuery {String} q         Query used to search for apps
  *
  * @apiHeader {String} [authorization]
  *                              A valid JWT token "Bearer: xxxxx"
  * @apiSuccess {Object[]}       List of apps (populated with datatype.name / contributors)
  */
 router.get('/query', common.jwt({credentialsRequired: false}), (req, res, next)=>{
-    
+
     //construct db level query (not removed, and apps that user has access to)
     //and get *all* apps (minus some heavy/unnecessary stuff)
     common.getprojects(req.user, async (err, project_ids)=>{
         if(err) return next(err);
         const apps = await db.Apps.find({
             removed: false,
-            $or: [ 
+            $or: [
                 //if projects is set, user need to have access to it
                 {projects: {$in: project_ids}},
 
@@ -196,59 +195,7 @@ router.get('/example/:id', common.jwt({credentialsRequired: false}), async (req,
     } else {
         console.log("app example not cached yet", cachefname);
         return res.json([]); 
-
-        /*
-        console.log("loading example workflow");
-        const provs = await provenance.sampleTerminalTasks(req.params.id);
-        provs.map(provenance.setupShortcuts);
-
-        const commonProvs = [];
-        const clusters = provenance.cluster(provs);
-        clusters.forEach(cluster=>{
-            //grab the first one from each cluster
-            commonProvs.push(provs[cluster[0]]);
-        }); 
-        fs.writeFileSync(cachefname, JSON.stringify(commonProvs));
-        res.json(commonProvs);
-        */
     }
-
-    /*
-    const cnodes = provenance.countProvenances(provs);
-    const probGroups = provenance.computeProbabilities(cnodes);
-    //grab the top 3 groups
-    probGroups.splice(0,3).forEach(probGroup=>{
-        const idx = probGroup.provs[0]; //grab the first one from each group
-        console.log("picking",idx, probGroup.prob);
-        const prov = provs[idx];
-        prov._prob = probGroup.prob;
-        prov._probSiblings = probGroup.provs.length;
-        commonProvs.push(prov);
-    });
-
-    await common.cacheDatatypes();
-    commonProvs.forEach(prov=>{
-        //remove things we don't want to show to the user
-        prov.nodes.forEach(node=>{
-            delete node.project;
-            delete node.desc;
-            delete node.userId;
-            delete node.meta;
-            delete node.datasetId;
-            node.tags = [];
-        });
-
-        //populate datatype info
-        prov.nodes.filter(n=>!!n.datatype).forEach(node=>{
-            if(typeof node.datatype == 'object') return; //duplicate prov that's already populated?
-            const id = node.datatype;
-            const datatype = common.datatypeCache[id];
-            let name = "unknown-dt-"+id;
-            if(datatype) name = datatype.name;
-            node.datatype = { id, name, }
-        });
-    });
-    */
 });
 
 //experimental - query task provenance (admin only)
@@ -262,9 +209,10 @@ router.get('/taskprov/:id', common.jwt(), async (req, res, next)=>{
 
 /**
  * @apiGroup App
- * @api {get} /app/:id          Get App
+ * @api {get} /app/:id          
  * @apiDescription              Get App detail (no AC as long as a valid App ID is given)
  *
+ * @apiParam {String} id        APP ID
  * @apiParam {String} [select]  Fields to load - multiple fields can be entered with %20 as delimiter
  * @apiParam {String} [populate] Relational fields to populate
  *
@@ -290,17 +238,6 @@ router.get('/:id/badge', (req, res, next)=>{
     db.Apps.findById(req.params.id).select('stats').exec((err, app)=>{
         if(err) return next(err);
         if(!app) return next("no such app");
-        /*
-10|warehou | {
-10|warehou |     "stats": {
-10|warehou |         "stars": 1,
-10|warehou |         "requested": 288,
-10|warehou |         "users": 2,
-10|warehou |         "success_rate": 83
-10|warehou |     },
-10|warehou |     "_id": "58c56d92e13a50849b258801"
-10|warehou | }
-        */
         res.redirect('https://img.shields.io/badge/brainlife-'+app.stats.requested+' runs ('+app.stats.users+' users)-brightgreen.svg');
     });
 });
@@ -320,11 +257,6 @@ router.get('/:id/metrics', (req, res, next)=>{
             if(err) return next(err);
             if(json.length == 0) return res.json([]); //maybe not reported recently?
             let points = json[0].datapoints;
-            /*
-            //TODO - insert artificial 0 value if timestams jumps more than 90 seconds (should be reported every 60 seconds)
-            let previous = null;
-            points.forEach(point=>{ });
-            */
             res.json(points);
         });
     });
@@ -332,28 +264,28 @@ router.get('/:id/metrics', (req, res, next)=>{
 
 /**
  * @apiGroup App
- * @api {post} /app             Post App
+ * @api {post} /app             
  * @apiDescription              Register new app (don't set id to null)
  *
- * @apiParam {String} [name]    User friendly name for this app
- * @apiParam {String} [desc]    Description for this app
- * @apiParam {String[]} [tags]  List of tags to classify this app
- * @apiParam {String} [avatar]  URL for application avatar
- * @apiParam {String} [github]  github id/name for this app
- * @apiParam {Number} [retry]   Number of time this app should be retried (0 by default)
- * @apiParam {Object[]} [inputs]    Input datatypes. Array of {id, datatype, datatype_tags[]}
- * @apiParam {Object[]} [outputs]   Output datatypes. same as input datatype
- * @apiParam {String[]} [projects]  List of project IDs that this app should be exposed in 
+ * @apiQuery {String} [name]    User friendly name for this app
+ * @apiQuery {String} [desc]    Description for this app
+ * @apiQuery {String[]} [tags]  List of tags to classify this app
+ * @apiQuery {String} [avatar]  URL for application avatar
+ * @apiQuery {String} [github]  github id/name for this app
+ * @apiQuery {Number} [retry]   Number of time this app should be retried (0 by default)
+ * @apiQuery {Object[]} [inputs]    Input datatypes. Array of {id, datatype, datatype_tags[]}
+ * @apiQuery {Object[]} [outputs]   Output datatypes. same as input datatype
+ * @apiQuery {String[]} [projects]  List of project IDs that this app should be exposed in 
  *
- * @apiParam {String} [github]   Github org/name
- * @apiParam {String} [github_branch]   Github default branch/tag name
- * @apiParam {String} [deprecated_by]   App ID that this App was deprecated by
+ * @apiQuery {String} [github]   Github org/name
+ * @apiQuery {String} [github_branch]   Github default branch/tag name
+ * @apiQuery {String} [deprecated_by]   App ID that this App was deprecated by
  *
- * @apiParam {Object} [config]   configuration template
+ * @apiQuery {Object} [config]   configuration template
  *
- * @apiParam {String} [dockerhub]   Dockerhub id/name
+ * @apiQuery {String} [dockerhub]   Dockerhub id/name
  *
- * @apiParam {String[]} admins  Admin IDs
+ * @apiQuery {String[]} admins  Admin IDs
  *
  * @apiHeader {String} authorization 
  *                              A valid JWT token "Bearer: xxxxx"
@@ -363,7 +295,6 @@ router.get('/:id/metrics', (req, res, next)=>{
 router.post('/', common.jwt(), (req, res, next)=>{
 
     req.body.user_id = req.user.sub;
-    
     let app = new db.Apps(req.body);
 
     async.series([
@@ -372,24 +303,12 @@ router.post('/', common.jwt(), (req, res, next)=>{
             logger.debug("validating");
             common.validate_projects(req.user, req.body.projects, cb);
         },
-        
+
         //update info from github
         cb=>{
             logger.debug("loading github info");
             common.update_appinfo(app, cb);
         },
-
-        /* let's do this async so we can monitor datacite situation 
-        //mint doi
-        cb=>{
-            logger.debug("minting doi");
-            common.get_next_app_doi((err, doi)=>{
-                if(err) return cb(err);
-                app.doi = doi;
-                cb();
-            });
-        },
-        */
 
         //save app (and generate _id)
         cb=>{
@@ -401,19 +320,6 @@ router.post('/', common.jwt(), (req, res, next)=>{
             });
         },
 
-        /*
-        //store doi meta
-        cb=>{
-            logger.debug("posting metadata for doi");
-            let metadata = common.compose_app_datacite_metadata(app);
-            common.doi_post_metadata(metadata, err=>{
-                if(err) return cb(err);
-                //then attach url to it (to "mint" it!)
-                let url = config.warehouse.url+"/app/"+app._id;  
-                common.doi_put_url(app.doi, url, cb);
-            });
-        },
-        */
     ], err=>{
         if(err) return next(err);
         app = JSON.parse(JSON.stringify(app));
@@ -428,20 +334,22 @@ router.post('/', common.jwt(), (req, res, next)=>{
  *                              
  * @apiDescription              Update App
  *
- * @apiParam {String} [name]    User friendly name for this container 
- * @apiParam {String} [desc]    Description for this dataset 
- * @apiParam {String[]} [tags]  List of tags to classify this app
- * @apiParam {String} [avatar]  URL for application avatar
- * @apiParam {String} [github]  github id/name for this app
- * @apiParam {Object[]} [inputs]    Input datatypes and tags
- * @apiParam {Object[]} [outputs]   Output datatypes and tags
- * @apiParam {String[]} [projects]  List of project IDs that this app should be exposed in 
+ * @apiParam {String} id        APP ID
+
+ * @apiQuery {String} [name]    User friendly name for this container 
+ * @apiQuery {String} [desc]    Description for this dataset 
+ * @apiQuery {String[]} [tags]  List of tags to classify this app
+ * @apiQuery {String} [avatar]  URL for application avatar
+ * @apiQuery {String} [github]  github id/name for this app
+ * @apiQuery {Object[]} [inputs]    Input datatypes and tags
+ * @apiQuery {Object[]} [outputs]   Output datatypes and tags
+ * @apiQuery {String[]} [projects]  List of project IDs that this app should be exposed in 
  *
- * @apiParam {String} [dockerhub]  
- * @apiParam {String} [deprecated_by]   App ID that this App was deprecated by
- * @apiParam {Boolean} [removed]  Set it to true if this App is removed
+ * @apiQuery {String} [dockerhub]
+ * @apiQuery {String} [deprecated_by]   App ID that this App was deprecated by
+ * @apiQuery {Boolean} [removed]  Set it to true if this App is removed
  *
- * @apiParam {String[]} [admins]  List of admins (auth sub)
+ * @apiQuery {String[]} [admins]  List of admins (auth sub)
  *
  * @apiHeader {String} authorization 
  *                              A valid JWT token "Bearer: xxxxx"
@@ -532,7 +440,9 @@ router.put('/:id', common.jwt(), (req, res, next)=>{
  *                              Remove registered app (only by the user registered it)
  * @apiDescription              Mark the application as removed (redundant with put?)
  *
- * @apiHeader {String} authorization 
+ * @apiParam {String} id        APP ID
+
+ * @apiHeader {String} authorization
  *                              A valid JWT token "Bearer: xxxxx"
  */
 router.delete('/:id', common.jwt(), (req, res, next)=>{
@@ -546,21 +456,11 @@ router.delete('/:id', common.jwt(), (req, res, next)=>{
             app.save(err=>{
                 if(err) return next(err);
                 res.json({status: "ok"});
-            }); 
+            });
         } else return res.status(401).end();
     });
 });
 
-/**
- * @apiGroup App
- * @api {delete} /app/github/:org/:name
- *                              Query github information (tab, branches) 
- *                              This works for private repos
- * @apiDescription              Mark the application as removed (redundant with put?)
- *
- * @apiHeader {String} authorization 
- *                              A valid JWT token "Bearer: xxxxx"
- */
 router.get('/info/:org/:name', common.jwt(), async (req, res, next)=>{
     let service = req.params.org+"/"+req.params.name; //TODO validate?
     try {

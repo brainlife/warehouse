@@ -10,7 +10,7 @@ const redis = require('redis');
 const fs = require('fs');
 const child_process = require('child_process');
 
-const pkg = require('../package.json');
+const pkg = require('../api/package.json');
 
 const config = require('../api/config');
 const db = require('../api/models');

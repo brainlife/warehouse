@@ -1,4 +1,3 @@
-
 import Vue from 'vue'
 
 export default {
@@ -7,13 +6,16 @@ export default {
             datatypes: {},
         }
     },
+
     methods: {
         async loadDatatypes(find, cb) {
             //load datatype catalog
             try {
                 let res = await this.$http.get('datatype', {params: {
                     find: JSON.stringify(find),
-                    select: '-readme -admins -bids -samples -uis',
+
+                    //TODO we should probably let client decide this?
+                    select: '-readme -admins -bids -samples', 
                     limit: 1000,
                 }});
                 this.datatypes = {};
@@ -47,6 +49,6 @@ export default {
                 cb(err);
             }
         },
-        
+
     }
 }

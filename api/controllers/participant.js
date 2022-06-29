@@ -40,9 +40,11 @@ function getParticipants(req, project, cb) {
 
 /**
  * @apiGroup Participant
- * @api {get} /participant/:projectid  
- *                              Load participants data. Guest user can download participants info if it's set to use
+ * @api {get} /participant/:projectid
+ * @apiDescription              Load participants data. Guest user can download participants info 
+ *                              if it's set to use
  *                              publishParticipantsInfo
+ * @apiParam {String} [projectid]   Project ID load participants data from
  * @apiHeader {String} [authorization]
  *                              A valid JWT token "Bearer: xxxxx"
  * @apiSuccess {Object}         Content of participants record
@@ -99,14 +101,15 @@ router.get('/:projectid', common.jwt({credentialsRequired: false}), (req, res, n
  * @api {put} /participant/:projectid
  *                              Upsert participants(subjects) and columns info
  *
- * @apiParam {Object[]} [subjects]    
+ * @apiParam {String} [projectid]   
+                                Project ID to upsert
+ * @apiQuery {Object[]} [subjects]    
  *                              List of objects containing subject phenotype
- * @apiParam {Object} [columns] 
+ * @apiQuery {Object} [columns] 
  *                              An object containing BIDS participants column info
  *
  * @apiHeader {String} authorization 
  *                              A valid JWT token "Bearer: xxxxx"
- * @apiSuccess {Object}         { status: "success" }
  */
 router.put('/:projectid', common.jwt(), (req, res, next)=>{
     //access control
@@ -159,9 +162,12 @@ router.put('/:projectid', common.jwt(), (req, res, next)=>{
  * @api {patch} /participant/:projectid/:subject
  *                              Update participants data for specific subject
  *
+ * @apiParam {String} [projectid]   
+                                Project ID patch the participant into
+ * @apiParam {String} [subject]   
+                                subject ID to patch
  * @apiHeader {String} authorization 
  *                              A valid JWT token "Bearer: xxxxx"
- * @apiSuccess {Object}         { n: 1, nModified: 1, ok: 1 }
  */
 /* who uses this?
 router.patch('/:projectid/:subject', common.jwt(), (req, res, next)=>{

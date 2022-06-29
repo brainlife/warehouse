@@ -108,13 +108,17 @@ router.get('/list/:projectid', async (req, res, next)=>{
 
 /**
  * @apiGroup Secondary
- * @api {get} /secondary/:task_id/:path
+ * @api {get} /secondary/:task_id
  *                          Download secondary content for a given dtv task / and path
  *                          jwt token is optional for task with config._public set to allow secondary content 
  *                          exposed for published secondary data
- * @apiHeader {String} authorization 
- *                          A valid JWT token "Bearer: xxxxx"
- * @apiSuccess {Object}     Directory structure of secondary content
+ * @apiParam {string} task_id
+ *                          Task ID to load secondary data
+ * @apiQuery {string} p     File path to load the secondary data from
+ * @apiQuery {string} at    Access token to override the http header
+ * @apiHeader {String} authorization
+ *                              A valid JWT token "Bearer: xxxxx"
+ * @apiSuccess {Object}         Directory structure of secondary content
  */
 router.get('/:task_id/*', common.jwt({
     credentialsRequired: false,

@@ -37,6 +37,19 @@
 
         <h5>Public Profile</h5>
         <p><small>The following information will be shared publically among all brainlife users.</small></p>
+
+        <b-row>
+            <b-col cols="2">
+                <span class="form-header">Email *</span>
+            </b-col>
+            <b-col>
+                <b-form-input v-model="email" required readonly/>
+                <small>Only administrator can change the account email address</small>
+                <br>
+                <br>
+            </b-col>
+        </b-row>
+
         <b-row>
             <b-col cols="2">
                 <span class="form-header">Full Name *</span>
@@ -208,6 +221,8 @@ export default {
                 { text: '>10 years', value: 4 },
             ],
 
+            email: "", //readonly
+
             fullname: "",
             profile: {
                 public: {
@@ -242,6 +257,7 @@ export default {
 
     mounted() {
         this.$http.get(Vue.config.auth_api+"/profile").then(res=>{
+            this.email = res.data.email;
             this.fullname = res.data.fullname;
             if(res.data.profile) lib.mergeDeep(this.profile, res.data.profile);
             const jwt = Vue.config.jwt;
