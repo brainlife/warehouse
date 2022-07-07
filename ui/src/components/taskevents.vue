@@ -10,7 +10,7 @@
         <contact :id="data.value" size="small"/>
     </template>
     <template #cell(status)="data">
-        <statustag :status="data.value"/>
+        <statustag :status="data.value" hideicon="true"/>
     </template>
     <template #cell(status_msg)="data">
         <pre>{{data.value}}</pre>

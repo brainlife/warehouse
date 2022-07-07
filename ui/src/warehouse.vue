@@ -232,7 +232,8 @@ table.info td {
 }
 */
 
-#warehouse .table thead th {
+#warehouse .table thead th,
+#warehouse .table td {
     opacity: 0.8;
     text-transform: uppercase;
     padding: 5px;
