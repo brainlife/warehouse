@@ -13,10 +13,9 @@ const UglifyJsPlugin = require('uglifyjs-webpack-plugin')
 const BundleAnalyzerPlugin = require('webpack-bundle-analyzer').BundleAnalyzerPlugin;
 const process = require('process');
 
-
-const env = process.env.NODE_ENV === 'testing'
-  ? require('../config/test.env')
-  : require('../config/prod.env')
+//const env = process.env.NODE_ENV === 'prod' ? require('../config/prod.env') : require('../config/dev.env')
+const env = require('../config/prod.env');
+//console.debug("building with env", process.env.NODE_ENV, env);
 
 const plugins = [
     // http://vuejs.github.io/vue-loader/en/workflow/production.html
@@ -122,7 +121,8 @@ const plugins = [
 */
 ];
 
-if(process.stdout.isTTY) {
+//if(process.stdout.isTTY) {
+if(process.env.BUNDLE_ANALYZE) {
     plugins.push(new BundleAnalyzerPlugin());
 }
 const webpackConfig = merge(baseWebpackConfig, {
