@@ -1,0 +1,67 @@
+{
+  "name": "warehouse",
+  "version": "1.0.0",
+  "description": "Service that allows data warehousing and workfow orchestration",
+  "main": "index.js",
+  "scripts": {
+    "apidoc": " apidoc -i ./ -o ../docs/apidoc/",
+    "cover": "node_modules/istanbul/lib/cli.js cover node_modules/mocha/bin/_mocha -- -R spec test/*.js",
+    "deploy": "ssh -t test.brainlife.io sudo \"sudo /root/docker/warehouse/update.sh\"",
+    "deploy-prod": "ssh -t brainlife.io sudo \"sudo /root/docker/warehouse/update.sh\""
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/brain-life/warehouse.git"
+  },
+  "author": "Soichi Hayashi <hayashis@iu.edu> (http://soichi.us)",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/brain-life/warehouse/issues"
+  },
+  "homepage": "https://github.com/brain-life/warehouse#readme",
+  "dependencies": {
+    "@cdxoo/dbscan": "^1.0.2",
+    "amqp": "^0.2.7",
+    "archiver": "^5.3.1",
+    "async": "^3.2.3",
+    "atob": "^2.1.2",
+    "aws-sdk": "^2.1128.0",
+    "axios": "^0.21.4",
+    "body-parser": "^1.20.0",
+    "brainlife": "^1.5.43",
+    "compression": "^1.7.3",
+    "cors": "^2.8.5",
+    "coveralls": "^3.1.1",
+    "crypto": "^1.0.1",
+    "express": "^4.18.1",
+    "express-jwt": "^6.1.2",
+    "express-winston": "^3.0.1",
+    "gunzip-stream": "^1.0.1",
+    "istanbul": "^0.4.5",
+    "keyword-extractor": "0.0.20",
+    "mathjs": "^10.5.1",
+    "mongoose": "^6.3.2",
+    "morgan": "^1.10.0",
+    "n-stopwords": "^1.1.2",
+    "nocache": "^2.0.0",
+    "nodemailer": "^6.7.5",
+    "pkgcloud": "^2.2.0",
+    "redis": "^3.1.2",
+    "request": "^2.88.2",
+    "request-promise": "^4.2.6",
+    "request-promise-native": "^1.0.9",
+    "ssh2": "^1.10.0",
+    "stream-meter": "^1.0.4",
+    "tar": "^4.4.19",
+    "tmp": "^0.2.1",
+    "winston": "^3.7.2",
+    "xml-escape": "^1.1.0",
+    "xml2js": "^0.4.23"
+  },
+  "devDependencies": {
+    "chai": "^4.3.6",
+    "mocha": "^5.2.0",
+    "node-geocoder": "^3.29.0",
+    "supertest": "^3.3.0"
+  }
+}
