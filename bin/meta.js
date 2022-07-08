@@ -1,22 +1,17 @@
 #!/usr/bin/env node
 
-const winston = require('winston');
 const async = require('async');
 const request = require('request');
 const fs = require('fs');
 const jsonwebtoken = require('jsonwebtoken');
 
 const config = require('../api/config');
-const logger = winston.createLogger(config.logger.winston);
 const db = require('../api/models');
 const common = require('../api/common');
 
 //TODO - don't let anything write to stdout other than the meta.json.
 //better option is to specify where to write it, and write to that file
 config.mongoose_debug = false;
-
-//suppress non error out
-config.logger.winston.transports[0].level = 'error';
 
 let output_filename = process.argv[2];
 if(!output_filename) throw "please specify output filename";
@@ -30,11 +25,11 @@ db.init(err=>{
     async.series(
     [
         next=>{
-            logger.info("caching contact");
+            console.info("caching contact");
             common.startContactCache(next);
         },
         next=>{
-            logger.info("processing apps");
+            console.info("processing apps");
             db.Apps.find({
                 //removed: false, //let's just output all..
             })
@@ -45,7 +40,7 @@ db.init(err=>{
             });
         },
         next=>{
-            logger.info("processing pubs");
+            console.info("processing pubs");
             db.Publications.find({
                 //removed: false, //let's just output all..
             })
@@ -57,7 +52,7 @@ db.init(err=>{
             });
         },
         next=>{
-            logger.info("processing projects");
+            console.info("processing projects");
             db.Projects.find({
                 //removed: false, //let's just output all..
                 $or: [
@@ -77,13 +72,11 @@ db.init(err=>{
 
     ],
     err=>{
-        if(err) logger.error(err);
-        //console.log(JSON.stringify(info_apps, null, 4));
-        //console.log(JSON.stringify(info_pubs, null, 4));
+        if(err) console.error(err);
 
         fs.writeFileSync(output_filename, JSON.stringify({apps: info_apps, pubs: info_pubs, projs: info_projs}, null, 4));
 
-        logger.info("all done");
+        console.info("all done");
         db.disconnect();
         
         //amqp disconnect() is broken
@@ -112,7 +105,7 @@ function format_date(d) {
 }
 
 function handle_app(app, cb) {
-    logger.debug(app.name, app._id.toString());
+    console.debug(app.name, app._id.toString());
     let info = {
         title: app.name,
         meta: {
@@ -131,17 +124,11 @@ function handle_app(app, cb) {
     };
     if(app.contributors) info.meta.citation_author = app.contributors.map(contact=>{ return contact.name}).join(", "),
     info_apps[app._id.toString()] = info;
-    /*
-    xml2js.parseString(common.compose_app_datacite_metadata(app), {trim: false}, (err, info)=>{
-        if(err) return cb(err);
-        info_pubs[app._id.toString()] = info.resource;
-    });
-    */
     cb();
 }
 
 function handle_pub(pub, cb) {
-    logger.debug(pub.name, pub._id.toString());
+    console.debug(pub.name, pub._id.toString());
     let info = {
         title: pub.name,
         meta: {
@@ -169,17 +156,11 @@ function handle_pub(pub, cb) {
         return contact.fullname;
     }).join(", "),
     info_pubs[pub._id.toString()] = info;
-    /*
-    xml2js.parseString(common.compose_pub_datacite_metadata(pub), {trim: false}, (err, info)=>{
-        if(err) return cb(err);
-        info_pubs[pub._id.toString()] = info.resource;
-    });
-    */
     cb();
 }
 
 function handle_proj(proj, cb) {
-    logger.debug(proj.name, proj._id.toString());
+    console.debug(proj.name, proj._id.toString());
     let info = {
         title: proj.name,
         meta: {
@@ -197,14 +178,7 @@ function handle_proj(proj, cb) {
             publish_date: format_date(proj.create_date),
         }
     };
-    //if(app.contributors) info.meta.citation_author = app.contributors.map(contact=>{ return contact.name}).join(", "),
     info_projs[proj._id.toString()] = info;
-    /*
-    xml2js.parseString(common.compose_app_datacite_metadata(app), {trim: false}, (err, info)=>{
-        if(err) return cb(err);
-        info_pubs[app._id.toString()] = info.resource;
-    });
-    */
     cb();
 }
 
