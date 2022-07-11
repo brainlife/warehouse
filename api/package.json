@@ -4,6 +4,7 @@
   "description": "Service that allows data warehousing and workfow orchestration",
   "main": "index.js",
   "scripts": {
+    "start": "node ./warehouse.js",
     "apidoc": " apidoc -i ./ -o ../docs/apidoc/",
     "cover": "node_modules/istanbul/lib/cli.js cover node_modules/mocha/bin/_mocha -- -R spec test/*.js",
     "deploy": "ssh -t test.brainlife.io sudo \"sudo /root/docker/warehouse/update.sh\"",

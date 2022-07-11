@@ -18,8 +18,10 @@ const config = require('./config');
 const db = require('./models');
 const mongoose = require('mongoose');
 
-exports.connectRedis = function() {
-    const con = redis.createClient(config.redis.port, config.redis.server);
+let redisCon;
+exports.connectRedis = ()=>{
+    if(redisCon) return redisCon;
+    const con = redis.createClient(config.redis);
     con.on('error', console.error);
     con.on('ready', ()=>{ console.log("connected to redis") });
     return con;
