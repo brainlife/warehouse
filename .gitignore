@@ -8,7 +8,9 @@ ui/npm-debug.log
 ui/yarn-error.log
 ui/config/dev.env.js
 **/barn
-docker/config
+docker/config/api/warehouse.jwt
+docker/config/api/warehouse.key
+docker/config/api/warehouse.pub
 ui/config/index.js
 ui/config/dev.env.js
 ui/config/npm-debug.log
