@@ -22,9 +22,16 @@ module.exports = merge(baseWebpackConfig, {
   //devtool: '#cheap-module-eval-source-map',
 
   plugins: [
-    new webpack.DefinePlugin({
-      'process.env': config.dev.env
-    }),
+    // Setting whole obhects are not recommended
+    // This sets each key for the process variable
+    new webpack.DefinePlugin(
+      Object
+        .entries(config.dev.env)
+        .reduce((o, [k, v]) => {
+            o[`process.env.${k}`] = v.constructor.name !== "String" ? v : JSON.stringify(v);
+            return o
+        }, {})
+    ),
     // https://github.com/glenjamin/webpack-hot-middleware#installation--usage
     new webpack.HotModuleReplacementPlugin(),
     new webpack.NoEmitOnErrorsPlugin(),

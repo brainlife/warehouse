@@ -1,5 +1,6 @@
 'use strict'
-require('./check-versions')()
+// @TODO not sure why this isnt working
+// require('./check-versions')()
 
 const config = require('../config')
 
@@ -11,7 +12,13 @@ const proxyMiddleware = require('http-proxy-middleware')
 const webpackConfig = require('./webpack.dev.conf');
 
 // default port where dev server listens for incoming traffic
-const port = process.env.PORT || config.dev.port
+const {
+    URL,
+    AUTHORITY,
+} = config.dev.env;
+
+const [HOST, PORT] = AUTHORITY.split(':');
+
 // automatically open browser, if not set will be false
 const autoOpenBrowser = !!config.dev.autoOpenBrowser
 // Define HTTP proxies to your custom API backend
@@ -51,10 +58,11 @@ app.use(require('connect-history-api-fallback')())
 app.use(devMiddleware)
 
 // serve pure static assets
-const staticPath = path.posix.join(config.dev.assetsPublicPath, config.dev.assetsSubDirectory)
+const staticPath = path.posix.join(
+    config.dev.assetsPublicPath,
+    config.dev.assetsSubDirectory
+)
 app.use(staticPath, express.static('./static'))
-
-const uri = 'http://localhost:' + port
 
 var _resolve
 var _reject
@@ -65,19 +73,20 @@ var readyPromise = new Promise((resolve, reject) => {
 
 var server
 var portfinder = require('portfinder')
-portfinder.basePort = port
+portfinder.basePort = +PORT
 
 console.log('> Starting dev server...')
-devMiddleware.waitUntilValid(() => {
+devMiddleware.waitUntilValid(() => { 
+  // @TODO port finding breaks sync with docker-compose,
+  // ports may not be the same
   portfinder.getPort((err, port) => {
     if (err) {
       _reject(err)
     }
     process.env.PORT = port
-    var uri = 'http://localhost:' + port
-    console.log('> Listening at ' + uri + '\n')
-    if(autoOpenBrowser) opn(uri);
-    server = app.listen(port)
+    console.log('> Listening at ' + URL + '\n')
+    if(autoOpenBrowser) opn(URL);
+    server = app.listen(port, HOST)
     _resolve()
   })
 })

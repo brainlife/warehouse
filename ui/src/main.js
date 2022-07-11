@@ -236,27 +236,27 @@ Vue.filter('formatNumber', v=>{
 // TODO - find a way to put these somewhere under /config
 //
 
-var apihost = "https://"+window.location.hostname;
-var apihost_ws = "wss://"+window.location.hostname;
+var apihost = "https://" + window.location.hostname;
+var apihost_ws = "wss://" + window.location.hostname;
 
 //override api hostname (from config/*.env.js)
-if (process.env.HOSTNAME) {
-    apihost = "https://"+process.env.HOSTNAME;
-    apihost_ws = "wss://"+process.env.HOSTNAME;
+if (process.env.URL) {
+    apihost = process.env.URL;
+    apihost_ws = process.env.WS_URL;
 }
 
 Vue.config.debug = false;
-Vue.config.api = apihost+"/api/warehouse";
-Vue.config.wf_api = apihost+"/api/amaretti"; //deprecated by amaretti_api
-Vue.config.amaretti_api = apihost+"/api/amaretti";
-Vue.config.auth_api = apihost+"/api/auth";
-Vue.config.event_api = apihost+"/api/event";
-Vue.config.event_ws = apihost_ws+"/api/event";
+Vue.config.api = apihost + "/api/warehouse";
+Vue.config.wf_api = apihost + "/api/amaretti"; // deprecated by amaretti_api
+Vue.config.amaretti_api = apihost + "/api/amaretti";
+Vue.config.auth_api = apihost + "/api/auth";
+Vue.config.event_api = apihost + "/api/event";
+Vue.config.event_ws = apihost_ws + "/api/event";
 Vue.config.auth_signin = "/auth#!/signin";
 Vue.config.auth_signout = "/auth#!/signout";
-Vue.config.ezbids_api = apihost+"/api/ezbids";
+Vue.config.ezbids_api = apihost + "/api/ezbids";
 Vue.config.productionTip = false;
-Vue.config.debug_doi = "10.25663/bl.p.3"; //o3d publication
+Vue.config.debug_doi = "10.25663/bl.p.3"; // o3d publication
 Vue.config.plotly = {
     font: {
         font: 'Arial,sans-serif,Apple Color Emoji,Segoe UI Emoji',
