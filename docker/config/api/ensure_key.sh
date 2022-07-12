@@ -1,9 +1,9 @@
 #!/bin/bash
 
-if [ ! -f warehouse.key ]; then
-    openssl genrsa -out warehouse.key 2048
-    chmod 600 warehouse.key
+if [ ! -f /apps/warehouse/api/config/warehouse.key ]; then
+    openssl genrsa -out /apps/warehouse/api/config/warehouse.key 2048
+    chmod 600 /apps/warehouse/api/config/warehouse.key
 fi
-if [ ! -f warehouse.pub ]; then
-    openssl rsa -in warehouse.key -pubout > warehouse.pub
+if [ ! -f /apps/warehouse/api/config/warehouse.pub ]; then
+    openssl rsa -in /apps/warehouse/api/config/warehouse.key -pubout > /apps/warehouse/api/config/warehouse.pub
 fi

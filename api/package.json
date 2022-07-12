@@ -2,9 +2,9 @@
   "name": "warehouse",
   "version": "1.0.0",
   "description": "Service that allows data warehousing and workfow orchestration",
-  "main": "index.js",
   "scripts": {
-    "start": "node ./warehouse.js",
+    "start": "node warehouse.js",
+    "dev": "./config/ensure_jwt.sh && ./config/ensure_key.sh && nodemon",
     "apidoc": " apidoc -i ./ -o ../docs/apidoc/",
     "cover": "node_modules/istanbul/lib/cli.js cover node_modules/mocha/bin/_mocha -- -R spec test/*.js",
     "deploy": "ssh -t test.brainlife.io sudo \"sudo /root/docker/warehouse/update.sh\"",
@@ -63,6 +63,7 @@
     "chai": "^4.3.6",
     "mocha": "^5.2.0",
     "node-geocoder": "^3.29.0",
+    "nodemon": "^2.0.19",
     "supertest": "^3.3.0"
   }
 }
