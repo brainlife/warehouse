@@ -22,11 +22,12 @@ let acon, rcon;
 console.log("connected to mongo");
 db.init(err=>{
     common.connectAMQP((err, conn)=>{
+        if(err) throw err;
         acon = conn;
         subscribe();
     });
 
-    rcon = common.connectRedis();
+    rcon = common.connectRedis(config.redis);
     setInterval(emit_counts, 1000*config.metrics.counts.interval);  //usually 24 hours?
     setInterval(emit_health_counts, 1000*config.metrics.health_counts.interval);  //usually 5min
 });
