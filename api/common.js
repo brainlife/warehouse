@@ -879,8 +879,16 @@ exports.connectAMQP = function(cb) {
         console.log("connected to amqp server");
         conn.exchange("warehouse", {autoDelete: false, durable: true, type: 'topic', confirm: true}, ex=>{
             warehouse_ex = ex;
-            amqpConn = conn;
-            cb(null, conn);
+
+            //deprecated exchange but still used
+            conn.exchange("wf.instance", {autoDelete: false, durable: true, type: 'topic', confirm: true}, _ex=>{
+
+                //deprecated exchange but still used
+                conn.exchange("wf.task", {autoDelete: false, durable: true, type: 'topic', confirm: true}, _ex=>{
+                    amqpConn = conn;
+                    cb(null, conn);
+                });
+            });
         })
     });
     conn.on("error", cb);
