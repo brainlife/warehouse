@@ -1564,12 +1564,12 @@ ${p.desc}`;
                 script += "echo downloading dataset:"+dataset._id+" to "+path+"\n";
                 script += "curl ";
                 if(req.headers.authorization) script += "-H \"$auth\" ";
-                script += config.warehouse.api+"/dataset/download/"+dataset._id+" | tar -C \""+path+"\" -x\n";
+                script += config.warehouse.url+"/api/warehouse/dataset/download/"+dataset._id+" | tar -C \""+path+"\" -x\n";
 
                 //download info.json
                 script += "curl ";
                 if(req.headers.authorization) script += "-H \"$auth\" ";
-                script += config.warehouse.api+"/dataset?single=true\\&find='\\{\"_id\":\""+dataset._id+"\"\\}' > "+path+"/_info.json\n";
+                script += config.warehouse.url+"/api/warehouse/dataset?single=true\\&find='\\{\"_id\":\""+dataset._id+"\"\\}' > "+path+"/_info.json\n";
 
                 if(dataset.datatype.bids) {
                     //Create BIDS symlinks
