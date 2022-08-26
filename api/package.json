@@ -40,7 +40,7 @@
     "istanbul": "^0.4.5",
     "keyword-extractor": "0.0.20",
     "mathjs": "^10.5.1",
-    "mongoose": "^6.3.2",
+    "mongoose": "^6.4.6",
     "morgan": "^1.10.0",
     "n-stopwords": "^1.1.2",
     "nocache": "^2.0.0",
