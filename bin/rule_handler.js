@@ -15,7 +15,6 @@ const common = require('../api/common');
 
 const pkg = require('../package.json');
 
-let rcon;
 let acon;
 let rule_ex;
 db.init(function(err) {
@@ -29,9 +28,8 @@ db.init(function(err) {
         });
     });
 
-    rcon = redis.createClient(config.redis.port, config.redis.server);
-    rcon.on('error', err=>{throw err});
-    rcon.on('ready', ()=>{
+    common.connectRedis(err=>{
+        if(err) throw err;
         console.log("connected to redis");
         setInterval(health_check, 1000*60*2); //start checking health 
         run();
@@ -57,10 +55,9 @@ function health_check() {
         report.messages.push("no rules handled");
     }
 
-    rcon.set("health.warehouse.rule."+process.env.HOSTNAME+"-"+process.pid, JSON.stringify(report));
+    common.redisClient.set("health.warehouse.rule."+process.env.HOSTNAME+"-"+process.pid, JSON.stringify(report));
     _counts.rules = 0;
 }
-
 
 //dedupe an array
 //https://stackoverflow.com/questions/9229645/remove-duplicate-values-from-js-array
