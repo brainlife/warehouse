@@ -6,10 +6,10 @@ const compression = require('compression');
 const cors = require('cors');
 const nocache = require('nocache');
 
-//const common = require('./common');
 const config = require('./config');
 const db = require('./models');
 const common = require('./common');
+const health = require('./health');
 
 //init express
 const app = express();
@@ -32,7 +32,6 @@ app.use(function(err, req, res, next) {
     if(typeof err == "string") err = {message: err};
     if(err instanceof Error) err = {message: err.toString()};
 
-    //log this error
     console.error(err);
 
     if(err.name) switch(err.name) {
@@ -59,13 +58,22 @@ exports.start = function(cb) {
     var host = process.env.HOST || config.express.host || 'localhost';
     db.init((err)=>{
         if(err) return cb(err);
-        var server = app.listen(port, host, function() {
-            console.log("warehouse api service running on %s:%d in %s mode", host, port, app.settings.env);
+
+        console.log("connecting to redis");
+        common.connectRedis(err=>{
+            if(err) return cb(err);
+
+            const server = app.listen(port, host, function() {
+                console.log("warehouse api service running on %s:%d in %s mode", host, port, app.settings.env);
+            });
+
+            //increase timeout for dataset download .. (default 120s)
+            //without this, places like nki/s3 will timeout
+            server.timeout = 300*1000; 
+
+            health.health_check();
+            setInterval(health.health_check, 1000*60);
         });
-        
-        //increase timeout for dataset download .. (default 120s)
-        //without this, places like nki/s3 will timeout
-        server.timeout = 300*1000; 
     });
 }
 

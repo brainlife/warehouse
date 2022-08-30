@@ -206,7 +206,7 @@ export default {
         },
 
         signup() {
-            document.location = "/auth/#!/signup";
+            document.location = Vue.config.auth_signup;
         },
 
         slack() {

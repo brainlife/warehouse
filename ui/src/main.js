@@ -236,13 +236,15 @@ Vue.filter('formatNumber', v=>{
 // TODO - find a way to put these somewhere under /config
 //
 
-var apihost = "https://"+window.location.hostname;
-var apihost_ws = "wss://"+window.location.hostname;
+let wsproto = (location.protocol == "https:") ? "wss:" : "ws:";
+
+let apihost = location.protocol+"//"+window.location.hostname;
+let apihost_ws = wsproto+"//"+window.location.hostname;
 
 //override api hostname (from config/*.env.js)
 if (process.env.HOSTNAME) {
-    apihost = "https://"+process.env.HOSTNAME;
-    apihost_ws = "wss://"+process.env.HOSTNAME;
+    apihost = location.protocol+"//"+process.env.HOSTNAME;
+    apihost_ws = wsproto+"//"+process.env.HOSTNAME;
 }
 
 Vue.config.debug = false;
@@ -252,8 +254,9 @@ Vue.config.amaretti_api = apihost+"/api/amaretti";
 Vue.config.auth_api = apihost+"/api/auth";
 Vue.config.event_api = apihost+"/api/event";
 Vue.config.event_ws = apihost_ws+"/api/event";
-Vue.config.auth_signin = "/auth#!/signin";
-Vue.config.auth_signout = "/auth#!/signout";
+Vue.config.auth_signin = "/auth/#!/signin";
+Vue.config.auth_signout = "/auth/#!/signout";
+Vue.config.auth_signup = "/auth/#!/signup";
 Vue.config.ezbids_api = apihost+"/api/ezbids";
 Vue.config.productionTip = false;
 Vue.config.debug_doi = "10.25663/bl.p.3"; //o3d publication
@@ -273,14 +276,15 @@ Vue.config.hasRole = function(role, service = "warehouse") {
 
 axios.defaults.baseURL = Vue.config.api; //default root for $http
 
+/*
 console.log("ENV", process.env.NODE_ENV);
 if (process.env.NODE_ENV == "development") {
     Vue.config.debug = true;
 
     //do crosssite auth between localhost and dev1 auth
-    Vue.config.auth_signin = "https://"+process.env.HOSTNAME+"/auth#!/signin?app=dev";
-    Vue.config.auth_signout = "https://"+process.env.HOSTNAME+"/auth#!/signout?app=dev";
-    Vue.config.ezbids_api = "https://"+process.env.HOSTNAME+"/api/ezbids";
+    Vue.config.auth_signin = "//"+process.env.HOSTNAME+"/auth#!/signin?app=dev";
+    Vue.config.auth_signout = "//"+process.env.HOSTNAME+"/auth#!/signout?app=dev";
+    Vue.config.ezbids_api = "//"+process.env.HOSTNAME+"/api/ezbids";
 
     //intercept jwt sent via url parameter
     var urlParams = new URLSearchParams(window.location.search);
@@ -289,6 +293,10 @@ if (process.env.NODE_ENV == "development") {
         window.location.search = "";
     }
 }
+*/
+
+console.log("warehouse...........");
+console.dir(Vue.config);
 
 // warning - jwt_decode just decode any jwt token. it doesn't validate it
 // so we can't really trust that user is who they say they are on the client side.
@@ -471,7 +479,9 @@ new Vue({
         },
 
         playNotification(name, theme) {
-            if(!theme) theme = Vue.config.profile.private.notification.process_sound;
+            if(!theme && Vue.config.profile.private.notification) {
+                theme = Vue.config.profile.private.notification.process_sound;
+            }
             if(!theme) return;
             new Audio(soundHost+theme+"/"+name+".mp3").play();
         },

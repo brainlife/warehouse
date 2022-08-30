@@ -18,11 +18,11 @@ const config = require('./config');
 const db = require('./models');
 const mongoose = require('mongoose');
 
-exports.connectRedis = function() {
-    const con = redis.createClient(config.redis.port, config.redis.server);
-    con.on('error', console.error);
-    con.on('ready', ()=>{ console.log("connected to redis") });
-    return con;
+exports.redisClient = redis.createClient(config.redis);
+exports.redisClient.on('error', console.error);
+exports.connectRedis = async function(cb) {
+    await exports.redisClient.connect();
+    if(cb) cb();
 }
 
 //TODO - should be called something like "get_project_accessiblity"?
@@ -759,7 +759,7 @@ exports.doi_put_url = function(doi, url, cb) {
 }
 
 exports.cacheContact = function(cb) {
-    console.debug("caching contacts");
+    console.debug("caching contacts", config.warehouse.jwt);
     axios.get(config.auth.api+"/profile/list", {
         params: {
             limit: 5000, //TODO -- really!?

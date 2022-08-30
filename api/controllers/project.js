@@ -2,12 +2,10 @@
 
 const express = require('express');
 const router = express.Router();
-const winston = require('winston');
 const request = require('request');
 const axios = require('axios');
 
 const config = require('../config');
-const logger = winston.createLogger(config.logger.winston);
 const db = require('../models');
 const common = require('../common');
 

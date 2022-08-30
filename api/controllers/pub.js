@@ -2,12 +2,10 @@
 
 const express = require('express');
 const router = express.Router();
-const winston = require('winston');
 const async = require('async');
 const request = require('request');
 
 const config = require('../config');
-const logger = winston.createLogger(config.logger.winston);
 const db = require('../models');
 const common = require('../common');
 const mongoose = require('mongoose');
@@ -442,7 +440,6 @@ function doRelease(release, project, cb) {
 //proxy doi.org doi resolver
 //TODO - why does this exist? should let client directly access it?
 router.get('/doi', (req, res, next)=>{
-    logger.debug("querying doi: %s", req.query.doi);
     if(req.query.doi.includes("bldev")) {
         return res.send(req.query.doi+" can not be resolved (it's dev)");
     }

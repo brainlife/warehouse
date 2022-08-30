@@ -398,6 +398,9 @@ export default {
             }
             this.ws.onmessage = (json)=>{
                 var event = JSON.parse(json.data);
+
+                console.debug(event);
+
                 if(event.error) {
                     console.error(event.error);
                     return;

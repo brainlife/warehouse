@@ -632,6 +632,7 @@ export default {
                         console.error(err);
                         return;
                     }
+
                     if(!event) {
                         console.error("can't parse event", json);
                         return;

@@ -10,24 +10,24 @@ const redis = require('redis');
 const fs = require('fs');
 const child_process = require('child_process');
 
-const pkg = require('../api/package.json');
+const pkg = require('../package.json');
 
 const config = require('../api/config');
 const db = require('../api/models');
 const common = require('../api/common');
 
 // TODO  Look for failed tasks and report to the user/dev?
-let acon, rcon;
+let acon;
 
 console.log("connected to mongo");
-db.init(err=>{
+db.init(async err=>{
     common.connectAMQP((err, conn)=>{
         if(err) throw err;
         acon = conn;
         subscribe();
     });
 
-    rcon = common.connectRedis(config.redis);
+    await common.connectRedis();
     setInterval(emit_counts, 1000*config.metrics.counts.interval);  //usually 24 hours?
     setInterval(emit_health_counts, 1000*config.metrics.health_counts.interval);  //usually 5min
 });
@@ -155,7 +155,7 @@ const health_counts = {
     tasks: 0,
     instanceS: 0,
 }
-function emit_health_counts() {
+async function emit_health_counts() {
     var report = {
         status: "ok",
         version: pkg.version,
@@ -173,7 +173,7 @@ function emit_health_counts() {
     */
     console.log("---------- reporting health check @ "+new Date().toLocaleString()+" --------------")
     console.dir(report);
-    rcon.set("health.warehouse.event."+process.env.HOSTNAME+"-"+process.pid, JSON.stringify(report));
+    await common.redisClient.set("health.warehouse.event."+process.env.HOSTNAME+"-"+process.pid, JSON.stringify(report));
 
     //emit graphite metrics
     const time = new Date().getTime()/1000;

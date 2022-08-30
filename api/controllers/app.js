@@ -2,14 +2,12 @@
 
 const express = require('express');
 const router = express.Router();
-const winston = require('winston');
 const async = require('async');
 const request = require('request');
 const axios = require('axios');
 const fs = require('fs');
 
 const config = require('../config');
-const logger = winston.createLogger(config.logger.winston);
 const db = require('../models');
 const common = require('../common');
 const provenance = require('../lib/provenance');
@@ -300,19 +298,19 @@ router.post('/', common.jwt(), (req, res, next)=>{
     async.series([
         //access check
         cb=>{
-            logger.debug("validating");
+            console.debug("validating");
             common.validate_projects(req.user, req.body.projects, cb);
         },
 
         //update info from github
         cb=>{
-            logger.debug("loading github info");
+            console.debug("loading github info");
             common.update_appinfo(app, cb);
         },
 
         //save app (and generate _id)
         cb=>{
-            logger.debug("saving app");
+            console.debug("saving app");
             app.save((err, _app)=>{
                 if(err) return cb(err);
                 app = _app;
@@ -392,7 +390,7 @@ router.put('/:id', common.jwt(), (req, res, next)=>{
                     if(req.body[k] === null) app[k] = undefined; //remove 
                     break;
                 default:
-                    logger.debug("can't update %s", k);
+                    console.debug("can't update %s", k);
                 }
             }
 
@@ -408,8 +406,8 @@ router.put('/:id', common.jwt(), (req, res, next)=>{
                     let metadata = common.compose_app_datacite_metadata(app);
                     common.doi_post_metadata(metadata, err=>{
                         if(err) {
-                            logger.error("failed to update metadata for datacite");
-                            logger.error(err);
+                            console.error("failed to update metadata for datacite");
+                            console.error(err);
                             return cb(); //sometime datacite is broken.. let's skip if this happens
                         }
                         cb();

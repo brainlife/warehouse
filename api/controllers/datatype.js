@@ -3,14 +3,12 @@
 //contrib
 const express = require('express');
 const router = express.Router();
-const winston = require('winston');
 const async = require('async');
 const request = require('request');
 const fs = require('fs');
 
 //mine
 const config = require('../config');
-const logger = winston.createLogger(config.logger.winston);
 const db = require('../models');
 const common = require('../common');
 

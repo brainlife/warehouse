@@ -1,8 +1,6 @@
 'use strict';
 
 const fs = require('fs');
-const { createLogger, format, transports } = require('winston');
-const { combine, timestamp, label, prettyPrint } = format;
 
 const child_process = require('child_process');
 
@@ -17,49 +15,46 @@ const async = require('async');
 
 const atob = require('atob');
 
-exports.mongodb = "mongodb://localhost/warehouse";
+exports.mongodb = "mongodb://brainlife_mongodb_1/warehouse";
 
 exports.debug = true; 
 
 //used to post/poll health status from various services
-exports.redis = { server: "localhost", }
+exports.redis = { url: "redis://brainlife_redis_1" };
 
-exports.github = {
-    access_token: fs.readFileSync(__dirname+"/github.access_token", "ascii").trim(),
-}
+//get it from https://github.com/settings/tokens  
+exports.github = { access_token: fs.readFileSync(__dirname+'/github.access_token', 'ascii').trim()};
 
 //admin+client scope oauth2 token used to invite users
 //once you create oauth app, you will need to re-authorize it with admin+client (it gave with just admin scope)
 //https://slack.com/oauth/authorize?&client_id=(your client id)&team=(teamId)&install_redirect=install-on-team&scope=admin+client
 //more information can be found here https://github.com/outsideris/slack-invite-automation
 exports.slack = {
-    token: fs.readFileSync(__dirname+"/slack.token", "ascii").trim(),
-    //useruser: "newusers", //channel to announce newuser registration
+    token: "get it from slack",
     newuser: "dev", //channel to announce newuser registration
 }
 
 exports.amaretti = {
-    api: "https://dev1.soichi.us/api/amaretti",
+    api: "http://brainlife_amaretti-api_1:8080",
 }
-exports.wf = exports.amaretti; //deprecated (use amaretti)
+//exports.wf = exports.amaretti; //deprecated (use amaretti)
 
 exports.ipstack = {
-    token: fs.readFileSync(__dirname+"/ipstack.token", "ascii").trim(),
+    token: "is this still used?",
 }
 exports.mailchimp = {
-    api_key: fs.readFileSync(__dirname+"/mailchimp.key", "ascii").trim(),
+    api_key: "get it from mailchim",
     newsletter_list: "8d07cef694", //list ID to subscribe newusers to
 }
 
 exports.auth = {
-    api: "https://dev1.soichi.us/api/auth",
+    api: "http://brainlife_auth-api_1:8080",
 }
 
 exports.warehouse = {
     //used by rule handler to submit dataset download request
-    api: "https://dev1.soichi.us/api/warehouse",
+    api: "http://brainlife_warehouse-api_1:8080",
 
-    //base url
     url: "https://localhost.brainlife.io", //to test datacite
 
     //used to issue warehouse token to allow dataset download
@@ -77,10 +72,7 @@ exports.warehouse = {
     //configuration encryption key
     configEncryption: {
         algorithm: "aes-256-cbc",
-        //key needs to be hex of 16 byte
-        //const crypto = require('crypto');
-        //crypto.randomBytes(16).toString('hex'); // Key is static
-        secret: "here is my password",
+        secret: "here is my password123",
     },
 }
 
@@ -92,8 +84,8 @@ exports.mail = {
         host: 'mail-relay.iu.edu', //max recipents per email: 30
         secure: true, //port 465
         auth: {
-            user: 'brlife',
-            pass: fs.readFileSync(__dirname+'/smtp.password', {encoding: 'ascii'}).trim(),
+            user: 'mememe',
+            pass: 'passpasspss',
         },
         pool: true, //use connection pool
     },
@@ -101,33 +93,28 @@ exports.mail = {
 
 exports.metrics = {
     counts: {
-        path: "/usr/local/graphite.24h/warehouse.counts", 
+        path: "/tmp/warehouse.24m.metrics", 
         prefix: "dev.warehouse", 
         interval: 3600*24, 
     },
 
     health_counts: {
-        path: "/usr/local/graphite.5min/warehouse.counts", 
+        path: "/tmp/warehouse.5m.metrics", 
         prefix: "dev.warehouse", 
         interval: 60*5, 
     },
 
     service_prefix: "dev.amaretti.service",
 
-    //graphite api (https://graphite-api.readthedocs.io/en/latest/api.html#the-metrics-api)
-    //curl http://10.0.0.10/metrics/find?query=test.*
-    //curl -o test.png http://10.0.0.10/render?target=prod.amaretti.service.*&height=800&width=600 
-    //curl -o test.json "http://10.0.0.10/render?target=prod.amaretti.service.bcmcpher-app-networkmatrices&format=json&noNullPoints"
-    api: "http://10.0.0.10:2080",
+    api: "http://10.0.0.10:2080", //TODO
 }
 
 //for event handler
 exports.event = {
     amqp: {
-        url: "amqp://warehouse:gobrain@localhost:5672/brainlife",
+        url: "amqp://guest:guest@brainlife_rabbitmq_1:5672/brainlife",
 
         //collected by cron
-        //docker exec rabbitmq rabbitmqctl list_queues --formatter=json -p brainlife > rabbitmq.queues.json
         queues: "/tmp/rabbitmq.queues.json",
     },
 }
@@ -139,103 +126,102 @@ exports.rule = {
 }
 
 exports.express = {
-    port: 12501,
+    host: "0.0.0.0",
+    port: 8080,
 
     //public key used to validate jwt token
-    pubkey: fs.readFileSync('/home/hayashis/git/auth/api/config/auth.pub'),
+    pubkey: fs.readFileSync(__dirname+'/auth.pub', 'ascii').trim(),
 }
 
+/*
 exports.datacite = {
     prefix: "10.0322/bldev.",  //test account
     username: "DATACITE.BL",
     password: fs.readFileSync(__dirname+'/datacite.password', {encoding: "ascii"}).trim(),
     api: "https://mds.test.datacite.org",
 }
+*/
 
 //https://msr-apis.portal.azure-api.net/developer
 exports.mag = {
-    subscriptionKey: fs.readFileSync(__dirname+'/mag.key', {encoding: "ascii"}).trim(),
+    subscriptionKey: "get mag key",
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 //
 //  storage system where we can archive data
+//
 exports.storage_systems = {};
 
 exports.archive = {
-    storage_default: "osn",  
-    //storage_config: {},
-    gid: 137, //warehouse group enabled to access storage service
+    storage_default: "local",
+    gid: 2, //warehouse group enabled to access storage service
 }
 
 exports.geocode = {
-    apikey: fs.readFileSync(__dirname+'/geocode.key', {encoding: 'ascii'}).trim(),
+    apikey: "get google api geocode key",
+}
+
+function getLocalPath(dataset) {
+    let _path = "/archive/"; //not the same as secondary
+    if(!dataset) return _path; //why?
+    return _path + dataset.project+"/"+dataset._id+".tar";
+}
+
+exports.storage_systems.local = {
+    need_backup: false,
+    test: cb=>{
+        //TODO
+        cb();
+    },
+
+    stat: (dataset, cb)=>{
+        const path = getLocalPath(dataset);
+        const stat = fs.statSync(path);
+        cb(null, stat);
+    },
+
+    download: (dataset, cb)=>{
+        const path = getLocalPath(dataset);
+        const stream = fs.createReadStream(path);
+        const filename = path.split("/").pop();
+        cb(null, stream, filename);
+    },
 }
 
 //group analysis 
 exports.groupanalysis = {
     gid: 3, //group id that allows access to ga resource
 
-    secondaryDir: "/user/shayashi/brainlife/dev-secondary", 
+    secondaryDir: "/secondary", 
+
     getSecondaryDownloadStream(path, cb) {
-        connect_osiris((err, conn, sftp)=>{
-            if(err) return cb(err);
+        //make sure file exists
+        fs.stat(path, (err,stats)=>{
+            if(err)  return cb(err);
 
-            //make sure file exists
-            sftp.stat(path, (err,stats)=>{
-                if(err) {
-                    conn.end();
-                    return cb(err);
-                }
-
-                //now stream!
-                let stream = sftp.createReadStream(path);
-                stream.on('error', err=>{
-                    console.error(err);
-                });
-                stream.on('close', code=>{
-                    console.log("stream closed.. ending connection", code);
-                    conn.end();
-                });
-
-                cb(null, stream);
+            //now stream!
+            let stream = fs.createReadStream(path);
+            stream.on('error', err=>{
+                console.error(err);
             });
+            stream.on('close', code=>{
+                console.log("stream closed.. ending connection", code);
+                conn.end();
+            });
+
+            cb(null, stream);
         });
     },
 
-    getSecondaryUploadStream(_path, cb) {
-        connect_osiris((err, conn, sftp)=>{
-            if(err) return cb(err);
-            
-            //make sure the parent directory exists before writing to it
-            conn.exec("mkdir -p "+path.dirname(_path), (err, stream)=>{
-                if(err) return cb(err);
-                stream.on('error', err=>{
-                    console.error(err);
-                });
-                stream.on('close', code=>{
-                    if(code != 0) cb("failed to prepare parent directory")
-                    
-                    //now create write stream
-                    let sftp_stream = sftp.createWriteStream(_path);
-                    sftp_stream.on('close', code=>{
-                        conn.end();
-                    });
-                    cb(null, sftp_stream);
-                });
-                stream.on('data', data=>{
-                    console.log(data.toString());
-                });
-                
-                //I believe listening to stream is required for close event to fire..?
-                stream.stderr.on('data', data=>{
-                    console.error(data.toString());
-                });
-            })
-        });
+    getSecondaryUploadStream(path, cb) {
+        const dname = path.dirname(path);
+        fs.mkdirSync(dname);
+        cb(null, fs.createWriteStream(path));
     },
 }
 
+/*
 function connect_dc(cb) {
     var conn = new ssh2.Client();
     conn.on('ready', ()=>{
@@ -249,13 +235,15 @@ function connect_dc(cb) {
         conn.connect({
             username: "brlife",
             host: "carbonate.uits.iu.edu",
-            privateKey: fs.readFileSync(__dirname+'/brlife.id_rsa'),
+            privateKey: fs.readFileSync(__dirname+'/local.id_rsa'),
         });
     } catch(err) {
         cb(err);
     }
 }
+*/
 
+/*
 //TODO - I should try connection queue agagin
 //(not used anymore)
 function connect_wrangler(cb) {
@@ -285,11 +273,13 @@ function connect_wrangler(cb) {
     conn.connect({
         username: "brlife",
         host: "149.165.169.130", //wrangler2
-        privateKey: fs.readFileSync(__dirname+'/brlife.id_rsa'),
+        privateKey: fs.readFileSync(__dirname+'/local.id_rsa'),
         keepaliveInterval: 10*1000, //default 0 (disabled)
     });
 }
+*/
 
+/*
 function getOSNPath(dataset) {
     let _path = "dev/"; //not the same as secondary
     if(!dataset) return _path;
@@ -299,7 +289,6 @@ function getOSNPath(dataset) {
 }
 
 const osn = require('./osnConfig');
-
 exports.storage_systems.osn = {
     need_backup: true, 
     test: cb=>{
@@ -332,7 +321,9 @@ exports.storage_systems.osn = {
         cb("todo");
     }
 }
+*/
 
+/*
 //TODO - I should try connection queue agagin
 function connect_osiris(cb) {
     var conn = new ssh2.Client();
@@ -361,8 +352,7 @@ function connect_osiris(cb) {
     conn.connect({
         username: "shayashi",
         host: "msu-xfer01.osris.org", //Timed out while waiting for handshake?
-        //host: "um-xfer01.osris.org", //blocked?
-        privateKey: fs.readFileSync(__dirname+'/brlife.id_rsa'),
+        privateKey: fs.readFileSync(__dirname+'/local.id_rsa'),
         keepaliveInterval: 10*1000, //default 0 (disabled)
         //keepaliveCountMax: 30, //default 3 (https://github.com/mscdex/ssh2/issues/367)
     });
@@ -375,7 +365,9 @@ function get_osiris_archive_path(dataset) {
     _path += dataset._id+".tar";
     return _path;
 }
+*/
 
+/*
 exports.storage_systems.osiris = {
     need_backup: true, //need_backup if it's our storage (not openneuro)
     test: cb=>{
@@ -384,17 +376,6 @@ exports.storage_systems.osiris = {
             sftp.stat(get_osiris_archive_path(), (err,stats)=>{
                 conn.end();
                 //TODO - check what's in stat?
-                /*
-0|warehous | Stats {
-0|warehous |   mode: 17896,
-0|warehous |   permissions: 17896,
-0|warehous |   uid: 100097,
-0|warehous |   gid: 1000455,
-0|warehous |   size: 10,
-0|warehous |   atime: 1586896386,
-0|warehous |   mtime: 1605024163
-0|warehous | }
-                */
                 cb(err);
             });
         });
@@ -441,11 +422,6 @@ exports.storage_systems.osiris = {
                 cb(err, stream, filename);
             });
         });
-        /*
-        let path = get_osiris_archive_path(dataset);
-        let filename = path.split("/").pop();
-        cb(null, fs.createReadStream(path), filename);
-        */
     },
 
     remove: (dataset, cb)=>{
@@ -474,14 +450,11 @@ exports.storage_systems.osiris = {
                 });
             });
         });
-        /*
-        //not sure if I need to support this for osiris for not..
-        let path = get_osiris_archive_path(dataset);
-        fs.unlink(path, cb);
-        */
     }
 } 
+*/
 
+/*
 exports.storage_systems.project = {
     need_backup: true, //need_backup if it's our storage (not openneuro)
     test: cb=>{
@@ -505,13 +478,7 @@ exports.storage_systems.project = {
             cb(null, res.data, dataset._id+".tar");
         });
     },
-
-    /*
-    remove: (dataset, cb)=>{
-        console.log("project/remove - todo");
-    }
-    */
-} 
+}
 
 function get_copysource_dataset(dataset) {
     return Object.assign({}, dataset, {
@@ -551,48 +518,9 @@ exports.storage_systems.copy = {
         });
     },
 } 
-
-/*
-exports.storage_systems.dc2 = {
-    need_backup: false,
-    test: cb=>{
-        //TODO - I should do more checking?
-        connect_dc((err, conn)=>{
-            if(err) return cb(err);
-            conn.end();
-            cb();
-        });
-    }, 
-    stat: (dataset, cb)=>{
-        //TODO..
-        cb();
-    },
-    upload: (dataset, cb)=>{
-        cb("no upload to dc2");
-    },
-    download: (dataset, cb)=>{
-        connect_dc((err, conn)=>{
-            if(err) return cb(err);
-             conn.sftp((err, sftp)=>{
-                if (err) {
-                    conn.end();
-                    return cb(err);
-                }
-                var path = "/N/dc2/projects/brainlife/dev1-warehouse/datasets/"+dataset.project+"/"+dataset._id+".tar.gz";
-                var stream = sftp.createReadStream(path);
-                stream.on('error', err=>{
-                    console.error("stream failed but train has already left the station", err);
-                });
-                stream.on('close', code=>{
-                    conn.end();
-                });
-                cb(null, stream, dataset._id+".tar.gz");
-            });
-        });
-    },
-} 
 */
 
+/*
 exports.storage_systems["dcwan/hcp"] = {
     test: cb=>{
         connect_dc((err, conn)=>{
@@ -664,40 +592,9 @@ exports.storage_systems["dcwan/hcp"] = {
         });
     },
 }
-
-/*
-const nki_config = require(__dirname+'/nki');
-const nki_storage = pkgcloud.storage.createClient(nki_config);
-//some BREATHHOLD files are inaccessible
-//https://www.nitrc.org/forum/forum.php?thread_id=8563&forum_id=1244
-exports.storage_systems["nki"] = {
-    test: cb=>{
-        nki_storage.getContainer(nki_config.bucket, (err,container)=>{
-            if(err) return cb(err);
-            console.log("nki debug/test", container.files.length); //length should be 1000 (max)
-            cb();
-        }); 
-    }, 
-    stat: (dataset, cb)=>{
-        //can't obtain stats for .tar.gz because we are creating it on the fly
-        cb(null);
-    },
-    upload: (dataset, cb)=>{
-        cb("read only");
-    },
-    download: (dataset, cb)=>{
-        var archive = archiver('tar');
-        dataset.storage_config.files.forEach(file=>{
-            console.log("downloading", file.s3, "from", nki_config.bucket, file.local);
-            var stream = nki_storage.download({container: nki_config.bucket, remote: file.s3});
-            archive.append(stream, {name: file.local});
-        });
-        archive.finalize();
-        cb(null, archive, dataset._id+".tar");
-    },
-}
 */
 
+/*
 exports.storage_systems.url = {
     need_backup: false,
     test: cb=>{
@@ -721,7 +618,6 @@ exports.storage_systems.url = {
             let stream = request(file.url);
             if(file.url.endsWith(".nii")) {
                 //compress .nii with .nii.gz as *all* brainlife datatype uses .nii.gz for nifti
-                console.log("passing", file.url, "through gzip stream");
                 stream = stream.pipe(gzip);
             }
             archive.append(stream, {name: file.local});
@@ -730,7 +626,9 @@ exports.storage_systems.url = {
         cb(null, archive, dataset._id+".tar");
     },
 }
+*/
 
+/*
 async function walk(dir) {
     let files = await fs.promises.readdir(dir);
     files = await Promise.all(files.map(async file => {
@@ -856,7 +754,9 @@ exports.storage_systems.datalad = {
         });
    },
 }
+*/
 
+/*
 exports.storage_systems.xnat = {
     need_backup: false,
     test: cb=>{
@@ -910,41 +810,5 @@ exports.storage_systems.xnat = {
         });
     },
 }
-
-//config used to backup data from warehouse 
-exports.sda = {
-    ssh: {
-        host: "sftp.sdarchive.iu.edu",
-        username: "brlife",
-        agent: process.env["SSH_AUTH_SOCK"] ,
-    },
-    basedir: "test",
-}
-
-exports.logger = {
-    winston: {
-        level: 'debug',
-        format: combine(
-            label({ label: 'warehouse-dev' }),
-            timestamp(),
-            format.colorize(),
-            format.splat(),
-            format.printf(info=>{
-                return `${info.timestamp} [${info.label}] ${info.level}: ${info.message}`;
-            }),
-        ),
-        
-        //hide headers which may contain jwt
-        requestWhitelist: ['url', 'method', 'httpVersion', 'originalUrl', 'query'],
-        exceptionHandlers: [
-            new transports.Console(),
-        ],
-        transports: [
-            //display all logs to console
-            new transports.Console({
-                stderrLevels: ["error"], //error is sent to stdout by default..
-            }),
-        ]
-    },
-}
+*/
 

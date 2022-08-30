@@ -1,12 +1,9 @@
-const winston = require('winston');
 const async = require('async');
 const fs = require('fs');
 const config = require('./config');
 const db = require('./models');
 const common = require('./common');
-const pkg = require('./package');
-
-const r = common.connectRedis();
+const pkg = require('../package');
 
 exports.health_check = function() {
     console.debug("running api health check");
@@ -55,26 +52,22 @@ exports.health_check = function() {
         }
 
         //publish report
-        r.set("health.warehouse.api."+process.env.HOSTNAME+"-"+process.pid, JSON.stringify(report));
+        common.redisClient.set("health.warehouse.api."+process.env.HOSTNAME+"-"+process.pid, JSON.stringify(report));
     });
 }
 
-console.log("starting health check");
-exports.health_check();
-setInterval(exports.health_check, 1000*60*5); //post health status every minutes
-
-exports.get_reports = function(cb) {
-    r.keys("health.warehouse.*", (err, keys)=>{
+exports.get_reports = async function(cb) {
+    const keys = await common.redisClient.hVals("health.warehouse.*");
+    if(!keys.length) return cb(null, {});
+    common.redisClient.mget(keys, (err, _reports)=>{
         if(err) return cb(err);
-        if(!keys.length) return cb(null, {});
-        r.mget(keys, (err, _reports)=>{
-            if(err) return cb(err);
-            var reports = {};
-            _reports.forEach((report, idx)=>{
-                reports[keys[idx]] = JSON.parse(report);
-            });
-            cb(null, reports);
+        var reports = {};
+        _reports.forEach((report, idx)=>{
+            reports[keys[idx]] = JSON.parse(report);
         });
+        cb(null, reports);
     });
 }
+
+
 

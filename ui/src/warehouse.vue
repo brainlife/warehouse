@@ -39,7 +39,7 @@ export default {
     mounted() {
         this.handleHashRequest();
     },
-    
+
     methods: {
         handleHashRequest() {
             if(document.location.hash.startsWith("#ezbids")) {
