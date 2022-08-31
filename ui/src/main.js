@@ -295,7 +295,7 @@ if (process.env.NODE_ENV == "development") {
 }
 */
 
-console.log("warehouse...........");
+console.log("staring warehouse...........");
 console.dir(Vue.config);
 
 // warning - jwt_decode just decode any jwt token. it doesn't validate it
