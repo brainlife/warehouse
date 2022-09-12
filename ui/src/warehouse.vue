@@ -84,9 +84,11 @@ export default {
 }
 */
 
+/* no-effect
 html.wf-loading * {
      opacity: 0;
 }
+*/
 
 #warehouse {
     height: 100%;
