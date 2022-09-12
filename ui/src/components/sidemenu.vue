@@ -234,7 +234,6 @@ export default {
     color:  rgba(255,255,255,200);
     font-size: 8pt;
     background-image: linear-gradient(0deg, #159957, #2693ff);
-    /*background-image: url('~@/assets/images/christmastree.jpg'); - show up as just white image*/
 
     z-index: 2;
     box-shadow: inset -3px 0 2px rgba(33,33,33,0.1);

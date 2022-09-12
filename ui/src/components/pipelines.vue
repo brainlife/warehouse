@@ -121,8 +121,8 @@ export default {
         },
 
         subscribe() {
-            var url = Vue.config.event_ws+"/subscribe?jwt="+Vue.config.jwt;
             if(this.ws) this.ws.close();
+            var url = Vue.config.event_ws+"/subscribe?jwt="+Vue.config.jwt;
             this.ws = new ReconnectingWebSocket(url, null, {/*debug: Vue.config.debug,*/ reconnectInterval: 3000});
             this.ws.onopen = (e)=>{
                 this.ws.send(JSON.stringify({

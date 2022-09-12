@@ -17,9 +17,18 @@ db.init(async err=>{
     if(err) throw err;
     await load_datatypes();
 
-    //find dataset_description.json
+    /*
     console.log("loading datasets2.txt");
     let datasets = child_process.execSync("cat datasets2.txt", {encoding: "utf8"}).split("\n").filter(dataset=>{
+        //ignore some datasets
+        if(dataset.startsWith("datasets.datalad.org/openneuro")) return false;
+        if(dataset.startsWith("datasets.datalad.org/openfmri")) return false;
+        return true;
+    });
+    */
+
+    console.log("loading dataset_description.json");
+    let datasets = child_process.execSync("find ./ -name dataset_description.json", {encoding: "utf8"}).split("\n").filter(dataset=>{
         //ignore some datasets
         if(dataset.startsWith("datasets.datalad.org/openneuro")) return false;
         if(dataset.startsWith("datasets.datalad.org/openfmri")) return false;

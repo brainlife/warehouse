@@ -133,14 +133,16 @@ export default {
 
     methods: {
         handleScroll() {
-            const e = this.$refs.scrollable;
-            this.$refs.project.forEach(elem=>{
-                const project = this.projects.find(p=>p._id == elem.id);
-                if(elem.offsetTop > e.scrollTop - e.clientHeight/2 && elem.offsetTop < e.scrollTop + e.clientHeight) {
-                    Vue.set(project, '_visible', true);
-                }
-            });
-            this.$forceUpdate();
+            if(this.$refs.project) {
+                const e = this.$refs.scrollable;
+                this.$refs.project.forEach(elem=>{
+                    const project = this.projects.find(p=>p._id == elem.id);
+                    if(elem.offsetTop > e.scrollTop - e.clientHeight/2 && elem.offsetTop < e.scrollTop + e.clientHeight) {
+                        Vue.set(project, '_visible', true);
+                    }
+                });
+                this.$forceUpdate();
+            }
         },
 
         clearQuery() {

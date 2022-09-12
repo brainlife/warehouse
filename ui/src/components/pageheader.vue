@@ -59,7 +59,6 @@ export default {
 </script>
 
 <style scoped>
-@import url('https://fonts.googleapis.com/css?family=Open+Sans:700');
 
 .pageheader {
     position: fixed;

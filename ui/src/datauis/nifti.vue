@@ -1,5 +1,5 @@
 <template>
-<iframe :src="'/ui/'+ui"></iframe>
+<iframe :src="'/ui/'+ui+'/'"></iframe>
 </template>
 
 <script>

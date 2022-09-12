@@ -341,14 +341,14 @@ router.beforeEach(function (to, from, next) {
     next();
 });
 
+/* //disabled due to GDRP
 Vue.use(VueGtag, { 
-    //pageTrackerExcludedRotues: ['route_path_value', 'route_name_value'],
     appName: "brainlife.io",
     config: { 
         id: process.env.GTAG,
-        //send_page_view: true,
      }
 }, router)
+*/
 
 const soundHost = "https://raw.githubusercontent.com/brainlife/warehouse/master/ui/sounds/";
 
@@ -426,30 +426,27 @@ new Vue({
             if(!Vue.config.jwt) return;
 
             //make sure user has create at least 1 project
-            var res = await this.$http.get('project', {params: {
-                //find: {$or: [{admins: Vue.config.user.sub}, {members: Vue.config.user.sub}]},
+            const res = await this.$http.get('project', {params: {
                 find: { user_id: Vue.config.user.sub },
                 limit: 1, //I just need count (0 means all)
             }});
+            if(res.data.projects.length) return;
 
-            //console.log("checking project", res.data.projects);
-            if(res.data.projects.length == 0) {
-                //let's create a default project
-                console.log("need to create default project");
-                await this.$http.post('project', {
-                    name: "My Default Project",
-                    desc: "Please use this project for testing purpose. You can update this project, or create new projects",
-                    access: "private",
-                    admins: [Vue.config.user.sub],
-                    members: [],
-                    agreements: [],
-                });
+            console.debug("let's create a default project");
+            await this.$http.post('project', {
+                name: "My Default Project",
+                desc: "Please use this project for testing purpose. You can update this project, or create new projects",
+                access: "private",
+                admins: [Vue.config.user.sub],
+                members: [],
+                agreements: [],
+            });
+            console.log("done creating default project")
 
-                //we don't have good way of invalidating all projects loaded by the time we finish creating project.
-                //we need to reload page..
-                //(well.. as long as we don't redirect to a page that loads project list, we should be fine..)
-                //location.reload();
-            }
+            //we don't have good way of invalidating all projects loaded by the time we finish creating project.
+            //we need to reload page..
+            //(well.. as long as we don't redirect to a page that loads project list, we should be fine..)
+            //location.reload();
         },
 
         refresh_jwt(cb) {

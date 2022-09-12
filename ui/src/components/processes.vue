@@ -242,9 +242,7 @@ export default {
     },
 
     destroyed() {
-        if(this.ws) {
-            this.ws.close();
-        }
+        if(this.ws) this.ws.close();
     },
 
     watch: {
