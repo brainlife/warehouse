@@ -84,6 +84,10 @@ export default {
 }
 */
 
+html.wf-loading * {
+     opacity: 0;
+}
+
 #warehouse {
     height: 100%;
     background-color: #f9f9f9;
