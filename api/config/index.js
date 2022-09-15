@@ -206,8 +206,8 @@ exports.groupanalysis = {
                 console.error(err);
             });
             stream.on('close', code=>{
-                console.log("stream closed.. ending connection", code);
-                conn.end();
+                //console.log("stream closed.. ending connection", code);
+                //conn.end();
             });
 
             cb(null, stream);
