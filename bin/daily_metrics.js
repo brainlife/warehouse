@@ -1,19 +1,14 @@
 #!/usr/bin/env node
 
-const winston = require('winston');
-
 const config = require('../api/config');
-config.logger.winston.transports[0].level = 'error';
 const db = require('../api/models');
+const influx = require('@influxdata/influxdb-client');
 
 const mongoose = require("mongoose");
 mongoose.set("debug", false); //suppress log
 
 let graphite_prefix = process.argv[2];
-if(!graphite_prefix) {
-    //console.error("usage: bl_metrics.js <graphite_prefix>");
-    graphite_prefix = "dev"
-}
+if(!graphite_prefix) graphite_prefix = "dev"
 
 function count_apps(d) {
     return new Promise((resolve, reject)=>{
@@ -21,7 +16,7 @@ function count_apps(d) {
             if(err) return reject(err);
             const time = Math.round(d.getTime()/1000);
             console.log(graphite_prefix+".app.count "+count+" "+time);
-            resolve();
+            resolve(count);
         });
     });
 }
@@ -42,7 +37,7 @@ function count_dataset(d) {
                 if(err) return reject(err);
                 const time = Math.round(d.getTime()/1000);
                 console.log(graphite_prefix+".dataset.count "+count+" "+time);
-                resolve();
+                resolve(count);
             });
         });
     });
@@ -54,7 +49,7 @@ function count_project(d) {
             if(err) return reject(err);
             const time = Math.round(d.getTime()/1000);
             console.log(graphite_prefix+".project.count "+count+" "+time);
-            resolve();
+            resolve(count);
         });
     });
 }
@@ -66,7 +61,7 @@ function count_public_project(d) {
             if(err) return reject(err);
             const time = Math.round(d.getTime()/1000);
             console.log(graphite_prefix+".project.public "+count+" "+time);
-            resolve();
+            resolve(count);
         });
     });
 }
@@ -77,7 +72,7 @@ function count_private_project(d) {
             if(err) return reject(err);
             const time = Math.round(d.getTime()/1000);
             console.log(graphite_prefix+".project.private "+count+" "+time);
-            resolve();
+            resolve(count);
         });
     });
 }
@@ -85,11 +80,20 @@ function count_private_project(d) {
 db.init(async function(err) {
     if(err) throw err;
     let today = new Date();
-    await count_apps(today); 
-    await count_dataset(today); 
-    await count_project(today); 
-    await count_public_project(today); 
-    await count_private_project(today); 
+
+    const writeApi = new influx.InfluxDB(config.influxdb.connection)
+        .getWriteApi(config.influxdb.org, config.influxdb.bucket, 'ns')
+    writeApi.useDefaultTags({location: config.influxdb.location})
+    const point = new influx.Point("warehouse");
+    point.timestamp(today);
+    point.intField("app", await count_apps(today));
+    point.intField("dataset", await count_dataset(today));
+    point.intField("all_project", await count_project(today));
+    point.intField("public_project", await count_public_project(today));
+    point.intField("private_project", await count_private_project(today));
+    writeApi.writePoint(point);
+    writeApi.close();
+
     db.disconnect();
 });
 

@@ -9,6 +9,7 @@ const rp = require('request-promise-native');
 const redis = require('redis');
 const fs = require('fs');
 const child_process = require('child_process');
+const influx = require('@influxdata/influxdb-client');
 
 const pkg = require('../package.json');
 
@@ -19,6 +20,7 @@ const common = require('../api/common');
 // TODO  Look for failed tasks and report to the user/dev?
 let acon;
 
+
 console.log("connected to mongo");
 db.init(async err=>{
     common.connectAMQP((err, conn)=>{
@@ -28,8 +30,9 @@ db.init(async err=>{
     });
 
     await common.connectRedis();
-    setInterval(emit_counts, 1000*config.metrics.counts.interval);  //usually 24 hours?
-    setInterval(emit_health_counts, 1000*config.metrics.health_counts.interval);  //usually 5min
+
+    setInterval(emit_counts, config.influxdb.countInterval);  //usually 24 hours?
+    setInterval(emit_health_counts, config.influxdb.countInterval);  //usually 5min
 });
 
 function subscribe() {
@@ -129,7 +132,9 @@ function subscribe() {
     });
 }
 
-let counts = {};
+let counts = {
+    test: 10,
+};
 function inc_count(path) {
     if(counts[path] === undefined) counts[path] = 0;
     counts[path]++;
@@ -142,18 +147,31 @@ function isValidationTask(task) {
 
 function emit_counts() {
     //emit graphite metrics
+    /*
     let out = "";
     for(let key in counts) {
         out += config.metrics.counts.prefix+"."+key+" "+counts[key]+" "+new Date().getTime()/1000+"\n";
     }
     fs.writeFileSync(config.metrics.counts.path, out);
+    */
+    const writeApi = new influx.InfluxDB(config.influxdb.connection)
+        .getWriteApi(config.influxdb.org, config.influxdb.bucket, 'ns')
+
+    writeApi.useDefaultTags({location: config.influxdb.location})
+    const point = new influx.Point("warehouse.counts");
+    point.timestamp(new Date());
+    for(let key in counts) {
+        point.intField(key, counts[key]);
+    }
+    writeApi.writePoint(point);
+    writeApi.close();
 
     counts = {}; //reset all counters
 }
 
 const health_counts = {
     tasks: 0,
-    instanceS: 0,
+    instances: 0,
 }
 async function emit_health_counts() {
     var report = {
@@ -176,12 +194,25 @@ async function emit_health_counts() {
     await common.redisClient.set("health.warehouse.event."+process.env.HOSTNAME+"-"+process.pid, JSON.stringify(report));
 
     //emit graphite metrics
+    /*
     const time = new Date().getTime()/1000;
     let out = `
 ${config.metrics.health_counts.prefix}.health.tasks ${health_counts.tasks} ${time}
 ${config.metrics.health_counts.prefix}.health.instances ${health_counts.instances} ${time}
 `;
     fs.writeFileSync(config.metrics.health_counts.path, out);
+    */
+
+    const writeApi = new influx.InfluxDB(config.influxdb.connection)
+        .getWriteApi(config.influxdb.org, config.influxdb.bucket, 'ns')
+    writeApi.useDefaultTags({location: config.influxdb.location})
+
+    const point = new influx.Point("warehouse.health");
+    point.intField('tasks', health_counts.tasks);
+    point.intField('instances', health_counts.instances);
+    point.timestamp(new Date());
+    writeApi.writePoint(point);
+    writeApi.close();
 
     health_counts.tasks = 0;
     health_counts.instances = 0;

@@ -109,6 +109,19 @@ exports.metrics = {
     api: "http://10.0.0.10:2080", //TODO
 }
 
+exports.influxdb = {
+    connection: {
+        url: "http://brainlife_influxdb_1:8086",
+        token: "mydevtoken",
+    },
+    org: "brainlife",
+    bucket: "brainlife",
+    location: "localhost",
+
+    countInterval: 10*1000, 
+    healthInterval: 10*1000, 
+}
+
 //for event handler
 exports.event = {
     amqp: {
@@ -220,6 +233,7 @@ exports.groupanalysis = {
         cb(null, fs.createWriteStream(path));
     },
 }
+
 
 /*
 function connect_dc(cb) {
