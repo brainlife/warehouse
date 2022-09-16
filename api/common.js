@@ -873,7 +873,7 @@ exports.sensu_name = function(name) {
 let amqpConn = null;
 let warehouse_ex;
 exports.connectAMQP = function(cb) {
-    let conn = amqp.createConnection(config.event.amqp, {reconnectBackoffTime: 1000*10});
+    let conn = amqp.createConnection(config.event.amqp);
     conn.once("ready", err=>{
         if(err) return cb(err);
         console.log("connected to amqp server");
@@ -886,12 +886,13 @@ exports.connectAMQP = function(cb) {
                 //deprecated exchange but still used
                 conn.exchange("wf.task", {autoDelete: false, durable: true, type: 'topic', confirm: true}, _ex=>{
                     amqpConn = conn;
-                    cb(null, conn);
+                    if(cb) cb(null, conn);
+                    cb = null; //in case connection reconnects
                 });
             });
         })
     });
-    conn.on("error", cb);
+    conn.on("error", console.error);
 }
 
 exports.disconnectAMQP = function(cb) {

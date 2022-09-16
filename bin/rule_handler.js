@@ -26,14 +26,15 @@ db.init(function(err) {
         acon.exchange("warehouse.rule", {autoDelete: false, durable: true, type: 'topic', confirm: true}, (ex)=>{
             rule_ex = ex; 
         });
+
+        common.connectRedis(err=>{
+            if(err) throw err;
+            console.log("connected to redis");
+            setInterval(health_check, 1000*60*2); //start checking health 
+            run();
+        });
     });
 
-    common.connectRedis(err=>{
-        if(err) throw err;
-        console.log("connected to redis");
-        setInterval(health_check, 1000*60*2); //start checking health 
-        run();
-    });
 });
 
 let _counts = {
