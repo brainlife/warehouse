@@ -15,4 +15,5 @@ db.init(async err=>{
     dldatasets.forEach(d=>{
         console.log(`${d.path},${d.import_count}`);
     });
+    db.disconnect();
 });
