@@ -7,26 +7,35 @@ const fs = require('fs');
 const redis = require('redis');
 
 const config = require('../api/config');
-const logger = winston.createLogger(config.logger.winston);
 const db = require('../api/models');
 const common = require('../api/common');
 
 const provenance = require('../api/lib/provenance');
 
-console.log("running appinfo");
-
+console.log("connecting to db");
 db.init(err=>{
     if(err) throw err;
-    rcon = redis.createClient(config.redis.port, config.redis.server);
-    rcon.on('error', err=>{throw err});
-    rcon.on('ready', ()=>{
-        logger.info("connected to redis");
-        setInterval(health_check, 1000*60*2); //start checking health 
-        setTimeout(health_check, 1000*10); //run shortly after start
-        run();
+    common.connectRedis(()=>{
+        //cache contact info first
+        common.cacheContact(err=>{
+            if(err) console.error(err);
+
+            //then load apps 
+            db.Apps.find({ removed: false }).exec((err, apps)=>{
+                if(err) throw err;
+                //report.app_counts = apps.length;
+                async.eachSeries(apps, handle_app, err=>{
+                    if(err) throw err;
+                    console.log("all done");
+                    db.disconnect();
+                    common.redisClient.quit();
+                });
+            });
+        });
     });
 });
 
+/*
 var report = {
     status: "ok",
     maxage: 1000*60*30,
@@ -37,29 +46,13 @@ function health_check() {
     report.date = new Date();
     rcon.set("health.warehouse.appinfo."+process.env.HOSTNAME+"-"+process.pid, JSON.stringify(report));
 }
+*/
 
-function run() {
-
-    //cache contact info first
-    common.cacheContact(err=>{
-        if(err) console.error(err);
-
-        //then load apps 
-        db.Apps.find({ removed: false }).exec((err, apps)=>{
-            if(err) throw err;
-            report.app_counts = apps.length;
-            
-            async.eachSeries(apps, handle_app, err=>{
-                if(err) logger.error(err);
-                console.log("done going through all apps sleeping.....");
-                setTimeout(run, 1000*3600*3);
-            });
-        });
-    });
+function run(cb) {
 }
 
 function handle_app(app, cb) {
-    logger.debug("....................... %s %s", app.name, app._id.toString());
+    console.debug("....................... %s %s", app.name, app._id.toString());
 
     //only process a single app
     //if(app._id != "5dc36c242f23fd1368387879") return cb();
@@ -164,7 +157,7 @@ function handle_app(app, cb) {
         //issue doi
         next=>{
             if(app.doi) return next();
-            logger.debug("minting doi");
+            console.debug("minting doi");
             common.get_next_app_doi((err, doi)=>{
                 if(err) return next(err);
                 app.doi = doi;
