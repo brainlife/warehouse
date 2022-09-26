@@ -23,7 +23,7 @@ exports.debug = true;
 exports.redis = { url: "redis://brainlife_redis_1" };
 
 //get it from https://github.com/settings/tokens  
-exports.github = { access_token: fs.readFileSync(__dirname+'/github.access_token', 'ascii').trim()};
+//exports.github = { access_token: "..." };
 
 //admin+client scope oauth2 token used to invite users
 //once you create oauth app, you will need to re-authorize it with admin+client (it gave with just admin scope)
