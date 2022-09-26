@@ -28,7 +28,8 @@ db.init(async err=>{
     */
 
     console.log("loading dataset_description.json");
-    let datasets = child_process.execSync("find ./ -name dataset_description.json", {encoding: "utf8"}).split("\n").filter(dataset=>{
+    //let datasets = child_process.execSync("find ./ -name dataset_description.json", {encoding: "utf8"}).split("\n").filter(dataset=>{
+    const datasets = fs.readFileSync(process.argv[2], "utf8").split("\n").filter(dataset=>{
         //ignore some datasets
         if(dataset.startsWith("datasets.datalad.org/openneuro")) return false;
         if(dataset.startsWith("datasets.datalad.org/openfmri")) return false;
@@ -41,13 +42,13 @@ db.init(async err=>{
         let dataset_path = path.dirname(bids_dir);
 
         console.log(dataset_path+".......................");
-        if(dataset_path[0] == '.') return next_dir();
+        //if(dataset_path[0] == '.') return next_dir();
 
-        //openneuro/ds001734/derivatives contains dataset_description.json
-        if(dataset_path.includes("/derivatives")) return next_dir(); 
+	//ignore dataset_description.json contained inside derivatives
+        if(dataset_path.includes("/derivatives/")) return next_dir(); 
 
         //openneuro/ds001583
-        if(dataset_path.includes("/.bidsignore")) return next_dir(); 
+        //if(dataset_path.includes("/.bidsignore")) return next_dir(); 
 
         //somehow it gets stuck... (not bids walker issue?)
         /*
@@ -219,5 +220,4 @@ function handle_bids(key, bids, cb) {
         });
     });
 }
-
 

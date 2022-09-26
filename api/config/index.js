@@ -91,6 +91,7 @@ exports.mail = {
     },
 }
 
+//deprecated by influxdb
 exports.metrics = {
     counts: {
         path: "/tmp/warehouse.24m.metrics", 
