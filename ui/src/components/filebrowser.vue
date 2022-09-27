@@ -328,31 +328,30 @@ export default {
     margin: 0px;
     padding: 2px 4px;
     font-size: 13px;
-    font-family: Helvetica;
 }
 .fileitem:hover {
-cursor: pointer;
-background-color: #eee;
+    cursor: pointer;
+    background-color: #eee;
 }
 .fileitem.fileitem-viewing {
-color: #2185d0;
+    color: #2185d0;
 }
 .file-content {
-margin-right: 30px;
+    margin-right: 30px;
 }
 .file-content-buttons {
-position: absolute; 
-top: 3px; 
-right: 20px; 
-opacity: 0;
-transition: opacity 0.3s;
-z-index: 1;
+    position: absolute; 
+    top: 3px; 
+    right: 20px; 
+    opacity: 0;
+    transition: opacity 0.3s;
+    z-index: 1;
 }
 .file-content:hover .file-content-buttons {
-opacity: 0.7;
+    opacity: 0.7;
 }
 .buttons {
-padding-top: 5px;
-opacity: 0.5;
+    padding-top: 5px;
+    opacity: 0.5;
 }
 </style>
