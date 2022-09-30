@@ -1171,7 +1171,7 @@ exports.update_project_stats = async function(project, cb) {
         const {resources} = await rp.get({
             url: config.amaretti.api+"/resource", json: true,
             qs: {
-                find: JSON.stringify({_id: {$in: resource_ids}, user_id: null}),
+                find: JSON.stringify({_id: {$in: resource_ids}, /*user_id: null*/}),
             },
             headers: { authorization: "Bearer "+config.warehouse.jwt, },
         });
