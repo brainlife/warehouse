@@ -15,12 +15,12 @@ const async = require('async');
 
 const atob = require('atob');
 
-exports.mongodb = "mongodb://brainlife_mongodb_1/warehouse";
+exports.mongodb = "mongodb://brainlife_mongodb/warehouse";
 
 exports.debug = true; 
 
 //used to post/poll health status from various services
-exports.redis = { url: "redis://brainlife_redis_1" };
+exports.redis = { url: "redis://brainlife_redis" };
 
 //get it from https://github.com/settings/tokens  
 //exports.github = { access_token: "..." };
@@ -35,7 +35,7 @@ exports.slack = {
 }
 
 exports.amaretti = {
-    api: "http://brainlife_amaretti-api_1:8080",
+    api: "http://brainlife_amaretti-api:8080",
 }
 //exports.wf = exports.amaretti; //deprecated (use amaretti)
 
@@ -48,12 +48,12 @@ exports.mailchimp = {
 }
 
 exports.auth = {
-    api: "http://brainlife_auth-api_1:8080",
+    api: "http://brainlife_auth-api:8080",
 }
 
 exports.warehouse = {
     //used by rule handler to submit dataset download request
-    api: "http://brainlife_warehouse-api_1:8080",
+    api: "http://brainlife_warehouse-api:8080",
 
     url: "https://localhost.brainlife.io", //to test datacite
 
@@ -112,7 +112,7 @@ exports.metrics = {
 
 exports.influxdb = {
     connection: {
-        url: "http://brainlife_influxdb_1:8086",
+        url: "http://brainlife_influxdb:8086",
         token: "mydevtoken",
     },
     org: "brainlife",
@@ -126,7 +126,7 @@ exports.influxdb = {
 //for event handler
 exports.event = {
     amqp: {
-        url: "amqp://guest:guest@brainlife_rabbitmq_1:5672/brainlife",
+        url: "amqp://guest:guest@brainlife_rabbitmq:5672/brainlife",
 
         //collected by cron
         queues: "/tmp/rabbitmq.queues.json",
