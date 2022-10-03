@@ -8,7 +8,7 @@ const mongoose = require("mongoose");
 mongoose.set("debug", false); //suppress log
 
 let graphite_prefix = process.argv[2];
-if(!graphite_prefix) graphite_prefix = "dev"
+if(!graphite_prefix) graphite_prefix = "dev";
 
 function count_apps(d) {
     return new Promise((resolve, reject)=>{

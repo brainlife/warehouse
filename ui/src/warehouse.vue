@@ -1,5 +1,10 @@
 <template>
-<div id="warehouse" :class="{'sidewide': $root.sidemenuWide, 'rightviewOpen': $root.rightviewOpen}">
+<div
+    id="warehouse" 
+    :class="{
+        'sidewide': $root.sidemenuWide, 
+        'rightviewOpen': $root.rightviewOpen
+    }">
     <sidemenu/>
     <rightview/>
     <router-view/>
@@ -65,30 +70,8 @@ export default {
 
 <style>
 
-/*only used by pageheader title*/
-@import url('https://fonts.googleapis.com/css?family=Open+Sans:700');
-/*
-@font-face {
-    font-family: "Open Sans";
-    src: local("Open Sans"),
-        url(./assets/fonts/opensans.woff) format("woff");
-}
-*/
-
+@import url('https://fonts.googleapis.com/css?family=Open+Sans:700'); /*only used by pageheader title*/
 @import url('https://fonts.googleapis.com/css2?family=Merriweather+Sans:wght@400;700&family=Merriweather:wght@400;700');
-/*
-@font-face {
-    font-family: "Merriweather Sans";
-    src: local("Merriweather Sans"),
-        url(./assets/fonts/merriweathersans.woff2) format("woff2");
-}
-*/
-
-/* no-effect
-html.wf-loading * {
-     opacity: 0;
-}
-*/
 
 #warehouse {
     height: 100%;

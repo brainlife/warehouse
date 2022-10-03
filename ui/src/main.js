@@ -445,8 +445,7 @@ new Vue({
 
             //we don't have good way of invalidating all projects loaded by the time we finish creating project.
             //we need to reload page..
-            //(well.. as long as we don't redirect to a page that loads project list, we should be fine..)
-            //location.reload();
+            location.reload();
         },
 
         refresh_jwt(cb) {
