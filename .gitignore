@@ -13,6 +13,7 @@ ui/config/index.js
 ui/config/dev.env.js
 ui/config/npm-debug.log
 api/config
+api/config/index.js
 docs/_site
 docs/Gemfile.lock
 **/npm-debug.log
