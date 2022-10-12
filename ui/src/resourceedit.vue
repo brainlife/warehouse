@@ -67,7 +67,27 @@
                     </b-col> 
                     <b-col cols="9">
                         <v-select v-if="projects" :options="projects" v-model="resource.gids" 
-                            :reduce="r=>r.group_id" label="name" multiple/>
+                            :reduce="r=>r.group_id" label="name" multiple>
+                            <template v-slot:option="project">
+                                <span :class="{
+                                    'resource-projects-all__vs__dropdown-option': project.group_id == 1,
+                                    'resource-projects-private__vs__dropdown-option': project.private,
+                                }">
+                                    {{ project.name }}
+                                    <span class="resource-projects-all_admin-message" v-if="config.hasRole('admin') && project.group_id == 1">
+                                        (Brainlife Administrators Only)
+                                    </span>
+                                </span>
+                            </template>
+                            <template v-slot:selected-option="project">
+                                <span :class="{
+                                    'resource-projects-all__vs__selected': project.group_id == 1,
+                                    'resource-projects-private__vs__selected': project.private,
+                                }">
+                                    {{ project.name }}
+                                </span>
+                            </template>
+                        </v-select>
                         <p>
                             <small>Please select projects that you'd like enable this resource. Any jobs submitted by any member of specified project will be executed on this resource. You have to be listed as administrator of the project to be able to select it.</small>
                         </p>
@@ -314,23 +334,37 @@ export default {
             }}).then(res=>{
                 this.projects = res.data.projects;
 
-                //brainlife admin can add global user (but only site admin can *add* it)
-                //if(this.config.hasRole('admin')) {
-                this.projects.push({
-                    group_id: 1, 
-                    name: "(Public Resource)", 
-                    desc: "Share this resource with all brainlife users - only brainlife administrator can add this"
+                this.projects.forEach(p => {
+                    p.private = false;
                 });
 
-                //add private groups that user doesn't have access to.. so the value won't disappear
-                this.resource.gids.forEach(gid=>{
-                    const project = this.projects.find(p=>p.group_id == gid);
-                    if(!project) this.projects.push({
-                            group_id: gid, 
-                            name: "(Private Project "+gid+")", 
-                            desc: "You don't have access to this project by it was added by other administrator",
+                if (
+                    // brainlife admin can add global user (but only site admin can *add* it)
+                    this.config.hasRole('admin') ||
+
+                    // if you are editing a resource and it has already public permission
+                    (this.resource._id && this.resource.gids.includes(1))
+                ) {
+                    this.projects.push({
+                        group_id: 1, 
+                        name: "All Projects", 
+                        desc: "Share this resource with all Brainlife users - only Brainlife administrators can add this",
+                        private: false,
                     });
-                }); 
+                }
+
+                //add private groups that user doesn't have access to.. so the value won't disappear
+                this.resource.gids.forEach(gid => {
+                    const project = this.projects.find(p => p.group_id == gid);
+                    if (!project) {
+                        this.projects.push({
+                            group_id: gid, 
+                            name: "Private Project", 
+                            desc: "You don't have access to this project by it was added by other administrator",
+                            private: true,
+                        });
+                    }
+                });
             });
         },
 
@@ -442,6 +476,23 @@ export default {
 }
 small {
     opacity: 0.5;
+}
+.resource-projects-all_admin-message {
+    color: #C00;
+}
+.resource-projects-all__vs__selected {
+    color: #393;
+    font-weight: bold;
+}
+.resource-projects-private__vs__selected {
+    color: #999;
+}
+.resource-projects-all__vs__dropdown-option {
+    color: #393;
+    font-weight: bold;
+}
+.resource-projects-private__vs__dropdown-option {
+    color: #999;
 }
 </style>
 
