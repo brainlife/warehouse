@@ -102,7 +102,7 @@
     "extract-text-webpack-plugin": "^3.0.0",
     "file-loader": "^1.1.11",
     "friendly-errors-webpack-plugin": "^1.7.0",
-    "html-webpack-plugin": "^2.30.1",
+    "html-webpack-plugin": "^5.5.0",
     "http-proxy-middleware": "^0.17.3",
     "ify-loader": "^1.1.0",
     "inject-loader": "^3.0.0",
