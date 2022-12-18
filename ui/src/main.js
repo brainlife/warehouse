@@ -24,7 +24,6 @@ import Notifications from 'vue-notification' //override element-ui ugly $notify.
 
 //TODO really~!?
 import 'vue-awesome/icons/robot.js'
-import 'vue-awesome/icons/book.js'
 import 'vue-awesome/icons/paper-plane.js'
 import 'vue-awesome/icons/vial.js'
 import 'vue-awesome/icons/search.js'
@@ -33,7 +32,6 @@ import 'vue-awesome/icons/list.js'
 import 'vue-awesome/icons/list-alt.js'
 import 'vue-awesome/icons/lock.js'
 import 'vue-awesome/icons/ban.js'
-import 'vue-awesome/icons/plus.js'
 import 'vue-awesome/icons/home.js'
 import 'vue-awesome/icons/th-large.js'
 import 'vue-awesome/icons/code-branch.js'
@@ -47,6 +45,7 @@ import 'vue-awesome/icons/cog.js'
 import 'vue-awesome/icons/archive.js'
 import 'vue-awesome/icons/bars.js'
 import 'vue-awesome/icons/wrench.js'
+import 'vue-awesome/icons/biohazard.js'
 import 'vue-awesome/icons/sign-in-alt.js'
 import 'vue-awesome/icons/sign-out-alt.js'
 import 'vue-awesome/icons/sticky-note.js'
@@ -90,7 +89,6 @@ import 'vue-awesome/icons/check-circle.js'
 import 'vue-awesome/icons/star.js'
 import 'vue-awesome/icons/flask.js'
 import 'vue-awesome/icons/envelope.js'
-import 'vue-awesome/icons/user-friends.js'
 import 'vue-awesome/icons/user.js'
 import 'vue-awesome/icons/user-cog.js'
 import 'vue-awesome/icons/university.js'
@@ -267,11 +265,16 @@ Vue.config.plotly = {
     },
 };
 
-Vue.config.hasRole = function(role, service = "warehouse") {
-    if( Vue.config.user && 
+Vue.config.hasRole = function (role, service = 'warehouse') {
+    return (
+        Vue.config.user &&
         Vue.config.user.scopes[service] &&
-        ~Vue.config.user.scopes[service].indexOf(role)) return true;
-    return false;
+        ~Vue.config.user.scopes[service].indexOf(role)
+    )
+}
+
+Vue.config.isSu = function () {
+    return !!localStorage.getItem('su-jwt');
 }
 
 axios.defaults.baseURL = Vue.config.api; //default root for $http
@@ -295,28 +298,17 @@ if (process.env.NODE_ENV == "development") {
 }
 */
 
-console.log("warehouse...........");
-console.dir(Vue.config);
-
-// warning - jwt_decode just decode any jwt token. it doesn't validate it
-// so we can't really trust that user is who they say they are on the client side.
-// we just assume that user is trustworthy on the client side and pass jwt to 
-// server so that we can do a real jwt validation there
 function jwt_decode_brainlife(jwt) {
-    Vue.config.user = jwt_decode(jwt);
-    Vue.config.jwt = jwt;
+    Vue.config.user = jwt_decode(jwt)
+    Vue.config.jwt = jwt
 
-    //auth service should return sub in string format, but currently it doesn't..
-    //let's just covert it to string 
-    Vue.config.user.sub = Vue.config.user.sub.toString();
-    axios.defaults.headers.common['Authorization'] = 'Bearer '+Vue.config.jwt;
+    Vue.config.user.sub = `${Vue.config.user.sub}`
+    axios.defaults.headers.common['Authorization'] = `Bearer ${Vue.config.jwt}`
 }
 
-Vue.config.jwt = localStorage.getItem("jwt");//jwt token for user
+Vue.config.jwt = localStorage.getItem('jwt')
 if (Vue.config.jwt) {
-    jwt_decode_brainlife(Vue.config.jwt);
-} else {
-    console.log("jwt not set");
+    jwt_decode_brainlife(Vue.config.jwt)
 }
 
 router.beforeEach(function (to, from, next) {
@@ -352,13 +344,10 @@ Vue.use(VueGtag, {
 
 const soundHost = "https://raw.githubusercontent.com/brainlife/warehouse/master/ui/sounds/";
 
-//create main component
 new Vue({
     el: '#app',
     router,
-    template: `
-    <warehouse v-if="ready"/>
-    `,
+    template: `<warehouse v-if="ready"/>`,
     data() {
         return {
             ready: false,
@@ -376,7 +365,7 @@ new Vue({
 
     mounted() {
         let wide = localStorage.getItem("sidemenuWide");
-        if(wide) this.sidemenuWide = (wide=="1"?true:false);
+        if(wide) this.sidemenuWide = (wide === "1");
 
         let ro = localStorage.getItem("rightviewOpen");
         if(ro) {
@@ -448,22 +437,33 @@ new Vue({
             location.reload();
         },
 
-        refresh_jwt(cb) {
+        async refresh_jwt(cb) {
             if(!Vue.config.jwt) return;
-            console.log("refreshing token");
-            this.$http.post(Vue.config.auth_api+"/refresh").then(res=>{
-                if(!res.data.jwt) console.log("token refresh didn't work.. resetting jwt");
+
+            if (Vue.config.isSu()) {
+              const jwt = localStorage.getItem('su-jwt');
+              try {
+                  const res = await this.$http.post(
+                      `${Vue.config.auth_api}/refresh`,
+                      {},
+                      { headers: { Authorization: `Bearer ${jwt}` } }
+                  );
+                  localStorage.setItem('su-jwt', res.data.jwt);
+              } catch (error) {
+                  localStorage.removeItem('su-jwt');
+              }
+          }
+
+            try {
+                const res = await this.$http.post(`${Vue.config.auth_api}/refresh`)
                 jwt_decode_brainlife(res.data.jwt);
-                localStorage.setItem("jwt", res.data.jwt);
+                localStorage.setItem('jwt', res.data.jwt);
                 if(cb) cb();
-            }).catch(err=>{
-                console.error("failed to referesh token");
-                console.error("redirecting to auth service");
-                console.error(err); 
+            } catch (error) {
                 sessionStorage.setItem('auth_redirect', document.location.href);
                 document.location = Vue.config.auth_signin;
-                if(cb) cb(err);
-            });
+                if(cb) cb(error);
+            }
         },
 
         load_profile() {
@@ -483,5 +483,3 @@ new Vue({
         },
     },
 })
-
-
