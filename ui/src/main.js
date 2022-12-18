@@ -441,18 +441,18 @@ new Vue({
             if(!Vue.config.jwt) return;
 
             if (Vue.config.isSu()) {
-              const jwt = localStorage.getItem('su-jwt');
-              try {
-                  const res = await this.$http.post(
-                      `${Vue.config.auth_api}/refresh`,
-                      {},
-                      { headers: { Authorization: `Bearer ${jwt}` } }
-                  );
-                  localStorage.setItem('su-jwt', res.data.jwt);
-              } catch (error) {
-                  localStorage.removeItem('su-jwt');
-              }
-          }
+                const jwt = localStorage.getItem('su-jwt');
+                try {
+                    const res = await this.$http.post(
+                        `${Vue.config.auth_api}/refresh`,
+                        {},
+                        { headers: { Authorization: `Bearer ${jwt}` } }
+                    );
+                    localStorage.setItem('su-jwt', res.data.jwt);
+                } catch (error) {
+                    localStorage.removeItem('su-jwt');
+                }
+            }
 
             try {
                 const res = await this.$http.post(`${Vue.config.auth_api}/refresh`)
