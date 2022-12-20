@@ -29,16 +29,6 @@
                 <span>My Apps</span> 
             </p>
         </div>
-        <br>
-
-        <div style="position: fixed; bottom: 0px; margin-left: 5px;">
-            <div class="button" style="color: gray;" @click="go('/appsgraph')">
-                <icon name="code-branch"/>
-            </div>
-            <div class="button" style="color: gray;" @click="go('/apptest')">
-                <icon name="vial"/>
-            </div>
-        </div>
 
     </div>
     <div class="page-content" @scroll="handle_scroll" ref="scrolled">

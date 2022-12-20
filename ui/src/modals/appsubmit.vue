@@ -436,7 +436,7 @@ export default {
                         if(err) return reject(err);
 
                         //create an instance to run everything
-                        this.$http.post(Vue.config.wf_api+'/instance', {
+                        this.$http.post(Vue.config.amaretti_api+'/instance', {
                             group_id: this.project.group_id,
                             desc: this.form.desc||this.app.name,
                             config: {

@@ -317,7 +317,7 @@ export default {
         },
 
         stop(task) {
-            this.$http.put(Vue.config.wf_api+'/task/stop/'+task._id)
+            this.$http.put(Vue.config.amaretti_api+'/task/stop/'+task._id)
             .then(res=>{
                 this.$notify({ text: res.data.message, type: 'success'});
             })

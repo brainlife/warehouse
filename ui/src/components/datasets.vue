@@ -747,7 +747,7 @@ export default {
 
         get_instance() {
             //first create an instance to download things to
-            return this.$http.post(Vue.config.wf_api+'/instance', {
+            return this.$http.post(Vue.config.amaretti_api+'/instance', {
                 name: "brainlife.download",
                 config: {
                     selected: this.selected,
@@ -771,7 +771,7 @@ export default {
                         this.submit_process(opt.project_id, opt.instance);
                     } else {
                         //need to create a new instance
-                        this.$http.post(Vue.config.wf_api+'/instance', {
+                        this.$http.post(Vue.config.amaretti_api+'/instance', {
                             desc: opt.desc,
                             config: {
                                 brainlife: true,

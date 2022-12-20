@@ -1,8 +1,5 @@
 <template>
 <div>
-    <!--inspiration
-        https://dribbble.com/shots/1262299-Spear/attachments/172826
-    -->
     <div class="page-content">
         <div class="card">
             <div class="card-title">
@@ -53,40 +50,13 @@
                             <small v-else-if="task.status == 'running'"><time>Started <timeago :datetime="task.start_date" :auto-update="1"/></time></small>
                             <small v-else-if="task.status == 'finished'"><time>Finished <timeago :datetime="task.finish_date" :auto-update="1"/></time></small>
                             <small v-else-if="task.status == 'failed'"><time>Failed <timeago :datetime="task.fail_date" :auto-update="1"/></time></small>
-                            <!-- <small v-else-if="task.status == 'removed'"><time>Removed <timeago :datetime="task.remove_date" :auto-update="1"/></time></small> -->
                         </td>
                     </tr>
                     </tbody>
                 </table>
             </div>
         </div>
-
-        <div class="card" v-if="recent_users">
-            <div class="card-title">
-                <small style="float: right; margin-top: 10px;">{{recent_users.length}} users</small>
-                <h5>New Members</h5>
-                <small>Please say hi to the following new members who recently joined brainlife (in the last 30 days)</small>
-            </div>
-            <div class="card-body" style="padding: 15px; padding-right: 30px;">
-                <b-card-group columns>
-                    <b-card v-for="user in recent_users" :key="user.sub" no-body style="border: none; box-shadow: 1px 1px 3px #0002;">
-                        <img :src="avatar_url(user, 50)" style="float: left; padding-right: 15px;">
-                        <p>
-                            <b>{{user.fullname}}</b><br>
-                            <small v-if="user.email" >{{user.email}}</small><br>
-                            <span v-if="user._profile">{{user._profile.institution}}</span><br>
-                        </p>
-                        <div slot="footer" v-if="user._profile && user._profile.bio">
-                            <small style="opacity: 0.8">{{user._profile.bio}}</small>
-                            <b-badge pill class="bigpill" v-if="user.times">
-                                <icon name="calendar" style="opacity: 0.4;"/>&nbsp;&nbsp;&nbsp;<small>Registered</small>&nbsp;&nbsp;{{new Date(user.times.register).toLocaleDateString()}}
-                            </b-badge>
-                        </div>
-                    </b-card>
-                </b-card-group>
-            </div>
-        </div>
-    </div><!--page-content-->
+    </div>
 </div>
 </template>
 
@@ -99,12 +69,7 @@ import contact from '@/components/contact'
 import authprofilecache from '@/mixins/authprofilecache'
 import resource_cache from '@/mixins/resource_cache'
 
-/*
-import vis from 'vis/dist/vis.min.js'
-import 'vis/dist/vis.min.css'
-*/
-
-const lib = require('@/lib'); //for avatar_url
+const lib = require('@/lib')
 
 export default {
     mixins: [authprofilecache, resource_cache],
@@ -112,7 +77,6 @@ export default {
         pageheader, 
         statusicon,
         contact,
-        //vis,
     },
 
     data () {
@@ -120,7 +84,7 @@ export default {
             recent_users: null,
             recent_tasks: null,
     
-            projects: {}, //group_id to project lookup
+            projects: {},
             reloader: null,
 
             config: Vue.config,
@@ -131,72 +95,13 @@ export default {
         clearInterval(this.reloader); 
     },
 
-
     mounted() {
-
-        setInterval(this.reload, 1000*30);
+        setInterval(this.reload, 1000 * 30);
         this.reload();
-
-        //load other minor things..
-        let days = 30;
-        if(Vue.config.debug) days = 360;
-        this.$http.get(Vue.config.auth_api+"/profile/recreg/"+days).then(res=>{
-            this.recent_users = res.data.users;
-        
-            //load public profiles for each users
-            this.recent_users.forEach(u=>{
-                this.authprofilecache(u.sub, (err, user)=>{
-                    Vue.set(u, '_profile', user.profile.public);
-                });
-            });
-        }).catch(console.error);
-
-
     },
 
     methods: {
         avatar_url: lib.avatar_url,
-
-        /*
-        async update_resource_vis() {
-            var groups = new vis.DataSet();
-            let gid = 0;
-            let items = [];
-            //let min_time = null;
-            //let max_time = null;
-            for(let gid = 0; gid < this.resources.length;++gid) {
-                let resource = this.resources[gid];
-                groups.add({
-                    id: gid,
-                    content: resource.name,
-                    options: {
-                        shaded: {
-                            orientation: 'bottom'
-                        }
-                    }
-                });
-                let res = await this.$http.get(Vue.config.amaretti_api+'/resource/'+resource._id+'/metrics');
-                res.data.forEach(d=>{
-                    let count = d[0];
-                    let time = d[1]*1000;
-                    //if(min_time === null || min_time > time) min_time = time;
-                    //if(max_time === null || max_time < time) max_time = time;
-                    items.push({
-                        y: count,
-                        x: time,
-                        group: gid,
-                    });   
-                });
-            }
-            let dataset = new vis.DataSet(items);
-            let graph2d = new vis.Graph2d(this.$refs.resource_vis, dataset, groups, {
-                drawPoints: false,
-                legend: true,
-                //start: min_time,
-                //end: max_time,
-            });
-        },
-        */
 
         opentask(task) {
             let project = this.projects[task._group_id];
@@ -204,10 +109,6 @@ export default {
         },
 
         reload() {
-            console.log("reloading data");
-
-            //let recent_date = new Date();
-            //recent_date.setDate(recent_date.getDate()-30);
             let find = JSON.stringify({
                 status: {$nin: ["removed", "stopped"]}, 
                 service: {$nin: ["brainlife/app-stage"]},

@@ -7,8 +7,6 @@ const mongoose = require('mongoose');
 const common = require('../common');
 const dbscan = require('@cdxoo/dbscan');
 
-const math = require('mathjs');
-
 exports.traverseProvenance = async (startTaskId) => {
     console.debug("traversing from task:", startTaskId);
 

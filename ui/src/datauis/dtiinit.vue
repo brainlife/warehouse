@@ -20,7 +20,7 @@ export default {
     mounted() {
         var basepath = "";
         if(this.subdir) basepath+=this.subdir+"/";
-        this.url = Vue.config.wf_api+'/task/download/'+this.task._id+'/'+basepath+'dti/t1pdd.png'+'?at='+Vue.config.jwt;
+        this.url = Vue.config.amaretti_api+'/task/download/'+this.task._id+'/'+basepath+'dti/t1pdd.png'+'?at='+Vue.config.jwt;
     }
 }
 </script>

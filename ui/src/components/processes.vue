@@ -288,7 +288,7 @@ export default {
             this.selected.desc = desc;
             clearTimeout(debounce);
             debounce = setTimeout(()=>{
-                this.$http.put(Vue.config.wf_api+'/instance/'+this.selected._id, this.selected).then(res=>{
+                this.$http.put(Vue.config.amaretti_api+'/instance/'+this.selected._id, this.selected).then(res=>{
                     this.$notify({ text: 'Updated description', type: 'success' });
                 });
             }, 1000);
@@ -350,7 +350,7 @@ export default {
         newinstance() {
             let desc = prompt("Please enter process description");
             if(!desc) return;
-            this.$http.post(Vue.config.wf_api+'/instance', {
+            this.$http.post(Vue.config.amaretti_api+'/instance', {
                 desc,
                 config: {
                     brainlife: true,
@@ -386,7 +386,7 @@ export default {
             }
 
             //console.log("loading instances for group", this.project.group_id);
-            this.$http.get(Vue.config.wf_api+'/instance', {params: {
+            this.$http.get(Vue.config.amaretti_api+'/instance', {params: {
                 find: JSON.stringify({
                     "config.brainlife": true,
                     status: {$ne: "removed"},

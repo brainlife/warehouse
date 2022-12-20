@@ -26,7 +26,7 @@ export default {
             this.ws = new ReconnectingWebSocket(url, null, {/*debug: Vue.config.debug,*/ reconnectInterval: 3000});
             this.ws.onopen = (e)=>{
                 //loading the task for the first time
-                this.$http.get(Vue.config.wf_api+'/task', {params: {
+                this.$http.get(Vue.config.amaretti_api+'/task', {params: {
                     find: JSON.stringify({ _id: taskid, })
                 }}).then(res=>{
                     this.task = res.data.tasks[0];
@@ -79,7 +79,7 @@ export default {
                 break;
             case 'removed':
                 console.debug("rerunning");
-                this.$http.put(Vue.config.wf_api+'/task/rerun/'+this.taskid).then(res => {
+                this.$http.put(Vue.config.amaretti_api+'/task/rerun/'+this.taskid).then(res => {
                     console.log("rerunning task");
                     //setTimeout(()=>{this.wait(taskid, cb)}, 1000);
                 });

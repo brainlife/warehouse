@@ -13,8 +13,6 @@ const request = require('request'); //deprecate!
 const zlib = require('zlib');
 const async = require('async');
 
-const atob = require('atob');
-
 exports.mongodb = "mongodb://brainlife_mongodb/warehouse";
 
 exports.debug = true; 

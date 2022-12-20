@@ -2,17 +2,13 @@
 const request = require('request'); //TODO switch to axios!
 const rp = require('request-promise-native');
 const keywordEx = require("keyword-extractor");
-const tmp = require('tmp');
-const path = require('path');
 const child_process = require('child_process');
-const fs = require('fs');
 const async = require('async');
 const redis = require('redis');
 const xmlescape = require('xml-escape');
 const amqp = require("amqp"); //switch to amqplib?
 const axios = require('axios');
 const jwt = require('express-jwt');
-const crypto = require('crypto');
 
 const config = require('./config');
 const db = require('./models');

@@ -249,7 +249,7 @@ export default {
         },
 
         rerun() {
-            this.$http.put(Vue.config.wf_api+'/task/rerun/'+this.task._id)
+            this.$http.put(Vue.config.amaretti_api+'/task/rerun/'+this.task._id)
             .then(res=>{
                 this.$notify({ text: res.data.message, type: 'success'});
             })
@@ -259,7 +259,7 @@ export default {
         },
 
         stop() {
-            this.$http.put(Vue.config.wf_api+'/task/stop/'+this.task._id)
+            this.$http.put(Vue.config.amaretti_api+'/task/stop/'+this.task._id)
             .then(res=>{
                 this.$notify({ text: res.data.message, type: 'success'});
             })
@@ -269,7 +269,7 @@ export default {
         },
 
         remove() {
-            this.$http.delete(Vue.config.wf_api+'/task/'+this.task._id)
+            this.$http.delete(Vue.config.amaretti_api+'/task/'+this.task._id)
             .then(res=>{
                 this.$notify({ title: 'Removing Task', text: 'Task removal requested', type: 'success', });
                 this.$emit("remove", this.task._id);
@@ -280,7 +280,7 @@ export default {
         },
 
         poke() {
-            this.$http.put(Vue.config.wf_api+'/task/poke/'+this.task._id)
+            this.$http.put(Vue.config.amaretti_api+'/task/poke/'+this.task._id)
             .then(res=>{
                 this.$notify({text: res.data.message, type: 'success'});
             })

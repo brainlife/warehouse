@@ -128,7 +128,7 @@ export default {
                     console.error("can't find", this.project, "in project list", this.projects);
                     return reject();
                 }
-                this.$http.get(Vue.config.wf_api+'/instance', {params: {
+                this.$http.get(Vue.config.amaretti_api+'/instance', {params: {
                     find: JSON.stringify({
                         "config.brainlife": true,
                         status: {$ne: "removed"},
