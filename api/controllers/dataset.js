@@ -1520,16 +1520,17 @@ set -e
                 authors = authors.map(id=>common.deref_contact(id)).filter(a=>!!a).map(a=>a.fullname||a.email);
 
                 //write README and bids/dataset_description.json
-                let root = "./proj-"+project_id;
-                script += "mkdir -p "+root+"/bids\n";
-                script += "cat << '__ENDREADME__' > "+root+"/README\n";
+                const uniqueHeredoc = Math.random().toString(36).substring(2);
+                let root = `./proj-${project_id}`;
+                script += `mkdir -p ${root}/bids\n`;
+                script += `cat << '__${uniqueHeredoc}__' > ${root}/README\n`;
                 script += `${p.name}
 
 ${config.warehouse.url}/project/${project_id}
 
 ${p.desc}`;
 
-                script += "\n__ENDREADME__\n";
+                script += `\n__${uniqueHeredoc}__\n`;
 
                 let dataset_description = {
                     BIDSVersion:  "1.0.1",
