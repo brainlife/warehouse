@@ -52,13 +52,17 @@ import select2 from '@/components/select2'
 import datatypetag from '@/components/datatypetag'
 
 import agreementMixin from '@/mixins/agreement'
+import datatypesMixin from '@/mixins/datatypes'
 
 const async = require("async");
 
 var debounce = {};
 
 export default {
-    mixins: [agreementMixin],
+    mixins: [
+        agreementMixin,
+        datatypesMixin,
+    ],
     components: { tags, projectselecter, select2, datatypetag },
     data() {
         return {
@@ -96,6 +100,16 @@ export default {
                 if(presets.subjects) this.selected_subjects = presets.subjects; //not tested
                 if(presets.datatypes) this.selected_datatypes = presets.datatypes; 
             }
+            
+            this.loadDatatypes(
+                {},
+                err => {
+                    if(err) console.error(err);
+                    Object.values(this.datatypes).map(
+                      datatype => this.datatypes_s2.push({ id: datatype._id, text: datatype.name })
+                    );
+                }
+            );
 
             this.$refs.modal.show()
             Vue.nextTick(()=>{
@@ -295,22 +309,5 @@ export default {
             });
         },
     },
-
-    created: function() {
-        //load datatypes
-        this.$http.get('datatype', {params: {
-            find: JSON.stringify({
-                //removed: false,
-            }),
-            sort: 'name'
-        }}).then(res=>{
-            this.datatypes = {};
-            res.data.datatypes.forEach(datatype=>{
-                this.datatypes[datatype._id] = datatype;
-                this.datatypes_s2.push({ id: datatype._id, text: datatype.name });
-            });
-        });
-    }
 }
 </script>
-

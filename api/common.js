@@ -895,12 +895,12 @@ exports.disconnectAMQP = function(cb) {
     if(!amqpConn) return console.error("AMQP not connected");
     console.debug("disconnecting from amqp");
     amqpConn.setImplOptions({reconnect: false}); //https://github.com/postwait/node-amqp/issues/462
-    amqpconn.disconnect();
+    amqpConn.disconnect();
 }
 
 //connect to the amqp exchange and wait for a event to occur
 exports.wait_for_event = function(exchange, key, cb) {
-    if(!amqpConn) return console.error("wait_for_event called before connecting to amqp");
+    if (!amqpConn) return console.error("wait_for_event called before connecting to amqp");
     amqpConn.queue('', q=>{
         q.bind(exchange, key, ()=>{
             q.subscribe((message, header, deliveryInfo, messageObject)=>{

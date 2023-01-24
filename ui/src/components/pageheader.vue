@@ -51,7 +51,7 @@ export default {
             document.location = "/auth/#!/signup";
         },
         slack() {
-            document.location = "https://brainlife-inviter.herokuapp.com/";
+            document.location = "https://join.slack.com/t/brainlife/shared_invite/zt-1now1p07p-rf6vvvcp6Aiu8XhO1om8aA";
         },
         md5, 
     }
