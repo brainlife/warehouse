@@ -83,6 +83,6 @@ export default new Router({
         { path: '/pubs', component: pubs, meta: { public: true, sidemenu: 'pub' } },
         { path: '/pub/:id', component: pub, meta: { public: true, sidemenu: 'pub' } },
 
-        { path: '/slack', redirect: 'https://join.slack.com/t/brainlife/shared_invite/zt-1now1p07p-rf6vvvcp6Aiu8XhO1om8aA' }
+        { path: '/slack', beforeEnter: () => { window.location.href = 'https://join.slack.com/t/brainlife/shared_invite/zt-1now1p07p-rf6vvvcp6Aiu8XhO1om8aA' }},
     ]
 })
