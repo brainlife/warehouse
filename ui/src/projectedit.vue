@@ -160,14 +160,14 @@
 
                 <div v-if="participants !== undefined">
                     <h5>Participants Info</h5>
-                    <p class="text-muted"><small>Key/value dictionary for each subject (participants.tsv). You can use this information in analysis tab. It should be array of objects containig at least 'subject' key and other fields</small></p>
+                    <p class="text-muted"><small>Key/value dictionary for each subject (participants.tsv). You can use this information in analysis tab. It should be array of objects containing at least 'subject' key and other fields</small></p>
                     <editor v-model="participants" @init="editorInit" lang="json" height="500"/>
                     <br>
                 </div>
 
                 <div v-if="participants !== undefined">
                     <h5>Column Definitions</h5>
-                    <p class="text-muted"><small>Participants Info column Definitions (participants.json). Please read the <a href="https://bids-specification.readthedocs.io/en/stable/03-modality-agnostic-files.html#phenotypic-and-assessment-data">BIDS speficication</a></small></p>
+                    <p class="text-muted"><small>Participants Info column Definitions (participants.json). Please read the <a href="https://bids-specification.readthedocs.io/en/stable/03-modality-agnostic-files.html#phenotypic-and-assessment-data">BIDS specification</a></small></p>
                     <editor v-model="participants_columns" @init="editorInit" lang="json" height="300"/>
                     <br>
                 </div>
@@ -190,7 +190,7 @@
                     </b-form-group>
 
                     <p style="background-color: #eee; padding: 10px;">
-                        <small>Please issue access token/secret on your XNAT project to allow accesss from brianlife. Brainlife will automatically refresh your token periodically.</small>
+                        <small>Please issue access token/secret on your XNAT project to allow access from brianlife. Brainlife will automatically refresh your token periodically.</small>
                         <b-form-group label="Access Token / Alias">
                             <b-input type="text" v-model="project.xnat.token" required/>
                         </b-form-group>

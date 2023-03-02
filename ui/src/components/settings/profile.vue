@@ -36,7 +36,7 @@
         </b-row>
 
         <h5>Public Profile</h5>
-        <p><small>The following information will be shared publically among all brainlife users.</small></p>
+        <p><small>The following information will be shared publicly among all brainlife users.</small></p>
 
         <b-row>
             <b-col cols="2">

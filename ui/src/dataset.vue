@@ -140,7 +140,7 @@ export default {
             }
         }
 
-        //load te dataset detail
+        //load the dataset detail
         this.$http('datalad/datasets', {params: {
             find: JSON.stringify({
                 removed: false,
@@ -184,7 +184,7 @@ export default {
         known_license(license) {
             license = license.toLowerCase().trim();
 
-            //corrrect some common mistakes.. (should I do this?)
+            //correct some common mistakes.. (should I do this?)
             if(license == "cco" || license == "cc") license = "cc0";
             if(license == "ppdl") license = "pddl";
             if(license == "ccby") license = "ccby.40";

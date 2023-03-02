@@ -503,7 +503,7 @@ export default {
                 let ands = [];
 
                 //split query into each token and allow for regex search on each token
-                //so that we can query against multiple fields simultanously
+                //so that we can query against multiple fields simultaneously
                 this.query.split(" ").forEach(q=>{
                     if(q === "") return;
 
@@ -1005,7 +1005,7 @@ h4 {
     opacity: inherit; 
 }
 
-/*why don't I just *hide* removed objects? because remove() doesn't recalculate page height to preseve the current scroll position*/
+/*why don't I just *hide* removed objects? because remove() doesn't recalculate page height to preserve the current scroll position*/
 .removed {
     background-color: #ccc;
     color: white;

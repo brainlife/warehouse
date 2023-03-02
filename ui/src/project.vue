@@ -568,7 +568,7 @@ export default {
         '$route': function() {
             var project_id = this.$route.params.id;
             if(project_id && this.project && this.project._id != project_id) {
-                console.log("project chagned from", this.project._id, "to", project_id)
+                console.log("project changed from", this.project._id, "to", project_id)
                 this.openProject(project_id);
             } else {
                 this.handleRouteParams();

@@ -61,7 +61,7 @@
             <gaarchive :gaarchive="ga"/>
             <p style="float: right; margin-bottom: 0px;">
                 <b-badge pill class="bigpill clickable" @click="downloadNotebook(ga)">
-                    <icon name="download" style="opacity: 0.8;"/>&nbsp;&nbsp;&nbsp;<small style="opacity: 1">Dowload this notebook</small>
+                    <icon name="download" style="opacity: 0.8;"/>&nbsp;&nbsp;&nbsp;<small style="opacity: 1">Download this notebook</small>
                 </b-badge>
                 &nbsp;
                 <b-badge pill class="bigpill clickable" @click="launchGA(release, ga)">

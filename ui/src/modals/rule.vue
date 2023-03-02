@@ -100,7 +100,7 @@
 
                         <p v-if="input.multi">
                             <b-row>
-                                <b-col>Mutiple Input Object Count *</b-col>
+                                <b-col>Multiple Input Object Count *</b-col>
                                 <b-col :cols="8">
                                     <b-form-input v-model="rule.input_multicount[input.id]" placeholder="Expected number of objects for each subject/session for this input" />
                                 </b-col>
@@ -268,7 +268,7 @@ export default {
             this.tab = 0;
             this.resetIOConfig();
 
-            //overwrite with user provied default
+            //overwrite with user provided default
             Object.assign(this.rule, {
                 name: "",
                 app: null,

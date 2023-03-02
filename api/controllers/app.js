@@ -51,7 +51,7 @@ router.get('/', common.jwt({credentialsRequired: false}), (req, res, next)=>{
             {projects: []}, //if projects is empty array, it's available to everyone
 
             //for backward compatibility
-            {projects: null}, //if projects is set to null, it's avalable to everyoone
+            {projects: null}, //if projects is set to null, it's available to everyoone
             {projects: {$exists: false}}, //if projects not set, it's availableo to everyone
         ]});
 
@@ -102,7 +102,7 @@ router.get('/query', common.jwt({credentialsRequired: false}), (req, res, next)=
                 {projects: []}, //if projects is empty array, it's available to everyone
 
                 //for backward compatibility
-                {projects: null}, //if projects is set to null, it's avalable to everyoone
+                {projects: null}, //if projects is set to null, it's available to everyoone
                 {projects: {$exists: false}}, //if projects not set, it's availableo to everyone
             ]
         })

@@ -29,7 +29,7 @@ exports.getprojects = function(user, cb) {
     //everyone has read access to public project
     let project_query = {access: "public"};
     
-    //logged in user may have acess to more projects
+    //logged in user may have access to more projects
     project_query = {
         $or: [
             project_query,
@@ -204,7 +204,7 @@ exports.issue_archiver_jwt = async function(user_id) {
     ///add warehouse group that allows user to submit
     gids = gids.concat(config.archive.gid);  
 
-    //issue user token with added gids priviledge
+    //issue user token with added gids privilege
     let {jwt: user_jwt} = await rp.get({
         url: config.auth.api+"/jwt/"+user_id,
         json: true,
@@ -858,7 +858,7 @@ exports.split_product = function(task_product, outputs) {
     return products;
 }
 
-//TODO - this has to match up between amaretti/bin/metrics and warehouse/api/controller querying for graphite daa
+//TODO - this has to match up between amaretti/bin/metrics and warehouse/api/controller querying for graphite data
 exports.sensu_name = function(name) {
     name = name.toLowerCase();
     name = name.replace(/[_.@$#\/]/g, "-");
@@ -1476,7 +1476,7 @@ exports.enumXnatObjects = async (project)=>{
             "/subjects/"+oSubject.ID+
             "/experiments", {auth});
         for(const oExperiment of exres.data.ResultSet.Result) {
-            console.log("    experiement", oExperiment.ID);
+            console.log("    experiment", oExperiment.ID);
             //console.log("  <experiment>");
             /* oExperiment
               {

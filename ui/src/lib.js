@@ -17,7 +17,7 @@ export function filter_apps(dataset, apps) {
                 var reject = false;
                 if(dataset.datatype_tags) input.datatype_tags.forEach((tag)=> {
                     if(tag[0] == '!') {
-                        //negative tag (dataset must't have)
+                        //negative tag (dataset mustn't have)
                         if(~dataset.datatype_tags.indexOf(tag.substring(1))) {
                             reject = true;
                         }

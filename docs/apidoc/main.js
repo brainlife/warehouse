@@ -350,7 +350,7 @@ require([
                 if (entry.groupTitle)
                     title = entry.groupTitle;
 
-                // TODO: make groupDescription compareable with older versions (not important for the moment)
+                // TODO: make groupDescription comparable with older versions (not important for the moment)
                 if (entry.groupDescription)
                     description = entry.groupDescription;
 
@@ -514,7 +514,7 @@ require([
     };
 
     if ($.urlParam('compare')) {
-        // URL Paramter ?compare=1 is set
+        // URL Parameter ?compare=1 is set
         $('#compareAllWithPredecessor').trigger('click');
 
         if (window.location.hash) {

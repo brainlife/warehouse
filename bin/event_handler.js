@@ -246,7 +246,7 @@ function handle_task(task, cb) {
     //handle event
     async.series([
         //load task product for finished task
-        //TODO - can we gurantee that the amaretti/task/product is loaded by the time we received this event?
+        //TODO - can we guarantee that the amaretti/task/product is loaded by the time we received this event?
         next=>{
             if(task.status != "finished") return next();
             //console.log("loading product for ", task._id, task.name);
@@ -273,7 +273,7 @@ function handle_task(task, cb) {
             //because UI needs the validator already submitted before next job can be submitted 
             //to create pipe between App1 > validator > App2.
             //let's do this for UI tasks only (task.nice is set) otherwise task queue will pile up 
-            //with events for requrested tasks
+            //with events for requested tasks
             if(!task.nice && task.status != "finished") return next();
 
 
@@ -513,7 +513,7 @@ function handle_task(task, cb) {
 
                         request.validator = true; //used to let UI know that this was output from validator
                     } else {
-                        //group analysys output is more straightfoward
+                        //group analysys output is more straightforward
                         //TODO - for legacy root-output apps, we shouldn't set subdir (and need to apply override?)
                         //or.. do I say secondary output won't work with legacy app anymore?
                         subdirs.push(output.id);
