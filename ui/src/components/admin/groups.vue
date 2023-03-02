@@ -152,7 +152,7 @@ export default {
                 return;
             }
             if(!this.form._admins) {
-                this.$notify({type: "error", text: 'Group is required to have atleast one admin'});
+                this.$notify({type: "error", text: 'Group is required to have at least one admin'});
                 return;
             }
             //convert back to numbers

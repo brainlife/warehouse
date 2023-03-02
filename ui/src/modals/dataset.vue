@@ -397,7 +397,7 @@ export default {
             this.$root.openDataObject = null;
         }
 
-        //TODO - call removeEventListener in destroy()? Or I should do this everytime modal is shown/hidden?
+        //TODO - call removeEventListener in destroy()? Or I should do this every time modal is shown/hidden?
         document.addEventListener("keydown", e => {
             if (e.keyCode == 27) {
                 this.close();
@@ -406,7 +406,7 @@ export default {
     },
 
     destroyed() {
-        //to prevent wierd things from happening during debugging?
+        //to prevent weird things from happening during debugging?
         this.$root.$off("dataset.view");
     },
     

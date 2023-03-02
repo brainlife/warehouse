@@ -503,7 +503,7 @@ output/mri/aparc* </pre></small>
                         <b-form-checkbox v-model="output.archive">Archive this output by default. <small>Uncheck this if this output is rarely used / archived to reduce the size of archive.</small></b-form-checkbox>
                         <b-form-checkbox v-model="output.output_on_root" v-if="output.output_on_root">(DEPRECATED) ignore output directory. Output files will be stored on the root of workdir.</b-form-checkbox>
                         <div v-if="output.output_on_root">
-                            <div class="text-muted" style="margin-top: 3px;">Datatype File Mapping <small>Optional override of file/direcory name to avoid more than 1 output to collide.</small></div>
+                            <div class="text-muted" style="margin-top: 3px;">Datatype File Mapping <small>Optional override of file/directory name to avoid more than 1 output to collide.</small></div>
                             <b-form-textarea v-model="output._files" :rows="3" :placeholder="default_outmap(output.datatype)"></b-form-textarea>
                         </div>
                     </b-card>

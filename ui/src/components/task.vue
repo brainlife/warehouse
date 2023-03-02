@@ -52,7 +52,7 @@
                         </tr>
                         <tr v-if="task.nice">
                             <th>Nice</th>
-                            <td>{{task.nice}} <small style="opacity: 0.5">yeilds to less nice tasks</small></td>
+                            <td>{{task.nice}} <small style="opacity: 0.5">yields to less nice tasks</small></td>
                         </tr>
                         <tr v-if="task.config._rule">
                             <th>Rule</th>

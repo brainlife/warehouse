@@ -123,7 +123,7 @@ export default {
             for(let i = 0;i < this.structures.length; ++i) {
                 const structure = this.structures[i];
                 try {
-                    //come up with refrence json url
+                    //come up with reference json url
                     let url = "https://raw.githubusercontent.com/brainlife/reference/master/neuro/parc-stats/";
                     switch(this.source) {
                     case "cortex":
@@ -133,7 +133,7 @@ export default {
                         url += "subcortical";
                         break;
                     default:
-                        throw "unknow source:"+this.source;
+                        throw "unknown source:"+this.source;
                     }
                     url +='/'+structure+'.json';
 

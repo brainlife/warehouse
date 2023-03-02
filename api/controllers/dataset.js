@@ -353,7 +353,7 @@ router.get('/provscript/:id', async (req, res, next)=>{
             replace_path(node._config);
         });
 
-        //output scrips
+        //output scripts
         while(nodes.length) { 
             let node = nodes.pop();
             if(!node.label) continue; //"This Dataset" doesn't have label, and we don't need it (TODO make output link?)
@@ -533,7 +533,7 @@ This boutique descriptor that can be used to run the workflow used to generate t
                             app_config[k] = vkey;
                             if(unwrap) app_config[k] = "__unwrap__"+vkey;
 
-                            //convert default value to string - boutique invocation value needs to be string accordint to tristan
+                            //convert default value to string - boutique invocation value needs to be string according to tristan
                             let def = app.config[k].default;
                             if(def === null) def = "null";
                             if(def.toString) def = def.toString();
@@ -1638,7 +1638,7 @@ ${p.desc}`;
 
             script+=`
 echo
-echo "All requested objects succesfully downloaded!!"
+echo "All requested objects successfully downloaded!!"
 echo
 echo "---------------------------------------------------------------------------------"
 echo "---------------------------------------------------------------------------------"

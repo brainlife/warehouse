@@ -38,7 +38,7 @@ export default {
             path += "peaks.nii.gz";
             break;
         default:
-            alert('unknown datatye:'+this.uiconfig.datatype);
+            alert('unknown datatype:'+this.uiconfig.datatype);
         }
         path += "?at="+Vue.config.jwt;
         window.config = { datatype: this.uiconfig.datatype, path };

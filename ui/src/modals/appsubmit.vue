@@ -214,7 +214,7 @@ export default {
             });
         });
 
-        //TODO - call removeEventListener in destroy()? Or I should do this everytime modal is shown/hidden?
+        //TODO - call removeEventListener in destroy()? Or I should do this every time modal is shown/hidden?
         document.addEventListener("keydown", e => {
             if (e.keyCode == 27) {
                 this.open = false;
@@ -415,8 +415,8 @@ export default {
             var instance = null;
             var download = [];
 
-            //load project detail for project selected and desintation project
-            let project_ids = [ this.projectId ]; //desintation
+            //load project detail for project selected and destination project
+            let project_ids = [ this.projectId ]; //destination
             //for project selected for input
             for(let input_id in this.form.inputs) {
                 this.form.inputs[input_id].forEach(ps=>{

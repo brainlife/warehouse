@@ -200,7 +200,7 @@ exports.traverseProvenance = async (startTaskId) => {
 
                 const dirTokens = datasetConfig.dir.split("/");
                 const sourceTask = dirTokens[1]; //original task that produed the output
-                const subdir = dirTokens[2]; //original task's subdir that contains this ouput
+                const subdir = dirTokens[2]; //original task's subdir that contains this output
 
                 //figure out input task/subdir (../60874c557f09362173e40866/bold_mask)
                 let id = datasetConfig.dataset_id;
@@ -256,7 +256,7 @@ exports.traverseProvenance = async (startTaskId) => {
                     //outdir will be set to indicate the copy dataset id which we want
                     datasetId = datasetConfig.outdir;
 
-                    //let's go ahead and register source dataset now in case datset.prov might be missing
+                    //let's go ahead and register source dataset now in case dataset.prov might be missing
                     //and we can't setup app-stage node for it
                     const source = await db.Datasets.findById(datasetConfig.id).lean();
                     registerDataset(source);
