@@ -94,7 +94,7 @@ var projectSchema = mongoose.Schema({
         resources: [{
             resource_id: String, //amaretti resource_id
 
-            //for quick referncing the resource detail
+            //for quick referencing the resource detail
             name: String,
 
             //becomes too big
@@ -737,7 +737,7 @@ var ruleSchema = mongoose.Schema({
     //any tags to look for each input id (object with key(output id)=>array(tags))
     input_tags: mongoose.Schema.Types.Mixed,
 
-    //count of object that should match for each intput id for the rule to be submitted
+    //count of object that should match for each input id for the rule to be submitted
     input_multicount: mongoose.Schema.Types.Mixed,
 
     //if user wants to override where the input data comes from, specify projects IDs keyed by input id

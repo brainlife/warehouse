@@ -342,7 +342,7 @@ export default {
             //if(key.includes("_mean")) key = key.split("_")[0];
 
             if(!this.labels[key]) {
-                console.log("don't have label infor for", key);
+                console.log("don't have label info for", key);
                 continue;
             }
             const label = this.labels[key];

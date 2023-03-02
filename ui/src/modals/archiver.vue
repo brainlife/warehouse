@@ -70,7 +70,7 @@ export default {
     },
 
     destroyed() {
-        //to prevent wierd things from happening during debugging?
+        //to prevent weird things from happening during debugging?
         this.$root.$off("archiver.show");
     },
 

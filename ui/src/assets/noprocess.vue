@@ -37,7 +37,7 @@
                         src="https://www.youtube.com/embed/Ewy3ahCVUzw" frameborder="0" 
                         allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
                     <h5>3. Analyze Multiple Subjects (Bulk Process)</h5>
-                    <p>If you know the Apps you would like to run and their paramters set, you can analyze multiple (all) subjects in a Project using the <b>Pipeline</b> tab.</p>
+                    <p>If you know the Apps you would like to run and their parameters set, you can analyze multiple (all) subjects in a Project using the <b>Pipeline</b> tab.</p>
                     <p>In your private project, go to the <b>Pipelines</b> tab, click the <b-btn style="border-radius: 50%;" size="sm" variant="secondary"><icon name="plus"/></b-btn> button to create a new pipelie rule. Enter any App name, select the App and run it. Under the <b>Inputs</b> section, update the Project field to the project that contains the datasets that you would like to use as input. Click <b>Submit</b>. 
                     </p>
                     <p>

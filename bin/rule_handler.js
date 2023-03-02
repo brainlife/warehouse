@@ -548,7 +548,7 @@ function handle_rule(rule, cb) {
 
                 //check count
                 if(input.multi && rule.input_multicount) {
-                    //make sure we have exactly the expected number of candiates
+                    //make sure we have exactly the expected number of candidates
                     if(candidates.length != rule.input_multicount[input.id]) {
                         log.info("We found "+candidates.length +" candidates objects for input:"+input.id+", but the rule is expecting "+rule.input_multicount[input.id]+" objects", group_id);
                         ambiguous = true;

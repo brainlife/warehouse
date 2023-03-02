@@ -18,7 +18,7 @@ export default {
     methods: {
         wait(taskid, cb) {
             //waiting for taskid and call cb when finishes
-            //TODO it also restart the job if it's removed (should it be this mixin's reponsibility?)
+            //TODO it also restart the job if it's removed (should it be this mixin's responsibility?)
             this.cb = cb;
 
             var url = Vue.config.event_ws+"/subscribe?jwt="+Vue.config.jwt;

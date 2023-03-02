@@ -286,7 +286,7 @@
                 <div class="box" style="padding: 20px">
                     <b-row>
                         <b-col>
-                            <span class="form-header">Maintaners</span>
+                            <span class="form-header">Maintainers</span>
                             <p style="height: 30px;"><small class="text-muted">List of users who currently maintains this App.</small></p>
                             <p v-for="c in app.admins" :key="c._id">
                                 <contact :id="c"/>

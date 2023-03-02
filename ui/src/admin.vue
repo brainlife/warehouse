@@ -209,7 +209,7 @@ export default {
             minProjectSize: 500,
 
             prov: null,
-            /*add new tab swithching code*/
+            /*add new tab switching code*/
             // tabIndices : ["Task", "Switch User", "Analytics", "Projects", "Users", "Groups"],
         }
     },

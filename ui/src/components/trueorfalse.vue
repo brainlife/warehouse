@@ -20,7 +20,7 @@ export default {
         value: function(v) {
             if(v) this.myvalue = "true";
             else this.myvalue = "false";
-            console.log("updateing _value", this.myvalue);
+            console.log("updating _value", this.myvalue);
         },
         myvalue: function(v) {
             this.$emit('input', v == "true");

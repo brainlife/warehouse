@@ -45,7 +45,7 @@ export default {
                         }
                     }});
                 } else {
-                    console.log("user doesn't have profile object.. maybe not logged in? storing agreements on local stoage");
+                    console.log("user doesn't have profile object.. maybe not logged in? storing agreements on local storage");
                     localStorage.setItem("agreements", JSON.stringify(this.user_agreements));
                 }
 
