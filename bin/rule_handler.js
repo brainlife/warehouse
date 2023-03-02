@@ -164,7 +164,7 @@ function handle_rule(rule, cb) {
     const counts = {
         waiting: 0, //waiting for inputs
         running: 0, //running jobs to produce the output ("submitted" is a better name?)
-        archived: 0, //outpus already archived
+        archived: 0, //output already archived
     };
 
     //prepare for stage / app / archive

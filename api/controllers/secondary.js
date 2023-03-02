@@ -231,7 +231,7 @@ router.post('/launchga', common.jwt(), (req, res, next)=>{
         let _config = Object.assign({}, req.body.config);
         _config.project = {
             _id: project._id, 
-            name: project.name, //galauncher juse need _id, but just in case it might become handy..
+            name: project.name, //galauncher just need _id, but just in case it might become handy..
         }
         _config.group = instance.group_id;
 

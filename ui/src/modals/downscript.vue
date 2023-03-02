@@ -72,7 +72,7 @@
                 <textarea class="downscript" ref="downscript" readonly>{{downscript}}</textarea>
                 <b-btn @click="copy_downscript" size="sm" variant="secondary" class="downscript-copy"><icon name="copy"/></b-btn>
             </div>
-            <small style="position: relative; top: -15px; margin-left: 10px;">This command includes your temporarly JWT token. Please do not share.</small>
+            <small style="position: relative; top: -15px; margin-left: 10px;">This command includes your temporary JWT token. Please do not share.</small>
         </div>
     </div>
     <div slot="modal-footer">

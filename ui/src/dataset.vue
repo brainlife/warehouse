@@ -140,7 +140,7 @@ export default {
             }
         }
 
-        //load te dataset detail
+        //load the dataset detail
         this.$http('datalad/datasets', {params: {
             find: JSON.stringify({
                 removed: false,

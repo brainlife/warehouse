@@ -182,7 +182,7 @@ function handle_app(app, cb) {
             }).catch(err=>{
                 console.error(err.message);
                 console.error(err.status);
-                //what if we have temporarly glitch on doi.org? this is too dangerous
+                //what if we have temporary glitch on doi.org? this is too dangerous
                 //TODO - I should set the *last* date that doi worked, and if it's been too long, then we should reset it (or notify us to manually reset it)
                 //app.doi = undefined
                 next();

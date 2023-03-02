@@ -268,7 +268,7 @@ export default {
             this.tab = 0;
             this.resetIOConfig();
 
-            //overwrite with user provied default
+            //overwrite with user provided default
             Object.assign(this.rule, {
                 name: "",
                 app: null,
