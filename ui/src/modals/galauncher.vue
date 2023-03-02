@@ -142,27 +142,27 @@ export default {
             templates: [
                 {
                     name: "Python3", 
-                    desc: "Python Notebook (lab-2.1.1) with Dipy(1.3.0) and Fury",
-                    container: "brainlife/ga-dipy:lab211-dipy130",
-                    app: "soichih/ga-test",
-                },
-                {
-                    name: "Python3", 
-                    desc: "Python Notebook (lab-3.0.16) with Dipy(1.3.0) and Fury",
-                    container: "brainlife/ga-python:lab3016-dipy130",
-                    app: "soichih/ga-test",
-                },
-                {
-                    name: "Python3", 
                     desc: "Python Notebook (lab-3.2.8) with Dipy(1.4.1) and Fury",
                     container: "brainlife/ga-python:lab328-dipy141",
-                    app: "soichih/ga-test",
+                    app: "brainlife/ga-python",
+                },
+                {
+                    name: "Python3", 
+                    desc: "Python Notebook",
+                    container: "brainlife/ga-python:lab328-dipy141",
+                    app: "brainlife/ga-python",
+                },
+                {
+                    name: "Python3", 
+                    desc: "Python Notebook",
+                    container: "brainlife/ga-python:lab328-dipy141-pybrainlife-1.0",
+                    app: "brainlife/ga-python",
                 },
                 {
                     name: "Octave(matlab)", 
                     desc: "Octave Notebook (lab-2.1.1)",
                     container: "brainlife/ga-octave:1.0",
-                    app: "soichih/ga-test",
+                    app: "brainlife/ga-octave",
                 },
             ],
             preSelectedGAID: null,
