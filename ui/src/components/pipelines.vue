@@ -104,7 +104,7 @@ export default {
                 this.handleRoute();   
                 this.subscribe();
 
-                //initialize if pipeline hierarchy doesn' exist yet
+                //initialize if pipeline hierarchy doesn't exist yet
                 if(!this.project.pipelines) {
                     const pipelines = {
                         type: "group",
