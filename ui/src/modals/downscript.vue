@@ -128,11 +128,8 @@ export default {
         },
 
         downscript() {
-            if (!this.query._id) {
-                return;
-            }
             const headers = "-H 'Content-Type: application/json' -H 'Authorization: Bearer " + this.jwt + "'";
-            const query = JSON.stringify({limit: this.query._id.length, find: this.query});
+            const query = JSON.stringify({limit: (this.query && this.query._id && this.query._id.length) || 10000, find: this.query});
 
             return `curl ${headers} -d '${query}' -X POST "${Vue.config.api}/dataset/downscript" | bash`;
         },
