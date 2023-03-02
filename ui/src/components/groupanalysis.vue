@@ -122,34 +122,6 @@ export default {
 
             sessions: [],
 
-            //TODO should come from db someday
-            /*
-            apps: [
-                {
-                    text: "Please select a class to start",
-                    value: null,
-                },
-                {
-                    text: "python/dipy", 
-                    //img: "https://kanoki.org/wp-content/uploads/2017/07/Screen-Shot-2017-07-15-at-04.59.36.png",
-                    value: {
-                        desc: "Jupyter Datascience Notebook (lab-2.1.1) with Dipy(1.3.0) and Fury",
-                        container: "brainlife/ga-python",
-                        tag: "lab211-dipy130",
-                    },
-                },
-                {
-                    text: "Octave(matlab)", 
-                    //img: "https://kanoki.org/wp-content/uploads/2017/07/Screen-Shot-2017-07-15-at-04.59.36.png",
-                    value: {
-                        desc: "Jupyter Datascience Notebook (lab-2.1.1) with Octave",
-                        container: "brainlife/ga-octave",
-                        tag: "1.0",
-                    }
-                },
-            ],
-            */
-
             editingTask: null,
             editingName: "",
             editingDesc: "",
@@ -175,10 +147,6 @@ export default {
     },
 
     mounted() {
-        if(Vue.config.debug) {
-            this.host = "https://dev1.soichi.us";
-        }
-
         this.createOrFindGAInstance(this.project.group_id, (err, instance)=>{
             if(err) return console.error(err); //TODO notify?
             this.instance = instance;
