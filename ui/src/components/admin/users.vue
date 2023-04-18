@@ -42,11 +42,11 @@
                                 v-model="form.email_confirmed">Confirmed</b-form-checkbox></b-col>
                             </b-row>
                             <span class="form-header">Full Name</span>
-                            <b-form-input v-if="form.fullname" v-model="form.fullname"/>
+                            <b-form-input v-if="form.fullname!== undefined" v-model="form.fullname"/>
                             <span class="form-header">Username</span>
-                            <b-form-input v-if="form.username" v-model="form.username"/>
+                            <b-form-input v-if="form.username!== undefined" v-model="form.username"/>
                             <span class="form-header">Email</span>
-                            <b-form-input v-if="form.email" v-model="form.email"/>
+                            <b-form-input v-if="form.email!== undefined" v-model="form.email"/>
 
                             <br>
                             <h5>Scope</h5>
