@@ -10,9 +10,12 @@ const axios = require('axios');
 
 //hide openneuro datasets that are removed
 
-let root = "/mnt/datalad";
-if(config.debug) root = "/mnt/scratch/datalad-test";
-else process.chdir(root)
+
+if(config.dataladDirectory) process.chdir(config.dataladDirectory);
+else {
+    console.error("config.dataladDirectory is not set");
+    process.exit(1);
+}
 
 //https://github.com/OpenNeuroOrg/openneuro/issues/1608
 //let bad_datasets = [ "ds000030", "ds000113", "ds000217", "ds000221", "ds001417", "ds002236" ];

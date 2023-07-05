@@ -10,9 +10,15 @@ const child_process = require('child_process');
 const cli = require('brainlife');
 const axios = require('axios');
 
-process.chdir('/mnt/datalad');
+// process.chdir('/mnt/datalad');
 
+if(config.dataladDirectory) process.chdir(config.dataladDirectory);
+else {
+    console.error("config.dataladDirectory is not set");
+    process.exit(1);
+}
 console.log("connecting");
+
 db.init(async err=>{
     if(err) throw err;
     await load_datatypes();
@@ -28,8 +34,8 @@ db.init(async err=>{
     */
 
     console.log("loading dataset_description.json");
-    //let datasets = child_process.execSync("find ./ -name dataset_description.json", {encoding: "utf8"}).split("\n").filter(dataset=>{
-    const datasets = fs.readFileSync(process.argv[2], "utf8").split("\n").filter(dataset=>{
+    let datasets = child_process.execSync("find ./ -name dataset_description.json", {encoding: "utf8"}).split("\n").filter(dataset=>{
+    // const datasets = fs.readFileSync(process.argv[2], "utf8").split("\n").filter(dataset=>{
         //ignore some datasets
         if(dataset.startsWith("datasets.datalad.org/openneuro")) return false;
         if(dataset.startsWith("datasets.datalad.org/openfmri")) return false;
