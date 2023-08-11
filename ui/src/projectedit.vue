@@ -97,20 +97,28 @@
 
                 <b-row>
                     <b-col cols="3">
-                        <span class="form-header">Agreements</span>
+                        <span class="form-header">DATA USE AGREEMENT</span>
                     </b-col> 
                     <b-col cols="9">
                         <p class="text-muted"><small>List of agreements that user must agree before accessing datasets stored on this project</small></p>
                         <b-row v-for="(agreement, idx) in project.agreements" :key="idx">
                             <b-col>
-                                <b-form-textarea v-model="agreement.agreement" placeholder="Enter agreemenet text(markdown) to be presented to the user"/>
+                                <b-form-textarea v-model="agreement.agreement" placeholder="Enter agreement text(markdown) to be presented to the user"/>
                                 <br>
                             </b-col>
                             <b-col cols="1">
                                 <div class="button" @click="remove_agreement(idx)"><icon name="trash"/></div>
                             </b-col>
                         </b-row>
-                        <p><b-button @click="project.agreements.push({agreement: ''})" size="sm"><icon name="plus"/> Add Agreement</b-button></p>
+                        <!-- <p><b-button @click="project.agreements.push({agreement: ''})" size="sm"><icon name="plus"/> Add Agreement</b-button></p> -->
+                        <b-dropdown  split class="m-2" @click="addAgreement('empty')">
+                            <template #button-content>
+                                Add Agreement
+                            </template>
+                            <b-dropdown-item-button @click="addAgreement('template1')">template 1</b-dropdown-item-button>
+                            <b-dropdown-item-button @click="addAgreement('templat2')">template 2 </b-dropdown-item-button>
+                            <b-dropdown-item-button @click="addAgreement('template3')">template 3</b-dropdown-item-button>
+                        </b-dropdown>
                         <br>
                     </b-col>
                 </b-row>
@@ -559,7 +567,14 @@ export default {
                     this.submitting = false;
                 });
             }
-        }
+        },
+
+        addAgreement(type) {
+            if(type == 'empty') this.project.agreements.push({agreement: ''});
+            if(type == 'template1') this.project.agreements.push({
+                agreement: "I agree to participate in this study - template 1",
+            })
+        },
     },
 }
 </script>
