@@ -260,6 +260,7 @@ export default {
             this.email = res.data.email;
             this.fullname = res.data.fullname;
             if(res.data.profile) lib.mergeDeep(this.profile, res.data.profile);
+            if(this.profile.private.aup) this.profile.private.aup = true;
             const jwt = Vue.config.jwt;
             if(jwt) {
                 this.debug = {jwt : this.user};
@@ -273,6 +274,7 @@ export default {
 
         submit_profile(e) {
             e.preventDefault()
+            if(this.profile.private.aup) this.profile.private.aup = new Date();
             this.$http.patch(Vue.config.auth_api+"/profile", {
                 fullname: this.fullname,
                 profile: this.profile, 
