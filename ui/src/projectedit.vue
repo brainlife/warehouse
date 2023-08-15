@@ -115,9 +115,7 @@
                             <template #button-content>
                                 Add Agreement
                             </template>
-                            <b-dropdown-item-button @click="addAgreement('template1')">template 1</b-dropdown-item-button>
-                            <b-dropdown-item-button @click="addAgreement('templat2')">template 2 </b-dropdown-item-button>
-                            <b-dropdown-item-button @click="addAgreement('template3')">template 3</b-dropdown-item-button>
+                            <b-dropdown-item-button @click="addAgreement('brainlife_dua')">Brainlife Data Use Agreement - Dataset </b-dropdown-item-button>
                         </b-dropdown>
                         <br>
                     </b-col>
@@ -312,6 +310,7 @@ import tageditor from '@/components/tageditor'
 
 import datatypes from '@/mixins/datatypes'
 import { Picker } from 'emoji-mart-vue'
+import { brainlife_dua } from "@/assets/consents.js";
 
 const lib = require('@/lib');
 
@@ -571,8 +570,8 @@ export default {
 
         addAgreement(type) {
             if(type == 'empty') this.project.agreements.push({agreement: ''});
-            if(type == 'template1') this.project.agreements.push({
-                agreement: "I agree to participate in this study - template 1",
+            if(type == 'brainlife_dua') this.project.agreements.push({
+                agreement: brainlife_dua,
             })
         },
     },
