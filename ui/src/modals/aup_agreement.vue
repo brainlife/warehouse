@@ -32,7 +32,6 @@
                 profile: { private: { aup: updatedAup } }
             }).then(res=>{
                 Vue.config.profile.private.aup = updatedAup;
-
                 this.$notify({ type: "success", text: "Updated Details" });
                 this.$refs.modal.hide();
             }).catch(err=>{

@@ -44,7 +44,7 @@
 
             <!--TODO - should refactor this.. similar to public y projects-->
             <div v-if="config.user" class="position: relative">
-                <div v-if="userAgreementAgreed == false">
+                <div v-if="!userAgreementAgreed">
                     <aupAgreementModal></aupAgreementModal>                     
                 </div>
                 <h4 class="group-title">My Projects </h4>
@@ -229,9 +229,16 @@ export default {
     },
     computed: {
         userAgreementAgreed: function() {
-            if(Vue.config.user && Vue.config.profile)  {
+            if(Vue.config.user && Vue.config.profile) {
                 const latestAgreementDate = new Date('2023-08-08'); // Replace with the actual date of the latest version
                 const userAgreementDateStr = Vue.config.profile.private.aup;
+                console.log("User agreement date", userAgreementDateStr);
+
+                if (typeof userAgreementDateStr === "boolean") {
+                    console.log("User agreement date is a boolean value:", userAgreementDateStr);
+                    return false;
+                }
+
                 const userAgreementDate = new Date(userAgreementDateStr);
 
                 if (!(userAgreementDate instanceof Date && !isNaN(userAgreementDate.getTime()))) {
@@ -240,9 +247,14 @@ export default {
                 } 
 
                 // User has not accepted the latest version of the data use agreement
-                if (userAgreementDate < latestAgreementDate) return false;
+                if (userAgreementDate < latestAgreementDate) {
+                    console.log("User has not accepted the latest version of the data use agreement", userAgreementDate, latestAgreementDate);
+                    return false;
+                }
+
                 return true;
-            }           
+            }
+           
             return true;
         }
     }
