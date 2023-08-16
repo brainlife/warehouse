@@ -44,9 +44,7 @@
 
             <!--TODO - should refactor this.. similar to public y projects-->
             <div v-if="config.user" class="position: relative">
-                <div v-if="!userAgreementAgreed">
-                    <aupAgreementModal></aupAgreementModal>                     
-                </div>
+                <aupAgreementModal v-if="config.user && config.profile"></aupAgreementModal>                     
                 <h4 class="group-title">My Projects </h4>
                 <p v-if="my_projects.length == 0 && query == ''" style="margin: 20px; opacity: 0.5;">
                     Please create your project by clicking the <b>New Project</b> button below.
@@ -229,33 +227,29 @@ export default {
     },
     computed: {
         userAgreementAgreed: function() {
-            if(Vue.config.user && Vue.config.profile) {
-                const latestAgreementDate = new Date('2023-08-17'); // Replace with the actual date of the latest version
-                const userAgreementDateStr = Vue.config.profile.private.aup;
-                console.log("User agreement date", userAgreementDateStr);
+            const latestAgreementDate = new Date('2023-08-17'); // Replace with the actual date of the latest version
+            const userAgreementDateStr = Vue.config.profile.private.aup;
+            console.log("User agreement date", userAgreementDateStr);
 
-                if (typeof userAgreementDateStr === "boolean") {
-                    console.log("User agreement date is a boolean value:", userAgreementDateStr);
-                    return false;
-                }
-
-                const userAgreementDate = new Date(userAgreementDateStr);
-
-                if (!(userAgreementDate instanceof Date && !isNaN(userAgreementDate.getTime()))) {
-                    console.log("User agreement date is not a valid date", userAgreementDate);
-                    return false;
-                } 
-
-                // User has not accepted the latest version of the data use agreement
-                if (userAgreementDate < latestAgreementDate) {
-                    console.log("User has not accepted the latest version of the data use agreement", userAgreementDate, latestAgreementDate);
-                    return false;
-                }
-
-                return true;
+            if (typeof userAgreementDateStr === "boolean") {
+                console.log("User agreement date is a boolean value:", userAgreementDateStr);
+                return false;
             }
-           
-            return true;
+
+            const userAgreementDate = new Date(userAgreementDateStr);
+
+            if (!(userAgreementDate instanceof Date && !isNaN(userAgreementDate.getTime()))) {
+                console.log("User agreement date is not a valid date", userAgreementDate);
+                return false;
+            } 
+
+            // User has not accepted the latest version of the data use agreement
+            if (userAgreementDate < latestAgreementDate) {
+                console.log("User has not accepted the latest version of the data use agreement", userAgreementDate, latestAgreementDate);
+                return false;
+            }
+
+            return true;           
         }
     }
 }

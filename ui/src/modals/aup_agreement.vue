@@ -20,7 +20,7 @@
       };
     },
     mounted() {
-      this.$refs.modal.show();
+      if(!this.userAgreementAgreed()) this.$refs.modal.show();
     },
     methods: {
       close() {
@@ -39,6 +39,31 @@
                 this.$notify({type: "error", text: err.response.data.message});
             });  
       },
+      userAgreementAgreed() {
+            const latestAgreementDate = new Date('2023-08-17'); // Replace with the actual date of the latest version
+            const userAgreementDateStr = Vue.config.profile.private.aup;
+            console.log("User agreement date", userAgreementDateStr);
+
+            if (typeof userAgreementDateStr === "boolean") {
+                console.log("User agreement date is a boolean value:", userAgreementDateStr);
+                return false;
+            }
+
+            const userAgreementDate = new Date(userAgreementDateStr);
+
+            if (!(userAgreementDate instanceof Date && !isNaN(userAgreementDate.getTime()))) {
+                console.log("User agreement date is not a valid date", userAgreementDate);
+                return false;
+            } 
+
+            // User has not accepted the latest version of the data use agreement
+            if (userAgreementDate < latestAgreementDate) {
+                console.log("User has not accepted the latest version of the data use agreement", userAgreementDate, latestAgreementDate);
+                return false;
+            }
+
+            return true;           
+        }
     },
   };
   </script>
