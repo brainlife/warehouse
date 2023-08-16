@@ -230,7 +230,7 @@ export default {
     computed: {
         userAgreementAgreed: function() {
             if(Vue.config.user && Vue.config.profile) {
-                const latestAgreementDate = new Date('2023-08-16'); // Replace with the actual date of the latest version
+                const latestAgreementDate = new Date('2023-08-17'); // Replace with the actual date of the latest version
                 const userAgreementDateStr = Vue.config.profile.private.aup;
                 console.log("User agreement date", userAgreementDateStr);
 
