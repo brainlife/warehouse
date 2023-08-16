@@ -174,19 +174,7 @@
                 <br>
             </b-col>
         </b-row>
-
-        <hr>
-        <b-row>
-            <b-col cols="2">
-            </b-col>
-            <b-col>
-                <b-form-checkbox name="aup" v-model="profile.private.aup" required>
-                    Agree to Brainlife <a href="/docs/aup" target="_blank">Acceptable Use Policy</a><br>
-                    <br>
-                </b-form-checkbox>
-            </b-col>
-        </b-row>
-
+       
         <br>
         <br>
         <br>
@@ -274,7 +262,6 @@ export default {
 
         submit_profile(e) {
             e.preventDefault()
-            if(this.profile.private.aup) this.profile.private.aup = new Date();
             this.$http.patch(Vue.config.auth_api+"/profile", {
                 fullname: this.fullname,
                 profile: this.profile, 
