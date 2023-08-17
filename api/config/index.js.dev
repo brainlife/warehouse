@@ -79,7 +79,7 @@ exports.mail = {
 
     //node mailer config
     mailer: {
-        host: 'mail-relay.iu.edu', //max recipents per email: 30
+        host: 'mail-relay.iu.edu', //max recipients per email: 30
         secure: true, //port 465
         auth: {
             user: 'mememe',
