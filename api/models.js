@@ -840,6 +840,9 @@ var dlDatasetSchema = mongoose.Schema({
     ],
     participants_info: mongoose.Schema.Types.Mixed, //metadata for participants info
 
+    phenotypes_json: mongoose.Schema.Types.Mixed,
+    phenotype_files: [String], //list of files in phenotypes folder
+
     stats: {
         subjects: Number,
         sessions: Number,

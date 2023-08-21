@@ -10,9 +10,13 @@ const child_process = require('child_process');
 const cli = require('brainlife');
 const axios = require('axios');
 
-process.chdir('/mnt/datalad');
-
+if(config.dataladDirectory) process.chdir(config.dataladDirectory);
+else {
+    console.error("config.dataladDirectory is not set");
+    process.exit(1);
+}
 console.log("connecting");
+
 db.init(async err=>{
     if(err) throw err;
     await load_datatypes();
@@ -123,6 +127,10 @@ function handle_bids(key, bids, cb) {
         if(bids.dataset_description) dldataset.dataset_description = bids.dataset_description;
         if(bids.participants) dldataset.participants = bids.participants;
         if(bids.participants_json) dldataset.participants_info = bids.participants_json;
+        // storing combines json and folder files
+        if(bids.phenotypes_json) dldataset.phenotypes_json = bids.phenotypes_json;
+        
+        if(bids.phenotype_files && bids.phenotype_files.length) dldataset.phenotype_files = bids.phenotype_files;
 
         //count
         let unique_subjects = [];
