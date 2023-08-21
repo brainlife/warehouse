@@ -74,6 +74,10 @@ router.post('/import/:dataset_id', common.jwt(), (req, res, next)=>{
             if(project.members.includes(req.user.sub)) canedit = true;
             if(!canedit) return next("you can't import to this project"); 
 
+            if(dataset.phenotype_files) {
+                console.log("importing phenotype_files-----------------------------------------------------");
+                project.phenotype_files = dataset.phenotype_files;
+            }
             //update participants info
             let participants = new db.Participants({
                 project,

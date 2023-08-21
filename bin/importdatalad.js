@@ -32,7 +32,7 @@ db.init(async err=>{
     */
 
     console.log("loading dataset_description.json");
-    //let datasets = child_process.execSync("find ./ -name dataset_description.json", {encoding: "utf8"}).split("\n").filter(dataset=>{
+    // let datasets = child_process.execSync("find ./ -name dataset_description.json", {encoding: "utf8"}).split("\n").filter(dataset=>{
     const datasets = fs.readFileSync(process.argv[2], "utf8").split("\n").filter(dataset=>{
         //ignore some datasets
         if(dataset.startsWith("datasets.datalad.org/openneuro")) return false;

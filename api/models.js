@@ -122,6 +122,9 @@ var projectSchema = mongoose.Schema({
         //counts of publications (updated by common.update_project_stats)
         publications: Number,
 
+        //phenotype files
+        phenotype_files: [String],
+
         groupanalysis: {
             sessions: [{
                 task_id: String, //amaretti task id

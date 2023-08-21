@@ -274,6 +274,14 @@
                                     <small v-if="project.stats.comments">{{project.stats.comments}}</small>
                                 </template>
                             </b-tab>
+                            
+                            <b-tab>
+                                <template v-slot:title>
+                                    Phenotypes
+                                    <!-- <small v-if="phenotypes"></small> -->
+                                </template>
+                            </b-tab>
+
                         </b-tabs>
 
                         <!--readme-->
