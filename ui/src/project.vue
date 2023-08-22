@@ -278,7 +278,7 @@
                             <b-tab>
                                 <template v-slot:title>
                                     Phenotypes
-                                    <!-- <small v-if="phenotypes"></small> -->
+                                    <small v-if="project.phenotypes">{{ project.phenotypes.length }}</small>
                                 </template>
                             </b-tab>
 
@@ -396,6 +396,15 @@
                                 <p>Be the first one to comment !</p>
                             </div>
                             <br>
+                        </div>
+                        <div v-if="detailTab == 5">
+                            <b-list-group v-for="file in filteredPhenotypes">
+                                <!-- <b-list-group-item v-if="file.endsWith('.json')" class="d-flex justify-content-between align-items-center" href="#" >{{ file }} 
+                                    <b-badge variant="primary" pill>View</b-badge>
+                                </b-list-group-item>
+                                <b-list-group-item class="d-flex justify-content-between align-items-center" href="#" >{{ file }} </b-list-group-item> -->
+                                <b-list-group-item class="d-flex justify-content-between align-items-center" href="#" >{{ file }} </b-list-group-item>
+                            </b-list-group>
                         </div>
                     </div><!-- main content-->
                 </div><!--project header-->
@@ -608,6 +617,19 @@ export default {
         sortedPapers : function() {
             return this.project.relatedPapers.sort((a,b)=> b.citationCount - a.citationCount );
         },
+        filteredPhenotypes: function() {
+            let filtered = [];
+            this.project.phenotypes.forEach(phenotype => {
+                filtered.push(
+                    {
+                        tsv : phenotype.file.replace("phenotype/", ""),
+                        json : phenotype.sidecar.replace("phenotype/", ""),
+                        // jsonContent: phenotype.columns
+                    }
+                );
+            });
+            return filtered;
+        },
     },
 
     mounted() {
@@ -745,7 +767,7 @@ export default {
                 find: JSON.stringify({
                     _id: projectId,
                 }),
-                populate: "stats.apps.app",
+                populate: "stats.apps.app phenotypes",
             }}).then(res=>{
                 if(res.data.projects.length == 0) {
                     this.error = "You don't have access to the project, or the project ID is invalid. Please contact the project owner and ask to add you to the member/guest of the project.";

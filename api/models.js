@@ -41,6 +41,11 @@ var projectSchema = mongoose.Schema({
 
     avatar: String, //url for avatar
 
+    phenotypes: [{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Phenotype'
+    }],
+
     //access control 
     //* private - only the project member can access
     //* public - accessible by anyone
@@ -121,9 +126,6 @@ var projectSchema = mongoose.Schema({
         
         //counts of publications (updated by common.update_project_stats)
         publications: Number,
-
-        //phenotype files
-        phenotype_files: [String],
 
         groupanalysis: {
             sessions: [{
@@ -808,6 +810,20 @@ ruleSchema.pre('save', function(next) {
 });
 exports.Rules = mongoose.model('Rules', ruleSchema);
 
+const phenotypeSchema = mongoose.Schema({
+    name: String,
+    file: String,
+    sidecar: String,
+    columns: Object,
+    data: Array,
+    dldataset: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'DLDataset'
+    }
+});
+
+exports.Phenotype = mongoose.model('Phenotype', phenotypeSchema);
+
 //////////////////////////////////////////////////////////////
 //
 // datalad collections
@@ -843,8 +859,10 @@ var dlDatasetSchema = mongoose.Schema({
     ],
     participants_info: mongoose.Schema.Types.Mixed, //metadata for participants info
 
-    phenotypes_json: mongoose.Schema.Types.Mixed,
-    phenotype_files: [String], //list of files in phenotypes folder
+    phenotypes: [{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Phenotype'
+    }],
 
     stats: {
         subjects: Number,
@@ -887,4 +905,3 @@ var commentSchema = mongoose.Schema({
 });
 
 exports.Comments = mongoose.model('Comments', commentSchema);
-

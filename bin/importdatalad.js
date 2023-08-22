@@ -32,8 +32,8 @@ db.init(async err=>{
     */
 
     console.log("loading dataset_description.json");
-    // let datasets = child_process.execSync("find ./ -name dataset_description.json", {encoding: "utf8"}).split("\n").filter(dataset=>{
-    const datasets = fs.readFileSync(process.argv[2], "utf8").split("\n").filter(dataset=>{
+    let datasets = child_process.execSync("find ./ -name dataset_description.json", {encoding: "utf8"}).split("\n").filter(dataset=>{
+    // const datasets = fs.readFileSync(process.argv[2], "utf8").split("\n").filter(dataset=>{
         //ignore some datasets
         if(dataset.startsWith("datasets.datalad.org/openneuro")) return false;
         if(dataset.startsWith("datasets.datalad.org/openfmri")) return false;
@@ -112,7 +112,7 @@ async function load_datatypes() {
 function handle_bids(key, bids, cb) {
 
     //upsert dl-dataset record
-    db.DLDatasets.findOne(key, (err, dldataset)=>{
+    db.DLDatasets.findOne(key, async (err, dldataset)=>{
         if(err) return cb(err);
         if(!bids.dataset_description) return cb();
 
@@ -127,11 +127,31 @@ function handle_bids(key, bids, cb) {
         if(bids.dataset_description) dldataset.dataset_description = bids.dataset_description;
         if(bids.participants) dldataset.participants = bids.participants;
         if(bids.participants_json) dldataset.participants_info = bids.participants_json;
-        // storing combines json and folder files
-        if(bids.phenotypes_json) dldataset.phenotypes_json = bids.phenotypes_json;
-        
-        if(bids.phenotype_files && bids.phenotype_files.length) dldataset.phenotype_files = bids.phenotype_files;
+        if(bids.phenotypes) {
+            let phenotypeIds = [];  
+            for (let phenotypeData of bids.phenotypes) {
+                // create a new Phenotype object with the current phenotype data
+                const phenotype = new db.Phenotype({
+                    name: phenotypeData.name,
+                    file: phenotypeData.file,
+                    sidecar: phenotypeData.sidecar,
+                    columns: phenotypeData.columns,
+                    data: phenotypeData.data,
+                    dldataset: dldataset._id
+                });
 
+                // console.log(phenotype.data);
+                // process.exit(1);
+
+                // save the Phenotype object
+                const savedPhenotype = await phenotype.save();
+                phenotypeIds.push(savedPhenotype._id);
+                
+            }
+            dldataset.phenotypes = phenotypeIds;
+        }
+
+        console.log("phenotypes added");
         //count
         let unique_subjects = [];
         let unique_sessions = [];
@@ -162,7 +182,6 @@ function handle_bids(key, bids, cb) {
 
         dldataset.save(err=>{
             if(err) throw err;
-
             //handle each items
             async.eachSeries(bids.datasets, (item, next_dataset)=>{
                 item.dataset.datatype = datatype_ids[item.dataset.datatype];
