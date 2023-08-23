@@ -257,6 +257,15 @@
 
                             <b-tab>
                                 <template v-slot:title>
+                                    <b-badge v-if="!project.publishParticipantsInfo"
+                                            variant="secondary" title="May contains sensitive information. Please do not share!"><icon name="lock" scale="0.8"/></b-badge>
+                                    Phenotypes
+                                    <small v-if="project.phenotypes">{{ project.phenotypes.length }}</small>
+                                </template>
+                            </b-tab>
+
+                            <b-tab>
+                                <template v-slot:title>
                                     App/Resource Usage
                                 </template>
                             </b-tab>
@@ -272,13 +281,6 @@
                                 <template v-slot:title>
                                     Comments
                                     <small v-if="project.stats.comments">{{project.stats.comments}}</small>
-                                </template>
-                            </b-tab>
-                            
-                            <b-tab>
-                                <template v-slot:title>
-                                    Phenotypes
-                                    <small v-if="project.phenotypes">{{ project.phenotypes.length }}</small>
                                 </template>
                             </b-tab>
 
@@ -303,9 +305,19 @@
                                 style="overflow: auto; max-height: 500px;"/>
 
                         </div>
+                        <!--phenotypes-->
+                        <div v-if="detailTab == 2">
+                            <b-list-group v-for="file in filteredPhenotypes">
+
+                                <b-list-group-item class="d-flex justify-content-between align-items-center" href="#" >{{ file.tsv }} </b-list-group-item>
+                                <b-list-group-item class="d-flex justify-content-between align-items-center" variant="info" href="#" >{{ file.json }} 
+                                    <b-button size="sm" variant="outline-primary" @click="showJson(file.jsonContent)"><icon name="eye" scale="1.25"/></b-button>
+                                </b-list-group-item>
+                            </b-list-group>
+                        </div>
 
                         <!--app info-->
-                        <div v-if="detailTab == 2">
+                        <div v-if="detailTab == 3">
 
                             <div v-if="project.stats.apps && project.stats.apps.length > 0">
                                 <span class="form-header">App Usage</span>
@@ -356,7 +368,7 @@
                         </div>
 
                         <!--related papers-->
-                        <div v-if="detailTab == 3">
+                        <div v-if="detailTab == 4">
                             <div v-if="project.relatedPapers && project.relatedPapers.length > 0">
                                 <p>
                                     <small>We found the following journals/articles related to this project based on name/description</small>
@@ -365,7 +377,7 @@
                             </div>
                         </div>
 
-                        <div v-if="detailTab == 4">
+                        <div v-if="detailTab == 5">
                             <b-alert show variant="secondary" v-if="!config.user"> Please login to Comments.</b-alert>
                             <div v-else-if="comments && comments.length">
                                 <div v-for="comment in comments" :key="comment._id" class="commentbox">
@@ -397,15 +409,7 @@
                             </div>
                             <br>
                         </div>
-                        <div v-if="detailTab == 5">
-                            <b-list-group v-for="file in filteredPhenotypes">
-                                <!-- <b-list-group-item v-if="file.endsWith('.json')" class="d-flex justify-content-between align-items-center" href="#" >{{ file }} 
-                                    <b-badge variant="primary" pill>View</b-badge>
-                                </b-list-group-item>
-                                <b-list-group-item class="d-flex justify-content-between align-items-center" href="#" >{{ file }} </b-list-group-item> -->
-                                <b-list-group-item class="d-flex justify-content-between align-items-center" href="#" >{{ file }} </b-list-group-item>
-                            </b-list-group>
-                        </div>
+
                     </div><!-- main content-->
                 </div><!--project header-->
                 <div v-if="config.debug">
@@ -454,6 +458,11 @@
 
         <newtask-modal/>
         <datatypeselecter-modal/>
+
+        <b-modal id="jsonData">
+            <editor v-model="json" @init="editorInit" lang="json"
+                height="500"/>
+        </b-modal>
     </div>
 </div>
 </template>
@@ -461,6 +470,7 @@
 <script>
 
 import Vue from 'vue'
+const lib = require('@/lib')
 import Router from 'vue-router'
 import VueMarkdown from 'vue-markdown'
 import pageheader from '@/components/pageheader'
@@ -532,6 +542,7 @@ export default {
         stateprogress,
         citation,
         emojimart: Picker,
+        editor : require('vue2-ace-editor'),
     },
 
     data() {
@@ -575,7 +586,8 @@ export default {
             customToolbar:  [
                 ["bold", "italic", "underline"],
                 [{ list: "ordered" }, { list: "bullet" }],
-            ]
+            ],
+            json: null,
 
         }
     },
@@ -624,7 +636,7 @@ export default {
                     {
                         tsv : phenotype.file.replace("phenotype/", ""),
                         json : phenotype.sidecar.replace("phenotype/", ""),
-                        // jsonContent: phenotype.columns
+                        jsonContent: phenotype.columns
                     }
                 );
             });
@@ -647,6 +659,11 @@ export default {
         addEmojiToComment(emoji) {
             this.comment += emoji.native;
             this.showMart = false;
+        },
+        editorInit(editor) {
+            lib.editorInit(editor, ()=>{
+                //nothing to add..
+            });
         },
         toggleEmojiMart() {
             if(this.showMart) this.showMart = false;
@@ -958,6 +975,11 @@ export default {
                 this.$notify({ text: "Loaded "+res.data.length+" objects" });
                 console.dir(res);
             });
+        },
+
+        showJson(content) {
+            this.json = JSON.stringify(content, null, 4);
+            this.$bvModal.show('jsonData');
         },
     },
 }
