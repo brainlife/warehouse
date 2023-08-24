@@ -114,7 +114,8 @@ Vue.config.event_ws = `${wsHost}/api/event`
 Vue.config.auth_signin = '/auth/#!/signin'
 Vue.config.auth_signout = '/auth/#!/signout'
 Vue.config.auth_signup = '/auth/#!/signup'
-Vue.config.ezbids_api = `${apiHost}/api/ezbids`
+// Vue.config.ezbids_api = `${apiHost}/api/ezbids`
+Vue.config.ezbids_api = `http://localhost:8082`
 Vue.config.debug_doi = '10.25663/bl.p.3' // o3d publication
 
 Vue.config.plotly = {

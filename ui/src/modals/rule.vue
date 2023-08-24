@@ -289,6 +289,149 @@ export default {
             this.subscribe();
             this.$root.$emit('bv::show::modal', 'modal-rule')
         });
+
+        this.$root.$on('create_pipeline', async ({ pipelineName, projectId }) => {
+            function local_compose_output_tag(ruleName) {
+                let tag = ruleName||new Date().toLocaleDateString();
+                tag = tag.toLowerCase().replace(/\W/g, '_');
+                return tag;
+            };
+
+            const appIdsForPipeline = [
+                "5dc1c2e57f55b85a93bd3021", //QSIPrep
+                "5e9dced9f1745d6994f692c0", //MRTrix3
+                "5fe1056057aacd480f2f8e48", // FreeSurfer
+                "5cc73ef44ed9df00317f6288", // White Matter Anatomy Segmentation
+                "5cc9eca04b5e4502275edba6", // Remove Tract Outliers
+                "5ed02b780a8ed88a57482c92" // Tract Analysis Profiles
+            ]
+
+            const retrievedApps = await Promise.all(appIdsForPipeline.map(appId => this.$http.get(`app/${appId}`)));
+            const retrievedAppsData = retrievedApps.map(x => x.data); // dont want all the HTTP info, just the data returned from server
+            console.log(retrievedAppsData)
+            const newRules = [];
+            retrievedAppsData.forEach(async (app) => {
+                // 1. Create rule
+                const newRule = {
+                    name: `Automatically Generated DWI Pipeline Rule for ${app.name}`,
+                    app: app._id,
+                    branch: app.github_branch,
+                    stats: this.rule.stats || {},
+                    project: projectId,
+
+                    // IO Config Properties
+                    input_tags: {},
+                    input_tags_count: {}, //number of matching input datasets for each input
+
+                    subject_match: "", 
+                    session_match: "", 
+                    output_tags: {}, 
+
+                    input_project_override: {},
+                    input_subject: {},
+                    input_session: {},
+                    input_multicount: {},
+
+                    input_selection: {},
+                    extra_datatype_tags: {},
+                    config: {},
+                    archive: {},
+                };
+
+                // 2. ensure IDs exist
+                app.inputs.forEach((input) => {
+                    if (!newRule.input_tags[input.id]) newRule.input_tags[input.id] = [];
+                    if (!newRule.input_tags_count[input.id]) newRule.input_tags_count[input.id] = null;
+                    if (!newRule.input_project_override[input.id]) newRule.input_project_override[input.id] = null;
+                    if (!newRule.input_subject[input.id]) newRule.input_subject[input.id] = null;
+                    if (!newRule.input_session[input.id]) newRule.input_session[input.id] = null;
+                    if (!newRule.input_multicount[input.id]) newRule.input_multicount[input.id] = null;
+                    if (newRule.input_selection[input.id] === undefined && input.optional) newRule.input_selection[input.id] = 'ignore';
+                    if (!newRule.extra_datatype_tags[input.id]) newRule.extra_datatype_tags[input.id] = [];
+
+                    // do we need this?
+                    input.edit_extra_tags = newRule.extra_datatype_tags[input.id].length > 0
+                })
+
+                app.outputs.forEach((output) => {
+                    if (!newRule.output_tags[output.id]) newRule.output_tags[output.id] = local_compose_output_tag(newRule.name);
+                    if (!newRule.archive[output.id]) newRule.archive[output.id] = {do: output.archive, desc: ""}
+                })
+
+                // 3. ensure config exists, set to app default if undefined
+                for(var key in app.config) {
+                    if(newRule.config[key] === undefined) {
+                        newRule.config[key] = app.config[key].default
+                    }
+                }
+
+                // 4. load dataset tags
+                app.inputs.forEach(async (input) => {
+                    const datasetTags = this.$http.get(`dataset/distinct`, {
+                        params: {
+                            distinct: 'tags',
+                             find: JSON.stringify({
+                                project: newRule.input_project_override[input.id] || newRule.project, 
+                                datatype: input.datatype,
+                                removed: false,
+                            }),
+                            datatype_tags: input.datatype_tags,
+                        },
+                        json: true
+                    });
+                    newRule.input_tags[input.id] = datasetTags[input.id]
+                })
+
+                // 5. ignore this for now
+
+                // 6. submit
+                const new_input_tags = {};
+                const new_output_tags = {};
+                const new_input_subject = {};
+                const new_input_multicount = app._id === '5dc1c2e57f55b85a93bd3021' ? { dwi: "12345" } : {};
+                const new_input_session = {};
+                const new_input_project_override = {};
+
+                app.inputs.forEach((input) => {
+                    new_input_tags[input.id] = newRule.input_tags[input.id];
+
+                    new_input_subject[input.id] = newRule.input_subject[input.id];
+                    new_input_multicount[input.id] = newRule.input_multicount[input.id];
+                    new_input_session[input.id] = newRule.input_session[input.id];
+                    new_input_project_override[input.id] = newRule.input_project_override[input.id];
+                })
+
+                remove_null(new_input_project_override);
+                remove_null(new_input_subject);
+                remove_null(new_input_multicount);
+                remove_null(new_input_session);
+
+                app.outputs.forEach((output) => {
+                    new_output_tags[output.id] = newRule.output_tags[output.id];
+                })
+
+                for(var key in newRule.config) {
+                    var spec = app.config[key];
+                    if(spec === undefined || spec.type == "input") delete newRule.config[key];
+                }
+
+                const finalRuleToCreate = Object.assign({}, newRule, {
+                    new_input_tags,
+                    new_output_tags,
+                    new_input_project_override,
+                    new_input_subject,
+                    new_input_multicount,
+                    new_input_session,
+                });
+
+                newRules.push(finalRuleToCreate)
+            });
+
+            const res = await Promise.all(newRules.map((newRule) => this.$http.post(`rule`, newRule)));
+            console.log(res)
+            this.$notify({ text: `Successfully created DWI Pipeline`, type: 'success' });
+            this.$router.push(`/project/${projectId}/pipeline`)
+        })
     },
 
     destroyed() {
@@ -526,7 +669,7 @@ export default {
             input_ids.forEach(id=>{
                 const input = this.rule.app.inputs.find(input=>input.id == id);
                 if(input.multi && !this.rule.input_multicount[id]) {
-                    this.$notify({text: "Please specify munti input count for "+id, type: 'error'});
+                    this.$notify({text: "Please specify multi input count for "+id, type: 'error'});
                     valid = false;
                 }
             });

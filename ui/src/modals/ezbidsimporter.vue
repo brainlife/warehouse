@@ -34,7 +34,7 @@
         <b-row>
             <b-col class="text-muted" cols="3">Dataset Description</b-col>
             <b-col>
-                <div v-if="ezBIDS" style="max-height: 250px; font-size:80%"><pre>{{ezBIDS.datasetDescription}}</pre></div>
+                <div v-if="ezBIDS" style="max-height: 250px; overflow-y: auto; font-size:80%"><pre>{{ezBIDS.datasetDescription}}</pre></div>
                 <small v-else><icon name="cog" scale="1.25" spin/>  Loading ezBIDS info ...</small>
                 <br>
             </b-col>
@@ -96,6 +96,7 @@ export default {
         //this.$root.$on("ezbidsimporter.open", this.open);
 
         //preopened?
+        console.log(this.$root.ezbidsSession)
         if(this.$root.ezbidsSession) {
             this.open(this.$root.ezbidsSession);
             this.$root.ezbidsSession = null;
@@ -185,6 +186,8 @@ export default {
                 this.$http.post(Vue.config.amaretti_api+'/task', params).then(res=>{
                     this.task = res.data.task;
                     this.subscribeTask(this.task);
+                    this.$root.$emit("create_pipeline", { pipelineName: "DWI", projectId: this.project })
+                    this.close();
                 }).catch(err=>{
                     console.error(err);
                     this.$notify({type: 'error', text: err.body.message});
