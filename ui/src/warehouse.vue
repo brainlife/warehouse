@@ -63,7 +63,7 @@ export default {
                     console.log("opening ezbids session", sessionId);
                     this.$root.ezbidsSession = {
                         sessionId: sessionId,
-                        pipeline: pipelineName ? pipelineName : null
+                        pipelineName: pipelineName ? pipelineName : null
                     };
                 }
             }
