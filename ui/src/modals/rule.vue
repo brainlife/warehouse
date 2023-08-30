@@ -212,6 +212,25 @@ function remove_null(obj) {
     return obj;
 }
 
+function compose_output_tag(ruleName) {
+    let tag = ruleName||new Date().toLocaleDateString();
+    tag = tag.toLowerCase().replace(/\W/g, '_');
+    return tag;
+};
+
+// TODO: in the future, we will want to support many more pipelines. What
+// is a better implementation of this?
+const SUPPORTED_PIPELINES = {
+    DWI: [
+        "5dc1c2e57f55b85a93bd3021", //QSIPrep
+        "5e9dced9f1745d6994f692c0", //MRTrix3
+        "5fe1056057aacd480f2f8e48", // FreeSurfer
+        "5cc73ef44ed9df00317f6288", // White Matter Anatomy Segmentation
+        "5cc9eca04b5e4502275edba6", // Remove Tract Outliers
+        "5ed02b780a8ed88a57482c92" // Tract Analysis Profiles
+    ]
+}
+
 export default {
     mixins: [ search_app_mixin ],
     components: { 
@@ -290,25 +309,14 @@ export default {
             this.$root.$emit('bv::show::modal', 'modal-rule')
         });
 
-        this.$root.$on('create_pipeline', async ({ pipelineName, projectId }) => {
-            function local_compose_output_tag(ruleName) {
-                let tag = ruleName||new Date().toLocaleDateString();
-                tag = tag.toLowerCase().replace(/\W/g, '_');
-                return tag;
-            };
+        this.$root.$on('create_pipeline', async ({ projectId, pipelineName }) => {
+            // check if we support the given pipeline first
+            const upperCasePipelineName = pipelineName.toLocaleUpperCase();
+            const pipeline = SUPPORTED_PIPELINES[upperCasePipelineName];
+            if (!pipeline) return;
 
-            const appIdsForPipeline = [
-                "5dc1c2e57f55b85a93bd3021", //QSIPrep
-                "5e9dced9f1745d6994f692c0", //MRTrix3
-                "5fe1056057aacd480f2f8e48", // FreeSurfer
-                "5cc73ef44ed9df00317f6288", // White Matter Anatomy Segmentation
-                "5cc9eca04b5e4502275edba6", // Remove Tract Outliers
-                "5ed02b780a8ed88a57482c92" // Tract Analysis Profiles
-            ]
-
-            const retrievedApps = await Promise.all(appIdsForPipeline.map(appId => this.$http.get(`app/${appId}`)));
+            const retrievedApps = await Promise.all(pipeline.map(appId => this.$http.get(`app/${appId}`)));
             const retrievedAppsData = retrievedApps.map(x => x.data); // dont want all the HTTP info, just the data returned from server
-            console.log(retrievedAppsData)
             const newRules = [];
             retrievedAppsData.forEach(async (app) => {
                 // 1. Create rule
@@ -354,7 +362,7 @@ export default {
                 })
 
                 app.outputs.forEach((output) => {
-                    if (!newRule.output_tags[output.id]) newRule.output_tags[output.id] = local_compose_output_tag(newRule.name);
+                    if (!newRule.output_tags[output.id]) newRule.output_tags[output.id] = compose_output_tag(newRule.name);
                     if (!newRule.archive[output.id]) newRule.archive[output.id] = {do: output.archive, desc: ""}
                 })
 
@@ -383,6 +391,7 @@ export default {
                 })
 
                 // 5. ignore this for now
+                // query_matching_datasets()
 
                 // 6. submit
                 const new_input_tags = {};
@@ -622,15 +631,9 @@ export default {
                 input.edit_extra_tags = (this.rule.extra_datatype_tags[input.id].length > 0);
             });
             this.rule.app.outputs.forEach(output=>{
-                if(!this.rule.output_tags[output.id]) Vue.set(this.rule.output_tags, output.id, [this.compose_output_tag()]);
+                if(!this.rule.output_tags[output.id]) Vue.set(this.rule.output_tags, output.id, [compose_output_tag(this.rule.name)]);
                 if(!this.rule.archive[output.id]) Vue.set(this.rule.archive, output.id, {do: output.archive, desc: ""}); 
             });
-        },
-
-        compose_output_tag() {
-            let tag = this.rule.name||new Date().toLocaleDateString();
-            tag = tag.toLowerCase().replace(/\W/g, '_');
-            return tag;
         },
 
         ensure_config_exists() {

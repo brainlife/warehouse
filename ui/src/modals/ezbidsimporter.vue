@@ -75,6 +75,7 @@ export default {
         return {
             project: null, //will be set if user wants to import to an existing project
             sessionId: null, //ezBIDS session ID
+            pipelineName: null, // optional pipeline to initialize after project creation
             ezBIDS: null, //ezBIDS finalized object
 
             //for creating new project (most of it should be loaded from ezBIDS.json)
@@ -95,8 +96,6 @@ export default {
     mounted() {
         //this.$root.$on("ezbidsimporter.open", this.open);
 
-        //preopened?
-        console.log(this.$root.ezbidsSession)
         if(this.$root.ezbidsSession) {
             this.open(this.$root.ezbidsSession);
             this.$root.ezbidsSession = null;
@@ -109,6 +108,7 @@ export default {
 
             //initialize
             this.sessionId = opt.sessionId;
+            this.pipelineName = opt.pipelineName;
             this.task = null;
             
             //load finalized ezbids content
@@ -186,7 +186,9 @@ export default {
                 this.$http.post(Vue.config.amaretti_api+'/task', params).then(res=>{
                     this.task = res.data.task;
                     this.subscribeTask(this.task);
-                    this.$root.$emit("create_pipeline", { pipelineName: "DWI", projectId: this.project })
+                    if (this.pipelineName) {
+                        this.$root.$emit("create_pipeline", { projectId: this.project, pipelineName: this.pipelineName })
+                    }
                     this.close();
                 }).catch(err=>{
                     console.error(err);

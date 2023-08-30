@@ -52,9 +52,19 @@ export default {
                     sessionStorage.setItem('auth_redirect', document.location.href);
                     document.location = Vue.config.auth_signin;
                 } else {
-                    const sessionId = document.location.hash.substring(8);
+                    const urlFragment = document.location.hash;
+                    // we expect a hash of type: #ezbids=abc123&pipeline=DWI for example
+                    // pipeline may be undefined
+                    const [ ezbidsSession, pipeline ] = urlFragment.split("&");
+                    if (!ezbidsSession) return;
+
+                    const sessionId = ezbidsSession.substring(8);
+                    const pipelineName = (pipeline || '').substring(9);
                     console.log("opening ezbids session", sessionId);
-                    this.$root.ezbidsSession = {sessionId};
+                    this.$root.ezbidsSession = {
+                        sessionId: sessionId,
+                        pipeline: pipelineName ? pipelineName : null
+                    };
                 }
             }
 
