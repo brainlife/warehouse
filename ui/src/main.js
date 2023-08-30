@@ -103,7 +103,7 @@ const apiHost = `${httpProtocol}//${host}`
 const wsHost = `${wsProtocol}//${host}`
 const soundUri = 'https://raw.githubusercontent.com/brainlife/warehouse/master/ui/sounds/'
 
-const ezBIDSUrl = process.env.NODE_ENV === 'development' ? `${httpProtocol}//localhost:8082` : apiHost;
+const ezBIDSUrl = process.env.NODE_ENV === 'development' ? `${httpProtocol}//localhost:8082` : `${apiHost}/api/ezbids`;
 
 Vue.config.debug = false
 
