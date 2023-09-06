@@ -82,7 +82,7 @@
                     <div style="padding: 10px">
                         <p>
                             <span class="form-header">Project</span>
-                            <projectselecter canwrite="true" v-model="project" placeholder="Project you'd like to create this session" :required="true"/>
+                            <projectselector canwrite="true" v-model="project" placeholder="Project you'd like to create this session" :required="true"/>
                             <small>Project to launch this analysis</small>
                         </p>
 
@@ -107,7 +107,7 @@
 import Vue from 'vue'
 
 //import agreementMixin from '@/mixins/agreement'
-import projectselecter from '@/components/projectselecter'
+import projectselector from '@/components/projectselector'
 import gainstance from '@/mixins/gainstance' //for createOrFindGAInstance
 import contact from '@/components/contact'
 import releaseset from '@/components/releaseset'
@@ -115,13 +115,13 @@ import gaarchive from '@/components/gaarchive'
 
 export default {
     components: { 
-        projectselecter, 
+        projectselector, 
         contact, 
         releaseset,
         gaarchive,
     },
     mixins: [
-        projectselecter,
+        projectselector,
         gainstance,
     ],
     data () {

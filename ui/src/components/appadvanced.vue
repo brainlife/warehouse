@@ -37,7 +37,7 @@
 <script>
 
 import Vue from 'vue'
-import branchselecter from '@/components/branchselecter'
+import branchselecter from '@/components/branchselector'
 
 export default {
     props: [ 

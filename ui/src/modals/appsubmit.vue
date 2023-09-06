@@ -22,7 +22,7 @@
         <b-row>
             <b-col class="text-muted" cols="3">Project *</b-col>
             <b-col>
-                <projectselecter canwrite="true" v-model="projectId" placeholder="Project you'd like to run this process in" :required="true"/> 
+                <projectselector canwrite="true" v-model="projectId" placeholder="Project you'd like to run this process in" :required="true"/> 
                 <small>Project where you want to create a new process to execute this App.</small>
             </b-col>
         </b-row>
@@ -53,7 +53,7 @@
                 <div v-for="(ps, $idx) in form.inputs[input.id]" :key="ps.id" style="margin-bottom: 5px; margin-right: 50px;">
                     <div v-if="input.multi" class="button button-danger" style="float: right;" @click="remove_input(input, ps)" size="sm"><icon name="trash"/></div>
                     <div style="padding-right: 50px">
-                        <projectselecter 
+                        <projectselector 
                             v-model="ps.project" 
                             :datatype="input.datatype"
                             :datatype_tags="input.datatype_tags"
@@ -107,7 +107,7 @@ import tags from '@/components/tags'
 import pageheader from '@/components/pageheader'
 import appavatar from '@/components/appavatar'
 import select2 from '@/components/select2'
-import projectselecter from '@/components/projectselecter'
+import projectselector from '@/components/projectselector'
 import datatypetag from '@/components/datatypetag'
 import app from '@/components/app'
 import configform from '@/components/configform'
@@ -124,7 +124,7 @@ export default {
     components: { 
         contact, 
         tags, pageheader, 
-        appavatar, select2, projectselecter, 
+        appavatar, select2, projectselector, 
         app, datatypetag, configform, advanced,
         metadata,
     },

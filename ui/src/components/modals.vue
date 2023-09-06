@@ -50,7 +50,7 @@ export default {
         gaarchiver: ()=>import('@/modals/gaarchiver'),
         dataladimporter: ()=>import('@/modals/dataladimporter'),
         ezbidsimporter: ()=>import('@/modals/ezbidsimporter'),
-        rulemodal: ()=>import('@/modals/rule'),
+        rulemodal: ()=>import('@/modals/RuleModal'),
         rulelogmodal: ()=>import('@/modals/rulelog'),
         pipelinegroupmodal: ()=>import('@/modals/pipelinegroup'),
     },

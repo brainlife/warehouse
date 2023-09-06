@@ -3,7 +3,7 @@
     <b-row>
         <b-col><span class="form-header">From</span></b-col>
         <b-col cols="9">
-            <projectselecter ref="psel" v-model="project" :required="true"></projectselecter>
+            <projectselector ref="psel" v-model="project" :required="true" />
         </b-col>
     </b-row>
     <br>
@@ -47,7 +47,7 @@
 import Vue from 'vue'
 import tags from '@/components/tags'
 //import metadata from '@/components/metadata'
-import projectselecter from '@/components/projectselecter'
+import projectselector from '@/components/projectselector'
 import select2 from '@/components/select2'
 import datatypetag from '@/components/datatypetag'
 
@@ -63,7 +63,7 @@ export default {
         agreementMixin,
         datatypesMixin,
     ],
-    components: { tags, projectselecter, select2, datatypetag },
+    components: { tags, projectselector, select2, datatypetag },
     data() {
         return {
             //datasets selected via datasets page

@@ -24,7 +24,7 @@
                     <b-form-textarea rows="3" v-model="project_desc" placeholder="Enter Description for the new project" required/>
                 </div>
                 <div v-if="!createnew">
-                    <projectselecter canwrite="true" v-model="project" :required="true"/> 
+                    <projectselector canwrite="true" v-model="project" :required="true"/> 
                     <small class="text-muted">Select a project where you want to import this dataset to</small>
                 </div>
                 <br>
@@ -63,13 +63,13 @@
 
 import Vue from 'vue'
 
-import projectselecter from '@/components/projectselecter'
+import projectselector from '@/components/projectselector'
 import ReconnectingWebSocket from 'reconnectingwebsocket'
 import task from '@/components/task'
 
 export default {
     components: { 
-        projectselecter, task,
+        projectselector, task,
     },
     data() {
         return {

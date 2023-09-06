@@ -5,7 +5,7 @@
     <!-- let's just force user to archive to the same project they are in
          this is mostly UI limitation - as we don't query datasets archived on other projects 
     <b-form-group label="Project">
-        <projectselecter :required="true" :canwrite="true" v-model="project" placeholder="Project to archive this data-object to"/>
+        <projectselector :required="true" :canwrite="true" v-model="project" placeholder="Project to archive this data-object to"/>
     </b-form-group>
     -->
 
@@ -21,7 +21,7 @@
 import Vue from 'vue'
 
 //import projectaccess from '@/components/projectaccess'
-//import projectselecter from '@/components/projectselecter'
+//import projectselector from '@/components/projectselector'
 import tageditor from '@/components/tageditor'
 import datatypetag from '@/components/datatypetag'
 
@@ -29,7 +29,7 @@ export default {
 
     components: { 
         //projectaccess, 
-        //projectselecter, 
+        //projectselector, 
         tageditor, 
         datatypetag, 
         editor: require('vue2-ace-editor'),
