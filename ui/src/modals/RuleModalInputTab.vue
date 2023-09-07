@@ -13,7 +13,7 @@
         </b-form-group>
 
         <p class="text-muted">The rule handler will look for subjects that <b>contain</b> the following inputs.</p>
-        <RuleModalInputTabInputComponent v-for="input in ruleApp.inputs" :key="input._id"
+        <RuleModalInputTabCard v-for="input in ruleApp.inputs" :key="input._id"
             :project="project"
             :input="input"
             :rule-session-match="sessionMatch"
@@ -43,7 +43,7 @@ export default {
         TagEditor: () => import('@/components/tageditor'),
         DataTypeTag: () => import('@/components/datatypetag'),
         ProjectSelector: () => import('@/components/projectselector'),
-        RuleModalInputTabInputComponent: () => import('@/modals/RuleModalInputTabInputComponent')
+        RuleModalInputTabCard: () => import('@/modals/RuleModalInputTabCard')
     },
     emits: [
         'update:rule-subject-match',

@@ -52,22 +52,14 @@
 import Vue from 'vue'
 import search_app_mixin from '@/mixins/searchapp'
 import ReconnectingWebSocket from 'reconnectingwebsocket'
-import { getEmptyIOConfigObj, removeUndefinedOrNullProperties, composeOutputTag } from '@/modals/RuleModal.helpers'
+import {
+    getEmptyIOConfigObj,
+    removeUndefinedOrNullProperties,
+    composeOutputTag,
+    SUPPORTED_PIPELINES
+} from '@/modals/RuleModal.helpers'
 
 const lib = require('@/lib');
-
-// TODO: in the future, we will want to support many more pipelines. What
-// is a better implementation of this?
-const SUPPORTED_PIPELINES = {
-    DWI: [
-        "5dc1c2e57f55b85a93bd3021", //QSIPrep
-        "5e9dced9f1745d6994f692c0", //MRTrix3
-        "5fe1056057aacd480f2f8e48", // FreeSurfer
-        "5cc73ef44ed9df00317f6288", // White Matter Anatomy Segmentation
-        "5cc9eca04b5e4502275edba6", // Remove Tract Outliers
-        "5ed02b780a8ed88a57482c92" // Tract Analysis Profiles
-    ]
-}
 
 export default {
     mixins: [ search_app_mixin ],
@@ -149,18 +141,21 @@ export default {
                     _id: undefined,
                 }, 
                 { config: this.initializeAppConfigIdsInRuleConfigObj(this.rule.app ? this.rule.app.config : undefined, this.rule.config) },
-                opt.rule,
+                opt.rule, // don't let anything overwrite data passed in via opt.rule
             );
 
             this.subscribe();
             this.$root.$emit('bv::show::modal', 'modal-rule')
         });
 
+        // this trigger does not actually cause the ruleModal to open. It is simply
+        // here to create rules for a given pipeline. We do that here so that we have 
+        // access to all the methods for creating a rule
         this.$root.$on('create_pipeline', async ({ projectId, pipelineName }) => {
             // check if we support the given pipeline first
-            const upperCasePipelineName = (pipelineName || '').toLocaleUpperCase();
+            const upperCasePipelineName = (pipelineName || '').toLocaleUpperCase();           
             const pipeline = SUPPORTED_PIPELINES[upperCasePipelineName];
-            if (!pipeline) return;
+            if (!pipeline || !projectId) return;
 
             const retrievedApps = await Promise.all(pipeline.map(appId => this.$http.get(`app/${appId}`)));
             const retrievedAppsData = retrievedApps.map(x => x.data); // dont want all the HTTP info, just the data returned from server
@@ -189,7 +184,7 @@ export default {
                 // no need to check and clean up tags as we have not received any input from the user
                 // so everything is controlled and "sterile"
                 app.inputs.forEach((input) => {
-                    if (input.multi) newRule.input_multicount[input.id] = 1; // sane default
+                    if (input.multi) newRule.input_multicount[input.id] = "1"; // sane default
                 })
 
                 removeUndefinedOrNullProperties(newRule.input_project_override);
@@ -202,8 +197,8 @@ export default {
             });
 
             const res = await Promise.all(newRules.map((newRule) => this.$http.post(`rule`, newRule)));
+            console.log(res)
             this.$notify({ text: `Successfully created DWI Pipeline`, type: 'success' });
-            this.$router.push(`/project/${projectId}/pipeline`)
         })
     },
 

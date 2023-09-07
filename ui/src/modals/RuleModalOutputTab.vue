@@ -7,7 +7,7 @@
                 <DataTypeTag :datatype="output.datatype" :tags="output.datatype_tags"/>
                 <p v-if="output.desc" style="margin-bottom: 0px;"><small>{{output.desc}}</small></p>
             </div>
-            <RuleModalOutputTabOutputComponent
+            <RuleModalOutputTabCardBody
                 :project="project"
                 :output="output" 
                 :archive="archive[output.id]" 
@@ -22,7 +22,7 @@
 export default {
     components: {
         DataTypeTag: () => import('@/components/datatypetag'),
-        RuleModalOutputTabOutputComponent: () => import('@/modals/RuleModalOutputTabOutputComponent'),
+        RuleModalOutputTabCardBody: () => import('@/modals/RuleModalOutputTabCardBody'),
     },
     props: {
         project: String,
