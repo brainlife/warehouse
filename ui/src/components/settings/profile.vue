@@ -174,19 +174,7 @@
                 <br>
             </b-col>
         </b-row>
-
-        <hr>
-        <b-row>
-            <b-col cols="2">
-            </b-col>
-            <b-col>
-                <b-form-checkbox name="aup" v-model="profile.private.aup" required>
-                    Agree to Brainlife <a href="/docs/aup" target="_blank">Acceptable Use Policy</a><br>
-                    <br>
-                </b-form-checkbox>
-            </b-col>
-        </b-row>
-
+       
         <br>
         <br>
         <br>
@@ -260,6 +248,7 @@ export default {
             this.email = res.data.email;
             this.fullname = res.data.fullname;
             if(res.data.profile) lib.mergeDeep(this.profile, res.data.profile);
+            if(this.profile.private.aup) this.profile.private.aup = true;
             const jwt = Vue.config.jwt;
             if(jwt) {
                 this.debug = {jwt : this.user};
