@@ -115,7 +115,7 @@
                             <template #button-content>
                                 Add Agreement
                             </template>
-                            <b-dropdown-item-button @click="addAgreement('brainlife_dua')">Brainlife Data Use Agreement - Dataset </b-dropdown-item-button>
+                            <b-dropdown-item-button @click="addAgreement('brainlife_dua')">Brainlife Data Use Agreement - Template </b-dropdown-item-button>
                         </b-dropdown>
                         <br>
                     </b-col>
