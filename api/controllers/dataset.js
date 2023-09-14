@@ -1569,7 +1569,7 @@ ${p.desc}`;
                 //download info.json
                 script += "curl ";
                 if(req.headers.authorization) script += "-H \"$auth\" ";
-                script += config.warehouse.url+"/api/warehouse/dataset?single=true\\&find='\\{\"_id\":\""+dataset._id+"\"\\}' > "+path+"/_info.json\n";
+                script += config.warehouse.url+"/api/warehouse/dataset?single=true\\&find='\\{\"_id\":\""+dataset._id+"\"\\}' > '"+path+"/_info.json'\n";
 
                 if(dataset.datatype.bids) {
                     //Create BIDS symlinks
