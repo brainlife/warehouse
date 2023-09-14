@@ -196,8 +196,7 @@ export default {
                 newRules.push(finalRuleToCreate)
             });
 
-            const res = await Promise.all(newRules.map((newRule) => this.$http.post(`rule`, newRule)));
-            console.log(res)
+            const _res = await Promise.all(newRules.map((newRule) => this.$http.post(`rule`, newRule)));
             this.$notify({ text: `Successfully created DWI Pipeline`, type: 'success' });
         })
     },

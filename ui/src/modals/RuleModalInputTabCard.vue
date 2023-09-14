@@ -165,11 +165,6 @@ export default {
         }
     },
     watch: {
-        editExtraTags: {
-            handler: function() {
-                console.log(this.editExtraTags)
-            }
-        },
         triggerWatcher: {
             handler: function() {
                 if(debounce[this.input.id]) clearTimeout(debounce[this.input.id]);
@@ -265,7 +260,7 @@ export default {
         this.loadInputDatasetTags();
 
         // automatically open tag editor if we see that extra datatype tags already exist.
-        // This happens when we edit a rule
+        // This check happens when we edit a rule or select an app when creating a new rule
         this.editExtraTags = (this.inputExtraDatatypeTags || []).length > 0
     }
 }
