@@ -141,7 +141,7 @@ export default {
                     _id: undefined,
                 }, 
                 { config: this.initializeAppConfigIdsInRuleConfigObj(this.rule.app ? this.rule.app.config : undefined, this.rule.config) },
-                opt.rule, // don't let anything overwrite data passed in via opt.rule
+                opt.rule, // any data passed in via opt.rule overrides other data
             );
 
             this.subscribe();
@@ -157,8 +157,14 @@ export default {
             const pipeline = SUPPORTED_PIPELINES[upperCasePipelineName];
             if (!pipeline || !projectId) return;
 
-            const retrievedApps = await Promise.all(pipeline.map(appId => this.$http.get(`app/${appId}`)));
-            const retrievedAppsData = retrievedApps.map(x => x.data); // dont want all the HTTP info, just the data returned from server
+            const retrievedApps = await this.$http.get(`app`, {
+                params: {
+                    find: JSON.stringify({ _id: { $in: pipeline } }),
+                    limit: Object.keys(pipeline).length
+                }
+            })
+
+            const retrievedAppsData = retrievedApps.data.apps; // dont want all the HTTP info, just the data returned from server
             const newRules = [];
             retrievedAppsData.forEach(async (app) => {
                 // 1. Create rule

@@ -53,16 +53,14 @@ export default {
                     document.location = Vue.config.auth_signin;
                 } else {
                     const urlFragment = document.location.hash;
-                    // we expect a hash of type: #ezbids=abc123&pipeline=DWI for example
-                    // pipeline may be undefined
-                    const [ ezbidsSession, pipeline ] = urlFragment.split("&");
-                    if (!ezbidsSession) return;
+                    // we expect a hash of type: #ezbids=abc123&pipeline=DWI for example or #ezbids=abc123 (pipeline may or may not be there)
+                    const { ezbids: ezBidsSessionId, pipeline: pipelineName } = Object.fromEntries(
+                        urlFragment.substring(1).split('&').map((keyValProp) => keyValProp.split('='))
+                    );
+                    if (!ezBidsSessionId) return;
 
-                    const sessionId = ezbidsSession.substring(8);
-                    const pipelineName = (pipeline || '').substring(9);
-                    console.log("opening ezbids session", sessionId);
                     this.$root.ezbidsSession = {
-                        sessionId: sessionId,
+                        sessionId: ezBidsSessionId,
                         pipelineName: pipelineName ? pipelineName : null
                     };
                 }

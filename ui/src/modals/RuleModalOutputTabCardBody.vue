@@ -46,7 +46,7 @@ export default {
     },
     data() {
         return {
-            outputDatasetTags: ['a', 'b']
+            outputDatasetTags: []
         }
     },
     methods: {
