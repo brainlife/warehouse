@@ -103,6 +103,8 @@ const apiHost = `${httpProtocol}//${host}`
 const wsHost = `${wsProtocol}//${host}`
 const soundUri = 'https://raw.githubusercontent.com/brainlife/warehouse/master/ui/sounds/'
 
+const ezBIDSUrl = process.env.NODE_ENV === 'development' ? `${httpProtocol}//localhost:8082` : `${apiHost}/api/ezbids`;
+
 Vue.config.debug = false
 
 Vue.config.api = `${apiHost}/api/warehouse`
@@ -114,7 +116,7 @@ Vue.config.event_ws = `${wsHost}/api/event`
 Vue.config.auth_signin = '/auth/#!/signin'
 Vue.config.auth_signout = '/auth/#!/signout'
 Vue.config.auth_signup = '/auth/#!/signup'
-Vue.config.ezbids_api = `${apiHost}/api/ezbids`
+Vue.config.ezbids_api = ezBIDSUrl;
 Vue.config.debug_doi = '10.25663/bl.p.3' // o3d publication
 
 Vue.config.plotly = {

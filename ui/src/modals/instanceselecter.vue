@@ -5,7 +5,7 @@
     <b-row>
         <b-col :cols="3">Project</b-col>
         <b-col>
-            <projectselecter v-if="shown" canwrite="true" v-model="project" :required="true"/>
+            <projectselector v-if="shown" canwrite="true" v-model="project" :required="true"/>
             <small>Project to run a new process</small>
         </b-col>
     </b-row>
@@ -31,10 +31,10 @@
 <script>
 import Vue from 'vue'
 
-import projectselecter from '@/components/projectselecter'
+import projectselector from '@/components/projectselector'
 
 export default {
-    components: { projectselecter },
+    components: { projectselector },
 
     data() {
         return {

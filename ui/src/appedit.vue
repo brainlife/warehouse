@@ -544,7 +544,7 @@ import trueorfalse from '@/components/trueorfalse'
 import tageditor from '@/components/tageditor'
 import datatype from '@/components/datatype'
 import app from '@/components/app'
-import branchselecter from '@/components/branchselecter'
+import branchselector from '@/components/branchselector'
 
 import search_app_mixin from '@/mixins/searchapp'
 import datatypes from '@/mixins/datatypes'
@@ -555,7 +555,7 @@ export default {
     mixins: [ search_app_mixin, datatypes ],
     components: { 
         contactlist, multiprojectselecter,
-        datatypeselecter, trueorfalse, tageditor, datatype, app, branchselecter,
+        datatypeselecter, trueorfalse, tageditor, datatype, app, branchselector,
     },
     data() {
         return {

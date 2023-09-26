@@ -2,7 +2,7 @@
 <b-modal :no-close-on-backdrop="true" title="Import ezBIDS Dataset" ref="modal" size="lg" @ok="submit">
     <div v-if="!task">
         <b-row>
-           <b-col class="text-muted" cols="3">ezBIDS Session ID</b-col>
+            <b-col class="text-muted" cols="3">ezBIDS Session ID</b-col>
             <b-col>
                 <b-form-input v-model="sessionId" readonly></b-form-input>
                 <br>
@@ -24,7 +24,7 @@
                     <b-form-textarea rows="3" v-model="project_desc" placeholder="Enter Description for the new project" required/>
                 </div>
                 <div v-if="!createnew">
-                    <projectselecter canwrite="true" v-model="project" :required="true"/> 
+                    <projectselector canwrite="true" v-model="project" :required="true"/> 
                     <small class="text-muted">Select a project where you want to import this dataset to</small>
                 </div>
                 <br>
@@ -34,7 +34,7 @@
         <b-row>
             <b-col class="text-muted" cols="3">Dataset Description</b-col>
             <b-col>
-                <div v-if="ezBIDS" style="max-height: 250px; font-size:80%"><pre>{{ezBIDS.datasetDescription}}</pre></div>
+                <div v-if="ezBIDS" style="max-height: 250px; overflow-y: auto; font-size:80%"><pre>{{ezBIDS.datasetDescription}}</pre></div>
                 <small v-else><icon name="cog" scale="1.25" spin/>  Loading ezBIDS info ...</small>
                 <br>
             </b-col>
@@ -63,18 +63,19 @@
 
 import Vue from 'vue'
 
-import projectselecter from '@/components/projectselecter'
+import projectselector from '@/components/projectselector'
 import ReconnectingWebSocket from 'reconnectingwebsocket'
 import task from '@/components/task'
 
 export default {
     components: { 
-        projectselecter, task,
+        projectselector, task,
     },
     data() {
         return {
             project: null, //will be set if user wants to import to an existing project
             sessionId: null, //ezBIDS session ID
+            pipelineName: null, // optional pipeline to initialize after project creation
             ezBIDS: null, //ezBIDS finalized object
 
             //for creating new project (most of it should be loaded from ezBIDS.json)
@@ -95,7 +96,6 @@ export default {
     mounted() {
         //this.$root.$on("ezbidsimporter.open", this.open);
 
-        //preopened?
         if(this.$root.ezbidsSession) {
             this.open(this.$root.ezbidsSession);
             this.$root.ezbidsSession = null;
@@ -108,14 +108,16 @@ export default {
 
             //initialize
             this.sessionId = opt.sessionId;
+            this.pipelineName = opt.pipelineName;
             this.task = null;
             
             //load finalized ezbids content
-            this.$http.get(Vue.config.ezbids_api+"/download/"+this.sessionId+"/finalized.json").then(res=>{
+            this.$http.get(Vue.config.ezbids_api+"/download/"+this.sessionId+"/finalized.json").then((res) => {
                 this.ezBIDS = res.data;
                 this.project_name = this.ezBIDS.datasetDescription.Name;
                 this.project_desc = this.ezBIDS.readme;
-            }).catch(err=>{
+            }).catch((err) => {
+                console.error(err);
                 this.$notify({type: 'error', text: "Failed to load the specified ezBIDS session. Please contact brainlife.io team"});
                 this.close();
             });
@@ -128,12 +130,12 @@ export default {
                         service: "brainlife/app-bids-import",
                     })
                 },
-            }).then(res=>{
+            }).then((res) => {
                 if(res.data.tasks.length != 0) {
                     this.task = res.data.tasks[res.data.tasks.length-1];
                     this.subscribeTask(this.task);
                 }
-            }).catch(err=>{
+            }).catch((err) => {
                 console.error(err);
                 this.$notify({type: 'error', text: err.body.message});
             });
@@ -158,10 +160,14 @@ export default {
             this.$http.post('project', {
                 name: this.project_name, 
                 desc: this.project_desc,
-            }).then(res=>{
+            }).then((res) => {
                 this.project = res.data._id;
+                if (this.pipelineName) {
+                    console.log('EMIT', this.project, this.pipelineName)
+                    this.$root.$emit("create_pipeline", { projectId: this.project, pipelineName: this.pipelineName })
+                }
                 this.$root.$emit("refresh_jwt", this.submit_import);
-            }).catch(err=>{
+            }).catch((err) => {
                 console.error(err);
                 this.$notify({type: "error", text: err.response.data.message});
             });
@@ -182,10 +188,10 @@ export default {
                         jwt: Vue.config.jwt,
                     }
                 }
-                this.$http.post(Vue.config.amaretti_api+'/task', params).then(res=>{
+                this.$http.post(Vue.config.amaretti_api+'/task', params).then((res) => {
                     this.task = res.data.task;
                     this.subscribeTask(this.task);
-                }).catch(err=>{
+                }).catch((err) => {
                     console.error(err);
                     this.$notify({type: 'error', text: err.body.message});
                 });
@@ -204,10 +210,10 @@ export default {
                 this.$http.post(Vue.config.amaretti_api+'/instance', {
                     name,
                     group_id: this.project.group_id,
-                }).then(res=>{
+                }).then((res) => {
                     const instance = res.data;
                     return cb(null, instance);
-                }).catch(err=>{
+                }).catch((err) => {
                     console.error(err);
                 });
             });
@@ -239,11 +245,11 @@ export default {
 
         cancelImport() {
             this.$http.put(Vue.config.amaretti_api+'/task/stop/'+this.task._id)
-            .then(res=>{
+            .then((res) => {
                 this.$notify({ text: res.data.message, type: 'success'});
                 this.close();
             })
-            .catch(err=>{
+            .catch((err) => {
                 console.error(err); 
             });
         },
