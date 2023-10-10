@@ -106,7 +106,7 @@
     "http-proxy-middleware": "^0.17.3",
     "ify-loader": "^1.1.0",
     "inject-loader": "^3.0.0",
-    "karma": "^2.0.5",
+    "karma": "^6.4.1",
     "karma-coverage": "^1.1.2",
     "karma-mocha": "^1.3.0",
     "karma-phantomjs-launcher": "^1.0.2",
