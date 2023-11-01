@@ -359,7 +359,7 @@ router.put('/:id', common.jwt(), (req, res, next)=>{
 
     //let's not validate project - as different maintainer has access to different set of projects
     //and if the project is entered by different maintainer, we don't want to error out..
-    //multiprojectselecter on UI will list project that user doesn't have access using just project ID 
+    //multiprojectselector on UI will list project that user doesn't have access using just project ID 
     //so user can retain project ID that user don't have access
     //common.validate_projects(req.user, req.body.projects, err=>{
     //    if(err) return next(err);

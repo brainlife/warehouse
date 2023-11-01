@@ -75,7 +75,7 @@
                         <span class="form-header">Projects</span>
                     </b-col> 
                     <b-col cols="9">
-                        <multiprojectselecter v-model="app.projects" placeholder="(Leave it empty to make it available for all users)"/>
+                        <multiprojectselector v-model="app.projects" placeholder="(Leave it empty to make it available for all users)"/>
                         <p>
                             <small class="text-muted">If a private project is selected, only the member of the project can access this app</small>
                         </p>
@@ -108,7 +108,7 @@
                                     
                                 </b-input-group>
                                 -->
-                                <branchselecter v-model="app.github_branch" :service="app.github"/>
+                                <branchselector v-model="app.github_branch" :service="app.github"/>
                             </b-col>
                         </b-row>
                         <br>
@@ -538,7 +538,7 @@ output/mri/aparc* </pre></small>
 import Vue from 'vue'
 
 import contactlist from '@/components/contactlist'
-import multiprojectselecter from '@/components/multiprojectselecter'
+import multiprojectselector from '@/components/multiprojectselector'
 import datatypeselecter from '@/components/datatypeselecter'
 import trueorfalse from '@/components/trueorfalse'
 import tageditor from '@/components/tageditor'
@@ -554,7 +554,7 @@ let debounce;
 export default {
     mixins: [ search_app_mixin, datatypes ],
     components: { 
-        contactlist, multiprojectselecter,
+        contactlist, multiprojectselector,
         datatypeselecter, trueorfalse, tageditor, datatype, app, branchselector,
     },
     data() {

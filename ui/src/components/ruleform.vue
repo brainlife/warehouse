@@ -36,7 +36,7 @@
 
         <div v-if="rule.app">
             <b-form-group label="Branch" horizontal>
-                <branchselecter v-model="rule.branch" :service="this.rule.app.github"/>
+                <branchselector v-model="rule.branch" :service="this.rule.app.github"/>
             </b-form-group>
 
             <b-form-group label="Configuration" horizontal>
@@ -172,7 +172,7 @@ import datatypetag from '@/components/datatypetag'
 import app from '@/components/app'
 import tageditor from '@/components/tageditor'
 import projectselector from '@/components/projectselector'
-import branchselecter from '@/components/branchselector'
+import branchselector from '@/components/branchselector'
 import configform from '@/components/configform'
 
 import search_app_mixin from '@/mixins/searchapp'
@@ -193,7 +193,7 @@ export default {
     },
 
     components: { 
-        projectselector, branchselecter, datatypetag, app, tageditor, configform,
+        projectselector, branchselector, datatypetag, app, tageditor, configform,
     },
 
     data() {
