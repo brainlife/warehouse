@@ -13,12 +13,23 @@
                 <h4 style="margin-top: 5px;">New Session</h4>
             </div>
 
+            <p style="padding: 10px;">Please select a template notebook to launch your new session.</p>
 
-            <!--container selecter-->
+            <div v-if="!selected" class="app-selecter">
+                <span class="form-header">Blank Notebooks</span>
+                <b-row>
+                    <b-col cols="4" v-for="(app, idx) in templates" :key="idx">
+                        <div :title="app.name" :img-src="app.img" @click="selected = app" class="app">
+                            <small><span style="opacity: 0.8"><icon name="brands/docker"/> {{app.container}}</span></small><br>
+                            <b>{{app.name}}</b><br>
+                            <small>{{app.desc}}</small><br>
+                        </div>
+                    </b-col>
+                </b-row>
+            </div>
+
             <div v-if="!selected" class="app-selecter">
                 <span class="loading" v-if="!notebooks">Loading..</span>
-                <p>Please select a template notebook to launch your new session.</p>
-
                 <b-row>
                     <b-col cols="5">
                         <span class="form-header">Published Notebooks</span>
@@ -56,14 +67,6 @@
                             </div>
                         </b-col>
                     </b-row>
-                </div>
-
-                <br>
-                <span class="form-header">Blank Notebooks</span>
-                <div v-for="(app, idx) in templates" :key="idx" :title="app.name" :img-src="app.img" @click="selected = app" class="app">
-                    <small><span style="opacity: 0.8"><icon name="brands/docker"/> {{app.container}}</span></small><br>
-                    <b>{{app.name}}</b><br>
-                    <small>{{app.desc}}</small><br>
                 </div>
             </div>
 
@@ -140,18 +143,18 @@ export default {
             notebooks: null, //published notebooks that user can launch
 
             templates: [
-                {
-                    name: "Python3", 
-                    desc: "Python Notebook (lab-3.2.8) with Dipy(1.4.1) and Fury",
-                    container: "brainlife/ga-python:lab328-dipy141",
-                    app: "brainlife/ga-python",
-                },
-                {
-                    name: "Python3", 
-                    desc: "Python Notebook",
-                    container: "brainlife/ga-python:lab328-dipy141",
-                    app: "brainlife/ga-python",
-                },
+                // {
+                //     name: "Python3", 
+                //     desc: "Python Notebook (lab-3.2.8) with Dipy(1.4.1) and Fury",
+                //     container: "brainlife/ga-python:lab328-dipy141",
+                //     app: "brainlife/ga-python",
+                // },
+                // {
+                //     name: "Python3", 
+                //     desc: "Python Notebook",
+                //     container: "brainlife/ga-python:lab328-dipy141",
+                //     app: "brainlife/ga-python",
+                // },
                 {
                     name: "Python3", 
                     desc: "Python Notebook",
@@ -331,8 +334,6 @@ export default {
 .app {
     transition: box-shadow 0.5s;
     background-color: white;
-    width: 350px;
-    float: left;
     padding: 10px;
     margin-right: 10px;
     margin-bottom: 10px;
@@ -343,14 +344,7 @@ export default {
     box-shadow: 0 0 5px #0004;
 }
 .app-selecter {
-    position: absolute;
-    left: 0px;
-    right: 0px;
-    top: 60px;
-    bottom: 0px;
     background-color: #f9f9f9;
-    overflow-x: hidden;
-    overflow-y: auto;
     padding: 10px;
 }
 .published-in {
