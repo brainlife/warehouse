@@ -13,7 +13,9 @@
         <div class="header">
             <b-container style="position: relative;">
                 <div style="float: right; position: relative; z-index: 3">
-                    <a :href="'https://github.com/'+app.github" :target="app.github"><span class="button" title="github"><icon name="brands/github" scale="1.25"/></span></a>
+                    <a :href="'https://github.com/'+app.github+(app.github_branch ? '/tree/'+app.github_branch:'')" :target="app.github">
+                        <span class="button" title="github"><icon name="brands/github" scale="1.25"/></span>
+                    </a>
                     <span class="button" @click="go('/app/'+app._id+'/edit')" v-if="app._canedit" title="Edit"><icon name="edit" scale="1.25"/></span>                
                     <b-dropdown size="sm" variant="link" toggle-class="text-decoration-none" no-caret>
                         <template v-slot:button-content style="padding: 0px;">
@@ -43,7 +45,7 @@
                 </h5>
 
                 <div style="opacity: 0.8; font-size: 1em;">
-                    <a target="github" :href="'https://github.com/'+app.github+'/tree/'+(app.github_branch||'master')" style="color: gray;">{{app.github}}</a>
+                    <a target="github" :href="'https://github.com/'+app.github+(app.github_branch ? '/tree/'+app.github_branch:'')" style="color: gray;">{{app.github}}</a>
                     <small><b-badge variant="secondary" v-if="app.github_branch" style="position: relative; top: -2px"><icon name="code-branch" scale="0.6"/> {{app.github_branch}}</b-badge></small>
                 </div>
 
