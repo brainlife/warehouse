@@ -758,7 +758,7 @@ exports.cacheContact = function(cb) {
     console.debug("caching contacts", config.warehouse.jwt);
     axios.get(config.auth.api+"/profile/list", {
         params: {
-            limit: 5000, //TODO -- really!?
+            limit: 6000, //TODO -- really!?
         },
         headers: { authorization: "Bearer "+config.warehouse.jwt }, //config.auth.jwt is deprecated
     }).then(res=>{
