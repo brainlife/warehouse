@@ -112,7 +112,11 @@ export default {
             this.task = null;
             
             //load finalized ezbids content
-            this.$http.get(Vue.config.ezbids_api+"/download/"+this.sessionId+"/finalized.json").then((res) => {
+            this.$http.get(Vue.config.ezbids_api+"/download/"+this.sessionId+"/token").then((res) => {
+                return res.data;
+            }).then((res) => {
+                return this.$http.get(Vue.config.ezbids_api+"/download/"+this.sessionId+"/finalized.json?token="+res)
+            }).then((res) => {
                 this.ezBIDS = res.data;
                 this.project_name = this.ezBIDS.datasetDescription.Name;
                 this.project_desc = this.ezBIDS.readme;
