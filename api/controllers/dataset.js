@@ -1350,7 +1350,7 @@ router.get('/download/:id', common.jwt({
                 });
             },
 
-            //check aggreements
+            //check agreements
             cb=>{
                 //load project agreements
                 get_project_agreements(dataset.project, (err, project_agreements)=>{

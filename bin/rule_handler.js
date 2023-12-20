@@ -490,7 +490,7 @@ function handle_rule(rule, cb) {
         rule.app.outputs.forEach(output=>{
             //I should ignore missing output if user doesn't want to archive it?
             if(!rule.archive || !rule.archive[output.id] || !rule.archive[output.id].do) {
-                log.debug(output.id+" not archvied - skip", group_id);
+                log.debug(output.id+" not archived - skip", group_id);
                 return;
             }
 

@@ -10,7 +10,7 @@
                 <p style="opacity: 0.8;font-size: 90%; padding: 10px 0;">
                     We send SMS messages through this email2SMS gateway. 
                     For example, for AT&T, please use address such as <i>1234560000@mms.att.net</i>. 
-                    For other carriers, please refer to the <a href="https://en.wikipedia.org/wiki/SMS_gateway" target="gateway">SMS Gateway for major cariers.</a>
+                    For other carriers, please refer to the <a href="https://en.wikipedia.org/wiki/SMS_gateway" target="gateway">SMS Gateway for major carriers.</a>
                 </p>
             </b-col>
         </b-row>
