@@ -460,7 +460,7 @@ function handle_task(task, cb) {
                 if(task.config.forceSecondary) {
                     console.log("processing with secondary archive for app-stage (forceSecondary is set)");
                 } else {
-                    //don't run seconary archive for app-stage
+                    //don't run secondary archive for app-stage
                     return;
                 }
             }

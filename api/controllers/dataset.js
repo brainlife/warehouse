@@ -1210,7 +1210,7 @@ function stream_dataset(dataset, req, res, next) {
             res.on('finish', ()=>{
                 //console.debug("done piping.. meter count:%s dataset.size %d", m.bytes, dataset.size);
                 if(!dataset.size) {
-                    /* this is not good idea.. as .tar file size might change if versionn of tar get updates
+                    /* this is not good idea.. as .tar file size might change if version of tar get updates
                     console.debug("updating dataset size based on m.bytes");
                     dataset.size = m.bytes;
                     */
