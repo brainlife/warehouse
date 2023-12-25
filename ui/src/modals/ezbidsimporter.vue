@@ -114,8 +114,8 @@ export default {
             //load finalized ezbids content
             this.$http.get(Vue.config.ezbids_api+"/download/"+this.sessionId+"/token").then((res) => {
                 return res.data;
-            }).then((res) => {
-                return this.$http.get(Vue.config.ezbids_api+"/download/"+this.sessionId+"/finalized.json?token="+res)
+            }).then((token) => {
+                return this.$http.get(Vue.config.ezbids_api+"/download/"+this.sessionId+"/finalized.json?token="+token);
             }).then((res) => {
                 this.ezBIDS = res.data;
                 this.project_name = this.ezBIDS.datasetDescription.Name;
