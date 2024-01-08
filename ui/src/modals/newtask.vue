@@ -276,13 +276,13 @@ export default {
             .then(res=>{
                 //now, pick apps that we have *all* input datasets that matches the input datatype/tags
                 res.data.apps.forEach(app=>{
-                    var match = true;
+                    let match = true;
                     app.inputs.forEach(input=>{
                         if(input.optional) return; //optional 
-                        var matching_dataset = this.datasets.find(dataset=>{
+                        let matching_dataset = this.datasets.find(dataset=>{
                             if(!input.datatype) return false; //only happens on dev?
                             if(dataset.datatype != input.datatype._id) return false;
-                            var match_tag = true;
+                            let match_tag = true;
                             if(dataset.datatype_tags) input.datatype_tags.forEach(tag=>{
                                 //make sure tag matches
                                 if(tag[0] == "!" && ~dataset.datatype_tags.indexOf(tag.substring(1))) match_tag = false;
