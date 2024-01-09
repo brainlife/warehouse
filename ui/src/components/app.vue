@@ -1,8 +1,15 @@
 <template>
-<div v-if="app_" class="appcard" :class="{'compact': compact, 'clickable': clickable, 'deprecated': app_.deprecated_by}" @click="click">
+<div v-if="app_" class="appcard" :class="cardClasses"  @click="handleClick">
+    <!-- <div v-if="isIncompatible" class="incompatible-message">
+        <h5>Check app inputs</h5>
+    </div> -->
+
+    <div v-if="isIncompatible" class="incompatible-label">Incompatible</div>
+    <div v-if="app_.deprecated_by" class="deprecated-label">Deprecated</div>
+
     <div v-if="compact">
         <appavatar :app="app_" style="position: absolute; right: 0;" :width="80" :height="80"/>
-        <span v-if="app_.deprecated_by" class="deprecated-label" style="top: inherit; bottom: 0;">Deprecated</span>
+        <!-- <span v-if="app_.deprecated_by" class="deprecated-label" style="top: inherit; bottom: 0;">Deprecated</span> -->
         <div style="max-height: 85px; margin-left: 10px; margin-right: 90px; overflow: hidden;">
             <h4 class="name">
                 <icon v-if="app_.projects && app_.projects.length > 0" scale="0.9" name="lock" title="not working.." class="text-secondary"/>
@@ -15,7 +22,7 @@
         <slot/>
     </div>
     <div v-else style="overflow: hidden; position: relative;" :style="{ height }">
-        <span v-if="app_.deprecated_by" class="deprecated-label">Deprecated</span>
+        <!-- <span v-if="app_.deprecated_by" class="deprecated-label">Deprecated</span> -->
         <appavatar :app="app_" style="float: right; margin-left: 10px;" :width="80" :height="80"/>
         <div class="header">
             <h4 class="name">
@@ -133,6 +140,23 @@ export default {
         if(this.app) this.app_ = this.app;
     },
 
+    computed: {
+        isIncompatible() {
+            return this.app_.compatible === false;
+        },
+
+        cardClasses() {
+            return {
+                'clickable': this.clickable && !this.isIncompatible ,
+                'incompatible': this.isIncompatible,
+                'deprecated': this.app_.deprecated_by,
+                'compact': this.compact,
+            }
+            // :class="{'compact': compact, 'clickable': clickable, 'deprecated': app_.deprecated_by}"
+        }
+
+    },
+
     methods: {
         load_app() {
             this.appcache(this.appid, (err, app)=>{
@@ -146,6 +170,12 @@ export default {
                 this.$emit("open", this.app_._id);
             }
         },
+
+        handleClick() {
+            if(!this.isIncompatible && this.clickable) {
+                this.click();
+            }
+        }
 
     },
 }
@@ -256,7 +286,7 @@ line-height: 100%;
 .deprecated h4 {
 opacity: 0.7;
 }
-.deprecated-label {
+/* .deprecated-label {
 position: absolute; 
 right: 0; 
 top: 0;
@@ -267,5 +297,41 @@ opacity: 0.9;
 text-transform: uppercase;
 font-size: 80%;
 font-weight: bold;
+} */
+
+.incompatible-label,
+.deprecated-label {
+    position: absolute; 
+    right: 0;
+    background-color: #666;
+    color: white; 
+    padding: 2px 4px;
+    opacity: 0.9;
+    text-transform: uppercase;
+    font-size: 80%;
+    font-weight: bold;
+    z-index: 1;
 }
+
+.deprecated-label {
+    top: 0;
+}
+
+.incompatible-label {
+    top: 0px;
+}
+
+.appcard.incompatible,
+.appcard.deprecated {
+    pointer-events: none;
+    opacity: 0.5;
+}
+
+.appcard.incompatible.name,
+.appcard.deprecated.name,
+.appcard.incompatible.github,
+.appcard.deprecated.github {
+    color: #838383;
+}
+
 </style>

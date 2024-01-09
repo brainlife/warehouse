@@ -249,7 +249,7 @@ export default {
             this.loading = true;
 
             //create list of all datatypes that user has staged / generated
-            var datatype_ids = [];
+            let datatype_ids = [];
             this.datasets.forEach(dataset=>{
                 if(!~datatype_ids.indexOf(dataset.datatype)) datatype_ids.push(dataset.datatype);
             });
@@ -266,7 +266,7 @@ export default {
             //now find apps that user can submit
             this.$http.get('app', {params: {
                 find: JSON.stringify({
-                    "inputs.datatype": {$in: datatype_ids},
+                    // "inputs.datatype": {$in: datatype_ids},
                     removed: false,
                 }),
                 sort: 'name', 
@@ -275,6 +275,7 @@ export default {
             }})
             .then(res=>{
                 //now, pick apps that we have *all* input datasets that matches the input datatype/tags
+                console.log(res.data.apps);
                 res.data.apps.forEach(app=>{
                     let match = true;
                     app.inputs.forEach(input=>{
@@ -282,6 +283,16 @@ export default {
                         let matching_dataset = this.datasets.find(dataset=>{
                             if(!input.datatype) return false; //only happens on dev?
                             if(dataset.datatype != input.datatype._id) return false;
+
+                            console.log("Checking datype_ids", input.datatype, "all datatypes in this project", datatype_ids);
+
+                            let datatype_id = input.datatype._id;
+                            // Now check if the current input datatype is in the provided datatype_ids
+                            if(datatype_ids.indexOf(datatype_id) === -1) {
+                                // If not, the app is incompatible
+                                match = false;
+                            }
+                            
                             let match_tag = true;
                             if(dataset.datatype_tags) input.datatype_tags.forEach(tag=>{
                                 //make sure tag matches
@@ -292,7 +303,8 @@ export default {
                         }); 
                         if(!matching_dataset) match = false;
                     });
-                    if(match) this.apps.all.push(app);
+                    app.compatible = match;
+                    this.apps.all.push(app);
                 });
                 this.update_lists();
                 this.loading = false;
@@ -327,7 +339,7 @@ export default {
     },
 
     methods: {
-        update_lists() {
+        async update_lists() {
             //apply filter
             if(!this.filter) this.apps.filtered = this.apps.all.sort((a,b)=>a.name - b.name);
             let l_filter = this.filter.toLowerCase();
@@ -358,10 +370,13 @@ export default {
                 return match;
             });
 
-            let popular_ordered = this.apps.filtered.map(a=>{
-                if(!a.stats) a.stats = {users: 0};
+            let popular_ordered = this.apps.filtered
+            .filter(a => a.compatible) // Only include compatible apps
+            .map(a => {
+                if (!a.stats) a.stats = { users: 0 };
                 return a;
-            }).sort((a,b)=>b.stats.users-a.stats.users)
+            })
+            .sort((a, b) => b.stats.users - a.stats.users);
 
             this.apps.popular = popular_ordered.slice(0, 9);
             this.apps.not_popular = popular_ordered.slice(9);
