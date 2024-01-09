@@ -275,7 +275,6 @@ export default {
             }})
             .then(res=>{
                 //now, pick apps that we have *all* input datasets that matches the input datatype/tags
-                console.log(res.data.apps);
                 res.data.apps.forEach(app=>{
                     let match = true;
                     app.inputs.forEach(input=>{
@@ -283,8 +282,6 @@ export default {
                         let matching_dataset = this.datasets.find(dataset=>{
                             if(!input.datatype) return false; //only happens on dev?
                             if(dataset.datatype != input.datatype._id) return false;
-
-                            console.log("Checking datype_ids", input.datatype, "all datatypes in this project", datatype_ids);
 
                             let datatype_id = input.datatype._id;
                             // Now check if the current input datatype is in the provided datatype_ids
