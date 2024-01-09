@@ -4,7 +4,11 @@
         <h5>Check app inputs</h5>
     </div> -->
 
-    <div v-if="isIncompatible" class="incompatible-label">Incompatible</div>
+    <div v-if="isIncompatible">
+        <!-- in case if we want to show error-->
+        <!-- <p class="incompatible-error">Check input type</p>  --> 
+        <div class="incompatible-label">Incompatible</div>
+    </div>
     <div v-if="app_.deprecated_by" class="deprecated-label">Deprecated</div>
 
     <div v-if="compact">
@@ -313,6 +317,11 @@ font-weight: bold;
     z-index: 1;
 }
 
+.incompatible-error {
+    margin-left: 10px;
+    color: #d9534f;
+}
+
 .deprecated-label {
     top: 0;
 }
@@ -332,6 +341,11 @@ font-weight: bold;
 .appcard.incompatible.github,
 .appcard.deprecated.github {
     color: #838383;
+}
+
+.incompatible-label {
+    font-size: 70%; 
+    /* //smaller to fit with icon of app */
 }
 
 </style>
