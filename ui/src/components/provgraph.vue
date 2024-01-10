@@ -95,7 +95,7 @@ export default {
                 this.prov.nodes.filter(node=>node._simplified).forEach(node=>{
                     node._hide = true;
                 });
-                //hide irelevant nodes
+                //hide irrelevant nodes
                 this.prov.nodes.filter(node=>!node._important).forEach(node=>{
                     node._hide = true;
                 });

@@ -477,7 +477,7 @@ exports.setupShortcuts = (prov)=>{
     } 
 
     //TODO
-    //I think this is dangerous.. there could be multpile edges with the same from/to
+    //I think this is dangerous.. there could be multiple edges with the same from/to
     //I think it's safer to just return the edge itself, and let caller specifically use that edge.idx
     //for shortcut array 
     function findEdgeIdx(from, to) {
