@@ -425,7 +425,7 @@ exports.storage_systems.osiris = {
                     console.error("stream failed but train has already left the station", err);
                 });
                 stream.on('close', code=>{
-                    console.log("stream clsoed.. closing connection");
+                    console.log("stream closed.. closing connection");
                     conn.end();
                 });
                 //I believe listening to stream is required for close event to fire..?

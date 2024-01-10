@@ -51,7 +51,7 @@ export default new Router({
         { path: '/app/:id/edit', component: appedit, meta: { sidemenu: 'app', mode: 'edit' } },
         { path: '/app/:id/copy', component: appedit, meta: { sidemenu: 'app', mode: 'copy' } },
         { path: '/app/:id/:tab?', component: app, meta: { public: true, sidemenu: 'app' } },
-        // to-be-deprecated by /view?config= (still used by viewer selecter?)
+        // to-be-deprecated by /view?config= (still used by viewer selector?)
         { path: '/view/:taskid/:type/:datatype64/:subdir?', component: view, props: true, meta: { noRightView: true } },
         { path: '/view', component: view, props: true, meta: { noRightView: true } },
         { path: '/novnc/:taskid/:type/:datatype64/:subdir?', component: novnc, props: true, meta: { noRightView: true } },
