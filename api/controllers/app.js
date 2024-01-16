@@ -37,10 +37,11 @@ function canedit(user, rec) {
  * @apiSuccess {Object}         List of apps (maybe limited / skipped) and total count
  */
 router.get('/', common.jwt({credentialsRequired: false}), (req, res, next)=>{
-    var skip = req.query.skip||0;
+    let skip = req.query.skip||0;
     let limit = req.query.limit||100;
-    var ands = [];
+    let ands = [];
     if(req.query.find) ands.push(JSON.parse(req.query.find));
+    const listIncompatible = req.query.listIncompatible || false;
 
     common.getprojects(req.user, (err, project_ids)=>{
         if(err) return next(err);
@@ -93,7 +94,7 @@ router.get('/query', common.jwt({credentialsRequired: false}), (req, res, next)=
     //and get *all* apps (minus some heavy/unnecessary stuff)
     common.getprojects(req.user, async (err, project_ids)=>{
         if(err) return next(err);
-        const apps = await db.Apps.find({
+        let findQuery = {
             removed: false,
             $or: [
                 //if projects is set, user need to have access to it
@@ -105,7 +106,16 @@ router.get('/query', common.jwt({credentialsRequired: false}), (req, res, next)=
                 {projects: null}, //if projects is set to null, it's avalable to everyoone
                 {projects: {$exists: false}}, //if projects not set, it's availableo to everyone
             ]
-        })
+        };
+        if(req.query.find) findQuery = {$and: [findQuery, JSON.parse(req.query.find)]};
+        if(req.query.listIncompatible) 
+        {
+            delete findQuery.$and
+        };
+        
+        console.log("findQuery", JSON.stringify(findQuery));
+
+        const apps = await db.Apps.find(findQuery)
         .select('-config -stats.gitinfo -contributors') //cut things we don't need
         //we want to search into datatype name/desc (desc might be too much?)
         .populate('inputs.datatype', 'name desc') 
@@ -113,6 +123,7 @@ router.get('/query', common.jwt({credentialsRequired: false}), (req, res, next)=
         .lean();
 
         if(!req.query.q) return res.json(apps); //if not query is set, return everything
+
         const queryTokens = req.query.q.toLowerCase().split(" ");
 
         //then construct list of tokens for each app to search by
@@ -151,6 +162,9 @@ router.get('/query', common.jwt({credentialsRequired: false}), (req, res, next)=
 
         //remove _tokens from the apps to reduce returning weight a bit
         filtered.forEach(app=>{ delete app._tokens; });
+
+        // seprate results of {"inputs.datatype":{"$in":["58c33bcee13a50849b25879a"]} 
+        // and ones which don't have it (so we can sort them separately) as incompatibleList
 
         res.json(filtered);
     });

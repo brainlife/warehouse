@@ -41,6 +41,7 @@
                 <!--show everything together if there are less than 9-->
                 <div v-else>
                     <div v-for="app in apps.filtered" :key="app._id">
+                        <h3>in Filtered {{ app.stats.users }}</h3>
                         <div class="app" @click="selectapp(app)">
                             <app :app="app" :clickable="false" class="clickable" height="230px"/>
                         </div>
@@ -264,7 +265,7 @@ export default {
             });
 
             //now find apps that user can submit
-            this.$http.get('app', {params: {
+            this.$http.get('/app/query', {params: {
                 find: JSON.stringify({
                     // "inputs.datatype": {$in: datatype_ids},
                     removed: false,
@@ -272,10 +273,12 @@ export default {
                 sort: 'name', 
                 populate: 'inputs.datatype outputs.datatype',
                 limit: 500, //TODO - this is not sustailable
+                incompatible: true
             }})
             .then(res=>{
+                console.log(res.data);
                 //now, pick apps that we have *all* input datasets that matches the input datatype/tags
-                res.data.apps.forEach(app=>{
+                res.data.forEach(app=>{
                     let match = true;
                     app.inputs.forEach(input=>{
                         if(input.optional) return; //optional 
@@ -340,6 +343,7 @@ export default {
             //apply filter
             if(!this.filter) this.apps.filtered = this.apps.all.sort((a,b)=>a.name - b.name);
             let l_filter = this.filter.toLowerCase();
+
             this.apps.filtered = this.apps.all.filter(app=>{
                 let match = false;
                 if(app.name && app.name.toLowerCase().includes(l_filter)) match = true;
@@ -367,6 +371,10 @@ export default {
                 return match;
             });
 
+            //should i put a check for if filtered contains apps that are incompatible?
+            this.apps.filtered = this.sortByMissingDatatypes(this.apps.filtered);
+
+            
             let popular_ordered = this.apps.filtered
             .filter(a => a.compatible) // Only include compatible apps
             .map(a => {
@@ -643,7 +651,25 @@ export default {
             let inputs = this.wrap_with_label(this.filter_datasets(input));
             input.selected.push(...inputs);
             this.validate();
-        }
+        },
+        sortByMissingDatatypes(apps) {
+            // For each app, calculate the number of missing datatypes
+            apps.forEach(app => {
+                let missingDatatypesCount = 0;
+                app.inputs.forEach(input => {
+                    if (!input.optional) {
+                        const isDatatypePresent = this.datasets.some(dataset => dataset.datatype === input.datatype._id);
+                        if (!isDatatypePresent) {
+                            missingDatatypesCount++;
+                        }
+                    }
+                });
+                app.missingDatatypesCount = missingDatatypesCount;
+            });
+
+            // Sort apps by the number of missing datatypes in ascending order
+            return apps.sort((a, b) => a.missingDatatypesCount - b.missingDatatypesCount);
+        },
     },
 } 
 </script>
