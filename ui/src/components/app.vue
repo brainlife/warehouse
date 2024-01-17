@@ -37,9 +37,14 @@
             </h4>
             <h5 class="github">{{app_.github}} <b-badge>{{branch||app_.github_branch}}</b-badge></h5>
             <div class="datatypes">
+
+                <b-badge v-if="app_.missingInputIDs && app_.missingInputIDs.length > 0" pill variant="danger">Missing inputs <br/></b-badge> <br/>
+                
                 In
                 <div class="datatype" v-for="input in app_.inputs" :key="'input.'+input.id" :class="[input.optional?'input-optional':'']">
-                    <datatypetag :datatype="input.datatype" :tags="input.datatype_tags" :clickable="false"/>
+
+                    <datatypetag :datatype="input.datatype" :tags="input.datatype_tags" :clickable="false" :missing="app_.missingInputIDs && app_.missingInputIDs.includes(input._id)"/>
+
                     <b v-if="input.multi">multi</b>
                     <b v-if="input.optional">opt</b>
                 </div>
@@ -94,7 +99,10 @@
             </span>
             <span v-if="showDoi && app_.doi">{{app_.doi}}</span>
         </div>
+
+        
     </div>
+    
 </div>
 </template>
 

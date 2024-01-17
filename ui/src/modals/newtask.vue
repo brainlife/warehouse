@@ -41,7 +41,6 @@
                 <!--show everything together if there are less than 9-->
                 <div v-else>
                     <div v-for="app in apps.filtered" :key="app._id">
-                        <h3>in Filtered {{ app.stats.users }}</h3>
                         <div class="app" @click="selectapp(app)">
                             <app :app="app" :clickable="false" class="clickable" height="230px"/>
                         </div>
@@ -266,21 +265,20 @@ export default {
 
             //now find apps that user can submit
             this.$http.get('/app/query', {params: {
-                find: JSON.stringify({
-                    // "inputs.datatype": {$in: datatype_ids},
-                    removed: false,
-                }),
                 sort: 'name', 
                 populate: 'inputs.datatype outputs.datatype',
                 limit: 500, //TODO - this is not sustailable
                 incompatible: true
             }})
             .then(res=>{
-                console.log(res.data);
                 //now, pick apps that we have *all* input datasets that matches the input datatype/tags
                 res.data.forEach(app=>{
                     let match = true;
+                    let missingInputIDs = []; // Store missing inputs here
+
                     app.inputs.forEach(input=>{
+                        //In this context, return is used to skip the current iteration and move on to the next one, 
+                        //not to return a value from a function.
                         if(input.optional) return; //optional 
                         let matching_dataset = this.datasets.find(dataset=>{
                             if(!input.datatype) return false; //only happens on dev?
@@ -301,9 +299,18 @@ export default {
                             });
                             return match_tag;
                         }); 
-                        if(!matching_dataset) match = false;
+                        if(!matching_dataset){
+                            missingInputIDs.push(input._id); // Add the missing input to the list
+                            match = false;
+                        }
                     });
                     app.compatible = match;
+
+                    //should I just push the array of missing inputs?
+                    if (!match) {
+                        app.missingInputIDs = missingInputIDs;
+                    }
+
                     this.apps.all.push(app);
                 });
                 this.update_lists();

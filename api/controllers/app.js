@@ -108,13 +108,14 @@ router.get('/query', common.jwt({credentialsRequired: false}), (req, res, next)=
             ]
         };
         if(req.query.find) findQuery = {$and: [findQuery, JSON.parse(req.query.find)]};
-        if(req.query.listIncompatible) 
-        {
-            delete findQuery.$and
-        };
+        if(req.query.incompatible === 'true') {
+            // When incompatible flag is true, remove the datatype filter
+            if(findQuery.$and) {
+                findQuery.$and = findQuery.$and.filter(query => !query["inputs.datatype"]);
+            }
+        }
+    
         
-        console.log("findQuery", JSON.stringify(findQuery));
-
         const apps = await db.Apps.find(findQuery)
         .select('-config -stats.gitinfo -contributors') //cut things we don't need
         //we want to search into datatype name/desc (desc might be too much?)
@@ -162,9 +163,6 @@ router.get('/query', common.jwt({credentialsRequired: false}), (req, res, next)=
 
         //remove _tokens from the apps to reduce returning weight a bit
         filtered.forEach(app=>{ delete app._tokens; });
-
-        // seprate results of {"inputs.datatype":{"$in":["58c33bcee13a50849b25879a"]} 
-        // and ones which don't have it (so we can sort them separately) as incompatibleList
 
         res.json(filtered);
     });
