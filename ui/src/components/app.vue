@@ -1,8 +1,6 @@
 <template>
 <div v-if="app_" class="appcard" :class="cardClasses"  @click="handleClick">
     <div v-if="isIncompatible">
-        <!-- in case if we want to show error-->
-        <!-- <p class="incompatible-error">Check input type</p>  --> 
         <div class="incompatible-label">Incompatible</div>
     </div>
     <div v-if="app_.deprecated_by" class="deprecated-label">Deprecated</div>

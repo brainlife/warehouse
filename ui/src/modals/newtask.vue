@@ -346,7 +346,7 @@ export default {
     },
 
     methods: {
-        async update_lists() {
+        update_lists() {
             //apply filter
             if(!this.filter) this.apps.filtered = this.apps.all.sort((a,b)=>a.name - b.name);
             let l_filter = this.filter.toLowerCase();
