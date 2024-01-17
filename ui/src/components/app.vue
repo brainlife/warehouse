@@ -7,7 +7,7 @@
 
     <div v-if="compact">
         <appavatar :app="app_" style="position: absolute; right: 0;" :width="80" :height="80"/>
-        <!-- <span v-if="app_.deprecated_by" class="deprecated-label" style="top: inherit; bottom: 0;">Deprecated</span> -->
+        <span v-if="app_.deprecated_by" class="deprecated-label" style="top: inherit; bottom: 0;">Deprecated</span>
         <div style="max-height: 85px; margin-left: 10px; margin-right: 90px; overflow: hidden;">
             <h4 class="name">
                 <icon v-if="app_.projects && app_.projects.length > 0" scale="0.9" name="lock" title="not working.." class="text-secondary"/>
@@ -20,7 +20,7 @@
         <slot/>
     </div>
     <div v-else style="overflow: hidden; position: relative;" :style="{ height }">
-        <!-- <span v-if="app_.deprecated_by" class="deprecated-label">Deprecated</span> -->
+        <span v-if="app_.deprecated_by" class="deprecated-label">Deprecated</span>
         <appavatar :app="app_" style="float: right; margin-left: 10px;" :width="80" :height="80"/>
         <div class="header">
             <h4 class="name">
