@@ -426,7 +426,7 @@ export default {
                     this.gidsProjects = res.data.projects;
 
                     //for projects that user doesn't have access (other admins of the resource can set it)
-                    //let's create a skelton project to display
+                    //let's create a skeleton project to display
                     this.privateGids = [];
                     this.resource.gids.forEach(gid=>{
                         if(gid == 1) return; //public id is handled elsewhere

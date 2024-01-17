@@ -55,7 +55,7 @@ export default {
         load_projects() {         
             var find = {
                 removed: false,
-                //openneuro: {$exists: false}, //don't show openneuro psudo projects anymore
+                //openneuro: {$exists: false}, //don't show openneuro pseudo projects anymore
             };  
 
             if(this.canwrite) {

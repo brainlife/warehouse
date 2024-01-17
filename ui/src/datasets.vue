@@ -95,7 +95,7 @@ export default {
             filteredGroups: [],
 
             datatypes: [], //datatypes info
-            //datatype_options: null, //{label: .. datatype: } opbjects
+            //datatype_options: null, //{label: .. datatype: } objects
 
             //datatype ids to use in filter
             /*

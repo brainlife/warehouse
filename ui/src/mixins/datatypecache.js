@@ -9,7 +9,7 @@ export default {
         datatypecache(id, cb) {
             this._cache("datatype."+id, ()=>{
                 return this.$http.get('datatype', {params: {
-                    find: JSON.stringify({_id: id}), //TODO - maybe seach by name also?
+                    find: JSON.stringify({_id: id}), //TODO - maybe search by name also?
                 }});
             }, (err, res)=>{
                 if(err) return cb(err);

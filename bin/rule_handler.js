@@ -164,7 +164,7 @@ function handle_rule(rule, cb) {
     const counts = {
         waiting: 0, //waiting for inputs
         running: 0, //running jobs to produce the output ("submitted" is a better name?)
-        archived: 0, //outpus already archived
+        archived: 0, //output already archived
     };
 
     //prepare for stage / app / archive
@@ -490,7 +490,7 @@ function handle_rule(rule, cb) {
         rule.app.outputs.forEach(output=>{
             //I should ignore missing output if user doesn't want to archive it?
             if(!rule.archive || !rule.archive[output.id] || !rule.archive[output.id].do) {
-                log.debug(output.id+" not archvied - skip", group_id);
+                log.debug(output.id+" not archived - skip", group_id);
                 return;
             }
 
@@ -548,7 +548,7 @@ function handle_rule(rule, cb) {
 
                 //check count
                 if(input.multi && rule.input_multicount) {
-                    //make sure we have exactly the expected number of candiates
+                    //make sure we have exactly the expected number of candidates
                     if(candidates.length != rule.input_multicount[input.id]) {
                         log.info("We found "+candidates.length +" candidates objects for input:"+input.id+", but the rule is expecting "+rule.input_multicount[input.id]+" objects", group_id);
                         ambiguous = true;

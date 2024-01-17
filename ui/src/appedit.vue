@@ -75,7 +75,7 @@
                         <span class="form-header">Projects</span>
                     </b-col> 
                     <b-col cols="9">
-                        <multiprojectselecter v-model="app.projects" placeholder="(Leave it empty to make it available for all users)"/>
+                        <multiprojectselector v-model="app.projects" placeholder="(Leave it empty to make it available for all users)"/>
                         <p>
                             <small class="text-muted">If a private project is selected, only the member of the project can access this app</small>
                         </p>
@@ -108,7 +108,7 @@
                                     
                                 </b-input-group>
                                 -->
-                                <branchselecter v-model="app.github_branch" :service="app.github"/>
+                                <branchselector v-model="app.github_branch" :service="app.github"/>
                             </b-col>
                         </b-row>
                         <br>
@@ -503,7 +503,7 @@ output/mri/aparc* </pre></small>
                         <b-form-checkbox v-model="output.archive">Archive this output by default. <small>Uncheck this if this output is rarely used / archived to reduce the size of archive.</small></b-form-checkbox>
                         <b-form-checkbox v-model="output.output_on_root" v-if="output.output_on_root">(DEPRECATED) ignore output directory. Output files will be stored on the root of workdir.</b-form-checkbox>
                         <div v-if="output.output_on_root">
-                            <div class="text-muted" style="margin-top: 3px;">Datatype File Mapping <small>Optional override of file/direcory name to avoid more than 1 output to collide.</small></div>
+                            <div class="text-muted" style="margin-top: 3px;">Datatype File Mapping <small>Optional override of file/directory name to avoid more than 1 output to collide.</small></div>
                             <b-form-textarea v-model="output._files" :rows="3" :placeholder="default_outmap(output.datatype)"></b-form-textarea>
                         </div>
                     </b-card>
@@ -538,13 +538,13 @@ output/mri/aparc* </pre></small>
 import Vue from 'vue'
 
 import contactlist from '@/components/contactlist'
-import multiprojectselecter from '@/components/multiprojectselecter'
+import multiprojectselector from '@/components/multiprojectselector'
 import datatypeselecter from '@/components/datatypeselecter'
 import trueorfalse from '@/components/trueorfalse'
 import tageditor from '@/components/tageditor'
 import datatype from '@/components/datatype'
 import app from '@/components/app'
-import branchselecter from '@/components/branchselecter'
+import branchselector from '@/components/branchselector'
 
 import search_app_mixin from '@/mixins/searchapp'
 import datatypes from '@/mixins/datatypes'
@@ -554,8 +554,8 @@ let debounce;
 export default {
     mixins: [ search_app_mixin, datatypes ],
     components: { 
-        contactlist, multiprojectselecter,
-        datatypeselecter, trueorfalse, tageditor, datatype, app, branchselecter,
+        contactlist, multiprojectselector,
+        datatypeselecter, trueorfalse, tageditor, datatype, app, branchselector,
     },
     data() {
         return {

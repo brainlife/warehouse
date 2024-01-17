@@ -26,7 +26,7 @@
         <b-row>
             <b-col cols="3" class="text-muted">Github Branch</b-col>
             <b-col>
-                <branchselecter v-model="github_branch" :service="app.github"/>
+                <branchselector v-model="github_branch" :service="app.github"/>
             </b-col>
         </b-row>
         <br>
@@ -37,7 +37,7 @@
 <script>
 
 import Vue from 'vue'
-import branchselecter from '@/components/branchselecter'
+import branchselector from '@/components/branchselector'
 
 export default {
     props: [ 
@@ -47,7 +47,7 @@ export default {
     ],
 
     components: {
-        branchselecter,
+        branchselector,
     },
 
     data () {

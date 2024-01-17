@@ -101,7 +101,7 @@ module.exports = function(callback) {
 
       if(isConfig) {
         console.log('Change detected in theme config');
-        // cant tell which theme was changed in theme.config, rebuild all
+        // can't tell which theme was changed in theme.config, rebuild all
         gulp.start('build');
       }
       else if(isPackagedTheme) {

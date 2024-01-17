@@ -7,8 +7,6 @@ const mongoose = require('mongoose');
 const common = require('../common');
 const dbscan = require('@cdxoo/dbscan');
 
-const math = require('mathjs');
-
 exports.traverseProvenance = async (startTaskId) => {
     console.debug("traversing from task:", startTaskId);
 
@@ -202,7 +200,7 @@ exports.traverseProvenance = async (startTaskId) => {
 
                 const dirTokens = datasetConfig.dir.split("/");
                 const sourceTask = dirTokens[1]; //original task that produed the output
-                const subdir = dirTokens[2]; //original task's subdir that contains this ouput
+                const subdir = dirTokens[2]; //original task's subdir that contains this output
 
                 //figure out input task/subdir (../60874c557f09362173e40866/bold_mask)
                 let id = datasetConfig.dataset_id;
@@ -258,7 +256,7 @@ exports.traverseProvenance = async (startTaskId) => {
                     //outdir will be set to indicate the copy dataset id which we want
                     datasetId = datasetConfig.outdir;
 
-                    //let's go ahead and register source dataset now in case datset.prov might be missing
+                    //let's go ahead and register source dataset now in case dataset.prov might be missing
                     //and we can't setup app-stage node for it
                     const source = await db.Datasets.findById(datasetConfig.id).lean();
                     registerDataset(source);
@@ -479,7 +477,7 @@ exports.setupShortcuts = (prov)=>{
     } 
 
     //TODO
-    //I think this is dangerous.. there could be multpile edges with the same from/to
+    //I think this is dangerous.. there could be multiple edges with the same from/to
     //I think it's safer to just return the edge itself, and let caller specifically use that edge.idx
     //for shortcut array 
     function findEdgeIdx(from, to) {

@@ -52,7 +52,7 @@ router.get('/', common.jwt({credentialsRequired: false}), (req, res, next)=>{
             {projects: []}, //if projects is empty array, it's available to everyone
 
             //for backward compatibility
-            {projects: null}, //if projects is set to null, it's avalable to everyoone
+            {projects: null}, //if projects is set to null, it's available to everyoone
             {projects: {$exists: false}}, //if projects not set, it's availableo to everyone
         ]});
 
@@ -103,7 +103,7 @@ router.get('/query', common.jwt({credentialsRequired: false}), (req, res, next)=
                 {projects: []}, //if projects is empty array, it's available to everyone
 
                 //for backward compatibility
-                {projects: null}, //if projects is set to null, it's avalable to everyoone
+                {projects: null}, //if projects is set to null, it's available to everyoone
                 {projects: {$exists: false}}, //if projects not set, it's availableo to everyone
             ]
         };
@@ -371,7 +371,7 @@ router.put('/:id', common.jwt(), (req, res, next)=>{
 
     //let's not validate project - as different maintainer has access to different set of projects
     //and if the project is entered by different maintainer, we don't want to error out..
-    //multiprojectselecter on UI will list project that user doesn't have access using just project ID 
+    //multiprojectselector on UI will list project that user doesn't have access using just project ID 
     //so user can retain project ID that user don't have access
     //common.validate_projects(req.user, req.body.projects, err=>{
     //    if(err) return next(err);

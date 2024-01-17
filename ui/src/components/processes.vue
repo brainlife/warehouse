@@ -55,8 +55,7 @@
 
             <!--show list-->
             <div v-for="instance in sorted_and_filtered_instances" :key="instance._id" :id="instance._id" v-if="instance.config && !instance.config.removing">
-                <div class="instance-header" :class="instance_class(instance)" @click="toggle_instance(instance)" :id="instance._id+'-header'">
-
+                <div class="instance-header" :class="instance_class(instance)" @click="$event => toggle_instance($event, instance)" :id="instance._id+'-header'">
                     <timeago :datetime="instance.update_date" :auto-update="10" class="date"/>
                     <timeago :datetime="instance.create_date" :auto-update="10" class="date"/>
                     <div class="instance-desc">
@@ -67,7 +66,7 @@
                         <div v-if="instance.config && instance.config.summary" style="display: inline-block;">
                             <span v-for="summary in get_nonstaging_summary(instance)" 
                                 :class="summary_class(summary)" :title="summary.name+' (t.'+summary.tid+')'" 
-                                @click.stop="select_task(instance, summary)" :key="summary.task_id">
+                                @click.stop="select_instance($event, instance, summary)" :key="summary.task_id">
                                 {{summary.name.substring(0,4).trim()}}
                             </span>
                         </div>
@@ -83,18 +82,22 @@
             <br>
         </div>
 
+        <div v-if="this.multiSelected.length > 0" @click.stop="removeMulti()" class="button button-multi-delete" title="Remove all these process and tasks inside them?">
+            <icon name="trash"/>
+        </div>
+
         <b-button class="button-fixed" @click="newinstance" :style="{left: splitter_pos-170+'px'}">
             New Process
-        </b-button>     
+        </b-button>
     </div>
-    <div class="splitter" ref="splitter" :style="{left: splitter_pos+'px'}"/>
+    <div class="splitter" ref="splitter" :style="{left: splitter_pos+'px'}"></div>
     <transition name="fade">
         <process transition="slide" 
             :project="project" 
             :instance="selected" 
             v-if="selected"
             @updatedesc="updatedesc" 
-            @remove="toggle_instance(selected)"
+            @remove="toggle_instance(null, selected)"
             :splitter_pos="splitter_pos+10"
             :style="{left: splitter_pos+10+'px'}"/>
     </transition>
@@ -129,6 +132,7 @@ export default {
             show: null, //null == all
             
             selected: null,
+            multiSelected: [],
 
             query: "",
             apps: null, //keyed by _id
@@ -264,9 +268,9 @@ export default {
                 var selected = this.instances.find(it=>it._id == subid);
                 if(this.selected && this.selected._id != subid) {
                     //update
-                    this.toggle_instance(selected);
+                    this.toggle_instance(null, selected);
                 } else {
-                    if(!this.selected) this.toggle_instance(selected);
+                    if(!this.selected) this.toggle_instance(null, selected);
 
                     //newly opened via router.. scroll to it
                     //TODO - I want to scroll to the instance that user open via router change, but since 
@@ -277,7 +281,7 @@ export default {
                 if(this.selected) {
                     //close
                     console.log("need to close opened instance");
-                    this.toggle_instance(this.selected); //close it
+                    this.toggle_instance(null, this.selected); //close it
                 }
             }
         },
@@ -288,7 +292,7 @@ export default {
             this.selected.desc = desc;
             clearTimeout(debounce);
             debounce = setTimeout(()=>{
-                this.$http.put(Vue.config.wf_api+'/instance/'+this.selected._id, this.selected).then(res=>{
+                this.$http.put(Vue.config.amaretti_api+'/instance/'+this.selected._id, this.selected).then(res=>{
                     this.$notify({ text: 'Updated description', type: 'success' });
                 });
             }, 1000);
@@ -315,18 +319,38 @@ export default {
             if (this.$refs["instances-list"]) this.$refs["instances-list"].scrollTop = top;
         },
 
-        toggle_instance(instance, task) {
-            let url = "/project/"+this.project._id+"/process";
-            if(this.selected != instance) {
-                this.selected = instance;
-                //if jumping to instance below currently selected, I should adjust current scroll position
-                url += "/"+instance._id;
-                if(task) url += "#"+task;
-            } else {
-                //close!
+        toggle_instance(event, instance, task) {
+            let url = "/project/" + this.project._id + "/process";
+
+            if (!instance) {
                 this.$router.replace(url);
                 this.selected = null;
+                return;
             }
+
+            if (event.shiftKey && this.selected && this.selected != instance) {
+                const instances = this.sorted_and_filtered_instances;
+                let from = instances.indexOf(this.selected);
+                let to = instances.indexOf(instance);
+
+                if (from > to) {
+                    [from, to] = [to, from];
+                }
+    
+                this.multiSelected = instances.slice(from, to + 1);
+                return;
+            } else {
+                this.multiSelected = [];
+            }
+
+            if(this.selected != instance) {
+                this.selected = instance;
+                url += "/" + instance._id;
+                if(task) url += "#" + task;
+            } else {
+                this.selected = null;
+            }
+            this.$router.replace(url);
 
             //reset previous_instance id
             if(this.selected) {
@@ -350,7 +374,7 @@ export default {
         newinstance() {
             let desc = prompt("Please enter process description");
             if(!desc) return;
-            this.$http.post(Vue.config.wf_api+'/instance', {
+            this.$http.post(Vue.config.amaretti_api+'/instance', {
                 desc,
                 config: {
                     brainlife: true,
@@ -373,8 +397,9 @@ export default {
 
         instance_class(instance) {
             let a = ["instance-header"];
-            a.push("instance-"+instance.status);
-            if(instance == this.selected) a.push("instance-active");
+            a.push("instance-" + instance.status);
+            if (instance == this.selected) a.push("instance-active");
+            if (this.multiSelected.includes(instance)) a.push("instance-multiselect");
             return a;
         },
 
@@ -386,7 +411,7 @@ export default {
             }
 
             //console.log("loading instances for group", this.project.group_id);
-            this.$http.get(Vue.config.wf_api+'/instance', {params: {
+            this.$http.get(Vue.config.amaretti_api+'/instance', {params: {
                 find: JSON.stringify({
                     "config.brainlife": true,
                     status: {$ne: "removed"},
@@ -477,6 +502,25 @@ export default {
             return cs;
         },
 
+        removeMulti() {
+            if (confirm("Do you really want to remove these processes and all tasks?")) {
+                Promise.all(this.multiSelected.map(instance =>
+                    this.$http.delete(Vue.config.amaretti_api + '/instance/' + instance._id)
+                )).then(() => {
+                    this.$notify({type: "success", text: "Processes removed"});
+                    this.toggle_instance(null, null);
+                }).catch(err => {
+                    console.error(err);
+                    this.notify_error(err);
+                }).finally(() => {
+                    const url = "/project/"+this.project._id+"/process";
+                    this.$router.replace(url);
+                    this.selected = null;
+                    this.multiSelected = [];
+                });
+            }
+        },
+
     }, //methods
 }
 
@@ -508,6 +552,7 @@ padding: .15rem .3rem;
 top: 175px;
 width: 400px;
 background-color: #eee5;
+user-select: none;
 }
 
 .instance-header {
@@ -532,6 +577,11 @@ color: white;
 background-color: #2693ff;
 }
 
+.instance-header.instance-multiselect {
+color: black;
+background-color: #2692ff84;
+}
+
 .instance-desc {
 font-size: 90%;
 padding-left: 3px;
@@ -540,6 +590,13 @@ margin-left: 0px;
 
 .button-fixed {
 transition: background-color 0.3s, transform 0.5s, box-shadow 0.5s, opacity 0.5s;
+}
+
+.button-multi-delete {
+bottom: 20px;
+margin-left: 20px;
+padding: 8px;
+position: fixed;
 }
 
 .table-header th {

@@ -66,10 +66,14 @@
             <icon name="cog" scale="1.2"/>
             <span v-if="!config.user.profile.aup" style="position: absolute; top: -15px; left: 20px; font-size: 350%;" class="text-danger">&bull;</span>
             <h4>Settings</h4>
-        </li>    
+        </li>
         <li v-if="config.hasRole('admin')" @click="go('/admin')" :class="{active: active == 'admin'}">
             <icon name="wrench" scale="1.2"/>
             <h4>Administration</h4>
+        </li>
+        <li v-if="config.isSu()" @click="suExit" :class="{active: active == 'admin'}">
+            <icon name="biohazard" scale="1.2"/>
+            <h4>Exit Switch User</h4>
         </li>
     </ul>
 
@@ -194,6 +198,12 @@ export default {
         signout() {
             sessionStorage.setItem('auth_redirect', window.location); //TODO - un-tested.. as to if this gets back here
             document.location = Vue.config.auth_signout;
+        },
+
+        suExit() {
+            localStorage.setItem('jwt', localStorage.getItem('su-jwt'));
+            localStorage.removeItem('su-jwt');
+            window.location.reload();
         },
 
         reportbug() {
@@ -399,5 +409,3 @@ box-shadow: inset 0px 2px 2px rgba(0,0,0,0.05);
     display: inherit;
 }
 </style>
-
-

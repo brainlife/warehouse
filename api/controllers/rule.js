@@ -77,18 +77,24 @@ function check_access(req, rule, cb) {
     
     //check user has access to the project
     common.getprojects(req.user, function(err, canread_project_ids, canwrite_project_ids) {
-        if(err) return cb(err);
+        if (err) return cb(err);
         let project_id = mongoose.Types.ObjectId(rule.project);
         let found = canwrite_project_ids.find(id=>id.equals(rule.project));
-        if(!found) return cb("can't access rule under this project");
+        if (!found) return cb("can't access rule under this project");
 
         //check to see if user has read accesses to all input_project_override 
-        if(rule.input_project_override) for(let id in rule.input_project_override) {
+        if (rule.input_project_override) {
+          for (let id in rule.input_project_override) {
             let project_id = rule.input_project_override[id];
-            if(!project_id) continue; //ignore null..
-            let o_project_id = mongoose.Types.ObjectId(project_id); //null gets converted to a valid mongoose id.. new id?)
-            let found = canread_project_ids.find(id=>id.equals(o_project_id));
-            if(!found) return cb("can't use project selected in override:"+o_project_id+" for id:"+id);
+            if (!project_id) continue;
+
+            let o_project_id = mongoose.Types.ObjectId(project_id);
+            let found = canread_project_ids.find(id => id.equals(o_project_id));
+            if (!found) {
+              cb("can't use project selected in override:"+o_project_id+" for id:"+id);
+              return;
+            }
+          }
         }
 
         cb(); //a-ok
@@ -97,7 +103,7 @@ function check_access(req, rule, cb) {
 
 /**
  * @apiGroup Pipeline Rules
- * @api {post} /rule/:pubid         Register new rule
+ * @api {post} /rule                Register new rule
  *                              
  * @apiDescription                  Register a new pipeline rule.
  *
@@ -143,7 +149,7 @@ router.post('/', common.jwt(), (req, res, next)=>{
 
 /**
  * @apiGroup Pipeline Rules
- * @api {put} /rule/:pubid          Update Rule
+ * @api {put} /rule/:id             Update Rule
  *                              
  * @apiDescription                  Update pipeline rule
  *

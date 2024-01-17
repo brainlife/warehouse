@@ -136,7 +136,7 @@ module.exports = function () {
 
       if(isConfig) {
         // console.info('Rebuilding all files');
-        // cant rebuild paths are wrong
+        // can't rebuild paths are wrong
         // gulp.start('build-docs');
         return;
       }

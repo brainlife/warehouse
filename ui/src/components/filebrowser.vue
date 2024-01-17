@@ -126,7 +126,7 @@ export default {
             return subpath;
         },
         get_download_url(file) {
-            var url = Vue.config.wf_api+'/task/download/'+this.task._id+'/';
+            var url = Vue.config.amaretti_api+'/task/download/'+this.task._id+'/';
             var p = this.subpath(file);
             if(p) url += p;
             url += '?at='+Vue.config.jwt;
@@ -138,7 +138,7 @@ export default {
             document.location = url;
         },
         load() {
-            var url = Vue.config.wf_api+'/task/ls/'+this.task._id;
+            var url = Vue.config.amaretti_api+'/task/ls/'+this.task._id;
             if(this.path) url += '?p='+encodeURIComponent(this.path);
             this.$http.get(url).then(res=>{
                 this.files = res.data.files.sort((a, b)=>{

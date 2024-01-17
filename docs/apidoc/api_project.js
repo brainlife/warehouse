@@ -1,7 +1,7 @@
 define({
   "name": "warehouse",
   "version": "1.0.0",
-  "description": "Service that allows data warehousing and workfow orchestration",
+  "description": "Service that allows data warehousing and workflow orchestration",
   "sampleUrl": false,
   "defaultVersion": "0.0.0",
   "apidoc": "0.3.0",

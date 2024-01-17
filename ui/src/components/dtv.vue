@@ -94,7 +94,7 @@ export default {
     methods: {
         /*
         loadProduct() {
-            this.$http.get(Vue.config.wf_api+'/task/product/', {params: {ids: [this.task._id]}}).then(res=>{
+            this.$http.get(Vue.config.amaretti_api+'/task/product/', {params: {ids: [this.task._id]}}).then(res=>{
                 if(res.data.length == 1) {
                     this.product = res.data[0].product;
                 } else {

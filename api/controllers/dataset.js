@@ -353,7 +353,7 @@ router.get('/provscript/:id', async (req, res, next)=>{
             replace_path(node._config);
         });
 
-        //output scrips
+        //output scripts
         while(nodes.length) { 
             let node = nodes.pop();
             if(!node.label) continue; //"This Dataset" doesn't have label, and we don't need it (TODO make output link?)
@@ -533,7 +533,7 @@ This boutique descriptor that can be used to run the workflow used to generate t
                             app_config[k] = vkey;
                             if(unwrap) app_config[k] = "__unwrap__"+vkey;
 
-                            //convert default value to string - boutique invocation value needs to be string accordint to tristan
+                            //convert default value to string - boutique invocation value needs to be string according to tristan
                             let def = app.config[k].default;
                             if(def === null) def = "null";
                             if(def.toString) def = def.toString();
@@ -1210,7 +1210,7 @@ function stream_dataset(dataset, req, res, next) {
             res.on('finish', ()=>{
                 //console.debug("done piping.. meter count:%s dataset.size %d", m.bytes, dataset.size);
                 if(!dataset.size) {
-                    /* this is not good idea.. as .tar file size might change if versionn of tar get updates
+                    /* this is not good idea.. as .tar file size might change if version of tar get updates
                     console.debug("updating dataset size based on m.bytes");
                     dataset.size = m.bytes;
                     */
@@ -1350,7 +1350,7 @@ router.get('/download/:id', common.jwt({
                 });
             },
 
-            //check aggreements
+            //check agreements
             cb=>{
                 //load project agreements
                 get_project_agreements(dataset.project, (err, project_agreements)=>{
@@ -1520,16 +1520,17 @@ set -e
                 authors = authors.map(id=>common.deref_contact(id)).filter(a=>!!a).map(a=>a.fullname||a.email);
 
                 //write README and bids/dataset_description.json
-                let root = "./proj-"+project_id;
-                script += "mkdir -p "+root+"/bids\n";
-                script += "cat << '__ENDREADME__' > "+root+"/README\n";
+                const uniqueHeredoc = Math.random().toString(36).substring(2);
+                let root = `./proj-${project_id}`;
+                script += `mkdir -p ${root}/bids\n`;
+                script += `cat << '__${uniqueHeredoc}__' > ${root}/README\n`;
                 script += `${p.name}
 
 ${config.warehouse.url}/project/${project_id}
 
 ${p.desc}`;
 
-                script += "\n__ENDREADME__\n";
+                script += `\n__${uniqueHeredoc}__\n`;
 
                 let dataset_description = {
                     BIDSVersion:  "1.0.1",
@@ -1568,7 +1569,7 @@ ${p.desc}`;
                 //download info.json
                 script += "curl ";
                 if(req.headers.authorization) script += "-H \"$auth\" ";
-                script += config.warehouse.url+"/api/warehouse/dataset?single=true\\&find='\\{\"_id\":\""+dataset._id+"\"\\}' > "+path+"/_info.json\n";
+                script += config.warehouse.url+"/api/warehouse/dataset?single=true\\&find='\\{\"_id\":\""+dataset._id+"\"\\}' > '"+path+"/_info.json'\n";
 
                 if(dataset.datatype.bids) {
                     //Create BIDS symlinks
@@ -1637,7 +1638,7 @@ ${p.desc}`;
 
             script+=`
 echo
-echo "All requested objects succesfully downloaded!!"
+echo "All requested objects successfully downloaded!!"
 echo
 echo "---------------------------------------------------------------------------------"
 echo "---------------------------------------------------------------------------------"

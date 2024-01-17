@@ -2,17 +2,13 @@
 const request = require('request'); //TODO switch to axios!
 const rp = require('request-promise-native');
 const keywordEx = require("keyword-extractor");
-const tmp = require('tmp');
-const path = require('path');
 const child_process = require('child_process');
-const fs = require('fs');
 const async = require('async');
 const redis = require('redis');
 const xmlescape = require('xml-escape');
 const amqp = require("amqp"); //switch to amqplib?
 const axios = require('axios');
 const jwt = require('express-jwt');
-const crypto = require('crypto');
 
 const config = require('./config');
 const db = require('./models');
@@ -33,7 +29,7 @@ exports.getprojects = function(user, cb) {
     //everyone has read access to public project
     let project_query = {access: "public"};
     
-    //logged in user may have acess to more projects
+    //logged in user may have access to more projects
     project_query = {
         $or: [
             project_query,
@@ -208,7 +204,7 @@ exports.issue_archiver_jwt = async function(user_id) {
     ///add warehouse group that allows user to submit
     gids = gids.concat(config.archive.gid);  
 
-    //issue user token with added gids priviledge
+    //issue user token with added gids privilege
     let {jwt: user_jwt} = await rp.get({
         url: config.auth.api+"/jwt/"+user_id,
         json: true,
@@ -762,7 +758,7 @@ exports.cacheContact = function(cb) {
     console.debug("caching contacts", config.warehouse.jwt);
     axios.get(config.auth.api+"/profile/list", {
         params: {
-            limit: 5000, //TODO -- really!?
+            limit: 6000, //TODO -- really!?
         },
         headers: { authorization: "Bearer "+config.warehouse.jwt }, //config.auth.jwt is deprecated
     }).then(res=>{
@@ -862,7 +858,7 @@ exports.split_product = function(task_product, outputs) {
     return products;
 }
 
-//TODO - this has to match up between amaretti/bin/metrics and warehouse/api/controller querying for graphite daa
+//TODO - this has to match up between amaretti/bin/metrics and warehouse/api/controller querying for graphite data
 exports.sensu_name = function(name) {
     name = name.toLowerCase();
     name = name.replace(/[_.@$#\/]/g, "-");
@@ -899,12 +895,12 @@ exports.disconnectAMQP = function(cb) {
     if(!amqpConn) return console.error("AMQP not connected");
     console.debug("disconnecting from amqp");
     amqpConn.setImplOptions({reconnect: false}); //https://github.com/postwait/node-amqp/issues/462
-    amqpconn.disconnect();
+    amqpConn.disconnect();
 }
 
 //connect to the amqp exchange and wait for a event to occur
 exports.wait_for_event = function(exchange, key, cb) {
-    if(!amqpConn) return console.error("wait_for_event called before connecting to amqp");
+    if (!amqpConn) return console.error("wait_for_event called before connecting to amqp");
     amqpConn.queue('', q=>{
         q.bind(exchange, key, ()=>{
             q.subscribe((message, header, deliveryInfo, messageObject)=>{
@@ -1480,7 +1476,7 @@ exports.enumXnatObjects = async (project)=>{
             "/subjects/"+oSubject.ID+
             "/experiments", {auth});
         for(const oExperiment of exres.data.ResultSet.Result) {
-            console.log("    experiement", oExperiment.ID);
+            console.log("    experiment", oExperiment.ID);
             //console.log("  <experiment>");
             /* oExperiment
               {

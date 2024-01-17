@@ -72,7 +72,7 @@
                 <textarea class="downscript" ref="downscript" readonly>{{downscript}}</textarea>
                 <b-btn @click="copy_downscript" size="sm" variant="secondary" class="downscript-copy"><icon name="copy"/></b-btn>
             </div>
-            <small style="position: relative; top: -15px; margin-left: 10px;">This command includes your temporarly JWT token. Please do not share.</small>
+            <small style="position: relative; top: -15px; margin-left: 10px;">This command includes your temporary JWT token. Please do not share.</small>
         </div>
     </div>
     <div slot="modal-footer">
@@ -128,8 +128,10 @@ export default {
         },
 
         downscript() {
-            let headers = "-H 'Content-Type: application/json' -H 'Authorization: Bearer "+this.jwt+"'";
-            return `curl ${headers} -d '${JSON.stringify({find: this.query})}' -X POST "${Vue.config.api}/dataset/downscript?limit=0" | bash`
+            const headers = "-H 'Content-Type: application/json' -H 'Authorization: Bearer " + this.jwt + "'";
+            const query = JSON.stringify({limit: (this.query && this.query._id && this.query._id.length) || 10000, find: this.query});
+
+            return `curl ${headers} -d '${query}' -X POST "${Vue.config.api}/dataset/downscript" | bash`;
         },
     },
 

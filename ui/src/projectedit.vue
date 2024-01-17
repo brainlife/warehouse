@@ -97,20 +97,26 @@
 
                 <b-row>
                     <b-col cols="3">
-                        <span class="form-header">Agreements</span>
+                        <span class="form-header">DATA USE AGREEMENT</span>
                     </b-col> 
                     <b-col cols="9">
                         <p class="text-muted"><small>List of agreements that user must agree before accessing datasets stored on this project</small></p>
                         <b-row v-for="(agreement, idx) in project.agreements" :key="idx">
                             <b-col>
-                                <b-form-textarea v-model="agreement.agreement" placeholder="Enter agreemenet text(markdown) to be presented to the user"/>
+                                <b-form-textarea v-model="agreement.agreement" placeholder="Enter agreement text(markdown) to be presented to the user"/>
                                 <br>
                             </b-col>
                             <b-col cols="1">
                                 <div class="button" @click="remove_agreement(idx)"><icon name="trash"/></div>
                             </b-col>
                         </b-row>
-                        <p><b-button @click="project.agreements.push({agreement: ''})" size="sm"><icon name="plus"/> Add Agreement</b-button></p>
+                        <!-- <p><b-button @click="project.agreements.push({agreement: ''})" size="sm"><icon name="plus"/> Add Agreement</b-button></p> -->
+                        <b-dropdown  split class="m-2" @click="addAgreement('empty')">
+                            <template #button-content>
+                                Add Agreement
+                            </template>
+                            <b-dropdown-item-button @click="addAgreement('brainlife_dua')">Brainlife Data Use Agreement - Template </b-dropdown-item-button>
+                        </b-dropdown>
                         <br>
                     </b-col>
                 </b-row>
@@ -160,14 +166,14 @@
 
                 <div v-if="participants !== undefined">
                     <h5>Participants Info</h5>
-                    <p class="text-muted"><small>Key/value dictionary for each subject (participants.tsv). You can use this information in analysis tab. It should be array of objects containig at least 'subject' key and other fields</small></p>
+                    <p class="text-muted"><small>Key/value dictionary for each subject (participants.tsv). You can use this information in analysis tab. It should be array of objects containing at least 'subject' key and other fields</small></p>
                     <editor v-model="participants" @init="editorInit" lang="json" height="500"/>
                     <br>
                 </div>
 
                 <div v-if="participants !== undefined">
                     <h5>Column Definitions</h5>
-                    <p class="text-muted"><small>Participants Info column Definitions (participants.json). Please read the <a href="https://bids-specification.readthedocs.io/en/stable/03-modality-agnostic-files.html#phenotypic-and-assessment-data">BIDS speficication</a></small></p>
+                    <p class="text-muted"><small>Participants Info column Definitions (participants.json). Please read the <a href="https://bids-specification.readthedocs.io/en/stable/03-modality-agnostic-files.html#phenotypic-and-assessment-data">BIDS specification</a></small></p>
                     <editor v-model="participants_columns" @init="editorInit" lang="json" height="300"/>
                     <br>
                 </div>
@@ -190,7 +196,7 @@
                     </b-form-group>
 
                     <p style="background-color: #eee; padding: 10px;">
-                        <small>Please issue access token/secret on your XNAT project to allow accesss from brianlife. Brainlife will automatically refresh your token periodically.</small>
+                        <small>Please issue access token/secret on your XNAT project to allow access from brianlife. Brainlife will automatically refresh your token periodically.</small>
                         <b-form-group label="Access Token / Alias">
                             <b-input type="text" v-model="project.xnat.token" required/>
                         </b-form-group>
@@ -304,6 +310,7 @@ import tageditor from '@/components/tageditor'
 
 import datatypes from '@/mixins/datatypes'
 import { Picker } from 'emoji-mart-vue'
+import { brainlife_dua } from "@/assets/consents.js";
 
 const lib = require('@/lib');
 
@@ -559,7 +566,14 @@ export default {
                     this.submitting = false;
                 });
             }
-        }
+        },
+
+        addAgreement(type) {
+            if(type == 'empty') this.project.agreements.push({agreement: ''});
+            if(type == 'brainlife_dua') this.project.agreements.push({
+                agreement: brainlife_dua,
+            })
+        },
     },
 }
 </script>

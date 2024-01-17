@@ -72,7 +72,7 @@ export default {
         value: function(value) {
             //console.log("select2: parent value changed to", value);
 
-            //check to make sure we aren't updateing controller with the same value
+            //check to make sure we aren't updating controller with the same value
             //this happens if user change value on UI, which triggers change, and parent
             //send change event back.
             if(JSON.stringify(value) != JSON.stringify($(this.$el).val())) {

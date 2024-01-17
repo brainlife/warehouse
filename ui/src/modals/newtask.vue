@@ -318,7 +318,7 @@ export default {
             }).catch(console.error);
         });
 
-        //TODO - call removeEventListener in destroy()? Or I should do this everytime modal is shown/hidden?
+        //TODO - call removeEventListener in destroy()? Or I should do this every time modal is shown/hidden?
         document.addEventListener("keydown", e => {
             if (e.keyCode == 27) {
                 this.open = false;

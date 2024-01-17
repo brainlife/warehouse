@@ -222,7 +222,7 @@ async function issueGAJwt(instance_id, user, authorization, cb) {
 router.post('/launchga', common.jwt(), (req, res, next)=>{
     if(!req.body.instance_id) return next("instance_id is not set");
     if(!req.body.config) return next("please set config");
-    if(!req.body.config.container) return next("please set contianer (with tag)");
+    if(!req.body.config.container) return next("please set container (with tag)");
 
     issueGAJwt(req.body.instance_id, req.user, req.headers.authorization, 
         async (err, jwt, instance, project)=>{
@@ -231,7 +231,7 @@ router.post('/launchga', common.jwt(), (req, res, next)=>{
         let _config = Object.assign({}, req.body.config);
         _config.project = {
             _id: project._id, 
-            name: project.name, //galauncher juse need _id, but just in case it might become handy..
+            name: project.name, //galauncher just need _id, but just in case it might become handy..
         }
         _config.group = instance.group_id;
 

@@ -26,7 +26,7 @@ export default {
             var basepath = "";
             if(subdir) basepath += subdir+"/";
             
-            let url_surfaces_json = Vue.config.wf_api+"/task/download/"+this.task._id+"/"+basepath+"surfaces/surfaces.json"+"?at="+Vue.config.jwt;
+            let url_surfaces_json = Vue.config.amaretti_api+"/task/download/"+this.task._id+"/"+basepath+"surfaces/surfaces.json"+"?at="+Vue.config.jwt;
             
             this.$http.get(url_surfaces_json)
             .then(res => {
@@ -34,16 +34,16 @@ export default {
                 surfaces.forEach(surface => {
                     surface.basename = surface.name||surface.filename; //surface.filename is deprecated?
                     let filepath = surface.path||surface.filename; //surface.filename is deprecated?
-                    surface.filename = Vue.config.wf_api+"/task/download/"+this.task._id+"/"+basepath+"surfaces/"+filepath+"?at="+Vue.config.jwt;
+                    surface.filename = Vue.config.amaretti_api+"/task/download/"+this.task._id+"/"+basepath+"surfaces/"+filepath+"?at="+Vue.config.jwt;
                 });
                 cb(surfaces);
             }).catch(err => {
                 // old code to use in case surfaces.json doesn't exist
-                this.$http.get(Vue.config.wf_api+"/task/ls/"+this.task._id+"?p="+encodeURIComponent(basepath+"surfaces"))
+                this.$http.get(Vue.config.amaretti_api+"/task/ls/"+this.task._id+"?p="+encodeURIComponent(basepath+"surfaces"))
                 .then(res=>{        
                     var surfaces = [];
                     res.data.files.forEach(file=>{
-                        var url = Vue.config.wf_api+"/task/download/"+this.task._id+"/"+basepath+"surfaces/"+file.filename+"?at="+Vue.config.jwt;
+                        var url = Vue.config.amaretti_api+"/task/download/"+this.task._id+"/"+basepath+"surfaces/"+file.filename+"?at="+Vue.config.jwt;
                         surfaces.push({ name: file.filename.substring(0, file.filename.length-4), path: url }); 
                     });
                     cb(surfaces);

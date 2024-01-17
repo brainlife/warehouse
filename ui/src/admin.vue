@@ -65,7 +65,7 @@
             </p>
 
             <p>
-                <b-button @click="refresh">Update Token</b-button>
+                <b-button @click="refresh">Refresh Token</b-button>
             </p>
         </div>
 
@@ -209,7 +209,7 @@ export default {
             minProjectSize: 500,
 
             prov: null,
-            /*add new tab swithching code*/
+            /*add new tab switching code*/
             // tabIndices : ["Task", "Switch User", "Analytics", "Projects", "Users", "Groups"],
         }
     },
@@ -340,12 +340,16 @@ export default {
             });
         },
 
-        su(person) {
-            if(!person) return;
-            this.$http.get(Vue.config.auth_api+'/jwt/'+person.sub).then(res=>{
-                localStorage.setItem("jwt", res.data.jwt);
-                document.location = "/project/";
-            });
+        async su(person) {
+            if (!person) return;
+
+            try {
+                const res = await this.$http.get(`${Vue.config.auth_api}/jwt/${person.sub}`);
+                localStorage.setItem('su-jwt', localStorage.getItem('jwt'));
+                localStorage.setItem('jwt', res.data.jwt);
+                document.location = '/';
+            } catch (error) {
+            }
         },
 
         refresh() {

@@ -1,0 +1,8 @@
+[codespell]
+skip = .git,*.pdf,*.svg,package-lock.json,*.min.js,vendor,.sass-cache,locales,ui-text.yml
+# hsi - server name
+# crate - seems some real thing in the API
+# deactive - someone could later change to deactivated or inactive
+# onTop - variable name used, not picked up by codespell to be ignored
+# pres - variable name used
+ignore-words-list = keypair,nd,nin,hsi,crate,deactive,ontop,pres,doubleclick

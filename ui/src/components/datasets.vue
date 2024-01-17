@@ -503,7 +503,7 @@ export default {
                 let ands = [];
 
                 //split query into each token and allow for regex search on each token
-                //so that we can query against multiple fields simultanously
+                //so that we can query against multiple fields simultaneously
                 this.query.split(" ").forEach(q=>{
                     if(q === "") return;
 
@@ -747,7 +747,7 @@ export default {
 
         get_instance() {
             //first create an instance to download things to
-            return this.$http.post(Vue.config.wf_api+'/instance', {
+            return this.$http.post(Vue.config.amaretti_api+'/instance', {
                 name: "brainlife.download",
                 config: {
                     selected: this.selected,
@@ -771,7 +771,7 @@ export default {
                         this.submit_process(opt.project_id, opt.instance);
                     } else {
                         //need to create a new instance
-                        this.$http.post(Vue.config.wf_api+'/instance', {
+                        this.$http.post(Vue.config.amaretti_api+'/instance', {
                             desc: opt.desc,
                             config: {
                                 brainlife: true,
@@ -1005,7 +1005,7 @@ h4 {
     opacity: inherit; 
 }
 
-/*why don't I just *hide* removed objects? because remove() doesn't recalculate page height to preseve the current scroll position*/
+/*why don't I just *hide* removed objects? because remove() doesn't recalculate page height to preserve the current scroll position*/
 .removed {
     background-color: #ccc;
     color: white;

@@ -44,7 +44,8 @@
 
             <!--TODO - should refactor this.. similar to public y projects-->
             <div v-if="config.user" class="position: relative">
-                <h4 class="group-title">My Projects</h4>
+                <aupAgreementModal v-if="config.user && config.profile"></aupAgreementModal>                     
+                <h4 class="group-title">My Projects </h4>
                 <p v-if="my_projects.length == 0 && query == ''" style="margin: 20px; opacity: 0.5;">
                     Please create your project by clicking the <b>New Project</b> button below.
                 </p>
@@ -91,6 +92,7 @@
 <script>
 import Vue from 'vue'
 import projectbar from '@/components/projectbar'
+import aupAgreementModal from '@/modals/aup_agreement';
 
 let query_debounce;
 
@@ -98,6 +100,7 @@ export default {
     components: { 
         projectcard: ()=>import('@/components/projectcard'), 
         projectbar: ()=>import('@/components/projectbar'), 
+        aupAgreementModal: ()=>import('@/modals/aup_agreement'),
     },
     data () {
         return {   
@@ -221,7 +224,7 @@ export default {
                 alert('Please signup/login first to create a new project');
             }
         },
-    }
+    },
 }
 </script>
 

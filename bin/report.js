@@ -67,7 +67,7 @@ db.init(async err=>{
     fs.writeFileSync("/output/projects.stats.json", JSON.stringify(projectStats));
 
     //start monthly report
-    for (let year = 2017; year <= 2022; ++year) {
+    for (let year = 2017; year <= new Date().getFullYear(); ++year) {
         for (let month = 1; month <= 12; ++month) {
             const start = new Date(year+"-"+month+"-01");
             const end = new Date(start);

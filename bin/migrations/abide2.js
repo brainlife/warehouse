@@ -90,7 +90,7 @@ function run(cb) {
                     if(err) throw err;
 
                     if(~filename.indexOf(".tar.gz")) {
-                        //console.log(".tar.gz (old) dataset shouldbe un-zipped.. skipping");
+                        //console.log(".tar.gz (old) dataset should be un-zipped.. skipping");
                         //return next_dataset();
                         console.log("piping through gunzip");
                         read.pipe(gunzip.createGunzip()).pipe(write);

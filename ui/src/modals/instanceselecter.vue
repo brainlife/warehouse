@@ -5,7 +5,7 @@
     <b-row>
         <b-col :cols="3">Project</b-col>
         <b-col>
-            <projectselecter v-if="shown" canwrite="true" v-model="project" :required="true"/>
+            <projectselector v-if="shown" canwrite="true" v-model="project" :required="true"/>
             <small>Project to run a new process</small>
         </b-col>
     </b-row>
@@ -31,10 +31,10 @@
 <script>
 import Vue from 'vue'
 
-import projectselecter from '@/components/projectselecter'
+import projectselector from '@/components/projectselector'
 
 export default {
-    components: { projectselecter },
+    components: { projectselector },
 
     data() {
         return {
@@ -128,7 +128,7 @@ export default {
                     console.error("can't find", this.project, "in project list", this.projects);
                     return reject();
                 }
-                this.$http.get(Vue.config.wf_api+'/instance', {params: {
+                this.$http.get(Vue.config.amaretti_api+'/instance', {params: {
                     find: JSON.stringify({
                         "config.brainlife": true,
                         status: {$ne: "removed"},

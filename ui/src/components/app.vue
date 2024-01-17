@@ -87,7 +87,7 @@
                 &nbsp;
             </span>
             -->
-            <span class="stat" title="Avarage runtime of recent jobs">
+            <span class="stat" title="Average runtime of recent jobs">
                 <icon name="clock" scale="0.8"/> {{avgRuntime(app_.stats.runtime_mean, app_.stats.runtime_std)}}
                 &nbsp;
                 &nbsp;

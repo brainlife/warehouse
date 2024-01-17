@@ -36,7 +36,7 @@
 
         <div v-if="rule.app">
             <b-form-group label="Branch" horizontal>
-                <branchselecter v-model="rule.branch" :service="this.rule.app.github"/>
+                <branchselector v-model="rule.branch" :service="this.rule.app.github"/>
             </b-form-group>
 
             <b-form-group label="Configuration" horizontal>
@@ -84,7 +84,7 @@
                                 <b-col>Selection Override</b-col>
                                 <b-col :cols="9">
                                     <p>
-                                        <projectselecter v-model="rule.input_project_override[input.id]" placeholder="(From this project)"/>
+                                        <projectselector v-model="rule.input_project_override[input.id]" placeholder="(From this project)"/>
                                     </p>
                                     <b-input-group prepend="Subject">
                                         <b-form-input v-model="rule.input_subject[input.id]" placeholder="(Use the matching subject)"/>
@@ -171,8 +171,8 @@ import Vue from 'vue'
 import datatypetag from '@/components/datatypetag'
 import app from '@/components/app'
 import tageditor from '@/components/tageditor'
-import projectselecter from '@/components/projectselecter'
-import branchselecter from '@/components/branchselecter'
+import projectselector from '@/components/projectselector'
+import branchselector from '@/components/branchselector'
 import configform from '@/components/configform'
 
 import search_app_mixin from '@/mixins/searchapp'
@@ -193,7 +193,7 @@ export default {
     },
 
     components: { 
-        projectselecter, branchselecter, datatypetag, app, tageditor, configform,
+        projectselector, branchselector, datatypetag, app, tageditor, configform,
     },
 
     data() {

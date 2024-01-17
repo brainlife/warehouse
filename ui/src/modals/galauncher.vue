@@ -13,12 +13,23 @@
                 <h4 style="margin-top: 5px;">New Session</h4>
             </div>
 
+            <p style="padding: 10px;">Please select a template notebook to launch your new session.</p>
 
-            <!--container selecter-->
+            <div v-if="!selected" class="app-selecter">
+                <span class="form-header">Blank Notebooks</span>
+                <b-row>
+                    <b-col cols="4" v-for="(app, idx) in templates" :key="idx">
+                        <div :title="app.name" :img-src="app.img" @click="selected = app" class="app">
+                            <small><span style="opacity: 0.8"><icon name="brands/docker"/> {{app.container}}</span></small><br>
+                            <b>{{app.name}}</b><br>
+                            <small>{{app.desc}}</small><br>
+                        </div>
+                    </b-col>
+                </b-row>
+            </div>
+
             <div v-if="!selected" class="app-selecter">
                 <span class="loading" v-if="!notebooks">Loading..</span>
-                <p>Please select a template notebook to launch your new session.</p>
-
                 <b-row>
                     <b-col cols="5">
                         <span class="form-header">Published Notebooks</span>
@@ -57,14 +68,6 @@
                         </b-col>
                     </b-row>
                 </div>
-
-                <br>
-                <span class="form-header">Blank Notebooks</span>
-                <div v-for="(app, idx) in templates" :key="idx" :title="app.name" :img-src="app.img" @click="selected = app" class="app">
-                    <small><span style="opacity: 0.8"><icon name="brands/docker"/> {{app.container}}</span></small><br>
-                    <b>{{app.name}}</b><br>
-                    <small>{{app.desc}}</small><br>
-                </div>
             </div>
 
             <!--configurator-->
@@ -82,7 +85,7 @@
                     <div style="padding: 10px">
                         <p>
                             <span class="form-header">Project</span>
-                            <projectselecter canwrite="true" v-model="project" placeholder="Project you'd like to create this session" :required="true"/>
+                            <projectselector canwrite="true" v-model="project" placeholder="Project you'd like to create this session" :required="true"/>
                             <small>Project to launch this analysis</small>
                         </p>
 
@@ -107,7 +110,7 @@
 import Vue from 'vue'
 
 //import agreementMixin from '@/mixins/agreement'
-import projectselecter from '@/components/projectselecter'
+import projectselector from '@/components/projectselector'
 import gainstance from '@/mixins/gainstance' //for createOrFindGAInstance
 import contact from '@/components/contact'
 import releaseset from '@/components/releaseset'
@@ -115,13 +118,13 @@ import gaarchive from '@/components/gaarchive'
 
 export default {
     components: { 
-        projectselecter, 
+        projectselector, 
         contact, 
         releaseset,
         gaarchive,
     },
     mixins: [
-        projectselecter,
+        projectselector,
         gainstance,
     ],
     data () {
@@ -140,29 +143,29 @@ export default {
             notebooks: null, //published notebooks that user can launch
 
             templates: [
+                // {
+                //     name: "Python3", 
+                //     desc: "Python Notebook (lab-3.2.8) with Dipy(1.4.1) and Fury",
+                //     container: "brainlife/ga-python:lab328-dipy141",
+                //     app: "brainlife/ga-python",
+                // },
+                // {
+                //     name: "Python3", 
+                //     desc: "Python Notebook",
+                //     container: "brainlife/ga-python:lab328-dipy141",
+                //     app: "brainlife/ga-python",
+                // },
                 {
                     name: "Python3", 
-                    desc: "Python Notebook (lab-2.1.1) with Dipy(1.3.0) and Fury",
-                    container: "brainlife/ga-dipy:lab211-dipy130",
-                    app: "soichih/ga-test",
-                },
-                {
-                    name: "Python3", 
-                    desc: "Python Notebook (lab-3.0.16) with Dipy(1.3.0) and Fury",
-                    container: "brainlife/ga-python:lab3016-dipy130",
-                    app: "soichih/ga-test",
-                },
-                {
-                    name: "Python3", 
-                    desc: "Python Notebook (lab-3.2.8) with Dipy(1.4.1) and Fury",
-                    container: "brainlife/ga-python:lab328-dipy141",
-                    app: "soichih/ga-test",
+                    desc: "Python Notebook",
+                    container: "brainlife/ga-python:lab328-dipy141-pybrainlife-1.0",
+                    app: "brainlife/ga-python",
                 },
                 {
                     name: "Octave(matlab)", 
                     desc: "Octave Notebook (lab-2.1.1)",
                     container: "brainlife/ga-octave:1.0",
-                    app: "soichih/ga-test",
+                    app: "brainlife/ga-octave",
                 },
             ],
             preSelectedGAID: null,
@@ -331,8 +334,6 @@ export default {
 .app {
     transition: box-shadow 0.5s;
     background-color: white;
-    width: 350px;
-    float: left;
     padding: 10px;
     margin-right: 10px;
     margin-bottom: 10px;
@@ -343,14 +344,7 @@ export default {
     box-shadow: 0 0 5px #0004;
 }
 .app-selecter {
-    position: absolute;
-    left: 0px;
-    right: 0px;
-    top: 60px;
-    bottom: 0px;
     background-color: #f9f9f9;
-    overflow-x: hidden;
-    overflow-y: auto;
     padding: 10px;
 }
 .published-in {

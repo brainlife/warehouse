@@ -40,7 +40,7 @@ export default {
         //TODO I should let ui-select/async and let it "search" users
         if(!profilesCache) profilesCache = this.$http.get(Vue.config.auth_api+'/profile/list', {params: {
             find: JSON.stringify({active: true}),
-            limit: 5000, 
+            limit: 6000, 
         }});
 
         profilesCache.then(res=>{

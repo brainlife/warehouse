@@ -284,7 +284,12 @@
 
                         <!--participants-->
                         <div v-if="detailTab == 1">
-                            <p><small>Participants info provides information for each subject and can be used for the group analysis.</small></p>
+
+                            <div class="d-flex mb-4 align-items-center">
+                                <p class="flex-grow-1 mb-0 mr-2"><small>Participants info provides information for each subject and can be used for the group analysis.</small></p>
+                                <b-button variant="outline-secondary" @click="downloadCSV()" size="sm">Download as CSV</b-button>
+                            </div>
+
                             <b-alert variant="secondary" :show="project.publishParticipantsInfo" style="margin-bottom: 15px;">
                                 This information will be published as part of all publications made from this project.
                             </b-alert>
@@ -474,7 +479,7 @@ import citation from '@/components/citation'
 import {VueEditor} from "vue2-editor"
 import { Picker } from 'emoji-mart-vue'
 
-
+import * as Papa from 'papaparse';
 import agreementMixin from '@/mixins/agreement'
 
 //let ps;
@@ -568,7 +573,7 @@ export default {
         '$route': function() {
             var project_id = this.$route.params.id;
             if(project_id && this.project && this.project._id != project_id) {
-                console.log("project chagned from", this.project._id, "to", project_id)
+                console.log("project changed from", this.project._id, "to", project_id)
                 this.openProject(project_id);
             } else {
                 this.handleRouteParams();
@@ -614,6 +619,25 @@ export default {
     },
 
     methods: {
+        downloadCSV() {
+            const columns = Object.keys(this.participants_columns);
+            const csvContent = Papa.unparse(
+                this.participants,
+                {
+                    quotes: true,
+                    header: true,
+                    columns: ['subject', ...columns],
+                }
+            );
+            
+            const csvData = new Blob([csvContent], {type: 'text/csv;charset=utf-8;'});
+            const csvURL = window.URL.createObjectURL(csvData);
+
+            const tempLink = document.createElement('a');
+            tempLink.href = csvURL;
+            tempLink.setAttribute('download', 'download.csv');
+            tempLink.click();
+        },
         addEmojiToComment(emoji) {
             this.comment += emoji.native;
             this.showMart = false;
