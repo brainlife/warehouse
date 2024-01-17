@@ -1,9 +1,5 @@
 <template>
 <div v-if="app_" class="appcard" :class="cardClasses"  @click="handleClick">
-    <!-- <div v-if="isIncompatible" class="incompatible-message">
-        <h5>Check app inputs</h5>
-    </div> -->
-
     <div v-if="isIncompatible">
         <!-- in case if we want to show error-->
         <!-- <p class="incompatible-error">Check input type</p>  --> 
