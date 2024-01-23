@@ -378,7 +378,6 @@ export default {
                 return match;
             });
 
-            //should i put a check for if filtered contains apps that are incompatible?
             this.apps.filtered = this.sortByMissingDatatypes(this.apps.filtered);
 
             
