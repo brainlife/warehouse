@@ -249,7 +249,7 @@ export default {
             this.loading = true;
 
             //create list of all datatypes that user has staged / generated
-            let datatype_ids = [];
+            const datatype_ids = [];
             this.datasets.forEach(dataset=>{
                 if(!~datatype_ids.indexOf(dataset.datatype)) datatype_ids.push(dataset.datatype);
             });
