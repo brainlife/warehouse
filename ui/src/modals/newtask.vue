@@ -275,54 +275,7 @@ export default {
                 dataset_ids: this.datasets.map(d=>d._id),
             }})
             .then(res=>{
-                // now, pick apps that we have *all* input datasets that matches the input datatype/tags
-                // res.data.forEach(app=>{
-                //     let match = true;
-                //     let missingInputIDs = []; // Store missing inputs here
-
-                //     app.inputs.forEach(input=>{
-                        
-                //         if(input.optional) return; //optional 
-
-                //         console.log("this datasets",this.datasets);
-                //         let matching_dataset = this.datasets.find(dataset=>{
-                //             if(!input.datatype) return false; //only happens on dev?
-                //             if(dataset.datatype != input.datatype._id) return false;
-
-                //             let datatype_id = input.datatype._id;
-                //             // Now check if the current input datatype is in the provided datatype_ids
-                //             if(datatype_ids.indexOf(datatype_id) === -1) {
-                //                 // If not, the app is incompatible
-                //                 match = false;
-                //             }
-                            
-                //             let match_tag = true;
-                //             if(dataset.datatype_tags) input.datatype_tags.forEach(tag=>{
-                //                 //make sure tag matches
-                //                 if(tag[0] == "!" && ~dataset.datatype_tags.indexOf(tag.substring(1))) match_tag = false;
-                //                 if(tag[0] != "!" && !~dataset.datatype_tags.indexOf(tag)) match_tag = false;
-                //             });
-                //             return match_tag;
-                //         }); 
-
-                //         if(!matching_dataset){
-                //             missingInputIDs.push(input._id); // Add the missing input to the list
-                //             match = false;
-                //         }
-                //     });
-                //     app.compatible = match;
-
-                //     //should I just push the array of missing inputs?
-                //     if (!match) {
-                //         app.missingInputIDs = missingInputIDs;
-                //     }
-
-                //     this.apps.all.push(app);
-                // });
-
                 this.apps.all = res.data;
-                console.log("all apps length", this.apps.all, "incompatible app length", this.apps.all.filter(app => !app.compatible).length);
-
                 this.update_lists();
                 this.loading = false;
             }).catch(console.error);

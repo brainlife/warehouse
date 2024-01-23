@@ -1,6 +1,6 @@
 <template>
 <div v-if="app_" class="appcard" :class="cardClasses"  @click="handleClick">
-    <div v-if="isIncompatible">
+    <div v-if="!isCompatible">
         <div class="incompatible-label">Incompatible</div>
     </div>
     <div v-if="app_.deprecated_by" class="deprecated-label">Deprecated</div>
@@ -147,14 +147,14 @@ export default {
     },
 
     computed: {
-        isIncompatible() {
-            return this.app_.compatible === false;
+        isCompatible() {
+            return this.app_.compatible === true;
         },
 
         cardClasses() {
             return {
-                'clickable': this.clickable && !this.isIncompatible ,
-                'incompatible': this.isIncompatible,
+                'clickable': this.clickable && this.isCompatible ,
+                'incompatible': this.isCompatible,
                 'deprecated': this.app_.deprecated_by,
                 'compact': this.compact,
             }
@@ -178,7 +178,7 @@ export default {
         },
 
         handleClick() {
-            if(!this.isIncompatible && this.clickable) {
+            if(this.isCompatible && this.clickable) {
                 this.click();
             }
         }
@@ -292,18 +292,6 @@ line-height: 100%;
 .deprecated h4 {
 opacity: 0.7;
 }
-/* .deprecated-label {
-position: absolute; 
-right: 0; 
-top: 0;
-background-color: #666;
-color: white; 
-padding: 2px 4px;
-opacity: 0.9;
-text-transform: uppercase;
-font-size: 80%;
-font-weight: bold;
-} */
 
 .incompatible-label,
 .deprecated-label {
