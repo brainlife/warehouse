@@ -24,7 +24,9 @@
                     <p>
                         To do so, look under the <b>Archive</b> tab on your new project. 
                         Select data objects from a single subject by clicking the checkbox next to each DataType. 
-                        Then click <b><icon name="play"/> Stage to process</b> button to open <i>Stage Datasets</i> modal 
+                        Then click <b><icon name="play"/> Stage to process                     
+                        <icon name="info-circle" title="Staging data for processing prepares and transfers selected datasets to a computational environment where they can be analyzed or processed according to project requirements"/>
+                            </b> button to open <i>Stage Datasets</i> modal 
                         where you can select your own project to stage selected dataset to. Click Submit to create a new process.
                     </p>
                     <p>
