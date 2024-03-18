@@ -1,6 +1,6 @@
 <template>
 <div v-if="app_" class="appcard" :class="cardClasses"  @click="handleClick">
-    <div v-if="!isCompatible">
+    <div v-if="app_.compatible === false">
         <div class="incompatible-label">Incompatible</div>
     </div>
     <div v-if="app_.deprecated_by" class="deprecated-label">Deprecated</div>
@@ -147,9 +147,9 @@ export default {
     },
 
     computed: {
-        isCompatible() {
-            return this.app_.compatible === true;
-        },
+        // isCompatible() {
+        //     return this.app_.compatible === true;
+        // },
 
         cardClasses() {
             return {
