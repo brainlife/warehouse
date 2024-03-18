@@ -147,9 +147,6 @@ export default {
     },
 
     computed: {
-        // isCompatible() {
-        //     return this.app_.compatible === true;
-        // },
 
         cardClasses() {
             return {
