@@ -1,5 +1,5 @@
 <template>
-<div v-if="ready" class="dt" :class="{'dt-clickable': clickable}" @click="click">
+<div v-if="ready" class="dt" :class="{'dt-clickable': clickable, 'dt-missing': missing}" @click="click">
     <icon v-if="_datatype && _datatype.groupAnalysis" name="dot-circle" :style="{color}" scale="1" class="dot"/>
     <icon v-else name="circle" :style="{color}" scale="1" class="dot"/>
     {{name}}
@@ -22,6 +22,7 @@ export default {
         tags: { type: Array, }, 
         trimname: { type: Boolean, default: true, },
         clickable: { type: Boolean, default: true, },
+        missing: { type: Boolean, default: false },
     },
     
     data() {
@@ -121,5 +122,8 @@ export default {
 }
 .tags:not(:last-child) {
     border-right: 1px solid #0001;
+}
+.dt-missing {
+    color: red;
 }
 </style>
