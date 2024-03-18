@@ -56,6 +56,16 @@
                         <span v-if="tabinfo.id == 'pub' && project.stats && project.stats.publications > 0" style="opacity: 0.6; font-size: 80%;">
                             &nbsp;{{project.stats.publications}}
                         </span>
+
+                        <span v-if="tabinfo.id=='pub'">
+                            <icon name="info-circle" id="info-publications"></icon>
+                            <b-tooltip target="info-publications" triggers="hover">
+                                Brainlife's publications provide datasets and analyses openly, allowing anyone on the internet to explore and download these resources directly. 
+                            </b-tooltip>
+                        </span>
+
+
+
                     </template>
                 </b-tab>
             </b-tabs>
