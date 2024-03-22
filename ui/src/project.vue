@@ -64,8 +64,6 @@
                             </b-tooltip>
                         </span>
 
-
-
                     </template>
                 </b-tab>
             </b-tabs>
