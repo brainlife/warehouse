@@ -162,7 +162,9 @@
                 </b-btn>
             </p>
             <p>
-                <b-btn size="sm" variant="outline-secondary" @click="process"><icon name="play" scale="0.8"/> Stage to process</b-btn>
+                <b-btn size="sm" variant="outline-secondary" @click="process"><icon name="play" scale="0.8"/> Stage to process
+                    <icon name="info-circle" title="Staging data for processing prepares and transfers selected datasets to a computational environment where they can be analyzed or processed according to project requirements"/>
+                </b-btn>
             </p>
             <p>
                 <b-btn size="sm" variant="outline-secondary" @click="copy"><icon name="copy" scale="0.8"/> Copy</b-btn>

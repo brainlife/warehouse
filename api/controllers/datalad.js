@@ -47,7 +47,7 @@ router.get('/datasets', common.jwt({credentialsRequired: false}), (req, res, nex
 
 /**
  * @apiGroup Datalad
- * @api {get} /datalad/import/:dataset_id
+ * @api {post} /datalad/import/:dataset_id
  * @apiDescription              Import dataset
  *
  * @apiParam {String} project   Project ID to import dataset

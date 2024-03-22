@@ -39,7 +39,9 @@
                             <div v-if="project.stats && get_total(project.stats.instances) > 0" style="display: inline-block; width: 75px;">
                                 <stateprogress :states="project.stats.instances"/>
                             </div>
+                            <icon name="info-circle" title="A Process is a logical grouping of data analysis and processing tasks that share input and output datasets."/>
                         </span>
+
 
                         <span v-if="tabinfo.id == 'pipeline' && project.stats && project.stats.rules && (project.stats.rules.active||project.stats.rules.inactive)"
                             title="Number of pipeline rules" style="opacity: 0.6; font-size: 80%;">
@@ -54,6 +56,14 @@
                         <span v-if="tabinfo.id == 'pub' && project.stats && project.stats.publications > 0" style="opacity: 0.6; font-size: 80%;">
                             &nbsp;{{project.stats.publications}}
                         </span>
+
+                        <span v-if="tabinfo.id=='pub'">
+                            <icon name="info-circle" id="info-publications"></icon>
+                            <b-tooltip target="info-publications" triggers="hover">
+                                Brainlife's publications provide datasets and analyses openly, allowing anyone on the internet to explore and download these resources directly. 
+                            </b-tooltip>
+                        </span>
+
                     </template>
                 </b-tab>
             </b-tabs>
