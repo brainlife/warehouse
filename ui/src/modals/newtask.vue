@@ -249,7 +249,7 @@ export default {
             this.loading = true;
 
             //create list of all datatypes that user has staged / generated
-            var datatype_ids = [];
+            const datatype_ids = [];
             this.datasets.forEach(dataset=>{
                 if(!~datatype_ids.indexOf(dataset.datatype)) datatype_ids.push(dataset.datatype);
             });
@@ -264,36 +264,18 @@ export default {
             });
 
             //now find apps that user can submit
-            this.$http.get('app', {params: {
+            this.$http.get('/app/query', {params: {
                 find: JSON.stringify({
                     "inputs.datatype": {$in: datatype_ids},
-                    removed: false,
                 }),
                 sort: 'name', 
                 populate: 'inputs.datatype outputs.datatype',
                 limit: 500, //TODO - this is not sustailable
+                includeIncompatible: true,
+                dataset_ids: this.datasets.map(d=>d._id),
             }})
             .then(res=>{
-                //now, pick apps that we have *all* input datasets that matches the input datatype/tags
-                res.data.apps.forEach(app=>{
-                    var match = true;
-                    app.inputs.forEach(input=>{
-                        if(input.optional) return; //optional 
-                        var matching_dataset = this.datasets.find(dataset=>{
-                            if(!input.datatype) return false; //only happens on dev?
-                            if(dataset.datatype != input.datatype._id) return false;
-                            var match_tag = true;
-                            if(dataset.datatype_tags) input.datatype_tags.forEach(tag=>{
-                                //make sure tag matches
-                                if(tag[0] == "!" && ~dataset.datatype_tags.indexOf(tag.substring(1))) match_tag = false;
-                                if(tag[0] != "!" && !~dataset.datatype_tags.indexOf(tag)) match_tag = false;
-                            });
-                            return match_tag;
-                        }); 
-                        if(!matching_dataset) match = false;
-                    });
-                    if(match) this.apps.all.push(app);
-                });
+                this.apps.all = res.data;
                 this.update_lists();
                 this.loading = false;
             }).catch(console.error);
@@ -331,6 +313,7 @@ export default {
             //apply filter
             if(!this.filter) this.apps.filtered = this.apps.all.sort((a,b)=>a.name - b.name);
             let l_filter = this.filter.toLowerCase();
+
             this.apps.filtered = this.apps.all.filter(app=>{
                 let match = false;
                 if(app.name && app.name.toLowerCase().includes(l_filter)) match = true;
@@ -358,10 +341,15 @@ export default {
                 return match;
             });
 
-            let popular_ordered = this.apps.filtered.map(a=>{
-                if(!a.stats) a.stats = {users: 0};
+            this.apps.filtered = this.sortByMissingDatatypes(this.apps.filtered);
+
+            let popular_ordered = this.apps.filtered
+            .filter(a => a.compatible) // Only include compatible apps
+            .map(a => {
+                if (!a.stats) a.stats = { users: 0 };
                 return a;
-            }).sort((a,b)=>b.stats.users-a.stats.users)
+            })
+            .sort((a, b) => b.stats.users - a.stats.users);
 
             this.apps.popular = popular_ordered.slice(0, 9);
             this.apps.not_popular = popular_ordered.slice(9);
@@ -631,7 +619,25 @@ export default {
             let inputs = this.wrap_with_label(this.filter_datasets(input));
             input.selected.push(...inputs);
             this.validate();
-        }
+        },
+        sortByMissingDatatypes(apps) {
+            // For each app, calculate the number of missing datatypes
+            apps.forEach(app => {
+                let missingDatatypesCount = 0;
+                app.inputs.forEach(input => {
+                    if (!input.optional) {
+                        const isDatatypePresent = this.datasets.some(dataset => dataset.datatype === input.datatype._id);
+                        if (!isDatatypePresent) {
+                            missingDatatypesCount++;
+                        }
+                    }
+                });
+                app.missingDatatypesCount = missingDatatypesCount;
+            });
+
+            // Sort apps by the number of missing datatypes in ascending order
+            return apps.sort((a, b) => a.missingDatatypesCount - b.missingDatatypesCount);
+        },
     },
 } 
 </script>
