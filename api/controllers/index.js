@@ -45,6 +45,7 @@ router.use('/datalad', require('./datalad'));
 router.use('/participant', require('./participant'));
 router.use('/secondary', require('./secondary'));
 router.use('/xnat', require('./xnat'));
+router.use('/ezgov', require('./ezgov'))
 
 module.exports = router;
 

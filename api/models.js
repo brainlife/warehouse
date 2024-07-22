@@ -882,3 +882,37 @@ var commentSchema = mongoose.Schema({
 
 exports.Comments = mongoose.model('Comments', commentSchema);
 
+const memberSchema = mongoose.Schema({
+    role: String, /* admin / member*/
+    position: String, /* PI / SDE / RA/ */
+    userID: {type: mongoose.Schema.Types.ObjectId},
+});
+
+const documentSchema = mongoose.Schema({
+    fileUrl: String,
+    fileName: String,
+    uploadedBy: {type: mongoose.Schema.Types.ObjectId},                                          
+    uploadDate: { type: Date, default: Date.now},
+    type: String,
+    lifecycle: [String],
+    tags: [{ type: String }],
+    template: { type: mongoose.Schema.Types.ObjectId, ref: 'Template'},
+    responses: {    
+    } 
+});
+
+// Define the ezGovProject schema
+const ezGovProjectSchema = mongoose.Schema({
+    title: String,
+    description: String,
+    primaryInstitute: String,
+    funder: String,
+    fundingStatus: String,
+    fundingOpportunityURL: String,
+    createdBy: String,
+    members: [memberSchema],
+    documents: [documentSchema]
+});
+
+exports.ezGovProjects = mongoose.model('ezGovProjects', ezGovProjectSchema);
+
