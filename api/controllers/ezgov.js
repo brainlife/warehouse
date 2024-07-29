@@ -13,6 +13,8 @@ const mongoose = require('mongoose');
 const path = require('path');
 const mkdirp = require('mkdirp');
 const fs = require('fs');
+const fsPromises = fs.promises;
+const pdf = require('pdf-parse');
 const mammoth = require("mammoth");
 
 /**
@@ -348,39 +350,49 @@ router.get('/project/:projectId/file/:docId', async (req, res) => {
 });
 
 
-
-
 router.get('/project/:projectId/file/:docId/getText', async (req, res) => {
     const projectId = req.params.projectId;
     const docId = req.params.docId;
+    const project = await db.ezGovProjects.findById(projectId);
+    
+    if (!project) {
+        return res.status(404).send('Project not found');
+    }
+
+    const document = project.documents.id(docId);
+    if (!document) {
+        return res.status(404).send('Document not found');
+    }
 
     try {
-        const project = await db.ezGovProjects.findById(projectId);
-        if (!project) {
-            return res.status(404).send('Project not found');
-        }
-
-        const document = project.documents.id(docId);
-        if (!document) {
-            return res.status(404).send('Document not found');
-        }
-
         const filePath = document.fileUrl;
+        const fileExtension = path.extname(filePath).toLowerCase();
 
+        // Check if the file exists
         fs.access(filePath, fs.constants.F_OK, async (err) => {
             if (err) {
                 return res.status(404).send('File not found');
             }
-            const result = await mammoth.extractRawText({ path: filePath });
-            const text = result.value;
+            let text = '';
+            if (fileExtension === '.docx') {
+                const result = await mammoth.extractRawText({ path: filePath });
+                text = result.value;
+            } else if (fileExtension === '.pdf') {
+                const dataBuffer = await fsPromises.readFile(filePath);
+                const result = await pdf(dataBuffer);
+                text = result.text;
+            } else if (fileExtension === '.txt') {
+                text = await fsPromises.readFile(filePath, 'utf8');
+            } else {
+                return res.status(400).send('Unsupported file type. Only .docx, .pdf, and .txt files are supported for text extraction.');
+            }
             return res.status(200).send(text);
         });
-
     } catch (err) {
+        console.error('Internal server error:', err);
         return res.status(500).send('Internal server error');
     }
 });
-
 
 
 module.exports = router;
