@@ -13,6 +13,7 @@ const mongoose = require('mongoose');
 const path = require('path');
 const mkdirp = require('mkdirp');
 const fs = require('fs');
+const mammoth = require("mammoth");
 
 /**
  * @apiGroup Project
@@ -320,10 +321,10 @@ const checkProjectAccess = async (project, userID) => {
 };
 
 // Route to serve files
-router.get('/project/:projectId/file/:fileName', async (req, res) => {   
+router.get('/project/:projectId/file/:docId', async (req, res) => {   
 
     const projectId = req.params.projectId;
-    const docId = req.params.fileName;
+    const docId = req.params.docId;
 
     const project = await db.ezGovProjects.findById(projectId);
     const document = project.documents.id(docId);
@@ -345,6 +346,42 @@ router.get('/project/:projectId/file/:fileName', async (req, res) => {
     });
 
 });
+
+
+
+
+router.get('/project/:projectId/file/:docId/getText', async (req, res) => {
+    const projectId = req.params.projectId;
+    const docId = req.params.docId;
+
+    try {
+        const project = await db.ezGovProjects.findById(projectId);
+        if (!project) {
+            return res.status(404).send('Project not found');
+        }
+
+        const document = project.documents.id(docId);
+        if (!document) {
+            return res.status(404).send('Document not found');
+        }
+
+        const filePath = document.fileUrl;
+
+        fs.access(filePath, fs.constants.F_OK, async (err) => {
+            if (err) {
+                return res.status(404).send('File not found');
+            }
+            const result = await mammoth.extractRawText({ path: filePath });
+            const text = result.value;
+            return res.status(200).send(text);
+        });
+
+    } catch (err) {
+        return res.status(500).send('Internal server error');
+    }
+});
+
+
 
 module.exports = router;
 
