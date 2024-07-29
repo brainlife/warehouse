@@ -117,6 +117,9 @@
                             </template>
                             <b-dropdown-item-button @click="addAgreement('brainlife_dua')">Brainlife Data Use Agreement - Template </b-dropdown-item-button>
                         </b-dropdown>
+
+                        <b-button variant='info' @click="$bvModal.show('ezgov-import-modal')" class="m-2">Import from ezGOV</b-button>
+                        <ezgovimporter @importedText="handleImportedText" />
                         <br>
                     </b-col>
                 </b-row>
@@ -311,6 +314,7 @@ import tageditor from '@/components/tageditor'
 import datatypes from '@/mixins/datatypes'
 import { Picker } from 'emoji-mart-vue'
 import { brainlife_dua } from "@/assets/consents.js";
+import ezgovimporter from '@/modals/ezgovimporter';
 
 const lib = require('@/lib');
 
@@ -330,6 +334,7 @@ export default {
         emojimart: Picker,
 
         editor: require('vue2-ace-editor'),
+        ezgovimporter
     },
 
     data() {
@@ -574,6 +579,9 @@ export default {
                 agreement: brainlife_dua,
             })
         },
+        handleImportedText(text) {
+            this.project.agreements.push({ agreement: text });
+        }
     },
 }
 </script>

@@ -386,13 +386,15 @@ router.get('/project/:projectId/file/:docId/getText', async (req, res) => {
             } else {
                 return res.status(400).send('Unsupported file type. Only .docx, .pdf, and .txt files are supported for text extraction.');
             }
-            return res.status(200).send(text);
+            if(text.length) return res.status(200).send(text);
+            else return res.status(400).send("Empty File");
         });
     } catch (err) {
         console.error('Internal server error:', err);
         return res.status(500).send('Internal server error');
     }
 });
+
 
 
 module.exports = router;
