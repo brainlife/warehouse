@@ -501,21 +501,19 @@ function handle_rule(rule, cb) {
 
         //find all outputs from the app with tags specified in rule.output_tags[output_id]
         let output_missing = false;
-        let output_skipped = false;
         rule.app.outputs.forEach(output=>{
             if(!rule.archive || !rule.archive[output.id] || !rule.archive[output.id].do) {
-                output_skipped = true;
                 log.debug(output.id+" not archived - skip", group_id);
                 log.addToOrCreateList(
                     "skippedOutputIds",
                     [output.id],
                     group_id
                 );
+                // ignore missing output if user doesn't want to archive it
                 return;
             }
             
-            // ignore missing output if user doesn't want to archive it
-            if(!~output._groups.indexOf(group_id) && !output_skipped) {
+            if(!~output._groups.indexOf(group_id)) {
                 log.debug("output dataset not yet created for id:"+output.id, group_id);
 
                 log.addToOrCreateList(
