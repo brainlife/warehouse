@@ -512,7 +512,7 @@ function handle_rule(rule, cb) {
                 // ignore missing output if user doesn't want to archive it
                 return;
             }
-            
+
             if(!~output._groups.indexOf(group_id)) {
                 log.debug("output dataset not yet created for id:"+output.id, group_id);
 
