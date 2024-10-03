@@ -122,16 +122,16 @@ function createRuleLogger(rule) {
     //message: string
     return {
         info(message, groupkey) {
-            add('info', groupkey, message);
+            add("info", groupkey, message);
         },
         debug(message, groupkey) {
-            add('debug', groupkey, message);
+            add("debug", groupkey, message);
         },
         warning(message, groupkey) {
-            add('debug', groupkey, message);
+            add("debug", groupkey, message);
         },
         error(message, groupkey) {
-            add('debug', groupkey, message);
+            add("debug", groupkey, message);
         },
 
         set(obj, groupkey) {
@@ -139,12 +139,30 @@ function createRuleLogger(rule) {
             Object.assign(group, obj);
         },
 
+        addToOrCreateList(key, list, groupKey) {
+            const group = getGroup(groupKey);
+            if (!key || !Array.isArray(list)) return;
+
+            if (group[key]) {
+                if (!Array.isArray(group[key])) return; // lets be safe and not overwrite existing values
+                const oldArray = group[key];
+                const newArray = [...oldArray, ...list];
+                Object.assign(group, { [key]: newArray });
+            } else {
+                Object.assign(group, { [key]: list });
+            }
+        },
+
         //save logs to disk
         close(cb) {
-            const logpath = config.warehouse.rule_logdir+"/"+rule._id.toString()+".json";
-            fs.writeFile(logpath, JSON.stringify({root, groups}), cb);
+            const logpath =
+                config.warehouse.rule_logdir +
+                "/" +
+                rule._id.toString() +
+                ".json";
+            fs.writeFile(logpath, JSON.stringify({ root, groups }), cb);
         },
-    }
+    };
 }
 
 function handle_rule(rule, cb) {
@@ -487,15 +505,28 @@ function handle_rule(rule, cb) {
 
         //find all outputs from the app with tags specified in rule.output_tags[output_id]
         let output_missing = false;
+        let output_skipped = false;
         rule.app.outputs.forEach(output=>{
-            //I should ignore missing output if user doesn't want to archive it?
             if(!rule.archive || !rule.archive[output.id] || !rule.archive[output.id].do) {
+                output_skipped = true;
                 log.debug(output.id+" not archived - skip", group_id);
+                log.addToOrCreateList(
+                    "skippedOutputIds",
+                    [output.id],
+                    group_id
+                );
                 return;
             }
-
-            if(!~output._groups.indexOf(group_id)) {
+            
+            // ignore missing output if user doesn't want to archive it
+            if(!~output._groups.indexOf(group_id) && !output_skipped) {
                 log.debug("output dataset not yet created for id:"+output.id, group_id);
+
+                log.addToOrCreateList(
+                    "unfulfilledOutputIds",
+                    [output.id],
+                    group_id
+                );
                 output_missing = true;
             }
         });
@@ -543,6 +574,11 @@ function handle_rule(rule, cb) {
             if(!input._datasets[input_group_id]) {
                 missing = true;
                 log.info("Found the output data that need to be generated, but we can't identify all required inputs and can't submit the app. missing input for "+input.id, group_id);
+                log.addToOrCreateList(
+                    "missingDataForInputIds",
+                    [input.id],
+                    group_id
+                );
             } else {
                 const candidates = input._datasets[input_group_id]; 
 
@@ -551,14 +587,40 @@ function handle_rule(rule, cb) {
                     //make sure we have exactly the expected number of candidates
                     if(candidates.length != rule.input_multicount[input.id]) {
                         log.info("We found "+candidates.length +" candidates objects for input:"+input.id+", but the rule is expecting "+rule.input_multicount[input.id]+" objects", group_id);
+                        log.addToOrCreateList(
+                            "ambiguousCases",
+                            [
+                                {
+                                    inputId: input.id,
+                                    expectedMultiCount:
+                                        rule.input_multicount[input.id],
+                                    datasetCandidateIds: candidates.map(
+                                        (d) => d._id
+                                    ),
+                                },
+                            ],
+                            group_id
+                        );
                         ambiguous = true;
                     }
-                } else {
+                } else if (candidates.length > 1) {
                     //let's not submit jobs if there are more than 1 candidates
-                    if(candidates.length > 1) {
-                        log.info("We found "+candidates.length +" candidates objects for input:"+input.id+". Please increase input specificity by adding tags.", group_id);
-                        ambiguous = true;
-                    }
+                    log.info("We found "+candidates.length +" candidates objects for input:"+input.id+". Please increase input specificity by adding tags.", group_id);
+                        log.addToOrCreateList(
+                            "ambiguousCases",
+                            [
+                                {
+                                    inputId: input.id,
+                                    expectedMultiCount:
+                                        rule.input_multicount[input.id],
+                                    datasetCandidateIds: candidates.map(
+                                        (d) => d._id
+                                    ),
+                                },
+                            ],
+                            group_id
+                        );
+                    ambiguous = true;
                 }
 
                 inputs[input.id] = candidates;
@@ -705,8 +767,6 @@ function handle_rule(rule, cb) {
                     const inputSpec = inputs[input_id]._inputSpec;
                     inputs[input_id].forEach(input=>{
                         log.debug("looking for source/staged data "+input._id+" for input "+input_id, group_id);
-
-                        console.log(input);
                         //although we need to construct _outputs for product_raw, we are reusing most of the info
                         //for the main app's input. since product-raw doesn't really have id anyway, so let's just use
                         //app's input id as product_raw's id
@@ -918,7 +978,6 @@ function handle_rule(rule, cb) {
                         const datasets = inputs[output.datatype_tags_pass];
                         if(!datasets) {
                             console.error("datatype_tags_pass set but can't find the input:"+output.datatype_tags_pass);
-                            console.log("inputs dump");
                             console.dir(inputs);
                         } else {
                             //for multi inputs.. let's just aggregate all meta for now
