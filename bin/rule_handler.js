@@ -155,11 +155,7 @@ function createRuleLogger(rule) {
 
         //save logs to disk
         close(cb) {
-            const logpath =
-                config.warehouse.rule_logdir +
-                "/" +
-                rule._id.toString() +
-                ".json";
+            const logpath = `${config.warehouse.rule_logdir}/${rule._id.toString()}.json`;
             fs.writeFile(logpath, JSON.stringify({ root, groups }), cb);
         },
     };
@@ -582,44 +578,31 @@ function handle_rule(rule, cb) {
             } else {
                 const candidates = input._datasets[input_group_id]; 
 
-                //check count
-                if(input.multi && rule.input_multicount) {
+                if(input.multi && rule.input_multicount && candidates.length !== rule.input_multicount[input.id]) {
                     //make sure we have exactly the expected number of candidates
-                    if(candidates.length != rule.input_multicount[input.id]) {
-                        log.info("We found "+candidates.length +" candidates objects for input:"+input.id+", but the rule is expecting "+rule.input_multicount[input.id]+" objects", group_id);
-                        log.addToOrCreateList(
-                            "ambiguousCases",
-                            [
-                                {
-                                    inputId: input.id,
-                                    expectedMultiCount:
-                                        rule.input_multicount[input.id],
-                                    datasetCandidateIds: candidates.map(
-                                        (d) => d._id
-                                    ),
-                                },
-                            ],
-                            group_id
-                        );
-                        ambiguous = true;
-                    }
+                    log.info("We found "+candidates.length +" candidates objects for input:"+input.id+", but the rule is expecting "+rule.input_multicount[input.id]+" objects", group_id);
+                    log.addToOrCreateList(
+                        "ambiguousCases",
+                        [{
+                            inputId: input.id,
+                            expectedMultiCount: rule.input_multicount[input.id],
+                            datasetCandidateIds: candidates.map((d) => d._id),
+                        }],
+                        group_id
+                    );
+                    ambiguous = true;
                 } else if (candidates.length > 1) {
                     //let's not submit jobs if there are more than 1 candidates
                     log.info("We found "+candidates.length +" candidates objects for input:"+input.id+". Please increase input specificity by adding tags.", group_id);
-                        log.addToOrCreateList(
-                            "ambiguousCases",
-                            [
-                                {
-                                    inputId: input.id,
-                                    expectedMultiCount:
-                                        rule.input_multicount[input.id],
-                                    datasetCandidateIds: candidates.map(
-                                        (d) => d._id
-                                    ),
-                                },
-                            ],
-                            group_id
-                        );
+                    log.addToOrCreateList(
+                        "ambiguousCases",
+                        [{
+                            inputId: input.id,
+                            expectedMultiCount: rule.input_multicount[input.id],
+                            datasetCandidateIds: candidates.map((d) => d._id),
+                        }],
+                        group_id
+                    );
                     ambiguous = true;
                 }
 
