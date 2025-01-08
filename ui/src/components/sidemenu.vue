@@ -207,7 +207,7 @@ export default {
         },
 
         reportbug() {
-            window.open("https://github.com/brainlife/brainlife/issues", "github");
+            window.open("https://github.com/orgs/brainlife/discussions", "github");
         },
 
         login() {
