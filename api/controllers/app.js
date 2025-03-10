@@ -11,6 +11,7 @@ const config = require('../config');
 const db = require('../models');
 const common = require('../common');
 const provenance = require('../lib/provenance');
+const e = require('express');
 
 function canedit(user, rec) {
     if(user) {
@@ -37,9 +38,9 @@ function canedit(user, rec) {
  * @apiSuccess {Object}         List of apps (maybe limited / skipped) and total count
  */
 router.get('/', common.jwt({credentialsRequired: false}), (req, res, next)=>{
-    var skip = req.query.skip||0;
-    let limit = req.query.limit||100;
-    var ands = [];
+    const skip = req.query.skip||0;
+    const limit = req.query.limit||100;
+    const ands = [];
     if(req.query.find) ands.push(JSON.parse(req.query.find));
 
     common.getprojects(req.user, (err, project_ids)=>{
@@ -93,7 +94,7 @@ router.get('/query', common.jwt({credentialsRequired: false}), (req, res, next)=
     //and get *all* apps (minus some heavy/unnecessary stuff)
     common.getprojects(req.user, async (err, project_ids)=>{
         if(err) return next(err);
-        const apps = await db.Apps.find({
+        let findQuery = {
             removed: false,
             $or: [
                 //if projects is set, user need to have access to it
@@ -105,54 +106,115 @@ router.get('/query', common.jwt({credentialsRequired: false}), (req, res, next)=
                 {projects: null}, //if projects is set to null, it's available to everyoone
                 {projects: {$exists: false}}, //if projects not set, it's availableo to everyone
             ]
-        })
+        };
+        if(req.query.find) findQuery = {$and: [findQuery, JSON.parse(req.query.find)]};
+        
+        let datatype_ids = [];
+
+        if(req.query.includeIncompatible === 'true') {
+            // When incompatible flag is true, remove the datatype filter
+            if(findQuery.$and) {
+                findQuery.$and = findQuery.$and.filter(query => !query["inputs.datatype"]);
+            }
+            datatype_ids = JSON.parse(req.query.find)?.['inputs.datatype']?.['$in'];
+        }
+        
+        let apps = await db.Apps.find(findQuery)
         .select('-config -stats.gitinfo -contributors') //cut things we don't need
         //we want to search into datatype name/desc (desc might be too much?)
         .populate('inputs.datatype', 'name desc') 
         .populate('outputs.datatype', 'name desc')
         .lean();
 
-        if(!req.query.q) return res.json(apps); //if not query is set, return everything
-        const queryTokens = req.query.q.toLowerCase().split(" ");
+        console.log("found apps", apps.length, "query", findQuery);
 
-        //then construct list of tokens for each app to search by
-        apps.forEach(app=>{
-            let tokens = [
-                app.name, 
-                app.github_branch, 
-                app.github, 
-                app.desc, 
-                app.desc_override, 
-                app.doi, 
-                ...app.tags
-            ];
-            app.inputs.forEach(input=>{
-                tokens = [...tokens, ...input.datatype_tags, input.datatype.name, input.datatype.desc];
+        if(!req.query.q && !req.query.includeIncompatible) {
+            return res.json(apps);
+        } //if not query is set, return everything
+
+
+        if(req.query.q && !req.query.includeIncompatible) {
+            const queryTokens = req.query.q.toLowerCase().split(" ");
+            //then construct list of tokens for each app to search by
+            apps.forEach(app=>{
+                let tokens = [
+                    app.name, 
+                    app.github_branch, 
+                    app.github, 
+                    app.desc, 
+                    app.desc_override, 
+                    app.doi, 
+                    ...app.tags
+                ];
+                app.inputs.forEach(input=>{
+                    tokens = [...tokens, ...input.datatype_tags, input.datatype.name, input.datatype.desc];
+                });
+                app.outputs.forEach(output=>{
+                    tokens = [...tokens, ...output.datatype_tags, output.datatype.name, output.datatype.desc];
+                });
+                tokens = tokens.filter(token=>!!token).map(token=>token.toLowerCase());
+
+                //let's just store it as part of the app
+                app._tokens = tokens.join(" ");
             });
-            app.outputs.forEach(output=>{
-                tokens = [...tokens, ...output.datatype_tags, output.datatype.name, output.datatype.desc];
+
+            //then filter apps using _tokens
+            const filtered = apps.filter(app=>{
+                //for each query token, make sure all token matches somewhere in _tokens
+                let match = true;
+                queryTokens.forEach(token=>{
+                    if(!match) return; //we already know it won't match
+                    if(!app._tokens.includes(token)) match = false;
+                });
+                return match;
             });
-            tokens = tokens.filter(token=>!!token).map(token=>token.toLowerCase());
 
-            //let's just store it as part of the app
-            app._tokens = tokens.join(" ");
-        });
+            //remove _tokens from the apps to reduce returning weight a bit
+            apps = filtered.forEach(app=>{ delete app._tokens; });
+        }
+        
+        // if includeIncompatible then include with app.compatible = false / true based on datatype_ids
+        if(req.query.includeIncompatible === 'true' && !req.query.q) {
 
-        //then filter apps using _tokens
-        const filtered = apps.filter(app=>{
-            //for each query token, make sure all token matches somewhere in _tokens
-            let match = true;
-            queryTokens.forEach(token=>{
-                if(!match) return; //we already know it won't match
-                if(!app._tokens.includes(token)) match = false;
+            const datasetIds = req.query.datasetIds ? JSON.parse(req.query.datasetIds) : [];
+            const datasets = await db.Datasets.find({$or: [{datatype: {$in: datatype_ids}}, {_id: {$in: datasetIds}}]}).lean();
+
+            
+            apps.forEach(app => {
+                let missingInputIDs = [];
+                let match = true;
+            
+                app.inputs.forEach(input => {
+                    if(input.optional) return; 
+            
+                    let matching_dataset = datasets.find(dataset => {
+                        if(!input.datatype) return false; 
+                        if(dataset.datatype.toString() !== input.datatype._id.toString()) return false;
+            
+                        let match_tag = true;
+                        if(dataset.datatype_tags && input.datatype_tags) {
+                            input.datatype_tags.forEach(tag => {
+                                if(tag[0] === "!" && dataset.datatype_tags.includes(tag.substring(1))) match_tag = false;
+                                if(tag[0] !== "!" && !dataset.datatype_tags.includes(tag)) match_tag = false;
+                            });
+                        }
+                        return match_tag;
+                    });
+            
+                    if(!matching_dataset) {
+                        missingInputIDs.push(input._id);
+                        match = false;
+                    }
+                });
+            
+                app.compatible = match;
+                if(!match) {
+                    app.missingInputIDs = missingInputIDs;
+                }
             });
-            return match;
-        });
+        }
 
-        //remove _tokens from the apps to reduce returning weight a bit
-        filtered.forEach(app=>{ delete app._tokens; });
-
-        res.json(filtered);
+        res.json(apps);
     });
 });
 
