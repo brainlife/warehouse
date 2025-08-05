@@ -182,7 +182,7 @@
                         </b-col>
                         <b-col cols="10">
                             <p>
-                                <small class="text-muted">Citation for this publiction. Please see citation section under each release for App specific citations. </small>
+                                <small class="text-muted">How to cite this dataset. Please see the citation section under each release for App-specific citations. </small>
                             </p>
                             <citation :doi="pub.doi||config.debug_doi"/>
 
