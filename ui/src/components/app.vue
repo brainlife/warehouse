@@ -1,5 +1,10 @@
 <template>
-<div v-if="app_" class="appcard" :class="{'compact': compact, 'clickable': clickable, 'deprecated': app_.deprecated_by}" @click="click">
+<div v-if="app_" class="appcard" :class="cardClasses"  @click="handleClick">
+    <div v-if="app_.compatible === false">
+        <div class="incompatible-label">Incompatible</div>
+    </div>
+    <div v-if="app_.deprecated_by" class="deprecated-label">Deprecated</div>
+
     <div v-if="compact">
         <appavatar :app="app_" style="position: absolute; right: 0;" :width="80" :height="80"/>
         <span v-if="app_.deprecated_by" class="deprecated-label" style="top: inherit; bottom: 0;">Deprecated</span>
@@ -26,9 +31,14 @@
             </h4>
             <h5 class="github">{{app_.github}} <b-badge>{{branch||app_.github_branch}}</b-badge></h5>
             <div class="datatypes">
+
+                <b-badge v-if="app_.missingInputIDs && app_.missingInputIDs.length > 0" pill variant="danger">Missing inputs <br/></b-badge> <br/>
+                
                 In
                 <div class="datatype" v-for="input in app_.inputs" :key="'input.'+input.id" :class="[input.optional?'input-optional':'']">
-                    <datatypetag :datatype="input.datatype" :tags="input.datatype_tags" :clickable="false"/>
+
+                    <datatypetag :datatype="input.datatype" :tags="input.datatype_tags" :clickable="false" :missing="app_.missingInputIDs && app_.missingInputIDs.includes(input._id)"/>
+
                     <b v-if="input.multi">multi</b>
                     <b v-if="input.optional">opt</b>
                 </div>
@@ -83,7 +93,10 @@
             </span>
             <span v-if="showDoi && app_.doi">{{app_.doi}}</span>
         </div>
+
+        
     </div>
+    
 </div>
 </template>
 
@@ -133,6 +146,20 @@ export default {
         if(this.app) this.app_ = this.app;
     },
 
+    computed: {
+
+        cardClasses() {
+            return {
+                'clickable': this.clickable && this.isCompatible ,
+                'incompatible': this.isCompatible,
+                'deprecated': this.app_.deprecated_by,
+                'compact': this.compact,
+            }
+            // :class="{'compact': compact, 'clickable': clickable, 'deprecated': app_.deprecated_by}"
+        }
+
+    },
+
     methods: {
         load_app() {
             this.appcache(this.appid, (err, app)=>{
@@ -146,6 +173,12 @@ export default {
                 this.$emit("open", this.app_._id);
             }
         },
+
+        handleClick() {
+            if(this.isCompatible && this.clickable) {
+                this.click();
+            }
+        }
 
     },
 }
@@ -256,16 +289,50 @@ line-height: 100%;
 .deprecated h4 {
 opacity: 0.7;
 }
+
+.incompatible-label,
 .deprecated-label {
-position: absolute; 
-right: 0; 
-top: 0;
-background-color: #666;
-color: white; 
-padding: 2px 4px;
-opacity: 0.9;
-text-transform: uppercase;
-font-size: 80%;
-font-weight: bold;
+    position: absolute; 
+    right: 0;
+    background-color: #666;
+    color: white; 
+    padding: 2px 4px;
+    opacity: 0.9;
+    text-transform: uppercase;
+    font-size: 80%;
+    font-weight: bold;
+    z-index: 1;
 }
+
+.incompatible-error {
+    margin-left: 10px;
+    color: #d9534f;
+}
+
+.deprecated-label {
+    top: 0;
+}
+
+.incompatible-label {
+    top: 0px;
+}
+
+.appcard.incompatible,
+.appcard.deprecated {
+    pointer-events: none;
+    opacity: 0.5;
+}
+
+.appcard.incompatible.name,
+.appcard.deprecated.name,
+.appcard.incompatible.github,
+.appcard.deprecated.github {
+    color: #838383;
+}
+
+.incompatible-label {
+    font-size: 70%; 
+    /* //smaller to fit with icon of app */
+}
+
 </style>
